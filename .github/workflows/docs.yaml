@@ -32,14 +32,17 @@ jobs:
       - name: Install Poetry
         run: pip install poetry
 
-      - name: Install dependencies
+      - name: Install dependencies (docs only)
         run: poetry install --no-root
 
-      - name: Build MkDocs
+      - name: Build MkDocs site
         run: poetry run mkdocs build --clean
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload built site
+        uses: actions/upload-pages-artifact@v3
         with:
           path: site
 
@@ -52,4 +55,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
