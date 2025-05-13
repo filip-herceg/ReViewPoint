@@ -1,6 +1,6 @@
 # Developer Setup Guide
 
-This guide explains how to set up the ReViewPoint project from a fresh clone, using `poetry`, `uv`, and isolated environments for each component.
+This guide explains how to set up the ReViewPoint project from a fresh clone using `poetry`, `uv`, and properly isolated environments for each component.
 
 ---
 
@@ -8,25 +8,27 @@ This guide explains how to set up the ReViewPoint project from a fresh clone, us
 
 - Git
 - Python **3.11.9**  
-  Choose **one** of the following:
-  - **System-wide installation** (make sure `python --version` is 3.11.9)
-  - **pyenv** (Linux/macOS): [https://github.com/pyenv/pyenv](https://github.com/pyenv/pyenv)
-  - **pyenv-win** (Windows): [https://github.com/pyenv-win/pyenv-win](https://github.com/pyenv-win/pyenv-win)
-  - **Conda**: `conda create -n reviewpoint python=3.11.9`
+  Choose **one** of the following installation methods:
+  - **System Python**
+  - **pyenv (Linux/macOS)**: [pyenv](https://github.com/pyenv/pyenv)
+  - **pyenv-win (Windows)**: [pyenv-win](https://github.com/pyenv-win/pyenv-win)
+  - **Conda**: creates a dedicated environment
 - [Poetry](https://python-poetry.org/) (required)
 - [uv](https://github.com/astral-sh/uv) (required)
 - Node.js (>= 18) + [PNPM](https://pnpm.io/)
-- Docker (optional, for module containerization)
+- Docker (optional, for containerized modules)
 
 ---
 
-## Component Environments
+## Project Environment Strategy
 
-| Component | Path        | Environment          | Tool    |
-|-----------|-------------|----------------------|---------|
+| Component | Path        | Environment         | Tool    |
+|-----------|-------------|---------------------|---------|
 | Docs      | `/`         | `.venv/`             | Poetry  |
 | Backend   | `/backend/` | `backend/.venv/`     | Poetry  |
-| Modules   | `/modules/` | Optional, per-module | Poetry or other (language dependent) |
+| Modules   | `/modules/` | Optional, per-module | Poetry or other |
+
+All Python components use **in-project virtual environments**.
 
 ---
 
@@ -39,43 +41,60 @@ cd reviewpoint
 
 ---
 
-## 2. Set up Python 3.11.9
+## 2. Set up Python 3.11.9 and install Poetry
+
+Choose one method below to install Python 3.11.9.  
+Then install Poetry **inside the selected environment**.
+
+---
 
 ### Option A: pyenv / pyenv-win
 
 ```bash
 pyenv install 3.11.9
 pyenv local 3.11.9
+python -m pip install poetry
 ```
 
-### Option B: Conda
+> Poetry is installed globally under your `pyenv`-managed interpreter.
+
+---
+
+### Option B: Conda (recommended for Windows users)
 
 ```bash
 conda create -n reviewpoint python=3.11.9
 conda activate reviewpoint
+python -m pip install poetry
 ```
 
-### Option C: System Python
-
-Ensure:
-```bash
-python --version
-# → must output: 3.11.9
-```
+> Poetry is installed inside the active Conda environment.
 
 ---
 
-## 3. Install Poetry & uv
+### Option C: System Python
 
 ```bash
-pip install poetry
+python --version  # Must return 3.11.9
+python -m pip install poetry
+```
+
+> ⚠️ This installs Poetry globally – acceptable for quick setup, but not ideal for managing multiple projects.
+
+---
+
+### After installing Poetry:
+
+Configure in-project environments and install uv:
+
+```bash
 poetry config virtualenvs.in-project true
 poetry run pip install uv
 ```
 
 ---
 
-## 4. Set up Documentation Environment
+## 3. Set up Documentation Environment
 
 ```bash
 # From project root
@@ -87,12 +106,10 @@ Docs available at: http://localhost:8000
 
 ---
 
-## 5. Set up Backend Environment
+## 4. Set up Backend Environment
 
 ```bash
 cd backend/
-poetry init  # only if pyproject.toml doesn't exist
-poetry config virtualenvs.in-project true
 poetry install
 poetry run uvicorn main:app --reload
 ```
@@ -101,7 +118,7 @@ Backend available at: http://localhost:8000/docs
 
 ---
 
-## 6. Set up Frontend
+## 5. Set up Frontend
 
 ```bash
 cd frontend/
@@ -113,7 +130,7 @@ Frontend available at: http://localhost:5173
 
 ---
 
-## 7. (Optional) Lock dependencies with uv
+## 6. (Optional) Freeze dependencies with uv
 
 ```bash
 uv pip freeze > requirements.lock
@@ -124,11 +141,11 @@ uv pip freeze > requirements.lock
 ## Best Practices
 
 - Always use `poetry config virtualenvs.in-project true`
-- Do not install packages globally
-- Each Python component manages its own `.venv/`
-- Use `pyenv`, `pyenv-win`, Conda, or System Python — but ensure version 3.11.9
-- Activate Poetry environments using `poetry shell`
-- Always install `uv` inside the Poetry environment
+- Never install Python packages globally unless using `pipx`
+- Each component (docs, backend, modules) has its own `.venv/`
+- Use `pyenv`, `conda`, or system Python (exact version: 3.11.9)
+- Use `poetry shell` when working interactively
+- Document all environment-specific behavior clearly in `README.md` or `setup.md`
 
 ---
 
