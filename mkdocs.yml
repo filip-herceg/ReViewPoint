@@ -1,0 +1,37 @@
+site_name: ReViewPoint
+site_description: Dokumentation and development manual for ReViewPoint
+site_author: ReViewPoint Team
+site_url: https://github.com/filip-herceg/ReViewPoint
+
+theme:
+  name: material
+  palette:
+    scheme: default
+  features:
+    - navigation.tabs
+    - navigation.top
+    - content.code.annotate
+    - content.tabs.link
+    - content.action.edit
+
+nav:
+  - Homepage: index.md
+  - Setup for Developers: setup.md
+  - Architecture: architecture.md
+  - Module: module-guide.md
+  - Development Guidelines: dev-guidelines.md
+  - LLM-Integration: llm-integration.md
+  - CI/CD: ci-cd.md
+  - FAQ: faq.md
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.details
+  - pymdownx.tabbed
+  - pymdownx.emoji
+  - pymdownx.snippets

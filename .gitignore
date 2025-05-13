@@ -172,3 +172,14 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+
+# Node modules
+**/node_modules/
+
+# Bytecode
+__pycache__/
+*.py[cod]
+
+# MkDocs build output (optional)
+site/

@@ -1,0 +1,19 @@
+[project]
+name = "reviewpoint-docs"
+version = "0.1.0"
+description = "Dokumentation für das ReViewPoint Projekt"
+authors = [
+    {name = "filip-herceg",email = "pvt.filip.herceg@gmail.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "mkdocs (>=1.6.1,<2.0.0)",
+    "mkdocs-material (>=9.6.13,<10.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
