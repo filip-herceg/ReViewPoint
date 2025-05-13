@@ -1,1 +1,1 @@
-# SEAoS
+# DissertAID
