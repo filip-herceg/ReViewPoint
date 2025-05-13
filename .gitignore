@@ -187,3 +187,6 @@ __pycache__/
 
 # MkDocs build output (optional)
 site/
+
+# Pyenv
+**/.python-version

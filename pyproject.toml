@@ -1,19 +1,15 @@
-[project]
+[tool.poetry]
 name = "reviewpoint-docs"
 version = "0.1.0"
-description = "Dokumentation für das ReViewPoint Projekt"
-authors = [
-    {name = "filip-herceg",email = "pvt.filip.herceg@gmail.com"}
-]
-license = {text = "MIT"}
-readme = "README.md"
-requires-python = ">=3.11"
-dependencies = [
-    "mkdocs (>=1.6.1,<2.0.0)",
-    "mkdocs-material (>=9.6.13,<10.0.0)"
-]
+description = "Documentation for the ReViewPoint project"
+authors = ["Filip Herceg <pvt.filip.herceg@gmail.com>"]
+package-mode = false
 
+[tool.poetry.dependencies]
+python = "^3.11"
+mkdocs = "^1.6.1"
+mkdocs-material = "^9.6.13"
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
