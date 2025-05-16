@@ -13,6 +13,7 @@ app = FastAPI(
 init_logger()
 app.include_router(api_router)
 
+
 @app.get("/health", tags=["meta"])
 def healthcheck():
     return {"status": "ok", "environment": settings.env}

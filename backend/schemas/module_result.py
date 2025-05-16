@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Literal
 
+
 class ModuleResult(BaseModel):
     module_name: str
     status: Literal["ok", "warning", "error"]

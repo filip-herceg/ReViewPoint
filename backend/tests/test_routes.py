@@ -3,11 +3,12 @@ def test_ping(client):
     assert response.status_code == 200
     assert response.json() == {"message": "pong"}
 
+
 def test_upload_mock(client):
     payload = {
         "title": "Test Title",
         "author": "John Smith",
-        "content": "This is some text"
+        "content": "This is some text",
     }
     response = client.post("/upload", json=payload)
     assert response.status_code == 200

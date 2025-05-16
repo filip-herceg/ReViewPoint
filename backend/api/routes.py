@@ -6,9 +6,11 @@ from loguru import logger
 
 router = APIRouter()
 
+
 @router.get("/ping", tags=["meta"])
 def ping():
     return {"message": "pong"}
+
 
 @router.post("/upload", response_model=ModuleResult, tags=["core"])
 def upload_doc(upload: UploadRequest):

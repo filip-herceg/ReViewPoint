@@ -2,6 +2,7 @@ from loguru import logger
 import sys
 import os
 
+
 def init_logger():
     logger.remove()
     os.makedirs("logs", exist_ok=True)
