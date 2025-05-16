@@ -98,6 +98,12 @@ poetry config virtualenvs.in-project true
 
 This ensures that `.venv/` folders are created **within each project component**.
 
+For convenience please add the `shell` plugin for Poetry:
+```bash
+poetry self add poetry-plugin-shell
+
+```
+
 ---
 
 ## 4. Install uv (per environment)
@@ -173,6 +179,6 @@ uv pip freeze > requirements.lock
 
 ## Related Pages
 
-- [Architecture Overview](architektur.md)
+- [Architecture Overview](architecture.md)
 - [Development Guidelines](dev-guidelines.md)
 - [Module Guide](module-guide.md)
