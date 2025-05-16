@@ -1,0 +1,48 @@
+name: Backend CI
+
+on:
+  push:
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Tests, Lint & Typecheck
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Run Ruff (lint check)
+        run: poetry run ruff check .
+
+      - name: Run Black (format check)
+        run: poetry run black . --check
+
+      - name: Run Mypy (type check)
+        run: poetry run mypy .
+
+      - name: Run Pytest with Coverage
+        run: poetry run pytest --cov=api --cov=services --cov=schemas --cov-report=term
