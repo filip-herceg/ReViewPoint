@@ -47,6 +47,14 @@ jobs:
         working-directory: backend
         env:
           MYPYPATH: .
+          
+      - name: Create CI .env file
+        run: |
+            echo "ENV=ci" > .env
+            echo "DB_URL=postgresql://user:pass@localhost:5432/db" >> .env
+            echo "OPENAI_API_KEY=dummy-key" >> .env
+        working-directory: backend
+
 
       - name: Run Pytest with Coverage
         run: poetry run pytest --cov=api --cov=services --cov=schemas --cov-report=term
