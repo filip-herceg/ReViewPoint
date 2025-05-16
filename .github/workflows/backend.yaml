@@ -29,6 +29,9 @@ jobs:
 
       - name: Install Poetry
         run: pip install poetry
+        
+      - name: Show Poetry version
+        run: poetry --version
 
       - name: Install dependencies
         run: poetry install --no-root --with dev
