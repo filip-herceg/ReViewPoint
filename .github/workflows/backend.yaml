@@ -51,3 +51,6 @@ jobs:
       - name: Run Pytest with Coverage
         run: poetry run pytest --cov=api --cov=services --cov=schemas --cov-report=term
         working-directory: backend
+        env:
+          PYTHONPATH: .
+
