@@ -8,14 +8,13 @@ on:
   pull_request:
     paths:
       - 'backend/**'
-  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
   test:
-    name: Run Tests, Lint & Typecheck
+    name: Lint, Typecheck & Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -27,23 +26,27 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Poetry
-        run: pip install poetry
-        
-      - name: Show Poetry version
-        run: poetry --version
+      - name: Install Poetry (latest)
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-      - name: Install dependencies
+      - name: Install dependencies (incl. dev)
         run: poetry install --no-root --with dev
+        working-directory: backend
 
-      - name: Run Ruff (lint check)
-        run: poetry run ruff check backend
+      - name: Run Ruff (Lint)
+        run: poetry run ruff check .
+        working-directory: backend
 
-      - name: Run Black (format check)
-        run: poetry run black backend --check
+      - name: Run Black (Format Check)
+        run: poetry run black . --check
+        working-directory: backend
 
-      - name: Run Mypy (type check)
-        run: poetry run mypy backend
+      - name: Run Mypy (Type Check)
+        run: poetry run mypy .
+        working-directory: backend
 
       - name: Run Pytest with Coverage
-        run: poetry run pytest --cov=backend/api --cov=backend/services --cov=backend/schemas --cov-report=term
+        run: poetry run pytest --cov=api --cov=services --cov=schemas --cov-report=term
+        working-directory: backend
