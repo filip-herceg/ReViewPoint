@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from services.logger import init_logger
+from services.logger import init_logger, log
 from config import settings
 from api.routes import router as api_router
 
@@ -11,9 +11,12 @@ app = FastAPI(
 )
 
 init_logger()
+log.info("🚀 ReViewPoint API server starting...")
+
 app.include_router(api_router)
 
 
 @app.get("/health", tags=["meta"])
 def healthcheck():
+    log.debug("🔍 Healthcheck endpoint called")
     return {"status": "ok", "environment": settings.env}
