@@ -16,9 +16,6 @@ jobs:
   test:
     name: Run Tests, Lint & Typecheck
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
 
     steps:
       - name: Checkout repository
@@ -36,13 +33,13 @@ jobs:
         run: poetry install --no-root
 
       - name: Run Ruff (lint check)
-        run: poetry run ruff check .
+        run: poetry run ruff check backend
 
       - name: Run Black (format check)
-        run: poetry run black . --check
+        run: poetry run black backend --check
 
       - name: Run Mypy (type check)
-        run: poetry run mypy .
+        run: poetry run mypy backend
 
       - name: Run Pytest with Coverage
-        run: poetry run pytest --cov=api --cov=services --cov=schemas --cov-report=term
+        run: poetry run pytest --cov=backend/api --cov=backend/services --cov=backend/schemas --cov-report=term
