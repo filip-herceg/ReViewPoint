@@ -27,10 +27,11 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Poetry (latest)
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Check Poetry version
+        run: poetry --version
 
       - name: Install dependencies (incl. dev)
         run: poetry install --no-root --with dev
@@ -45,8 +46,7 @@ jobs:
         working-directory: backend
 
       - name: Run Mypy (Type Check)
-        run: poetry run mypy .
-        working-directory: backend
+        run: poetry run mypy backend
 
       - name: Run Pytest with Coverage
         run: poetry run pytest --cov=api --cov=services --cov=schemas --cov-report=term
