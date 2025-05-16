@@ -36,6 +36,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-poetry-
 
+      - name: Regenerate poetry.lock file
+      - run: poetry lock
+
       - name: Install Poetry
         run: pip install poetry
 
