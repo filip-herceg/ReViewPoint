@@ -43,12 +43,10 @@ jobs:
         working-directory: backend
 
       - name: Run Mypy (Type Check)
-        run: poetry run mypy backend
+        run: poetry run mypy .
         working-directory: backend
         env:
-          MYPYPATH: .
-        
-
+          MYPYPATH: ../
 
       - name: Run Pytest with Coverage
         run: poetry run pytest --cov=api --cov=services --cov=schemas --cov-report=term
