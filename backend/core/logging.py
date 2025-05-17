@@ -89,6 +89,7 @@ def init_logging(
     level: str | int = "INFO",
     color: bool = True,
     json_format: bool = False,
+    json: bool = False,
     logfile: str | Path | None = None,
 ) -> None:
     """Configure the root logger.
@@ -110,8 +111,9 @@ def init_logging(
     _purge_our_handlers(root)
     root.setLevel(level)
 
+    use_json = json or json_format
     formatter: logging.Formatter = (
-        JsonFormatter() if json_format else ColorFormatter(color=color)
+        JsonFormatter() if use_json else ColorFormatter(color=color)
     )
 
     # console handler
