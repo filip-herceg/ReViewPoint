@@ -12,10 +12,10 @@ changed via the ``ENV_FILE`` variable). Real env vars always win – matching th
 12-factor rule.
 """
 
+import os
 from functools import lru_cache
 from pathlib import Path
 from typing import List, Literal
-import os
 
 from pydantic import Field, ValidationError, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
