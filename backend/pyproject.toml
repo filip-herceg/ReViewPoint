@@ -11,10 +11,16 @@ fastapi = "^0.110"
 uvicorn = {extras = ["standard"], version = "^0.29"}
 loguru = "^0.7"
 pydantic = "^2.6"
+pydantic-settings = "^2.9.1"
 python-dotenv = "^1.0"
 httpx = "^0.27"
 jinja2 = "^3.1"
-pydantic-settings = "^2.9.1"
+sqlalchemy = {extras = ["asyncio"], version = "^2.0.41"}
+asyncpg = "^0.30.0"
+python-jose = {extras = ["cryptography"], version = "^3.4.0"}
+passlib = {extras = ["pbkdf2"], version = "^1.7.4"}
+python-multipart = "^0.0.20"
+alembic = "^1.15.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2"
@@ -25,13 +31,19 @@ coverage = "^7.4"
 ruff = "^0.4"
 black = "^24.4"
 mypy = "^1.10"
+freezegun = "^1.5.1"
 
 [tool.coverage.run]
 branch = true
 source = [
     "api",
     "services",
-    "schemas"
+    "schemas",
+    "core",
+    "repositories",
+    "models",
+    "middlewares",
+    "utils"
 ]
 
 [tool.coverage.report]
