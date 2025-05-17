@@ -33,7 +33,7 @@ ENV_PREFIX = "REVIEWPOINT_"
 # -----------------------------------------------------------------------------
 # Decide which .env file to use (once at import time)
 # -----------------------------------------------------------------------------
-if (env_path := os.getenv("ENV_FILE")) :
+if env_path := os.getenv("ENV_FILE"):
     _ENV_FILE = Path(env_path)
 elif Path(".env").exists():
     _ENV_FILE = Path(".env")
@@ -89,7 +89,9 @@ class Settings(BaseSettings):
     @classmethod
     def _check_db_scheme(cls, v: str) -> str:  # pylint: disable=no-self-argument
         if not v.startswith(("postgresql+asyncpg://", "sqlite+aiosqlite://")):
-            raise ValueError("db_url must use postgresql+asyncpg or sqlite+aiosqlite scheme")
+            raise ValueError(
+                "db_url must use postgresql+asyncpg or sqlite+aiosqlite scheme"
+            )
         return v
 
     @field_validator("upload_dir", mode="after")
