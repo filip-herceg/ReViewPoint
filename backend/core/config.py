@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """Centralised runtime configuration for ReViewPoint.
 
 Exposes a cached *singleton* named ``settings`` which the rest of the backend
@@ -11,6 +9,7 @@ Values come from real environment variables or an ``.env`` file (path can be
 changed via the ``ENV_FILE`` variable). Real env vars always win – matching the
 12-factor rule.
 """
+from __future__ import annotations
 
 import os
 from functools import lru_cache
