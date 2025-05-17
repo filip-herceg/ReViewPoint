@@ -185,9 +185,7 @@ def test_settings_debug_logged(monkeypatch, caplog):
     caplog.set_level(logging.DEBUG, logger="core.config")
 
     # Modul neu laden und Settings instanziieren
-    _ = _reload(
-        monkeypatch, DB_URL="postgresql+asyncpg://db", JWT_SECRET="secret"
-    )
+    _ = _reload(monkeypatch, DB_URL="postgresql+asyncpg://db", JWT_SECRET="secret")
 
     # Prüfe, dass der Debug-Log mit unserem Marker eintrifft
     assert any(
