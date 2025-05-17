@@ -31,7 +31,14 @@ __all__ = ["Settings", "get_settings", "settings"]
 ENV_PREFIX = "REVIEWPOINT_"
 
 # -----------------------------------------------------------------------------
-# Decide which .env file to use (once at import time)
+# Decide which .env file to use (evaluated once at import time)
+# -----------------------------------------------------------------------------
+_ENV_FILE: Path | None = None
+if env_path := os.getenv("ENV_FILE"):
+    _ENV_FILE = Path(env_path)
+elif Path(".env").exists():
+    _ENV_FILE = Path(".env")
+
 # -----------------------------------------------------------------------------
 if env_path := os.getenv("ENV_FILE"):
     _ENV_FILE = Path(env_path)
