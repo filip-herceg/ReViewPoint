@@ -1,15 +1,6 @@
-# backend/tests/core/test_config.py
-"""
-Single test suite for core/config.py (TDD style).
-
-Run:
-    poetry run pytest -q backend/tests/core/test_config.py
-"""
-
 from __future__ import annotations
 
 import importlib
-import os
 import sys
 from json import dumps
 from pathlib import Path
