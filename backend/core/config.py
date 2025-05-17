@@ -1,24 +1,25 @@
 """Centralised runtime configuration for ReViewPoint.
 
-`settings` is the singleton import used by the whole backend::
+Import the cached singleton everywhere:
 
-    from core.config import settings
+```python
+from core.config import settings
+```
 
-Configuration is read from `REVIEWPOINT_*` environment variables; a fallback
-`.env` file is loaded if present (or a custom path is supplied via `ENV_FILE`).
-Unknown variables are silently ignored so CI/CD can set unrelated vars without
-breaking startup.
+All variables are read from ``REVIEWPOINT_*`` environment vars; a ``.env`` file
+is loaded as fallback (or a custom path pointed to by ``ENV_FILE``). Unknown
+vars are ignored — helpful for CI systems that inject extra stuff.
 """
 
 from __future__ import annotations
 
 # -----------------------------------------------------------------------------
-# Stdlib imports
+# Standard library imports
 # -----------------------------------------------------------------------------
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import List, Literal
+from typing import List, Literal, Any
 
 # -----------------------------------------------------------------------------
 # Third‑party imports
@@ -33,19 +34,13 @@ ENV_PREFIX = "REVIEWPOINT_"
 # -----------------------------------------------------------------------------
 # Decide which .env file to use (evaluated once at import time)
 # -----------------------------------------------------------------------------
-_ENV_FILE: Path | None = None
-if env_path := os.getenv("ENV_FILE"):
-    _ENV_FILE = Path(env_path)
-elif Path(".env").exists():
-    _ENV_FILE = Path(".env")
-
-# -----------------------------------------------------------------------------
-if env_path := os.getenv("ENV_FILE"):
-    _ENV_FILE = Path(env_path)
+_env_path = os.getenv("ENV_FILE")
+if _env_path:
+    _ENV_FILE: Path | None = Path(_env_path)
 elif Path(".env").exists():
     _ENV_FILE = Path(".env")
 else:
-    _ENV_FILE: Path | None = None
+    _ENV_FILE = None
 
 
 # -----------------------------------------------------------------------------
@@ -97,7 +92,7 @@ class Settings(BaseSettings):
     def _check_db_scheme(cls, v: str) -> str:  # pylint: disable=no-self-argument
         if not v.startswith(("postgresql+asyncpg://", "sqlite+aiosqlite://")):
             raise ValueError(
-                "db_url must use postgresql+asyncpg or sqlite+aiosqlite scheme"
+                "db_url must use postgresql+asyncpg or sqlite+aiosqlite scheme",
             )
         return v
 
@@ -108,7 +103,7 @@ class Settings(BaseSettings):
         return v
 
     # -------------- Post‑init tweaks --------------
-    def model_post_init(self, __ctx):  # type: ignore[override]
+    def model_post_init(self, __context: Any) -> None:  # type: ignore[override]
         if self.environment == "test":
             object.__setattr__(self, "db_url", "sqlite+aiosqlite:///:memory:")
             object.__setattr__(self, "log_level", "WARNING")
