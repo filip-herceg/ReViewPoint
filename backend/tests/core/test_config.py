@@ -5,6 +5,7 @@ import sys
 from json import dumps
 from pathlib import Path
 from types import ModuleType
+import logging
 
 import pytest
 
@@ -173,3 +174,22 @@ def test_public_dict_filters_secrets(monkeypatch):
     public = cfg.settings.to_public_dict()
     assert "jwt_secret" not in public
     assert public["db_url"].startswith("postgresql")
+
+
+def test_settings_debug_logged(monkeypatch, caplog):
+    # Setze ENV so, dass get_settings() erfolgreich lädt
+    monkeypatch.setenv("REVIEWPOINT_DB_URL", "postgresql+asyncpg://db")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "secret")
+
+    # Log-Level auf DEBUG, damit Debug-Messages durchkommen
+    caplog.set_level(logging.DEBUG, logger="core.config")
+
+    # Modul neu laden und Settings instanziieren
+    cfg_module = _reload(monkeypatch, DB_URL="postgresql+asyncpg://db", JWT_SECRET="secret")
+
+    # Prüfe, dass der Debug-Log mit unserem Marker eintrifft
+    assert any(
+        "Settings initialized" in record.getMessage()
+        for record in caplog.records
+    ), "Expected a 'Settings initialized' debug log in core.config"
+

@@ -3,7 +3,7 @@
 Repeat-safe initialiser::
 
     from core.logging import init_logging
-    init_logging(level="DEBUG", color=True, json=False, logfile="app.log")
+    init_logging(level="DEBUG", color=True, json_format=False, logfile="app.log")
 
 Only handlers created by this module are purged between calls; pytest-caplog &
 other third-party handlers remain, but we re-apply our formatter so captured
@@ -23,10 +23,10 @@ from typing import Any, Dict
 RESET = "\x1b[0m"
 COLOR_MAP = {
     "DEBUG": "\x1b[36m",  # cyan
-    "INFO": "\x1b[32m",  # green
-    "WARNING": "\x1b[33m",  # yellow
+    "INFO": "\x1b[32m",   # green
+    "WARNING": "\x1b[33m",# yellow
     "ERROR": "\x1b[31m",  # red
-    "CRITICAL": "\x1b[41m",  # red bg
+    "CRITICAL": "\x1b[41m",# red bg
 }
 
 # attribute used to mark handlers we own
@@ -36,14 +36,14 @@ _FLAG = "_rvp_internal"
 class ColorFormatter(logging.Formatter):
     """Human-readable single-line formatter with optional ANSI colours."""
 
-    def __init__(self, *, color: bool = True) -> None:  # noqa: D401
+    def __init__(self, *, color: bool = True) -> None:
         super().__init__(
             fmt="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
         )
         self._color = color
 
-    def format(self, record: logging.LogRecord) -> str:  # noqa: D401
+    def format(self, record: logging.LogRecord) -> str:
         text = super().format(record)
         if self._color:
             return f"{COLOR_MAP.get(record.levelname, '')}{text}{RESET}"
@@ -53,7 +53,7 @@ class ColorFormatter(logging.Formatter):
 class JsonFormatter(logging.Formatter):
     """Minimal JSON Lines formatter."""
 
-    def format(self, record: logging.LogRecord) -> str:  # noqa: D401
+    def format(self, record: logging.LogRecord) -> str:
         payload: Dict[str, Any] = {
             "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "level": record.levelname,
@@ -72,7 +72,6 @@ class JsonFormatter(logging.Formatter):
 
 # ───────────────────────── helper ─────────────────────────
 
-
 def _purge_our_handlers(root: logging.Logger) -> None:
     """Remove handlers previously attached by this module."""
     for h in list(root.handlers):
@@ -83,12 +82,11 @@ def _purge_our_handlers(root: logging.Logger) -> None:
 
 # ───────────────────────── public API ─────────────────────────
 
-
 def init_logging(
     *,
     level: str | int = "INFO",
     color: bool = True,
-    json: bool = False,
+    json_format: bool = False,
     logfile: str | Path | None = None,
 ) -> None:
     """Configure the root logger.
@@ -99,7 +97,7 @@ def init_logging(
         Root log level.
     color : bool
         Enable ANSI colours for console output.
-    json : bool
+    json_format : bool
         Emit JSON lines instead of human format.
     logfile : str | Path | None
         Optional file to tee logs to.
@@ -111,7 +109,7 @@ def init_logging(
     root.setLevel(level)
 
     formatter: logging.Formatter = (
-        JsonFormatter() if json else ColorFormatter(color=color)
+        JsonFormatter() if json_format else ColorFormatter(color=color)
     )
 
     # console handler
