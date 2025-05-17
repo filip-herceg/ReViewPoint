@@ -23,10 +23,10 @@ from typing import Any, Dict
 RESET = "\x1b[0m"
 COLOR_MAP = {
     "DEBUG": "\x1b[36m",  # cyan
-    "INFO": "\x1b[32m",   # green
-    "WARNING": "\x1b[33m",# yellow
+    "INFO": "\x1b[32m",  # green
+    "WARNING": "\x1b[33m",  # yellow
     "ERROR": "\x1b[31m",  # red
-    "CRITICAL": "\x1b[41m",# red bg
+    "CRITICAL": "\x1b[41m",  # red bg
 }
 
 # attribute used to mark handlers we own
@@ -72,6 +72,7 @@ class JsonFormatter(logging.Formatter):
 
 # ───────────────────────── helper ─────────────────────────
 
+
 def _purge_our_handlers(root: logging.Logger) -> None:
     """Remove handlers previously attached by this module."""
     for h in list(root.handlers):
@@ -81,6 +82,7 @@ def _purge_our_handlers(root: logging.Logger) -> None:
 
 
 # ───────────────────────── public API ─────────────────────────
+
 
 def init_logging(
     *,
