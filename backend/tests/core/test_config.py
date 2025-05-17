@@ -185,7 +185,7 @@ def test_settings_debug_logged(monkeypatch, caplog):
     caplog.set_level(logging.DEBUG, logger="core.config")
 
     # Modul neu laden und Settings instanziieren
-    cfg_module = _reload(
+    _ = _reload(
         monkeypatch, DB_URL="postgresql+asyncpg://db", JWT_SECRET="secret"
     )
 
