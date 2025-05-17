@@ -6,4 +6,3 @@ app = FastAPI(
     docs_url="/docs",
     openapi_url="/openapi.json",
 )
-
