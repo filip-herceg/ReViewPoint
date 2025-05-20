@@ -30,10 +30,11 @@ from starlette.types import ASGIApp
 # Thread-local request ID storage
 request_id_var: ContextVar[Optional[str]] = ContextVar("request_id", default=None)
 
+
 # Custom log filter to add request ID to all log records
 class RequestIdFilter(logging.Filter):
     """Add request_id to log records when available."""
-    
+
     def filter(self, record: logging.LogRecord) -> bool:
         """Add request_id to the record if available in the context."""
         request_id = get_request_id()
@@ -75,11 +76,11 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         self.exclude_paths = exclude_paths or ["/health", "/metrics"]
         self.logger = logger or logging.getLogger("middleware.request")
         self.header_name = header_name
-        
+
         # Add request ID filter to the logger
         request_filter = RequestIdFilter()
         self.logger.addFilter(request_filter)
-        
+
         # Also add it to the root logger so all logs get the request ID
         root_logger = logging.getLogger()
         root_logger.addFilter(request_filter)
@@ -106,9 +107,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         # Generate or extract request ID
-        request_id = request.headers.get(
-            self.header_name, str(uuid.uuid4())
-        )
+        request_id = request.headers.get(self.header_name, str(uuid.uuid4()))
         # Set the request ID in the context variable for this request/response cycle
         token = request_id_var.set(request_id)
 
@@ -133,7 +132,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             # Calculate request processing time
             process_time = time.time() - start_time
             process_time_ms = round(process_time * 1000)
-            
+
             # Log the response
             self.logger.info(
                 f"Response {request.method} {request.url.path} "
@@ -154,7 +153,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             # Log exceptions with request context
             process_time = time.time() - start_time
             process_time_ms = round(process_time * 1000)
-            
+
             self.logger.exception(
                 f"Error processing request {request.method} {request.url.path}: {exc}",
                 extra={
