@@ -42,8 +42,12 @@ jobs:
         run: poetry run black . --check
         working-directory: backend
 
+      - name: Clear Mypy Cache
+        run: rm -rf .mypy_cache
+        working-directory: backend
+
       - name: Run Mypy (Type Check)
-        run: poetry run mypy . --explicit-package-bases
+        run: poetry run mypy . --config-file mypy.ini
         working-directory: backend
 
       - name: Create CI .env file
