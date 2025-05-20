@@ -55,11 +55,13 @@ def test_env_precedence(monkeypatch, tmp_path: Path):
 
 
 def test_missing_jwt_secret(monkeypatch):
+    monkeypatch.delenv("REVIEWPOINT_JWT_SECRET", raising=False)
     with pytest.raises(Exception):
         _reload(monkeypatch, DB_URL="postgresql+asyncpg://db")
 
 
 def test_missing_db_url(monkeypatch):
+    monkeypatch.delenv("REVIEWPOINT_DB_URL", raising=False)
     with pytest.raises(Exception):
         _reload(monkeypatch, JWT_SECRET="secret")
 

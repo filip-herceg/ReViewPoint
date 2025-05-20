@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 
-from core.config import settings
-from core.logging import init_logging
-from middlewares.logging import RequestLoggingMiddleware
+from backend.core.config import settings
+from backend.core.logging import init_logging
+from backend.middlewares.logging import RequestLoggingMiddleware
 
 app = FastAPI(
     title="ReViewPoint Core API",

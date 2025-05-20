@@ -18,7 +18,7 @@ import re
 import pytest
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
-from middlewares.logging import RequestLoggingMiddleware, get_request_id
+from backend.middlewares.logging import RequestLoggingMiddleware, get_request_id
 
 
 @pytest.fixture
