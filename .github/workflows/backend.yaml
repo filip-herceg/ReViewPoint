@@ -46,7 +46,7 @@ jobs:
         run: poetry run mypy . --explicit-package-bases
         working-directory: backend
         env:
-          MYPYPATH: .
+          MYPYPATH: ./backend
           
       - name: Create CI .env file
         run: |
