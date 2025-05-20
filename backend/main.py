@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from core.config import settings
 from core.logging import init_logging
+from middlewares.logging import RequestLoggingMiddleware
 
 app = FastAPI(
     title="ReViewPoint Core API",
@@ -11,4 +12,8 @@ app = FastAPI(
 )
 
 
+# Initialize logging system
 init_logging(level=settings.log_level)
+
+# Add request logging middleware
+app.add_middleware(RequestLoggingMiddleware)
