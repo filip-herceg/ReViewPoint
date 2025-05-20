@@ -9,6 +9,11 @@ package-mode = false
 python = "^3.11"
 mkdocs = "^1.6.1"
 mkdocs-material = "^9.6.13"
+mypy = "^1.10"
+
+[tool.mypy]
+python_version = "3.11"
+namespace_packages = false
 
 [build-system]
 requires = ["poetry-core"]

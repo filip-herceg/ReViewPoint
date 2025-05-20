@@ -47,10 +47,8 @@ jobs:
         working-directory: backend
 
       - name: Run Mypy (Type Check)
-        run: poetry run mypy . --explicit-package-bases
-        working-directory: backend
-        env:
-          MYPYPATH: ../
+        run: poetry run mypy backend
+        working-directory: .
 
       - name: Ensure backend poetry is used
         run: poetry env info
