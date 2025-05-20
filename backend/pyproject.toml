@@ -51,6 +51,9 @@ show_missing = true
 skip_covered = true
 fail_under = 80  # optional: schlägt fehl unter 80 % Coverage
 
+[tool.ruff]
+lint.ignore = ["E402"]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
