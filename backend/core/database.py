@@ -72,4 +72,4 @@ async def db_healthcheck() -> bool:
         return False
 
 
-async_sessionmaker = None  # type: ignore[attr-defined]
+# Removed the reassignment of async_sessionmaker to None to avoid conflicts.
