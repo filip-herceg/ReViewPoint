@@ -1,3 +1,4 @@
+# filepath: /workspaces/ReViewPoint/.gitignore
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -61,6 +62,12 @@ local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
+# SQLite database files
+*.db
+*.sqlite
+*.sqlite3
+backend_dev.db
+
 # Flask stuff:
 instance/
 .webassets-cache
@@ -105,7 +112,7 @@ ipython_config.py
 #   This is especially recommended for binary packages to ensure reproducibility, and is more
 #   commonly ignored for libraries.
 #   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
-#poetry.lock
+# poetry.lock is INCLUDED in version control for this application to ensure reproducibility
 
 # pdm
 #   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
@@ -154,6 +161,7 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+mypy_output.txt
 
 # Pyre type checker
 .pyre/
@@ -177,6 +185,9 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+# Uploaded files
+uploads/*
+!uploads/.gitkeep
 
 # Node modules
 **/node_modules/

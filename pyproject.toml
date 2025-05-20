@@ -9,6 +9,36 @@ package-mode = false
 python = "^3.11"
 mkdocs = "^1.6.1"
 mkdocs-material = "^9.6.13"
+mypy = "^1.10"
+
+[tool.poetry.group.dev.dependencies]
+sqlalchemy = "^2.0.41"
+fastapi = "^0.115.12"
+starlette = "^0.46.2"
+pydantic = "^2.11.4"
+pydantic-settings = "^2.9.1"
+alembic = "^1.15.2"
+pytest = "^8.3.5"
+pytest-asyncio = "^0.26.0"
+types-sqlalchemy = "^1.4.53.38"
+types-python-dateutil = "^2.9.0.20250516"
+types-pyyaml = "^6.0.12.20250516"
+types-markupsafe = "^1.1.10"
+types-certifi = "^2021.10.8.3"
+types-requests = "^2.32.0.20250515"
+types-setuptools = "^80.7.0.20250516"
+types-six = "^1.17.0.20250515"
+types-toml = "^0.10.8.20240310"
+types-ujson = "^5.10.0.20250326"
+aiosqlite = "^0.21.0"
+httpx = "^0.28.1"
+
+[tool.mypy]
+python_version = "3.11"
+namespace_packages = false
+
+[tool.ruff]
+exclude = ["backend/models/base.py"]
 
 [build-system]
 requires = ["poetry-core"]

@@ -42,12 +42,22 @@ jobs:
         run: poetry run black . --check
         working-directory: backend
 
-      - name: Run Mypy (Type Check)
-        run: poetry run mypy . --explicit-package-bases
+      - name: Clear Mypy Cache
+        run: rm -rf .mypy_cache
         working-directory: backend
-        env:
-          MYPYPATH: .
-          
+
+      - name: Install root dependencies (incl. mypy)
+        run: poetry install
+        working-directory: .
+
+      - name: Run Mypy (Type Check)
+        run: poetry run mypy backend
+        working-directory: .
+
+      - name: Ensure backend poetry is used
+        run: poetry env info
+        working-directory: backend
+
       - name: Create CI .env file
         run: |
             echo "ENV=ci" > .env
