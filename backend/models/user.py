@@ -7,10 +7,10 @@ from __future__ import annotations
 from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column  # type: ignore[attr-defined]
 
-from backend.models.base import Base
+from backend.models.base import BaseModel
 
 
-class User(Base):
+class User(BaseModel):
     __tablename__ = "users"
 
     email: Mapped[str] = mapped_column(
@@ -18,7 +18,7 @@ class User(Base):
     )
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    # created_at, updated_at inherited from Base
+    # created_at, updated_at inherited from BaseModel
 
     def __repr__(self) -> str:
         return f"<User id={self.id} email={self.email}>"

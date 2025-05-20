@@ -30,6 +30,8 @@ types-setuptools = "^80.7.0.20250516"
 types-six = "^1.17.0.20250515"
 types-toml = "^0.10.8.20240310"
 types-ujson = "^5.10.0.20250326"
+aiosqlite = "^0.21.0"
+httpx = "^0.28.1"
 
 [tool.mypy]
 python_version = "3.11"
