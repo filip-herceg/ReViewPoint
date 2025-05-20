@@ -1,4 +1,4 @@
-from sqlalchemy.orm import declarative_base, mapped_column
+from sqlalchemy.orm import declarative_base, mapped_column  # type: ignore[attr-defined]
 from sqlalchemy import Integer
 
 Base = declarative_base()
