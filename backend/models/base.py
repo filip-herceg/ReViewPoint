@@ -1,5 +1,6 @@
 from sqlalchemy.orm import declarative_base, mapped_column  # type: ignore[attr-defined]
-from sqlalchemy import Integer
+from sqlalchemy import Integer, DateTime, func
+
 
 Base = declarative_base()
 
