@@ -55,8 +55,8 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         self,
         app: ASGIApp,
         *,
-        exclude_paths: list[str] = None,
-        logger: logging.Logger = None,
+        exclude_paths: Optional[list[str]] = None,
+        logger: Optional[logging.Logger] = None,
         header_name: str = "X-Request-ID",
     ) -> None:
         """Initialize the middleware.
