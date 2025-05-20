@@ -47,8 +47,8 @@ jobs:
         working-directory: backend
 
       - name: Run Mypy (Type Check)
-        run: poetry run mypy .
-        working-directory: backend
+        run: poetry run mypy backend
+        working-directory: .
 
       - name: Create CI .env file
         run: |
