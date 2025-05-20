@@ -6,6 +6,7 @@ import os
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 from alembic import context
 from backend.models.base import Base
 
