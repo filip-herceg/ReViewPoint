@@ -61,20 +61,6 @@ async def test_session_rollback():
 @pytest.mark.asyncio
 async def test_session_error_handling():
     """Test the error handling in get_async_session context manager."""
-    try:
-        async with get_async_session() as _:
-            raise SQLAlchemyError("Test error")
-        # Should not reach here
-        assert False, "Should have raised an exception"
-    except SQLAlchemyError:
-        # This is expected
-        pass
-
-
-@pytest.mark.asyncio
-async def test_get_async_session_error():
-    """Test session error handling."""
-    # Test session with a raised error
     error_occurred = False
     try:
         async with get_async_session() as _:
