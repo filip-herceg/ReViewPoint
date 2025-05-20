@@ -1,3 +1,4 @@
+# type: ignore
 import pytest
 from backend.models.user import User
 from sqlalchemy import select

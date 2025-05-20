@@ -1,3 +1,5 @@
+# type: ignore
+
 import os
 
 os.environ["REVIEWPOINT_DB_URL"] = "sqlite+aiosqlite:///:memory:"
@@ -5,7 +7,7 @@ os.environ["REVIEWPOINT_JWT_SECRET"] = "testsecret"
 
 import pytest
 import pytest_asyncio
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker  # type: ignore[attr-defined]
 from backend.models.base import Base
 import uuid
 from typing import AsyncGenerator

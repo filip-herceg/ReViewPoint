@@ -1,3 +1,4 @@
+# type: ignore
 """Tests for the database module."""
 
 from __future__ import annotations

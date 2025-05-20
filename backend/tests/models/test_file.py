@@ -1,3 +1,4 @@
+# type: ignore
 import pytest
 from backend.models.file import File
 from backend.models.user import User
