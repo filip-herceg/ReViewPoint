@@ -5,7 +5,6 @@ import json
 import logging
 import re
 import sys
-import os
 from pathlib import Path
 from types import ModuleType
 

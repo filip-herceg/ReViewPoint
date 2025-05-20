@@ -20,12 +20,12 @@ import logging
 import time
 import uuid
 from contextvars import ContextVar
-from typing import Callable, Optional, Dict, Any
+from typing import Optional
 
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.base import RequestResponseEndpoint
-from starlette.types import ASGIApp, Message, Receive, Scope, Send
+from starlette.types import ASGIApp
 
 # Thread-local request ID storage
 request_id_var: ContextVar[Optional[str]] = ContextVar("request_id", default=None)
