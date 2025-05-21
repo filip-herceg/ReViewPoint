@@ -2,8 +2,6 @@
 
 ReViewPoint is a modular, scalable platform for academic paper evaluation using Large Language Models (LLMs). It is designed for researchers, reviewers, and developers who want to automate, accelerate, and improve the quality of scientific paper review workflows.
 
----
-
 ## Project Overview
 
 ReViewPoint provides a flexible backend for:
@@ -18,8 +16,6 @@ ReViewPoint provides a flexible backend for:
 - Automated compliance and structure checks
 - Custom module development for new evaluation criteria
 
----
-
 ## System Architecture
 
 - **Frontend:** React + Vite + TailwindCSS (external, see docs)
@@ -30,8 +26,6 @@ ReViewPoint provides a flexible backend for:
 
 See the [Architecture Diagram](https://filip-herceg.github.io/ReViewPoint/architecture/) for a visual overview.
 
----
-
 ## Features
 
 - Modular backend with plug-and-play modules
@@ -40,8 +34,6 @@ See the [Architecture Diagram](https://filip-herceg.github.io/ReViewPoint/archit
 - File upload and PDF parsing
 - LLM integration (OpenAI, vLLM, Jinja2 prompts)
 - Full test suite and CI/CD pipeline
-
----
 
 ## Getting Started
 
@@ -62,8 +54,6 @@ See the [Architecture Diagram](https://filip-herceg.github.io/ReViewPoint/archit
 
 For full setup details, see the [Setup Guide](https://filip-herceg.github.io/ReViewPoint/setup/).
 
----
-
 ## Documentation
 
 - **Docs website:** [https://filip-herceg.github.io/ReViewPoint/](https://filip-herceg.github.io/ReViewPoint/)
@@ -73,8 +63,6 @@ For full setup details, see the [Setup Guide](https://filip-herceg.github.io/ReV
 - [LLM Integration](https://filip-herceg.github.io/ReViewPoint/llm-integration/)
 - [Backend Docs](https://filip-herceg.github.io/ReViewPoint/backend/)
 
----
-
 ## Development Standards
 
 - **Formatting:** [black](https://black.readthedocs.io/)
@@ -82,8 +70,6 @@ For full setup details, see the [Setup Guide](https://filip-herceg.github.io/ReV
 - **Type checking:** [mypy](https://mypy-lang.org/)
 - **Dependency management:** [poetry](https://python-poetry.org/)
 - **Commit messages:** Conventional, see [Developer Guidelines](https://filip-herceg.github.io/ReViewPoint/dev-guidelines/)
-
----
 
 ## Contribution Workflow
 
@@ -100,8 +86,6 @@ For questions or bugs, [open a GitHub Issue](https://github.com/filip-herceg/ReV
 
 See [Developer Guidelines](https://filip-herceg.github.io/ReViewPoint/dev-guidelines/) for details.
 
----
-
 ## Testing
 
 - Run all backend tests:
@@ -113,8 +97,6 @@ See [Developer Guidelines](https://filip-herceg.github.io/ReViewPoint/dev-guidel
   poetry run pytest --cov=backend --cov-report=term --cov-report=xml
   ```
 - See [Backend Test Instructions](https://filip-herceg.github.io/ReViewPoint/backend/test-instructions/) for more.
-
----
 
 ## License
 
