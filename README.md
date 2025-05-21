@@ -4,4 +4,4 @@ ReViewPoint is a modular, scalable platform for assisting in the academic evalua
 
 ## Running Backend Tests
 
-See [docs/backend/test-instructions.md](docs/backend/test-instructions.md) for full instructions on running backend tests, async/API tests, and coverage reporting.
+See [Backend Test Instructions](docs/backend/test-instructions.md) for full instructions on running backend tests, async/API tests, and coverage reporting.
