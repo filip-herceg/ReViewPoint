@@ -4,6 +4,10 @@ This guide explains how to run all backend tests, including unit, async, API, an
 
 ## Prerequisites
 - All dependencies installed (see `pyproject.toml`)
+- Required pytest plugins:
+  - `pytest-asyncio`
+  - `pytest-httpx`
+  - `pytest-mock`
 - Activate your Poetry environment: `poetry shell`
 
 ## Running All Tests
