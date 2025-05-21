@@ -1,6 +1,6 @@
 # ReViewPoint
 
-ReViewPoint is a modular, scalable platform for academic paper evaluation using Large Language Models (LLMs). It is designed for researchers, reviewers, and developers who want to automate, accelerate, and improve the quality of scientific paper review workflows.
+ReViewPoint is a modular, scalable platform for academic paper evaluation using Large Language Models (LLMs) and rule-based algorithms. It is designed for researchers, reviewers, and developers who want to automate, accelerate, and improve the quality of scientific paper review workflows.
 
 ## Project Overview
 
