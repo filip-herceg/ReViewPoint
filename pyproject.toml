@@ -80,6 +80,24 @@ namespace_packages = false
 
 [tool.ruff]
 
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\\.(py)$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
