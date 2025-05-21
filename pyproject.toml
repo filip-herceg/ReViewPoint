@@ -79,7 +79,6 @@ python_version = "3.11"
 namespace_packages = false
 
 [tool.ruff]
-# exclude = [""]
 
 [build-system]
 requires = ["poetry-core"]
