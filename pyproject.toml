@@ -83,7 +83,7 @@ namespace_packages = false
 [tool.black]
 line-length = 88
 target-version = ['py311']
-include = '\\.(py)$'
+include = '\\.py$'
 exclude = '''
 /(
     \.eggs
