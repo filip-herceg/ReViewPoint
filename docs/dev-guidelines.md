@@ -172,7 +172,7 @@ Python code style and linting are enforced using two configuration files at the 
     line-length = 88
     select = ["E", "F", "W", "C90"]
     ignore = ["E501"]
-    target-version = "py311"
+    target-version = ["py311"]
     # See https://docs.astral.sh/ruff/configuration/ for all options
     ```
   - Example `.ruff.toml` for file exclusion:
