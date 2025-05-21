@@ -18,6 +18,8 @@ nav:
   - Homepage: index.md
   - Setup for Developers: setup.md
   - Architecture: architecture.md
+  - File Overview: file-overview.md
+  - Backend Source Guide: backend-source-guide.md
   - Module: module-guide.md
   - Development Guidelines: dev-guidelines.md
   - LLM-Integration: llm-integration.md

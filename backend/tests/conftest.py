@@ -1,16 +1,18 @@
 # type: ignore
 
+from typing import AsyncGenerator
+import uuid
+from backend.models.base import Base
+
+# type: ignore[attr-defined]
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+import pytest_asyncio
+import pytest
 import os
 
 os.environ["REVIEWPOINT_DB_URL"] = "sqlite+aiosqlite:///:memory:"
 os.environ["REVIEWPOINT_JWT_SECRET"] = "testsecret"
 
-import pytest
-import pytest_asyncio
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker  # type: ignore[attr-defined]
-from backend.models.base import Base
-import uuid
-from typing import AsyncGenerator
 
 DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
@@ -35,7 +37,8 @@ async def async_engine_function():
     # Use a unique in-memory database for each test function
     db_url = f"sqlite+aiosqlite:///:memory:?cache=shared_{uuid.uuid4()}"
     engine = create_async_engine(db_url, future=True)
-    # Drop all tables and indexes before each test function to ensure a clean state
+    # Drop all tables and indexes before each test function to ensure a clean
+    # state
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.reflect)
         await conn.run_sync(Base.metadata.drop_all)
