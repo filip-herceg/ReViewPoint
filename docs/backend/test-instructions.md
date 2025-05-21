@@ -33,4 +33,4 @@ poetry run pytest backend/tests/middlewares/test_logging.py
 
 ## Troubleshooting
 - If you encounter import errors, ensure you are in the correct Poetry shell and your dependencies are installed.
-- For more details, see `docs/dev-guidelines.md`.
+- For more details, see [Dev Guidelines](docs/dev-guidelines.md).
