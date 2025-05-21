@@ -20,6 +20,7 @@ nav:
   - Architecture: architecture.md
   - File Overview: file-overview.md
   - Backend Source Guide: backend-source-guide.md
+  - Backend Test Instructions: backend/test-instructions.md
   - Module: module-guide.md
   - Development Guidelines: dev-guidelines.md
   - LLM-Integration: llm-integration.md
