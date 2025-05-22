@@ -5,7 +5,6 @@
 | **Layer** | Models |
 | **Responsibility** | Provides the SQLAlchemy declarative base class with common columns and methods |
 | **Status** | 🟢 Done |
-| **Owner** | @ReViewPointTeam |
 
 ## 1. Purpose  
 This file establishes the foundation for all database models in the application. It defines a common base class that all entity models inherit from, providing consistent ID, timestamp tracking, and serialization capabilities.

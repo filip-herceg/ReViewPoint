@@ -5,7 +5,6 @@
 | **Layer** | Models |
 | **Responsibility** | Defines the User model for authentication and user management |
 | **Status** | 🟢 Done |
-| **Owner** | @ReViewPointTeam |
 
 ## 1. Purpose  
 This file defines the User model that represents application users in the database. It handles the storage of user credentials and account status, providing the foundation for authentication and user management features.

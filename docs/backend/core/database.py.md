@@ -5,7 +5,6 @@
 | **Layer** | Core |
 | **Responsibility** | Async SQLAlchemy engine configuration and session management |
 | **Status** | 🟢 Done |
-| **Owner** | @ReViewPointTeam |
 
 ## 1. Purpose  
 This file provides the database connectivity layer for the application using SQLAlchemy's async ORM. It configures database connections, manages sessions, and offers health checking functionality. The implementation supports both PostgreSQL for production and SQLite for development/testing.

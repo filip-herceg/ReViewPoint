@@ -26,30 +26,30 @@
 
 | Layer        | File                        | Responsibility (1-liner)                |
 |--------------|-----------------------------|-----------------------------------------|
-| Core         | `core/config.py`            | Global settings singleton               |
-|              | `core/database.py`          | Async SQLAlchemy engine & session factory |
-|              | `core/logging.py`           | Central logger bootstrap                |
-|              | `core/security.py`          | JWT + password hashing helpers          |
-|              | `core/events.py`            | Startup / shutdown hooks                |
-| Models       | `models/base.py`            | Declarative base class                  |
-|              | `models/user.py`            | `User` table schema                     |
-|              | `models/file.py`            | `File` upload metadata table            |
-| Repositories | `repositories/user.py`      | CRUD & queries for users                |
-|              | `repositories/file.py`      | CRUD for uploaded files                 |
-| Services     | `services/user.py`          | Registration & auth logic               |
-|              | `services/upload.py`        | File-upload workflow                    |
-| API          | `api/deps.py`               | Dependency-injection helpers            |
-|              | `api/v1/auth.py`            | `/auth/*` endpoints                     |
-|              | `api/v1/uploads.py`         | `/uploads/*` endpoints                  |
-| Middleware   | `middlewares/logging.py`    | Request/response logger                 |
-| Utils        | `utils/hashing.py`          | Thin passlib wrapper                    |
-|              | `utils/file.py`             | File-path helpers                       |
-| Migrations   | `alembic/env.py`            | Alembic configuration for database migrations |
-|              | `alembic/versions/...`      | Initial schema creation                 |
-| Entry        | `main.py`                   | FastAPI app entrypoint                  |
-| Tests        | `tests/conftest.py`         | Test fixtures and setup                 |
-|              | `tests/core/test_database.py`| Database connectivity and session tests |
-|              | `tests/models/test_*.py`    | Model CRUD and relationship tests       |
+| Core         | [core/config.py](backend/core/config.py.md)            | Global settings singleton               |
+|              | [core/database.py](backend/core/database.py.md)          | Async SQLAlchemy engine & session factory |
+|              | [core/logging.py](backend/core/logging.py.md)           | Central logger bootstrap                |
+|              | [core/security.py](backend/core/security.py.md)          | JWT + password hashing helpers          |
+|              | [core/events.py](backend/core/events.md)            | Startup / shutdown hooks                |
+| Models       | [models/base.py](backend/models/base.py.md)            | Declarative base class                  |
+|              | [models/user.py](backend/models/user.py.md)            | `User` table schema                     |
+|              | [models/file.py](backend/models/file.py.md)            | `File` upload metadata table            |
+| Repositories | [repositories/user.py](backend/repositories/user.py.md)      | CRUD & queries for users                |
+|              | [repositories/file.py](backend/repositories/file.py.md)      | CRUD for uploaded files                 |
+| Services     | [services/user.py](backend/services/user.py.md)          | Registration & auth logic               |
+|              | [services/upload.py](backend/services/upload.py.md)        | File-upload workflow                    |
+| API          | [api/deps.py](backend/api/deps.py.md)               | Dependency-injection helpers            |
+|              | [api/v1/auth.py](backend/api/v1/auth.py.md)            | `/auth/*` endpoints                     |
+|              | [api/v1/uploads.py](backend/api/v1/uploads.py.md)         | `/uploads/*` endpoints                  |
+| Middleware   | [middlewares/logging.py](backend/middlewares/logging.py.md)    | Request/response logger                 |
+| Utils        | [utils/hashing.py](backend/utils/hashing.py.md)          | Thin passlib wrapper                    |
+|              | [utils/file.py](backend/utils/file.py.md)             | File-path helpers                       |
+| Migrations   | [alembic/env.py](backend/alembic/env.py.md)            | Alembic configuration for database migrations |
+|              | [alembic/versions/...](backend/alembic/versions/initial_migration.md)      | Initial schema creation                 |
+| Entry        | [main.py](backend/main.py.md)                   | FastAPI app entrypoint                  |
+| Tests        | [tests/conftest.py](backend/tests/conftest.md)         | Test fixtures and setup                 |
+|              | [tests/core/test_database.py](backend/tests/core/database_tests.md) | Database connectivity and session tests |
+|              | [tests/models/test_*.py](backend/tests/models/model_tests.md)    | Model CRUD and relationship tests       |
 
 _Add new rows when you add new files. Keep descriptions to one concise sentence._
 

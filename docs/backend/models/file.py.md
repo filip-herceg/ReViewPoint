@@ -5,7 +5,6 @@
 | **Layer** | Models |
 | **Responsibility** | Defines the File model for document storage metadata |
 | **Status** | 🟢 Done |
-| **Owner** | @ReViewPointTeam |
 
 ## 1. Purpose  
 This file defines the File model that tracks metadata for uploaded documents and files. It associates uploaded files with users and stores critical information about the file content without containing the actual file data (which is stored in the filesystem or object storage).
@@ -28,7 +27,7 @@ This file defines the File model that tracks metadata for uploaded documents and
 ## 3. Behaviour & Edge-Cases  
 
 - `user_id` is indexed for performance in filtering files by user
-- The relationship to User allows easy access to the file owner
+- The relationship to User allows easy access to the file's user (not 'owner')
 - The User model has a backref to files, allowing `user.files` access
 - The model only stores metadata; actual file content is stored externally
 - Content type is stored to allow proper MIME type handling when serving files

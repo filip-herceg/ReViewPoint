@@ -39,17 +39,17 @@ theme:
 
 nav:
   - Homepage: index.md
-  - System Overview :material-cube-outline:
+  - System Overview:
       - Architecture: architecture.md
       - Backend Source Guide: backend-source-guide.md
-  - Development :material-tools:
+  - Development:
       - Setup for Developers: setup.md
       - Developer Guidelines: dev-guidelines.md
       - CI/CD: ci-cd.md
-  - Modules :material-puzzle-outline:
+  - Modules:
       - Module Guide: module-guide.md
       - LLM-Integration: llm-integration.md
-  - Resources :material-book-open-variant:
+  - Resources:
       - FAQ: faq.md
 
 extra:

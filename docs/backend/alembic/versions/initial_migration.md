@@ -5,7 +5,6 @@
 | **Layer** | Database Migration |
 | **Responsibility** | Initial database schema creation for User and File tables |
 | **Status** | 🟢 Done |
-| **Owner** | @ReViewPointTeam |
 
 ## 1. Purpose  
 This is the initial migration file that sets up the core database schema including the `users` and `files` tables. It establishes the foundation for user authentication and file metadata storage.
