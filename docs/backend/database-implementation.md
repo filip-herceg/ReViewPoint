@@ -56,7 +56,7 @@ The initial migration (`9fc3acc47815_initial_migration_users_and_files_tables.py
 2. **Files table**: For document metadata tracking
    - Primary fields: filename, content_type, user_id
    - Relationship: Foreign key to users.id
-   - Indexes: Index on user_id for filtering by owner
+   - Indexes: Index on user_id for filtering by user
 
 Migration commands:
 ```bash

@@ -5,7 +5,6 @@
 | **Layer** | Database Migration |
 | **Responsibility** | Configures Alembic for database schema migrations |
 | **Status** | 🟢 Done |
-| **Owner** | @ReViewPointTeam |
 
 ## 1. Purpose  
 This file configures Alembic, the database migration tool used with SQLAlchemy, to handle schema changes and version control for the database. It provides the connection between the application models and the migration system.

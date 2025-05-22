@@ -3,59 +3,41 @@
 | Item | Value |
 |------|-------|
 | **Layer** | Core |
-| **Responsibility** | Provide a **singleton Settings object** that reads environment variables / `.env`, performs type-safe validation and exposes helper properties used across the entire backend. |
-| **Status** | 🔴 TODO |
-| **Owner** | @filip |
+| **Responsibility** | Provides a singleton Settings object that reads environment variables, validates types, and exposes helper properties for backend configuration. |
+| **Status** | 🟢 Done |
 
----
+## 1. Purpose  
+Centralizes all runtime configuration for the backend, loading from environment variables or `.env` files, and providing type-safe access to settings like DB URL, JWT secret, and log level.
 
-## 1. Purpose
-Create a single source-of-truth for runtime configuration:
-* Centralise all tunables (DB URL, JWT secret, log level …) in one file.
-* Fail fast on missing or malformed critical values.
-* Offer convenient helper properties (e.g. `async_db_url`, `upload_path`) that other modules import instead of hand-crafting strings.
-* Ensure deterministic overrides for tests via `Settings(testing=True, **overrides)`.
-
-## 2. Public API
-
+## 2. Public API  
 | Symbol | Type | Description |
 |--------|------|-------------|
-| `Settings` | class | Subclass of `pydantic_settings.BaseSettings`; holds all config fields. |
-| `get_settings()` | function | `@lru_cache` factory that returns a **singleton** instance of `Settings`. |
-| `settings` | variable | Shortcut alias: `settings = get_settings()` so callers can simply `from core.config import settings`. |
+| `Settings` | class | Subclass of `pydantic_settings.BaseSettings`; holds all config fields |
+| `get_settings()` | function | `@lru_cache` factory that returns a singleton instance of `Settings` |
+| `settings` | variable | Shortcut alias: `settings = get_settings()` for easy import |
 
-### Constants (internal, but documented)
-
-| Name | Description |
-|------|-------------|
-| `ENV_PREFIX` | Prefix for ENV overrides (defaults to `REVIEWPOINT_`). |
-
-## 3. Behaviour & Edge-Cases
-- Reads `.env` automatically, but real env vars win (12-factor rule).
-- Critical secrets (`jwt_secret`, database password) are marked `repr=False` so they never appear in logs.
-- If `environment == "test"` → force an in-memory SQLite URL and lower log level to WARNING.
-- URL validation with `@field_validator` – only `postgresql+asyncpg://` or `sqlite+aiosqlite://` accepted.
-- Derived helpers are lazily evaluated properties to avoid compute on startup.
-- Raises `RuntimeError` on missing mandatory fields *before* FastAPI app boots.
-- Uses `SettingsConfigDict(env_prefix=ENV_PREFIX)` for clear namespacing.
-- Supports nested JSON values via `pydantic.Json` for complex flags.
+## 3. Behaviour & Edge-Cases  
+- Reads `.env` automatically, but real env vars take precedence.
+- Fails fast on missing or malformed critical values.
+- Provides helper properties (e.g., `async_db_url`, `upload_path`).
+- Supports deterministic overrides for tests.
+- Uses `SettingsConfigDict(env_prefix=ENV_PREFIX)` for namespacing.
 - Protects against accidental double-instantiation with `@lru_cache`.
 
-## 4. Dependencies
-- `pydantic-settings` v2 (for BaseSettings)
-- `functools.lru_cache`
-- Standard lib `pathlib.Path`
+## 4. Dependencies  
+- **Internal**: None
+- **External**:
+  - `pydantic-settings` (for BaseSettings)
+  - `functools.lru_cache`
+  - `pathlib.Path`
 
-## 5. Tests
-
+## 5. Tests  
 | Test file | Scenario |
 |-----------|----------|
-| `tests/core/test_config_env_loading.py` | `.env` vs. real env precedence |
-| `tests/core/test_config_missing_values.py` | Missing `JWT_SECRET` raises ValidationError |
-| `tests/core/test_config_derived.py` | `settings.async_db_url` returns expected postfix |
-| `tests/core/test_config_repr.py` | `repr(settings)` doesn’t leak secrets |
+| `backend/tests/core/test_config.py` | Tests config loading, overrides, and error handling |
 
-## 6. Open TODOs
-- [ ] Implement `Settings` class with all fields listed in the roadmap.
-- [ ] Add helper `to_public_dict()` that filters secrets for docs.
-- [ ] Wire automatic log-level adjustment based on `debug` flag.
+## 6. Open TODOs  
+- [ ] Add support for dynamic reload of settings
+- [ ] Document all config fields in detail
+
+> **Update this page whenever the implementation changes.**

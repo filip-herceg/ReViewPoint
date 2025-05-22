@@ -5,7 +5,6 @@
 | **Layer** | Tests |
 | **Responsibility** | Test the database connectivity and session management functionality |
 | **Status** | 🟢 Done |
-| **Owner** | @ReViewPointTeam |
 
 ## 1. Purpose  
 These test files ensure that the database connection, session management, and error handling work correctly. The tests verify the functionality of the async database engine, session management, and health check functions.

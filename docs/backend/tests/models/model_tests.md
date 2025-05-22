@@ -5,7 +5,6 @@
 | **Layer** | Tests |
 | **Responsibility** | Test the model classes and their functionality |
 | **Status** | 🟢 Done |
-| **Owner** | @ReViewPointTeam |
 
 ## 1. Purpose  
 These test files verify that the SQLAlchemy models function correctly, including their CRUD operations, relationships, and helper methods. The tests ensure that the database schema works as expected and that model operations perform correctly.

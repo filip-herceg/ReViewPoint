@@ -6,7 +6,6 @@
 | **Layer** | Core / Models / Repositories / Services / API / Middleware / Utils |
 | **Responsibility** | Short mission statement (1–2 sentences) |
 | **Status** | 🔴 TODO / 🟡 WIP / 🟢 Done |
-| **Owner** | @github-handle |
 
 ## 1. Purpose  
 Describe _why_ this file exists and the problem it solves.

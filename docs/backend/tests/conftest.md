@@ -5,7 +5,6 @@
 | **Layer** | Test Infrastructure |
 | **Responsibility** | Provides pytest fixtures for database testing and environment setup |
 | **Status** | 🟢 Done |
-| **Owner** | @ReViewPointTeam |
 
 ## 1. Purpose  
 This file sets up the test infrastructure for the application, particularly focusing on providing database fixtures for async SQLAlchemy testing. It ensures that tests run with a clean, isolated database environment and proper environment variables.
