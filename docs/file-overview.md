@@ -18,3 +18,7 @@ Welcome! This page links to every major documentation area of **ReViewPoint**.
 | **Backend Source Guide** → | Jump straight to every Python file’s responsibility |
 
 > **Tip** – Keep this list alphabetically sorted and add new sections as the project grows.
+
+<!-- This file has been merged into backend-source-guide.md and is now obsolete. -->
+
+This file is no longer maintained. Please refer to [Backend Source Guide](backend-source-guide.md) for backend file responsibilities and test instructions.
