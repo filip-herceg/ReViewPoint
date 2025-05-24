@@ -3,7 +3,7 @@ Centralized runtime configuration for ReViewPoint.
 
 Import the cached singleton everywhere::
 
-    from core.config import settings
+    from backend.core.config import settings
 
 All variables are read from the REVIEWPOINT_* environment variables. A .env file is loaded as fallback,
 or a custom path can be specified by setting ENV_FILE. Unknown variables are ignored, which is useful
@@ -16,7 +16,7 @@ import logging
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, List, Literal
+from typing import Any, Literal
 
 from pydantic import Field, ValidationError, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -66,7 +66,7 @@ class Settings(BaseSettings):
     max_upload_mb: int = 50
 
     # CORS settings
-    allowed_origins: List[str] = []
+    allowed_origins: list[str] = []
 
     # Feature flags
     enable_embeddings: bool = False

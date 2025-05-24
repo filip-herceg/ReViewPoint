@@ -1,6 +1,7 @@
 # Tests for backend/main.py (FastAPI app entrypoint)
 import importlib
 import sys
+
 import pytest
 from fastapi import FastAPI
 
@@ -25,7 +26,7 @@ def test_logging_initialized(monkeypatch):
     # Reload main.py to trigger logging init
     sys.modules.pop("backend.main", None)
     importlib.invalidate_caches()
-    import backend.main
+    import backend.main  # noqa: F401
 
     assert called["level"] == backend.main.settings.log_level
 
@@ -40,6 +41,7 @@ def test_request_logging_middleware_present():
 def test_app_can_start(monkeypatch):
     # Use FastAPI TestClient to make a request and check middleware runs
     from fastapi.testclient import TestClient
+
     import backend.main
 
     client = TestClient(backend.main.app)
@@ -57,7 +59,7 @@ def test_logging_init_error_propagates(monkeypatch):
     sys.modules.pop("backend.main", None)
     importlib.invalidate_caches()
     with pytest.raises(RuntimeError, match="logging failed"):
-        pass
+        import backend.main  # noqa: F401
 
 
 def test_missing_log_level(monkeypatch):
@@ -74,9 +76,10 @@ def test_missing_log_level(monkeypatch):
     sys.modules.pop("backend.main", None)
     importlib.invalidate_caches()
     try:
+        import backend.main  # noqa: F401
 
         # Should raise AttributeError
-        assert False, "Should raise AttributeError for missing log_level"
+        raise AssertionError("Should raise AttributeError for missing log_level")
     except AttributeError:
         pass
     finally:
@@ -88,12 +91,12 @@ def test_double_import_does_not_duplicate_middleware(monkeypatch):
     monkeypatch.setattr("backend.core.logging.init_logging", lambda *a, **k: None)
     sys.modules.pop("backend.main", None)
     importlib.invalidate_caches()
-    import backend.main
+    import backend.main  # noqa: F401
 
     app1 = backend.main.app
     sys.modules.pop("backend.main", None)
     importlib.invalidate_caches()
-    import backend.main as main2
+    import backend.main as main2  # noqa: F401
 
     app2 = main2.app
     # Middleware should not be duplicated

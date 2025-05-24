@@ -1,8 +1,13 @@
 # type: ignore
 from __future__ import annotations
 
-from sqlalchemy.orm import Mapped, mapped_column, relationship  # type: ignore[attr-defined]
-from sqlalchemy import String, ForeignKey, Index
+from sqlalchemy import ForeignKey, Index, String
+from sqlalchemy.orm import (  # type: ignore[attr-defined]
+    Mapped,
+    mapped_column,
+    relationship,
+)
+
 from backend.models.base import BaseModel
 
 

@@ -7,7 +7,7 @@ request ID to logs and response headers for correlation.
 Example Usage:
     ```python
     from fastapi import FastAPI
-    from middlewares.logging import RequestLoggingMiddleware
+    from backend.middlewares.logging import RequestLoggingMiddleware
 
     app = FastAPI()
     app.add_middleware(RequestLoggingMiddleware)
@@ -20,15 +20,13 @@ import logging
 import time
 import uuid
 from contextvars import ContextVar
-from typing import Optional
 
 from fastapi import Request, Response
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.middleware.base import RequestResponseEndpoint
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.types import ASGIApp
 
 # Thread-local request ID storage
-request_id_var: ContextVar[Optional[str]] = ContextVar("request_id", default=None)
+request_id_var: ContextVar[str | None] = ContextVar("request_id", default=None)
 
 
 # Custom log filter to add request ID to all log records
@@ -43,7 +41,7 @@ class RequestIdFilter(logging.Filter):
         return True
 
 
-def get_request_id() -> Optional[str]:
+def get_request_id() -> str | None:
     """Get the current request ID from the context variable."""
     return request_id_var.get()
 
@@ -55,8 +53,8 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         self,
         app: ASGIApp,
         *,
-        exclude_paths: Optional[list[str]] = None,
-        logger: Optional[logging.Logger] = None,
+        exclude_paths: list[str] | None = None,
+        logger: logging.Logger | None = None,
         header_name: str = "X-Request-ID",
     ) -> None:
         """Initialize the middleware.

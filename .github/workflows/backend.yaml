@@ -31,20 +31,32 @@ jobs:
         run: pip install poetry
 
       - name: Install dependencies (incl. dev)
-        run: poetry install --no-root --with dev
+        run: |
+          cd backend
+          poetry install --no-root --with dev
 
       - name: Run Ruff (Lint)
-        run: poetry run ruff check backend
+        run: |
+          cd backend
+          poetry run ruff check .
 
       - name: Run Black (Format Check)
-        run: poetry run black backend --check
+        run: |
+          cd backend
+          poetry run black . --check
 
       - name: Clear Mypy Cache
-        run: rm -rf .mypy_cache
+        run: |
+          cd backend
+          rm -rf .mypy_cache
 
       - name: Run Mypy (Typecheck)
-        run: poetry run mypy backend
+        run: |
+          cd backend
+          poetry run mypy . --config-file mypy.ini
 
       - name: Run Pytest (Tests)
-        run: poetry run pytest --maxfail=1 --disable-warnings --cov=backend --cov-report=xml --cov-report=term
+        run: |
+          cd backend
+          poetry run pytest --maxfail=1 --disable-warnings --cov=backend --cov-report=xml --cov-report=term
 

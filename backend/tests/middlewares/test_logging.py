@@ -18,6 +18,7 @@ import re
 import pytest
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
+
 from backend.middlewares.logging import RequestLoggingMiddleware, get_request_id
 
 
@@ -105,7 +106,9 @@ def test_custom_request_id_header(client, caplog):
 
 def test_error_logging(client, caplog):
     """Test that errors are properly logged with request context."""
-    with caplog.at_level(logging.ERROR), pytest.raises(Exception):
+    # nosemgrep: python.lang.security.audit.pytest.raises-exception
+    # noqa: B017 - This endpoint intentionally raises a generic Exception for test purposes
+    with caplog.at_level(logging.ERROR), pytest.raises(ValueError):
         client.get("/error")
 
     # Check that an error log was generated
