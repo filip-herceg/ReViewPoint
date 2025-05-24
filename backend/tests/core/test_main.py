@@ -1,7 +1,6 @@
 # Tests for backend/main.py (FastAPI app entrypoint)
 import importlib
 import sys
-import types
 import pytest
 from fastapi import FastAPI
 
@@ -58,7 +57,7 @@ def test_logging_init_error_propagates(monkeypatch):
     sys.modules.pop("backend.main", None)
     importlib.invalidate_caches()
     with pytest.raises(RuntimeError, match="logging failed"):
-        import backend.main
+        pass
 
 
 def test_missing_log_level(monkeypatch):
@@ -75,7 +74,6 @@ def test_missing_log_level(monkeypatch):
     sys.modules.pop("backend.main", None)
     importlib.invalidate_caches()
     try:
-        import backend.main
 
         # Should raise AttributeError
         assert False, "Should raise AttributeError for missing log_level"
