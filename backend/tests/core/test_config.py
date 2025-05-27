@@ -25,6 +25,7 @@ def _clear_module() -> None:
             cfg.get_settings.cache_clear()  # type: ignore[attr-defined]
         del sys.modules[MODULE]
 
+
 def _reload(monkeypatch: MonkeyPatch, **env: str) -> ModuleType:
     """
     Reload core.config with custom env overrides.
@@ -179,7 +180,9 @@ def test_public_dict_filters_secrets(monkeypatch: MonkeyPatch):
     assert public["db_url"].startswith("postgresql")
 
 
-def test_settings_debug_logged(monkeypatch: MonkeyPatch, caplog: pytest.LogCaptureFixture):
+def test_settings_debug_logged(
+    monkeypatch: MonkeyPatch, caplog: pytest.LogCaptureFixture
+):
     # Setze ENV so, dass get_settings() erfolgreich lädt
     monkeypatch.setenv("REVIEWPOINT_DB_URL", "postgresql+asyncpg://db")
     monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "secret")
