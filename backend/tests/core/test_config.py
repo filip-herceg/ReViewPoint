@@ -37,7 +37,6 @@ def _reload(monkeypatch: MonkeyPatch, **env: str) -> ModuleType:
     for k, v in env.items():
         monkeypatch.setenv(f"{PFX}{k}", v)
     return importlib.import_module(MODULE)
-    return importlib.import_module(MODULE)
 
 
 # --------------------------------------------------------------------------- #
