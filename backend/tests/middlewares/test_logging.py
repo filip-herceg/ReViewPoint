@@ -1,3 +1,5 @@
+# pyright: reportUnusedFunction=false
+# Pylance/pyright: reportUnusedFunction warnings for route/middleware handlers are false positives in FastAPI.
 from __future__ import annotations
 
 # filepath: /workspaces/ReViewPoint/backend/tests/middlewares/test_logging.py
@@ -46,8 +48,14 @@ def app():
         request_id = get_request_id()
         return {"middleware_request_id": request_id}
 
+    from collections.abc import Awaitable, Callable
+
+    from starlette.responses import Response
+
     @app.middleware("http")
-    async def request_id_check_middleware(request: Request, call_next):
+    async def request_id_check_middleware(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ):
         # Get the request ID from the context variable - should be set by our middleware
         request_id = get_request_id()
         response = await call_next(request)
@@ -61,12 +69,12 @@ def app():
 
 
 @pytest.fixture
-def client(app):
+def client(app: FastAPI):
     """Create a TestClient for the app."""
     return TestClient(app)
 
 
-def test_request_id_generation(client, caplog):
+def test_request_id_generation(client: TestClient, caplog: pytest.LogCaptureFixture):
     """Test that a request ID is generated for each request."""
     with caplog.at_level(logging.INFO):
         response = client.get("/test")
@@ -89,7 +97,7 @@ def test_request_id_generation(client, caplog):
     assert caplog.records[0].__dict__["request_id"] == response.headers["X-Request-ID"]
 
 
-def test_custom_request_id_header(client, caplog):
+def test_custom_request_id_header(client: TestClient, caplog: pytest.LogCaptureFixture):
     """Test that a custom request ID header is respected."""
     custom_id = "test-123"
 
@@ -104,7 +112,7 @@ def test_custom_request_id_header(client, caplog):
     assert caplog.records[0].__dict__["request_id"] == custom_id
 
 
-def test_error_logging(client, caplog):
+def test_error_logging(client: TestClient, caplog: pytest.LogCaptureFixture):
     """Test that errors are properly logged with request context."""
     # nosemgrep: python.lang.security.audit.pytest.raises-exception
     # noqa: B017 - This endpoint intentionally raises a generic Exception for test purposes
@@ -123,7 +131,7 @@ def test_error_logging(client, caplog):
     assert "Test error" in error_log.message
 
 
-def test_request_id_propagation_to_other_middleware(client):
+def test_request_id_propagation_to_other_middleware(client: TestClient):
     """Test that the request ID is available to downstream middleware."""
     # Skip this test in TestClient environment as contextvars don't persist
     # This test would pass in a real ASGI environment with proper middleware ordering
@@ -134,7 +142,7 @@ def test_request_id_propagation_to_other_middleware(client):
     )
 
 
-def test_performance_logging(client, caplog):
+def test_performance_logging(client: TestClient, caplog: pytest.LogCaptureFixture):
     """Test that request performance is logged."""
     with caplog.at_level(logging.INFO):
         client.get("/test")

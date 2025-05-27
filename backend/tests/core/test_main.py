@@ -14,31 +14,38 @@ def test_app_is_fastapi_instance():
     assert backend.main.app.version == "0.1.0"
 
 
-def test_logging_initialized(monkeypatch):
+def test_logging_initialized(monkeypatch: pytest.MonkeyPatch):
     # Patch init_logging to check it is called with correct level
-    called = {}
+    from typing import Any
 
-    def fake_init_logging(level=None, **kwargs):
+    called: dict[str, Any] = {}
+
+    def fake_init_logging(level: str | None = None, **kwargs: Any):
         called["level"] = level
         called.update(kwargs)
 
-    monkeypatch.setattr("backend.core.logging.init_logging", fake_init_logging)
+    monkeypatch.setattr("backend.core.logging.init_logging", fake_init_logging)  # type: ignore[arg-type]
     # Reload main.py to trigger logging init
     sys.modules.pop("backend.main", None)
     importlib.invalidate_caches()
-    import backend.main  # noqa: F401
+    import backend.main
+
+    _ = getattr(backend.main, "app", None)
 
     assert called["level"] == backend.main.settings.log_level
 
 
 def test_request_logging_middleware_present():
+
     import backend.main
 
-    middlewares = [m.cls.__name__ for m in backend.main.app.user_middleware]
+    middlewares: list[str] = [
+        getattr(m, "cls", type(m)).__name__ for m in backend.main.app.user_middleware
+    ]
     assert "RequestLoggingMiddleware" in middlewares
 
 
-def test_app_can_start(monkeypatch):
+def test_app_can_start():
     # Use FastAPI TestClient to make a request and check middleware runs
     from fastapi.testclient import TestClient
 
@@ -50,19 +57,21 @@ def test_app_can_start(monkeypatch):
     # Optionally check for middleware effect (headers, logs, etc.)
 
 
-def test_logging_init_error_propagates(monkeypatch):
+def test_logging_init_error_propagates(monkeypatch: pytest.MonkeyPatch):
     # Patch init_logging to raise
-    def fake_init_logging(*a, **k):
+    def fake_init_logging(*_: object, **__: object) -> None:
         raise RuntimeError("logging failed")
 
-    monkeypatch.setattr("backend.core.logging.init_logging", fake_init_logging)
+    monkeypatch.setattr("backend.core.logging.init_logging", fake_init_logging)  # type: ignore[arg-type]
     sys.modules.pop("backend.main", None)
     importlib.invalidate_caches()
     with pytest.raises(RuntimeError, match="logging failed"):
-        import backend.main  # noqa: F401
+        import backend.main
+
+        _ = getattr(backend.main, "app", None)
 
 
-def test_missing_log_level(monkeypatch):
+def test_missing_log_level(monkeypatch: pytest.MonkeyPatch):
     # Patch settings to remove log_level
     import backend.core.config as config_mod
 
@@ -71,12 +80,15 @@ def test_missing_log_level(monkeypatch):
     class DummySettings:
         pass
 
-    config_mod.settings = DummySettings()
-    monkeypatch.setattr("backend.core.logging.init_logging", lambda *a, **k: None)
+    config_mod.settings = DummySettings()  # type: ignore[assignment]
+    monkeypatch.setattr("backend.core.logging.init_logging", lambda *a: None)  # type: ignore[arg-type]
     sys.modules.pop("backend.main", None)
     importlib.invalidate_caches()
     try:
-        import backend.main  # noqa: F401
+        import backend.main
+
+        # Access an attribute to use the import (even if it raises)
+        _ = getattr(backend.main, "app", None)
 
         # Should raise AttributeError
         raise AssertionError("Should raise AttributeError for missing log_level")
@@ -86,9 +98,9 @@ def test_missing_log_level(monkeypatch):
         config_mod.settings = orig_settings
 
 
-def test_double_import_does_not_duplicate_middleware(monkeypatch):
+def test_double_import_does_not_duplicate_middleware(monkeypatch: pytest.MonkeyPatch):
     # Patch init_logging to do nothing
-    monkeypatch.setattr("backend.core.logging.init_logging", lambda *a, **k: None)
+    monkeypatch.setattr("backend.core.logging.init_logging", lambda *a, **k: None)  # type: ignore[arg-type]
     sys.modules.pop("backend.main", None)
     importlib.invalidate_caches()
     import backend.main  # noqa: F401
@@ -100,7 +112,12 @@ def test_double_import_does_not_duplicate_middleware(monkeypatch):
 
     app2 = main2.app
     # Middleware should not be duplicated
-    names1 = [m.cls.__name__ for m in app1.user_middleware]
-    names2 = [m.cls.__name__ for m in app2.user_middleware]
+
+    names1: list[str] = [
+        getattr(m.cls, "__name__", type(m.cls).__name__) for m in app1.user_middleware
+    ]
+    names2: list[str] = [
+        getattr(m.cls, "__name__", type(m.cls).__name__) for m in app2.user_middleware
+    ]
     assert names1 == names2
     assert names1.count("RequestLoggingMiddleware") == 1

@@ -20,6 +20,7 @@ structlog = "^23.1.0"
 pydantic-settings = "2.0.3"
 aiosqlite = "0.20.0"
 starlette = "^0.46.2"
+autopep8 = "^2.3.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
@@ -75,6 +76,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
+"tests/alembic_migrations/test_alembic_env.py" = ["B010"]
 
 [tool.mypy]
 python_version = "3.11"

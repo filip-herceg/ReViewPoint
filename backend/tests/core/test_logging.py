@@ -8,6 +8,8 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
+from _pytest.logging import LogCaptureFixture
+
 # Add the backend directory to the path for imports
 backend_dir = Path(__file__).parent.parent.parent
 if str(backend_dir) not in sys.path:
@@ -26,7 +28,9 @@ def _reload() -> ModuleType:
 # --------------------------------------------------------------------------- #
 # 1) root level & basic format                                                #
 # --------------------------------------------------------------------------- #
-def test_root_level_and_format(caplog):
+
+
+def test_root_level_and_format(caplog: LogCaptureFixture):
     log_mod = _reload()
     log_mod.init_logging(level="DEBUG")
     assert logging.root.level == logging.DEBUG
@@ -43,7 +47,7 @@ def test_root_level_and_format(caplog):
 # --------------------------------------------------------------------------- #
 # 2) color off & json on                                                      #
 # --------------------------------------------------------------------------- #
-def test_color_and_json_flags(caplog):
+def test_color_and_json_flags(caplog: LogCaptureFixture):
     log_mod = _reload()
     log_mod.init_logging(level="INFO", color=False)
     logging.getLogger().info("color-off")
@@ -78,7 +82,7 @@ def test_uvicorn_access_muted():
 # --------------------------------------------------------------------------- #
 # 5) structured extra fields (JSON mode)                                      #
 # --------------------------------------------------------------------------- #
-def test_structured_extra(caplog):
+def test_structured_extra(caplog: LogCaptureFixture):
     log_mod = _reload()
     log_mod.init_logging(json=True)
     with caplog.at_level(logging.INFO):
