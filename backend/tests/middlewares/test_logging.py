@@ -49,6 +49,7 @@ def app():
         return {"middleware_request_id": request_id}
 
     from collections.abc import Awaitable, Callable
+
     from starlette.responses import Response
 
     @app.middleware("http")
