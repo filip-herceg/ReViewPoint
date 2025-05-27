@@ -48,12 +48,13 @@ def app():
         request_id = get_request_id()
         return {"middleware_request_id": request_id}
 
-    from typing import Callable, Awaitable
+    from collections.abc import Awaitable, Callable
+
     from starlette.responses import Response
+
     @app.middleware("http")
     async def request_id_check_middleware(
-        request: Request, 
-        call_next: Callable[[Request], Awaitable[Response]]
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ):
         # Get the request ID from the context variable - should be set by our middleware
         request_id = get_request_id()
