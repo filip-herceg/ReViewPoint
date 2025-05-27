@@ -26,9 +26,9 @@ def test_run_migrations_offline_configures_and_runs(monkeypatch: pytest.MonkeyPa
 
     setattr(context_mod, "config", mock.Mock())
     context_mod.config.get_main_option = get_main_option
-    setattr(context_mod, "configure", mock.MagicMock())
-    setattr(context_mod, "begin_transaction", mock.MagicMock())
-    setattr(context_mod, "run_migrations", mock.MagicMock())
+    context_mod.configure = mock.MagicMock()
+    context_mod.begin_transaction = mock.MagicMock()
+    context_mod.run_migrations = mock.MagicMock()
     patch_alembic_context(monkeypatch, context_mod)
     monkeypatch.setitem(
         sys.modules,
@@ -65,8 +65,9 @@ def test_run_migrations_offline_handles_missing_url(monkeypatch: pytest.MonkeyPa
     def get_main_option(key: str) -> str | None:
         return None
 
-    setattr(context_mod, "config", mock.Mock())
-    context_mod.config.get_main_option = get_main_option
+    config_mock = mock.Mock()
+    config_mock.get_main_option = get_main_option
+    setattr(context_mod, "config", config_mock)
     setattr(context_mod, "configure", mock.MagicMock())
     setattr(context_mod, "begin_transaction", mock.MagicMock())
     setattr(context_mod, "run_migrations", mock.MagicMock())
@@ -201,10 +202,11 @@ def test_run_migrations_online_missing_url(monkeypatch: pytest.MonkeyPatch):
     def get_main_option(key: str) -> str | None:
         return None
 
-    setattr(context_mod, "config", mock.Mock())
-    context_mod.config.get_main_option = get_main_option
-    context_mod.config.get_section = mock.Mock(return_value={})
-    context_mod.config.config_ini_section = "section"
+    config_mock = mock.Mock()
+    config_mock.get_main_option = get_main_option
+    config_mock.get_section = mock.Mock(return_value={})
+    setattr(config_mock, "config_ini_section", "section")
+    setattr(context_mod, "config", config_mock)
     setattr(context_mod, "configure", mock.MagicMock())
     setattr(context_mod, "begin_transaction", mock.MagicMock())
     setattr(context_mod, "run_migrations", mock.MagicMock())
@@ -242,10 +244,11 @@ def test_run_migrations_online_engine_connect_raises(monkeypatch: pytest.MonkeyP
     def get_main_option(key: str) -> str:
         return "sqlite:///:memory:"
 
-    setattr(context_mod, "config", mock.Mock())
-    context_mod.config.get_main_option = get_main_option
-    context_mod.config.get_section = mock.Mock(return_value={})
-    context_mod.config.config_ini_section = "section"
+    config_mock = mock.Mock()
+    config_mock.get_main_option = get_main_option
+    config_mock.get_section = mock.Mock(return_value={})
+    setattr(config_mock, "config_ini_section", "section")
+    setattr(context_mod, "config", config_mock)
     setattr(context_mod, "configure", mock.MagicMock())
     setattr(context_mod, "begin_transaction", mock.MagicMock())
     setattr(context_mod, "run_migrations", mock.MagicMock())
@@ -281,7 +284,7 @@ def test_run_migrations_offline_configures_logging(monkeypatch: pytest.MonkeyPat
 
     setattr(context_mod, "config", mock.Mock())
     context_mod.config.get_main_option = get_main_option
-    context_mod.config.config_file_name = "dummy.ini"
+    setattr(context_mod.config, "config_file_name", "dummy.ini")
     setattr(context_mod, "configure", mock.MagicMock())
     setattr(context_mod, "begin_transaction", mock.MagicMock())
     setattr(context_mod, "run_migrations", mock.MagicMock())
@@ -319,9 +322,9 @@ def test_run_migrations_online_configures_logging(monkeypatch: pytest.MonkeyPatc
 
     setattr(context_mod, "config", mock.Mock())
     context_mod.config.get_main_option = get_main_option
-    context_mod.config.get_section = mock.Mock(return_value={})
-    context_mod.config.config_ini_section = "section"
-    context_mod.config.config_file_name = "dummy.ini"
+    setattr(context_mod.config, "get_section", mock.Mock(return_value={}))
+    setattr(context_mod.config, "config_ini_section", "section")
+    setattr(context_mod.config, "config_file_name", "dummy.ini")
     setattr(context_mod, "configure", mock.MagicMock())
     setattr(context_mod, "begin_transaction", mock.MagicMock())
     setattr(context_mod, "run_migrations", mock.MagicMock())
@@ -354,7 +357,9 @@ def test_run_migrations_online_configures_logging(monkeypatch: pytest.MonkeyPatc
     ), "logging.config.fileConfig should be called in online mode"
 
 
-def test_run_migrations_offline_logs(monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture):
+def test_run_migrations_offline_logs(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+):
     # Arrange: Patch alembic.context and logging.config.fileConfig
     context_mod = types.ModuleType("alembic.context")
 
@@ -363,7 +368,7 @@ def test_run_migrations_offline_logs(monkeypatch: pytest.MonkeyPatch, caplog: py
 
     setattr(context_mod, "config", mock.Mock())
     context_mod.config.get_main_option = get_main_option
-    context_mod.config.config_file_name = "dummy.ini"
+    setattr(context_mod.config, "config_file_name", "dummy.ini")
     setattr(context_mod, "configure", mock.MagicMock())
     setattr(context_mod, "begin_transaction", mock.MagicMock())
     setattr(context_mod, "run_migrations", mock.MagicMock())
@@ -394,18 +399,21 @@ def test_run_migrations_offline_logs(monkeypatch: pytest.MonkeyPatch, caplog: py
     assert "Offline migrations complete." in logs
 
 
-def test_run_migrations_online_logs(monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture):
+def test_run_migrations_online_logs(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+):
     # Arrange: Patch alembic.context and logging.config.fileConfig
     context_mod = types.ModuleType("alembic.context")
 
     def get_main_option(key: str) -> str:
         return "sqlite:///:memory:"
 
-    setattr(context_mod, "config", mock.Mock())
-    context_mod.config.get_main_option = get_main_option
-    context_mod.config.get_section = mock.Mock(return_value={})
-    context_mod.config.config_ini_section = "section"
-    context_mod.config.config_file_name = "dummy.ini"
+    config_mock = mock.Mock()
+    config_mock.get_main_option = get_main_option
+    setattr(config_mock, "get_section", mock.Mock(return_value={}))
+    setattr(config_mock, "config_ini_section", "section")
+    setattr(config_mock, "config_file_name", "dummy.ini")
+    setattr(context_mod, "config", config_mock)
     setattr(context_mod, "configure", mock.MagicMock())
     setattr(context_mod, "begin_transaction", mock.MagicMock())
     setattr(context_mod, "run_migrations", mock.MagicMock())
@@ -452,7 +460,7 @@ def test_run_migrations_offline_fileConfig_not_called_when_no_config_file(
 
     config_mock = mock.Mock()
     config_mock.get_main_option = get_main_option
-    config_mock.config_file_name = None  # Patch here
+    setattr(config_mock, "config_file_name", None)  # Patch here using setattr
     setattr(context_mod, "config", config_mock)
     setattr(context_mod, "configure", mock.MagicMock())
     setattr(context_mod, "begin_transaction", mock.MagicMock())
@@ -492,7 +500,7 @@ def test_run_migrations_offline_fileConfig_raises(monkeypatch: pytest.MonkeyPatc
 
     config_mock = mock.Mock()
     config_mock.get_main_option = get_main_option
-    config_mock.config_file_name = "dummy.ini"
+    setattr(config_mock, "config_file_name", "dummy.ini")
     setattr(context_mod, "config", config_mock)
     setattr(context_mod, "configure", mock.MagicMock())
     setattr(context_mod, "begin_transaction", mock.MagicMock())
