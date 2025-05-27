@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
+from _pytest.logging import LogCaptureFixture
 
 # Add the backend directory to the path for imports
 backend_dir = Path(__file__).parent.parent.parent
@@ -27,7 +28,7 @@ def _reload() -> ModuleType:
 # --------------------------------------------------------------------------- #
 # 1) root level & basic format                                                #
 # --------------------------------------------------------------------------- #
-from _pytest.logging import LogCaptureFixture
+
 
 def test_root_level_and_format(caplog: LogCaptureFixture):
     log_mod = _reload()
@@ -85,7 +86,8 @@ def test_structured_extra(caplog: LogCaptureFixture):
     log_mod = _reload()
     log_mod.init_logging(json=True)
     with caplog.at_level(logging.INFO):
-        logging.getLogger("svc").info("with-extra", extra={"request_id": "abc"})
+        logging.getLogger("svc").info(
+            "with-extra", extra={"request_id": "abc"})
     payload = json.loads(caplog.text.splitlines()[-1])
     assert payload["request_id"] == "abc"
     assert payload["msg"] == "with-extra"
