@@ -28,11 +28,11 @@ ENV_PREFIX = "REVIEWPOINT_"
 # Determine .env file path at import time
 _env_path = os.getenv("ENV_FILE")
 if _env_path:
-    _ENV_FILE: Path | None = Path(_env_path)
+    _env_file: Path | None = Path(_env_path)
 elif Path(".env").exists():
-    _ENV_FILE = Path(".env")
+    _env_file = Path(".env")
 else:
-    _ENV_FILE = None
+    _env_file = None
 
 
 class Settings(BaseSettings):
@@ -75,7 +75,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix=ENV_PREFIX,
         case_sensitive=False,
-        env_file=str(_ENV_FILE) if _ENV_FILE else None,
+        env_file=str(_env_file) if _env_file else None,
         extra="ignore",
     )
 
