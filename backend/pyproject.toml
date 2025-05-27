@@ -76,6 +76,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
+"tests/alembic_migrations/test_alembic_env.py" = ["B010"]
 
 [tool.mypy]
 python_version = "3.11"
