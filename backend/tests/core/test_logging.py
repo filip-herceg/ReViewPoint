@@ -86,8 +86,7 @@ def test_structured_extra(caplog: LogCaptureFixture):
     log_mod = _reload()
     log_mod.init_logging(json=True)
     with caplog.at_level(logging.INFO):
-        logging.getLogger("svc").info(
-            "with-extra", extra={"request_id": "abc"})
+        logging.getLogger("svc").info("with-extra", extra={"request_id": "abc"})
     payload = json.loads(caplog.text.splitlines()[-1])
     assert payload["request_id"] == "abc"
     assert payload["msg"] == "with-extra"
