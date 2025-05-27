@@ -80,7 +80,7 @@ def test_missing_log_level(monkeypatch: pytest.MonkeyPatch):
     class DummySettings:
         pass
 
-    config_mod.settings = DummySettings()
+    config_mod.settings = DummySettings()  # type: ignore[assignment]
     monkeypatch.setattr("backend.core.logging.init_logging", lambda *a: None)  # type: ignore[arg-type]
     sys.modules.pop("backend.main", None)
     importlib.invalidate_caches()
