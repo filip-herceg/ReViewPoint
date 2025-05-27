@@ -16,12 +16,11 @@ def test_app_is_fastapi_instance():
 
 def test_logging_initialized(monkeypatch: pytest.MonkeyPatch):
     # Patch init_logging to check it is called with correct level
-    from typing import Optional
     from typing import Any
 
     called: dict[str, Any] = {}
 
-    def fake_init_logging(level: Optional[str] = None, **kwargs: Any):
+    def fake_init_logging(level: str | None = None, **kwargs: Any):
         called["level"] = level
         called.update(kwargs)
 
@@ -30,17 +29,19 @@ def test_logging_initialized(monkeypatch: pytest.MonkeyPatch):
     sys.modules.pop("backend.main", None)
     importlib.invalidate_caches()
     import backend.main
+
     _ = getattr(backend.main, "app", None)
 
     assert called["level"] == backend.main.settings.log_level
 
 
 def test_request_logging_middleware_present():
+
     import backend.main
 
-    from typing import List
-
-    middlewares: List[str] = [getattr(m, "cls", type(m)).__name__ for m in backend.main.app.user_middleware]
+    middlewares: list[str] = [
+        getattr(m, "cls", type(m)).__name__ for m in backend.main.app.user_middleware
+    ]
     assert "RequestLoggingMiddleware" in middlewares
 
 
@@ -66,6 +67,7 @@ def test_logging_init_error_propagates(monkeypatch: pytest.MonkeyPatch):
     importlib.invalidate_caches()
     with pytest.raises(RuntimeError, match="logging failed"):
         import backend.main
+
         _ = getattr(backend.main, "app", None)
 
 
@@ -110,8 +112,12 @@ def test_double_import_does_not_duplicate_middleware(monkeypatch: pytest.MonkeyP
 
     app2 = main2.app
     # Middleware should not be duplicated
-    from typing import List
-    names1: List[str] = [getattr(m.cls, "__name__", type(m.cls).__name__) for m in app1.user_middleware]
-    names2: List[str] = [getattr(m.cls, "__name__", type(m.cls).__name__) for m in app2.user_middleware]
+
+    names1: list[str] = [
+        getattr(m.cls, "__name__", type(m.cls).__name__) for m in app1.user_middleware
+    ]
+    names2: list[str] = [
+        getattr(m.cls, "__name__", type(m.cls).__name__) for m in app2.user_middleware
+    ]
     assert names1 == names2
     assert names1.count("RequestLoggingMiddleware") == 1
