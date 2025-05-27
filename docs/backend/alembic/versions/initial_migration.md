@@ -1,4 +1,4 @@
-# `alembic/versions/9fc3acc47815_initial_migration_users_and_files_tables.py`
+# `alembic_migrations/versions/9fc3acc47815_initial_migration_users_and_files_tables.py`
 
 | Item | Value |
 |------|-------|

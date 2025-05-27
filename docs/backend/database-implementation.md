@@ -43,8 +43,8 @@ Currently implemented models:
 
 Database schema migrations are handled by Alembic:
 
-- `alembic/env.py`: Configuration linking SQLAlchemy models to migrations
-- `alembic/versions/`: Version-controlled migration scripts
+- `alembic_migrations/env.py`: Configuration linking SQLAlchemy models to migrations
+- `alembic_migrations/versions/`: Version-controlled migration scripts
 
 The initial migration (`9fc3acc47815_initial_migration_users_and_files_tables.py`) establishes the core schema:
 

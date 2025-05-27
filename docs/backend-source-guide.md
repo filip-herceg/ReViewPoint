@@ -44,8 +44,8 @@
 | Middleware   | [middlewares/logging.py](backend/middlewares/logging.py.md)    | Request/response logger                 |
 | Utils        | [utils/hashing.py](backend/utils/hashing.py.md)          | Thin passlib wrapper                    |
 |              | [utils/file.py](backend/utils/file.py.md)             | File-path helpers                       |
-| Migrations   | [alembic/env.py](backend/alembic/env.py.md)            | Alembic configuration for database migrations |
-|              | [alembic/versions/...](backend/alembic/versions/initial_migration.md)      | Initial schema creation                 |
+| Migrations   | [alembic_migrations/env.py](backend/alembic_migrations/env.py.md)            | Alembic configuration for database migrations |
+|              | [alembic_migrations/versions/...](backend/alembic_migrations/versions/initial_migration.md)      | Initial schema creation                 |
 | Entry        | [main.py](backend/main.py.md)                   | FastAPI app entrypoint                  |
 | Tests        | [tests/conftest.py](backend/tests/conftest.md)         | Test fixtures and setup                 |
 |              | [tests/core/test_database.py](backend/tests/core/database_tests.md) | Database connectivity and session tests |

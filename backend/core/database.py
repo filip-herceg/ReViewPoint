@@ -2,18 +2,18 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 from sqlalchemy import text
 from sqlalchemy.engine.url import make_url
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
     AsyncSession,
     async_sessionmaker,  # type: ignore[attr-defined]
     create_async_engine,
-    AsyncEngine,
 )
-from sqlalchemy.exc import SQLAlchemyError
 
 from backend.core.config import settings
 

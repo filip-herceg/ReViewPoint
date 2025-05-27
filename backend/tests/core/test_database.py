@@ -4,16 +4,15 @@
 from __future__ import annotations
 
 import pytest
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.engine.url import make_url
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
-from typing import Dict, Union
+from sqlalchemy.engine.url import make_url
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.core.database import (
+    AsyncSessionLocal,
     db_healthcheck,
     get_async_session,
-    AsyncSessionLocal,
 )
 
 
@@ -47,7 +46,7 @@ async def test_session_rollback():
             text("SELECT invalid_column_name")
         )  # This will cause an error
         await session.commit()
-        assert False, "Should not reach here"
+        raise AssertionError("Should not reach here")
     except SQLAlchemyError:
         # Rollback should happen
         await session.rollback()
@@ -75,7 +74,7 @@ async def test_session_error_handling():
 def test_engine_kwargs_sqlite():
     """Test engine kwargs for SQLite configurations."""
     url_obj = make_url("sqlite+aiosqlite:///:memory:")
-    engine_kwargs: Dict[str, Union[int, bool]] = {
+    engine_kwargs: dict[str, int | bool] = {
         "echo": False,
         "pool_pre_ping": True,
         "future": True,
@@ -94,7 +93,7 @@ def test_engine_kwargs_sqlite():
 def test_engine_kwargs_postgres_prod():
     """Test engine kwargs for PostgreSQL in production."""
     url_obj = make_url("postgresql+asyncpg://user:pass@localhost/db")
-    engine_kwargs: Dict[str, Union[int, bool]] = {
+    engine_kwargs: dict[str, int | bool] = {
         "echo": False,
         "pool_pre_ping": True,
         "future": True,
@@ -118,7 +117,7 @@ def test_engine_kwargs_postgres_prod():
 def test_engine_kwargs_postgres_dev():
     """Test engine kwargs for PostgreSQL in development."""
     url_obj = make_url("postgresql+asyncpg://user:pass@localhost/db")
-    engine_kwargs: Dict[str, Union[int, bool]] = {
+    engine_kwargs: dict[str, int | bool] = {
         "echo": False,
         "pool_pre_ping": True,
         "future": True,

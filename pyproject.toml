@@ -1,102 +1,14 @@
 [tool.poetry]
-name = "reviewpoint-backend"
+name = "reviewpoint-root"
 version = "0.1.0"
-description = "Core backend API for ReViewPoint"
+description = "Root monorepo tools and docs for ReViewPoint"
 authors = ["Filip Herceg"]
 package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.11"
-fastapi = "^0.115.12"
-uvicorn = {extras = ["standard"], version = "^0.29"}
-loguru = "^0.7"
-pydantic = "^2.6"
-pydantic-settings = "^2.9.1"
-python-dotenv = "^1.0"
-httpx = "^0.28.1"
-jinja2 = "^3.1"
-sqlalchemy = {extras = ["asyncio"], version = "^2.0.41"}
-aiosqlite = "^0.21.0"
-asyncpg = "^0.30.0"
-python-jose = {extras = ["cryptography"], version = "^3.4.0"}
-passlib = {extras = ["pbkdf2"], version = "^1.7.4"}
-python-multipart = "^0.0.20"
-alembic = "^1.15.2"
 mkdocs = "^1.6.1"
 mkdocs-material = "^9.6.13"
-mypy = "^1.10"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.5"
-pytest-asyncio = "^0.26.0"
-pytest-mock = "^3.14"
-pytest-cov = "^6.1.1"
-coverage = "^7.4"
-ruff = "^0.4"
-black = "^24.4"
-freezegun = "^1.5.1"
-sqlalchemy = "^2.0.41"
-fastapi = "^0.115.12"
-starlette = "^0.46.2"
-pydantic = "^2.11.4"
-pydantic-settings = "^2.9.1"
-alembic = "^1.15.2"
-types-sqlalchemy = "^1.4.53.38"
-types-python-dateutil = "^2.9.0.20250516"
-types-pyyaml = "^6.0.12.20250516"
-types-markupsafe = "^1.1.10"
-types-certifi = "^2021.10.8.3"
-types-requests = "^2.32.0.20250515"
-types-setuptools = "^80.7.0.20250516"
-types-six = "^1.17.0.20250515"
-types-toml = "^0.10.8.20240310"
-types-ujson = "^5.10.0.20250326"
-aiosqlite = "^0.21.0"
-httpx = "^0.28.1"
-mypy = "^1.10"
-autopep8 = "^2.3.2"
-
-[tool.coverage.run]
-branch = true
-source = [
-    "api",
-    "services",
-    "schemas",
-    "core",
-    "repositories",
-    "models",
-    "middlewares",
-    "utils"
-]
-
-[tool.coverage.report]
-show_missing = true
-skip_covered = true
-fail_under = 80
-
-[tool.mypy]
-python_version = "3.11"
-namespace_packages = false
-
-[tool.ruff]
-
-[tool.black]
-line-length = 88
-target-version = ['py311']
-include = '\\.py$'
-exclude = '''
-/(
-    \.eggs
-  | \.git
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
 
 [build-system]
 requires = ["poetry-core"]

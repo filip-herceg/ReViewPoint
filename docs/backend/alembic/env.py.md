@@ -1,4 +1,4 @@
-# `alembic/env.py`
+# `alembic_migrations/env.py`
 
 | Item | Value |
 |------|-------|

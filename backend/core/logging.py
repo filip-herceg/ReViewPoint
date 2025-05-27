@@ -2,7 +2,7 @@
 
 Repeat-safe initialiser::
 
-    from core.logging import init_logging
+    from backend.core.logging import init_logging
     init_logging(level="DEBUG", color=True, json_format=False, logfile="app.log")
 
 Only handlers created by this module are purged between calls; pytest-caplog &
@@ -15,9 +15,9 @@ from __future__ import annotations
 import json as _json
 import logging
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 # ──────────────────────────── colour map ────────────────────────────
 RESET = "\x1b[0m"
@@ -54,8 +54,8 @@ class JsonFormatter(logging.Formatter):
     """Minimal JSON Lines formatter."""
 
     def format(self, record: logging.LogRecord) -> str:
-        payload: Dict[str, Any] = {
-            "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        payload: dict[str, Any] = {
+            "ts": datetime.now(UTC).isoformat(timespec="seconds"),
             "level": record.levelname,
             "name": record.name,
             "msg": record.getMessage(),
