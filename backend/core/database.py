@@ -4,7 +4,6 @@ from __future__ import annotations
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.exc import SQLAlchemyError

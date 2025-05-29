@@ -112,7 +112,11 @@ def test_error_logging(client: TestClient, loguru_list_sink: list[str]):
 
     logs = "\n".join(loguru_list_sink)
     assert "Request GET /error" in logs
-    assert "Error processing request GET /error" in logs
+    # Accept both with and without colon/exception message for robust matching
+    assert (
+        "Error processing request GET /error" in logs
+        or "Error processing request GET /error:" in logs
+    )
 
 
 def test_request_id_propagation_to_other_middleware(client: TestClient):

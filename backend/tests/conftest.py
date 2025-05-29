@@ -7,7 +7,6 @@ from collections.abc import AsyncGenerator
 
 import pytest
 import pytest_asyncio
-from loguru import logger
 from loguru import logger as loguru_logger
 
 # type: ignore[attr-defined]
@@ -77,6 +76,6 @@ def loguru_to_standard_logging():
 def loguru_list_sink():
     """Fixture to capture loguru logs in a list for assertions."""
     logs = []
-    sink_id = logger.add(logs.append, format="{message}")
+    sink_id = loguru_logger.add(logs.append, format="{message}")
     yield logs
-    logger.remove(sink_id)
+    loguru_logger.remove(sink_id)
