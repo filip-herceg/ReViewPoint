@@ -196,3 +196,32 @@ def test_settings_debug_logged(
     assert any(
         "Settings initialized" in record.getMessage() for record in caplog.records
     ), "Expected a 'Settings initialized' debug log in core.config"
+
+
+def test_optional_env_vars(monkeypatch: MonkeyPatch):
+    cfg = _reload(
+        monkeypatch,
+        DB_URL="postgresql+asyncpg://db",
+        JWT_SECRET="s",
+        STORAGE_URL="s3://bucket",
+        STORAGE_REGION="us-east-1",
+        STORAGE_SECURE="true",
+        EMAIL_HOST="smtp.example.com",
+        EMAIL_PORT="2525",
+        EMAIL_USER="user",
+        EMAIL_PASSWORD="pw",
+        EMAIL_FROM="from@example.com",
+        SENTRY_DSN="dsn",
+        LOGGLY_TOKEN="token",
+    )
+    s = cfg.settings
+    assert s.storage_url == "s3://bucket"
+    assert s.storage_region == "us-east-1"
+    assert s.storage_secure is True
+    assert s.email_host == "smtp.example.com"
+    assert s.email_port == 2525
+    assert s.email_user == "user"
+    assert s.email_password == "pw"
+    assert s.email_from == "from@example.com"
+    assert s.sentry_dsn == "dsn"
+    assert s.loggly_token == "token"

@@ -71,6 +71,24 @@ class Settings(BaseSettings):
     # Feature flags
     enable_embeddings: bool = False
 
+    # Storage (Optional)
+    storage_url: str | None = None
+    storage_region: str | None = None
+    storage_secure: bool = Field(
+        False, description="Whether to use secure (SSL) connection for storage"
+    )
+
+    # Email (Optional)
+    email_host: str | None = None
+    email_port: int | None = None
+    email_user: str | None = None
+    email_password: str | None = None
+    email_from: str | None = None
+
+    # Monitoring (Optional)
+    sentry_dsn: str | None = None
+    loggly_token: str | None = None
+
     # Pydantic settings configuration
     model_config = SettingsConfigDict(
         env_prefix=ENV_PREFIX,
@@ -103,6 +121,29 @@ class Settings(BaseSettings):
         """
         v.mkdir(parents=True, exist_ok=True)
         return v
+
+    @field_validator("storage_secure", mode="before")
+    @classmethod
+    def parse_storage_secure(cls, v: object) -> bool:
+        if isinstance(v, bool):
+            return v
+        if isinstance(v, str):
+            return v.lower() in ("1", "true", "yes", "on")
+        return bool(v)
+
+    @field_validator("email_port", mode="before")
+    @classmethod
+    def parse_email_port(cls, v: object) -> int | None:
+        if v is None:
+            return None
+        if isinstance(v, int):
+            return v
+        if isinstance(v, str):
+            try:
+                return int(v)
+            except ValueError as err:
+                raise ValueError("email_port must be an integer") from err
+        raise TypeError("email_port must be an integer or string")
 
     def model_post_init(self, __context: Any) -> None:
         """
