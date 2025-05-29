@@ -4,7 +4,7 @@
 | Item | Value |
 |------|-------|
 | **Layer** | Entry |
-| **Responsibility** | Entrypoint for the FastAPI application; configures app, logging, and middleware. |
+| **Responsibility** | Entrypoint for the FastAPI application; configures app, logging (via loguru), middleware, and global error handling. |
 | **Status** | 🟢 Done |
 
 ## 1. Purpose  
@@ -16,8 +16,9 @@ Creates and configures the FastAPI app instance, registers routes, middleware, a
 | `app` | FastAPI instance | The main FastAPI application object |
 
 ## 3. Behaviour & Edge-Cases  
-- Initializes logging system before app startup.
-- Adds request logging middleware for all HTTP requests.
+- Initializes logging system using loguru before app startup.
+- Adds request logging middleware for all HTTP requests (using loguru).
+- Registers a global exception handler that logs all unhandled errors and returns structured JSON responses: `{ "status": "error", "feedback": "..." }`.
 - Loads configuration from the singleton settings object.
 - Designed to be run as `python -m backend.main` or via ASGI server.
 
@@ -39,3 +40,6 @@ Creates and configures the FastAPI app instance, registers routes, middleware, a
 - [ ] Add more detailed API documentation
 
 > **Update this page whenever the implementation changes.**
+
+## 7. Error Handling
+- All unhandled exceptions are caught by a global exception handler, logged via loguru, and returned as structured JSON errors.

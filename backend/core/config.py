@@ -12,12 +12,12 @@ for CI systems that inject extra environment variables.
 
 from __future__ import annotations
 
-import logging
 import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
 
+from loguru import logger
 from pydantic import Field, ValidationError, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -146,5 +146,4 @@ def get_settings() -> Settings:
 
 # Initialize settings and log the loaded configuration
 settings: Settings = get_settings()
-logger = logging.getLogger(__name__)
 logger.debug("Settings initialized: %s", settings.to_public_dict())

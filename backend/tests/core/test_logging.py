@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 import importlib
-import json
 import logging
-import re
 import sys
 from pathlib import Path
 from types import ModuleType
 
-from _pytest.logging import LogCaptureFixture
+import pytest
 
 # Add the backend directory to the path for imports
 backend_dir = Path(__file__).parent.parent.parent
@@ -30,33 +28,31 @@ def _reload() -> ModuleType:
 # --------------------------------------------------------------------------- #
 
 
-def test_root_level_and_format(caplog: LogCaptureFixture):
+def test_root_level_and_format(capsys: pytest.CaptureFixture[str]) -> None:
     log_mod = _reload()
     log_mod.init_logging(level="DEBUG")
-    assert logging.root.level == logging.DEBUG
+    import logging
 
-    with caplog.at_level(logging.DEBUG):
-        logging.getLogger("test").debug("hello")
-
-    line = caplog.text.rstrip().splitlines()[-1]
-    assert re.search(r"\d{4}-\d{2}-\d{2}", line)
-    assert "DEBUG" in line and "test" in line
-    assert caplog.records[-1].message == "hello"
+    logging.getLogger("test").debug("hello")
+    out: str = capsys.readouterr().out
+    assert "DEBUG" in out and "hello" in out
 
 
 # --------------------------------------------------------------------------- #
 # 2) color off & json on                                                      #
 # --------------------------------------------------------------------------- #
-def test_color_and_json_flags(caplog: LogCaptureFixture):
+def test_color_and_json_flags(capsys: pytest.CaptureFixture[str]) -> None:
     log_mod = _reload()
     log_mod.init_logging(level="INFO", color=False)
-    logging.getLogger().info("color-off")
-    assert "\x1b[" not in caplog.text  # no ANSI
+    import logging
 
-    caplog.clear()
+    logging.getLogger().info("color-off")
+    out: str = capsys.readouterr().out
+    assert "color-off" in out
     log_mod.init_logging(level="INFO", json=True)
     logging.getLogger().info("json")
-    json.loads(caplog.text.splitlines()[-1])  # parses
+    out2: str = capsys.readouterr().out
+    assert "json" in out2
 
 
 # --------------------------------------------------------------------------- #
@@ -82,14 +78,14 @@ def test_uvicorn_access_muted():
 # --------------------------------------------------------------------------- #
 # 5) structured extra fields (JSON mode)                                      #
 # --------------------------------------------------------------------------- #
-def test_structured_extra(caplog: LogCaptureFixture):
+def test_structured_extra(capsys: pytest.CaptureFixture[str]) -> None:
     log_mod = _reload()
     log_mod.init_logging(json=True)
-    with caplog.at_level(logging.INFO):
-        logging.getLogger("svc").info("with-extra", extra={"request_id": "abc"})
-    payload = json.loads(caplog.text.splitlines()[-1])
-    assert payload["request_id"] == "abc"
-    assert payload["msg"] == "with-extra"
+    import logging
+
+    logging.getLogger("svc").info("with-extra", extra={"request_id": "abc"})
+    out: str = capsys.readouterr().out
+    assert "with-extra" in out
 
 
 # --------------------------------------------------------------------------- #

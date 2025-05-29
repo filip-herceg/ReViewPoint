@@ -1,10 +1,10 @@
 # type: ignore
 from __future__ import annotations
 
-import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
+from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.exc import SQLAlchemyError
@@ -16,8 +16,6 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from backend.core.config import settings
-
-logger = logging.getLogger(__name__)
 
 # Create the async engine
 url_obj = make_url(settings.async_db_url)

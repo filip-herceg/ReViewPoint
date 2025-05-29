@@ -4,7 +4,7 @@
 | Item | Value |
 |------|-------|
 | **Layer** | Core |
-| **Responsibility** | Sets up and configures the application's logging system, providing colorized and JSON log formatting, and safe re-initialization. |
+| **Responsibility** | Sets up and configures the application's logging system using [loguru](https://loguru.readthedocs.io/), providing colorized and JSON log formatting, and safe re-initialization. |
 | **Status** | 🟢 Done |
 
 ## 1. Purpose  
@@ -14,22 +14,24 @@ Provides a repeat-safe logging initializer for the backend, supporting both huma
 
 | Symbol | Type | Description |
 |--------|------|-------------|
-| `init_logging` | function | Initializes root logger with color/JSON/file options |
-| `ColorFormatter` | class | Formatter for colorized, single-line log output |
-| `JsonFormatter` | class | Formatter for JSON Lines log output |
+| `init_logging` | function | Initializes loguru as the main logger with color/JSON/file options |
+
+> **Note:** As of May 2025, all logging is handled via [loguru](https://loguru.readthedocs.io/). Use `from loguru import logger` in all backend modules. The previous `ColorFormatter` and `JsonFormatter` are deprecated and no longer used.
 
 ## 3. Behaviour & Edge-Cases  
 - Calling `init_logging` multiple times is safe; only handlers created by this module are purged and replaced.
 - Supports both colorized and JSON log output, selectable via arguments.
 - File logging is optional and will create parent directories as needed.
-- All log output is formatted consistently, including for third-party handlers (e.g., pytest caplog).
+- All log output is handled by loguru, which supports structured logging, color, and JSON output natively.
+- Standard logging calls are patched to route through loguru for compatibility.
 - Uvicorn access logs are not propagated to avoid duplicate logging.
 
 ## 4. Dependencies  
 - **Internal**: None
 - **External**:
-  - `logging` (standard library)
-  - `sys`, `pathlib.Path`, `datetime`, `json` (standard library)
+  - `loguru` (third-party)
+  - `logging` (standard library, patched for compatibility)
+  - `sys`, `pathlib.Path` (standard library)
 
 ## 5. Tests  
 | Test file | Scenario |
@@ -41,3 +43,12 @@ Provides a repeat-safe logging initializer for the backend, supporting both huma
 - [ ] Expose log level and format via environment/config
 
 > **Update this page whenever the implementation changes.**
+
+## 7. Migration Notes
+- All modules should use `from loguru import logger` instead of `logging.getLogger()`.
+- Example usage:
+  ```python
+  from loguru import logger
+  logger.info("message")
+  ```
+- Standard logging calls will still work but are routed through loguru.
