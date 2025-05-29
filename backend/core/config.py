@@ -74,7 +74,9 @@ class Settings(BaseSettings):
     # Storage (Optional)
     storage_url: str | None = None
     storage_region: str | None = None
-    storage_secure: bool = False
+    storage_secure: bool = Field(
+        False, description="Whether to use secure (SSL) connection for storage"
+    )
 
     # Email (Optional)
     email_host: str | None = None
@@ -119,6 +121,15 @@ class Settings(BaseSettings):
         """
         v.mkdir(parents=True, exist_ok=True)
         return v
+
+    @field_validator("storage_secure", mode="before")
+    @classmethod
+    def parse_storage_secure(cls, v: object) -> bool:
+        if isinstance(v, bool):
+            return v
+        if isinstance(v, str):
+            return v.lower() in ("1", "true", "yes", "on")
+        return bool(v)
 
     def model_post_init(self, __context: Any) -> None:
         """

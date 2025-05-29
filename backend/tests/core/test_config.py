@@ -217,7 +217,7 @@ def test_optional_env_vars(monkeypatch: MonkeyPatch):
     s = cfg.settings
     assert s.storage_url == "s3://bucket"
     assert s.storage_region == "us-east-1"
-    assert s.storage_secure is True or s.storage_secure == "true"
+    assert s.storage_secure is True
     assert s.email_host == "smtp.example.com"
     assert s.email_port == 2525 or s.email_port == "2525"
     assert s.email_user == "user"
