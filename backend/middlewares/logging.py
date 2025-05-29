@@ -21,7 +21,7 @@ import uuid
 from contextvars import ContextVar
 
 from fastapi import Request, Response
-from loguru import logger, Logger
+from loguru import Logger, logger
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.types import ASGIApp
 
