@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from loguru import logger
 
@@ -23,6 +23,9 @@ app.add_middleware(RequestLoggingMiddleware)
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    if isinstance(exc, HTTPException):
+        # Let FastAPI handle HTTPExceptions (like 404, 422, etc.)
+        raise exc
     logger.exception(
         f"Unhandled exception for {request.method} {request.url.path}: {exc}"
     )

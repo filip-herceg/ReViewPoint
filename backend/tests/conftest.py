@@ -1,6 +1,5 @@
 # type: ignore
 
-import logging
 import os
 import uuid
 from collections.abc import AsyncGenerator
@@ -62,6 +61,8 @@ async def async_session(async_engine_function) -> AsyncGenerator[AsyncSession, N
 
 @pytest.fixture(autouse=True, scope="session")
 def loguru_to_standard_logging():
+    import logging
+
     class PropagateHandler(logging.Handler):
         def emit(self, record):
             logging.getLogger(record.name).handle(record)
