@@ -21,8 +21,7 @@ import uuid
 from contextvars import ContextVar
 
 from fastapi import Request, Response
-from loguru import logger
-from typing import Any
+from loguru import logger, Logger
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.types import ASGIApp
 
@@ -43,7 +42,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         app: ASGIApp,
         *,
         exclude_paths: list[str] | None = None,
-        logger_instance: Any = None,
+        logger_instance: Logger | None = None,
         header_name: str = "X-Request-ID",
     ) -> None:
         """Initialize the middleware.
@@ -54,14 +53,14 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             The ASGI application.
         exclude_paths : list[str], optional
             List of paths to exclude from logging, by default None
-        logger : logging.Logger, optional
+        logger_instance : loguru.Logger, optional
             Custom logger to use, by default None (will use 'middleware.request')
         header_name : str, optional
             Name of the header to use for the request ID, by default "X-Request-ID"
         """
         super().__init__(app)
         self.exclude_paths = exclude_paths or ["/health", "/metrics"]
-        self.logger = (
+        self.logger: Logger = (
             logger_instance
             if logger_instance is not None
             else logger.bind(component="middleware.request")
