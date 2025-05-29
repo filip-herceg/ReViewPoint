@@ -19,9 +19,10 @@ from __future__ import annotations
 import time
 import uuid
 from contextvars import ContextVar
+from typing import Any
 
 from fastapi import Request, Response
-from loguru import Logger, logger
+from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.types import ASGIApp
 
@@ -42,7 +43,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         app: ASGIApp,
         *,
         exclude_paths: list[str] | None = None,
-        logger_instance: Logger | None = None,
+        logger_instance: Any = None,
         header_name: str = "X-Request-ID",
     ) -> None:
         """Initialize the middleware.
@@ -60,7 +61,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         """
         super().__init__(app)
         self.exclude_paths = exclude_paths or ["/health", "/metrics"]
-        self.logger: Logger = (
+        self.logger: Any = (
             logger_instance
             if logger_instance is not None
             else logger.bind(component="middleware.request")
