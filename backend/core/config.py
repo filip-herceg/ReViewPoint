@@ -131,6 +131,20 @@ class Settings(BaseSettings):
             return v.lower() in ("1", "true", "yes", "on")
         return bool(v)
 
+    @field_validator("email_port", mode="before")
+    @classmethod
+    def parse_email_port(cls, v: object) -> int | None:
+        if v is None:
+            return None
+        if isinstance(v, int):
+            return v
+        if isinstance(v, str):
+            try:
+                return int(v)
+            except ValueError as err:
+                raise ValueError("email_port must be an integer") from err
+        raise TypeError("email_port must be an integer or string")
+
     def model_post_init(self, __context: Any) -> None:
         """
         Post-initialization adjustments for specific environments.
