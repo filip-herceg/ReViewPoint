@@ -71,6 +71,22 @@ class Settings(BaseSettings):
     # Feature flags
     enable_embeddings: bool = False
 
+    # Storage (Optional)
+    storage_url: str | None = None
+    storage_region: str | None = None
+    storage_secure: bool = False
+
+    # Email (Optional)
+    email_host: str | None = None
+    email_port: int | None = None
+    email_user: str | None = None
+    email_password: str | None = None
+    email_from: str | None = None
+
+    # Monitoring (Optional)
+    sentry_dsn: str | None = None
+    loggly_token: str | None = None
+
     # Pydantic settings configuration
     model_config = SettingsConfigDict(
         env_prefix=ENV_PREFIX,
