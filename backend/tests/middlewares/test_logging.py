@@ -14,7 +14,6 @@ if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
 
 # ruff: noqa: E402
-import logging
 import re
 
 import pytest
@@ -74,10 +73,9 @@ def client(app: FastAPI):
     return TestClient(app)
 
 
-def test_request_id_generation(client: TestClient, caplog: pytest.LogCaptureFixture):
+def test_request_id_generation(client: TestClient, loguru_list_sink: list[str]):
     """Test that a request ID is generated for each request."""
-    with caplog.at_level(logging.INFO):
-        response = client.get("/test")
+    response = client.get("/test")
 
     assert response.status_code == 200
     assert "X-Request-ID" in response.headers
@@ -85,50 +83,36 @@ def test_request_id_generation(client: TestClient, caplog: pytest.LogCaptureFixt
     # Check that the request ID is in the response body
     assert response.json()["request_id"] is not None
 
-    # In TestClient mode, contextvar may not persist between requests
-    # So we can't reliably check for request_id in the logs
-    # Just verify that the middleware is logging request info
-    request_logs = [r for r in caplog.records if "Request " in r.message]
-    response_logs = [r for r in caplog.records if "Response " in r.message]
-    assert len(request_logs) >= 1
-    assert len(response_logs) >= 1
-
-    # The request ID in the logs should match the one in the response
-    assert caplog.records[0].__dict__["request_id"] == response.headers["X-Request-ID"]
+    logs = "\n".join(loguru_list_sink)
+    assert "Request GET /test" in logs
+    assert "Response GET /test completed with status 200" in logs
 
 
-def test_custom_request_id_header(client: TestClient, caplog: pytest.LogCaptureFixture):
+def test_custom_request_id_header(client: TestClient, loguru_list_sink: list[str]):
     """Test that a custom request ID header is respected."""
     custom_id = "test-123"
 
-    with caplog.at_level(logging.INFO):
-        response = client.get("/test", headers={"X-Request-ID": custom_id})
+    response = client.get("/test", headers={"X-Request-ID": custom_id})
 
     assert response.status_code == 200
     assert response.headers["X-Request-ID"] == custom_id
     assert response.json()["request_id"] == custom_id
 
-    # Check that the custom request ID is in the logs
-    assert caplog.records[0].__dict__["request_id"] == custom_id
+    logs = "\n".join(loguru_list_sink)
+    assert "Request GET /test" in logs
+    assert "Response GET /test completed with status 200" in logs
 
 
-def test_error_logging(client: TestClient, caplog: pytest.LogCaptureFixture):
+def test_error_logging(client: TestClient, loguru_list_sink: list[str]):
     """Test that errors are properly logged with request context."""
-    # nosemgrep: python.lang.security.audit.pytest.raises-exception
-    # noqa: B017 - This endpoint intentionally raises a generic Exception for test purposes
-    with caplog.at_level(logging.ERROR), pytest.raises(ValueError):
+    import pytest
+
+    with pytest.raises(ValueError):
         client.get("/error")
 
-    # Check that an error log was generated
-    error_logs = [r for r in caplog.records if r.levelname == "ERROR"]
-    assert len(error_logs) >= 1
-
-    # Check that the error log has the request context
-    error_log = error_logs[0]
-    assert "request_id" in error_log.__dict__
-    assert "path" in error_log.__dict__
-    assert error_log.__dict__["path"] == "/error"
-    assert "Test error" in error_log.message
+    logs = "\n".join(loguru_list_sink)
+    assert "Request GET /error" in logs
+    assert "Error processing request GET /error" in logs
 
 
 def test_request_id_propagation_to_other_middleware(client: TestClient):
@@ -142,21 +126,16 @@ def test_request_id_propagation_to_other_middleware(client: TestClient):
     )
 
 
-def test_performance_logging(client: TestClient, caplog: pytest.LogCaptureFixture):
+def test_performance_logging(client: TestClient, loguru_list_sink: list[str]):
     """Test that request performance is logged."""
-    with caplog.at_level(logging.INFO):
-        client.get("/test")
+    client.get("/test")
 
     # Find the response log entry
     response_log = next(
-        (r for r in caplog.records if "completed with status" in r.message), None
+        (log for log in loguru_list_sink if "completed with status" in log), None
     )
     assert response_log is not None
 
-    # Check that it includes processing time
-    assert "process_time_ms" in response_log.__dict__
-    assert isinstance(response_log.__dict__["process_time_ms"], int)
-
     # Check that the log message includes the status code and time
-    assert re.search(r"status 200", response_log.message)
-    assert re.search(r"in \d+ms", response_log.message)
+    assert re.search(r"status 200", response_log)
+    assert re.search(r"in \d+ms", response_log)

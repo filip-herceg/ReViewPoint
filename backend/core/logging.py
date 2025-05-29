@@ -12,13 +12,6 @@ output matches expectations.
 
 from __future__ import annotations
 
-import json as _json
-import logging
-import sys
-from datetime import UTC, datetime
-from pathlib import Path
-from typing import Any
-
 # ──────────────────────────── colour map ────────────────────────────
 RESET = "\x1b[0m"
 COLOR_MAP = {
@@ -33,109 +26,81 @@ COLOR_MAP = {
 _FLAG = "_rvp_internal"
 
 
-class ColorFormatter(logging.Formatter):
-    """Human-readable single-line formatter with optional ANSI colours."""
-
-    def __init__(self, *, color: bool = True) -> None:
-        super().__init__(
-            fmt="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-        )
-        self._color = color
-
-    def format(self, record: logging.LogRecord) -> str:
-        text = super().format(record)
-        if self._color:
-            return f"{COLOR_MAP.get(record.levelname, '')}{text}{RESET}"
-        return text
-
-
-class JsonFormatter(logging.Formatter):
-    """Minimal JSON Lines formatter."""
-
-    def format(self, record: logging.LogRecord) -> str:
-        payload: dict[str, Any] = {
-            "ts": datetime.now(UTC).isoformat(timespec="seconds"),
-            "level": record.levelname,
-            "name": record.name,
-            "msg": record.getMessage(),
-        }
-        # merge extras (exclude built-ins)
-        extras = {
-            k: v
-            for k, v in record.__dict__.items()
-            if k not in logging.LogRecord.__dict__ and k not in payload
-        }
-        payload.update(extras)
-        return _json.dumps(payload, default=str)
-
-
-# ───────────────────────── helper ─────────────────────────
-
-
-def _purge_our_handlers(root: logging.Logger) -> None:
-    """Remove handlers previously attached by this module."""
-    for h in list(root.handlers):
-        if getattr(h, _FLAG, False):
-            root.removeHandler(h)
-            h.close()
-
-
 # ───────────────────────── public API ─────────────────────────
 
 
 def init_logging(
     *,
-    level: str | int = "INFO",
+    level: str = "INFO",
     color: bool = True,
     json_format: bool = False,
     json: bool = False,
-    logfile: str | Path | None = None,
+    logfile: str | None = None,
 ) -> None:
-    """Configure the root logger.
+    """Configure loguru as the main logger for the backend.
 
     Parameters
     ----------
-    level : str | int
+    level : str
         Root log level.
     color : bool
         Enable ANSI colours for console output.
     json_format : bool
         Emit JSON lines instead of human format.
-    logfile : str | Path | None
+    logfile : str | None
         Optional file to tee logs to.
     """
+    import logging
+    import sys
+    from pathlib import Path
 
-    root = logging.getLogger()
+    from loguru import logger as loguru_logger
 
-    _purge_our_handlers(root)
-    root.setLevel(level)
+    # Remove all existing loguru handlers
+    loguru_logger.remove()
 
-    use_json = json or json_format
-    formatter: logging.Formatter = (
-        JsonFormatter() if use_json else ColorFormatter(color=color)
-    )
+    # Console sink
+    if json or json_format:
+        loguru_logger.add(sys.stdout, level=level, serialize=True, colorize=False)
+    else:
+        loguru_logger.add(
+            sys.stdout,
+            level=level,
+            colorize=color,
+            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan> | <level>{message}</level>",
+        )
 
-    # console handler
-    console = logging.StreamHandler(sys.stdout)
-    console.setFormatter(formatter)
-    console.setLevel(level)
-    console._rvp_internal = True  # type: ignore[attr-defined]
-    root.addHandler(console)
-
-    # optional file handler
+    # Optional file sink
     if logfile is not None:
         fp = Path(logfile)
         fp.parent.mkdir(parents=True, exist_ok=True)
-        fh = logging.FileHandler(fp, encoding="utf-8")
-        fh.setFormatter(formatter)
-        fh.setLevel(level)
-        fh._rvp_internal = True  # type: ignore[attr-defined]
-        root.addHandler(fh)
+        loguru_logger.add(
+            str(fp), level=level, serialize=(json or json_format), encoding="utf-8"
+        )
 
-    # ensure third-party handlers (e.g. pytest caplog) use the same formatter
-    for h in root.handlers:
-        if not getattr(h, _FLAG, False):
-            h.setFormatter(formatter)
+    # Patch standard logging to route through loguru
+    class InterceptHandler(logging.Handler):
+        def emit(self, record: logging.LogRecord) -> None:
+            try:
+                log_level = loguru_logger.level(record.levelname).name
+            except ValueError:
+                log_level = str(
+                    record.levelno
+                )  # Ensure log_level is always str for mypy
+            frame = logging.currentframe()
+            depth = 2
+            while frame and frame.f_code.co_filename == logging.__file__:
+                frame = frame.f_back  # type: ignore
+                depth += 1
+            loguru_logger.opt(depth=depth, exception=record.exc_info).log(
+                log_level, record.getMessage()
+            )
 
+    logging.root.handlers = [InterceptHandler()]
+    logging.root.setLevel(level)
+
+    # Silence uvicorn access logs if needed
     logging.getLogger("uvicorn.access").propagate = False
+
+    # Migration note: Use `from loguru import logger` in all modules instead of `logging.getLogger()`
+    # Example: logger.info("message")

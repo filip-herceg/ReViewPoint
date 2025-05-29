@@ -16,29 +16,17 @@ Example Usage:
 
 from __future__ import annotations
 
-import logging
 import time
 import uuid
 from contextvars import ContextVar
 
 from fastapi import Request, Response
+from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.types import ASGIApp
 
 # Thread-local request ID storage
 request_id_var: ContextVar[str | None] = ContextVar("request_id", default=None)
-
-
-# Custom log filter to add request ID to all log records
-class RequestIdFilter(logging.Filter):
-    """Add request_id to log records when available."""
-
-    def filter(self, record: logging.LogRecord) -> bool:
-        """Add request_id to the record if available in the context."""
-        request_id = get_request_id()
-        if request_id is not None:
-            record.request_id = request_id
-        return True
 
 
 def get_request_id() -> str | None:
@@ -54,7 +42,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         app: ASGIApp,
         *,
         exclude_paths: list[str] | None = None,
-        logger: logging.Logger | None = None,
+        logger_instance=None,
         header_name: str = "X-Request-ID",
     ) -> None:
         """Initialize the middleware.
@@ -72,16 +60,8 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         """
         super().__init__(app)
         self.exclude_paths = exclude_paths or ["/health", "/metrics"]
-        self.logger = logger or logging.getLogger("middleware.request")
+        self.logger = logger_instance or logger.bind(component="middleware.request")
         self.header_name = header_name
-
-        # Add request ID filter to the logger
-        request_filter = RequestIdFilter()
-        self.logger.addFilter(request_filter)
-
-        # Also add it to the root logger so all logs get the request ID
-        root_logger = logging.getLogger()
-        root_logger.addFilter(request_filter)
 
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
@@ -118,11 +98,9 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             "query": str(request.query_params),
         }
 
-        # Log the incoming request
-        self.logger.info(
-            f"Request {request.method} {request.url.path}", extra=log_extra
+        self.logger.bind(**log_extra).info(
+            f"Request {request.method} {request.url.path}"
         )
-
         try:
             # Process the request
             response = await call_next(request)
@@ -132,15 +110,14 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             process_time_ms = round(process_time * 1000)
 
             # Log the response
-            self.logger.info(
+            self.logger.bind(
+                **log_extra,
+                status_code=response.status_code,
+                process_time_ms=process_time_ms,
+            ).info(
                 f"Response {request.method} {request.url.path} "
                 f"completed with status {response.status_code} "
-                f"in {process_time_ms}ms",
-                extra={
-                    **log_extra,
-                    "status_code": response.status_code,
-                    "process_time_ms": process_time_ms,
-                },
+                f"in {process_time_ms}ms"
             )
 
             # Attach request ID to response headers
@@ -152,13 +129,12 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             process_time = time.time() - start_time
             process_time_ms = round(process_time * 1000)
 
-            self.logger.exception(
-                f"Error processing request {request.method} {request.url.path}: {exc}",
-                extra={
-                    **log_extra,
-                    "error": str(exc),
-                    "process_time_ms": process_time_ms,
-                },
+            self.logger.bind(
+                **log_extra,
+                error=str(exc),
+                process_time_ms=process_time_ms,
+            ).exception(
+                f"Error processing request {request.method} {request.url.path}: {exc}"
             )
             raise
         finally:

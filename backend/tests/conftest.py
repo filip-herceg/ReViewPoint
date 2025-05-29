@@ -1,11 +1,14 @@
 # type: ignore
 
+import logging
 import os
 import uuid
 from collections.abc import AsyncGenerator
 
 import pytest
 import pytest_asyncio
+from loguru import logger
+from loguru import logger as loguru_logger
 
 # type: ignore[attr-defined]
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -56,3 +59,24 @@ async def async_session(async_engine_function) -> AsyncGenerator[AsyncSession, N
     )
     async with async_session_local() as session:
         yield session
+
+
+@pytest.fixture(autouse=True, scope="session")
+def loguru_to_standard_logging():
+    class PropagateHandler(logging.Handler):
+        def emit(self, record):
+            logging.getLogger(record.name).handle(record)
+
+    loguru_logger.remove()
+    loguru_logger.add(PropagateHandler(), format="{message}")
+    yield
+    loguru_logger.remove()
+
+
+@pytest.fixture
+def loguru_list_sink():
+    """Fixture to capture loguru logs in a list for assertions."""
+    logs = []
+    sink_id = logger.add(logs.append, format="{message}")
+    yield logs
+    logger.remove(sink_id)
