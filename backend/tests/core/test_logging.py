@@ -6,6 +6,8 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
+import pytest
+
 # Add the backend directory to the path for imports
 backend_dir = Path(__file__).parent.parent.parent
 if str(backend_dir) not in sys.path:
@@ -26,31 +28,31 @@ def _reload() -> ModuleType:
 # --------------------------------------------------------------------------- #
 
 
-def test_root_level_and_format(capsys):
+def test_root_level_and_format(capsys: pytest.CaptureFixture[str]) -> None:
     log_mod = _reload()
     log_mod.init_logging(level="DEBUG")
     import logging
 
     logging.getLogger("test").debug("hello")
-    out = capsys.readouterr().out
+    out: str = capsys.readouterr().out
     assert "DEBUG" in out and "hello" in out
 
 
 # --------------------------------------------------------------------------- #
 # 2) color off & json on                                                      #
 # --------------------------------------------------------------------------- #
-def test_color_and_json_flags(capsys):
+def test_color_and_json_flags(capsys: pytest.CaptureFixture[str]) -> None:
     log_mod = _reload()
     log_mod.init_logging(level="INFO", color=False)
     import logging
 
     logging.getLogger().info("color-off")
-    out = capsys.readouterr().out
+    out: str = capsys.readouterr().out
     assert "color-off" in out
     log_mod.init_logging(level="INFO", json=True)
     logging.getLogger().info("json")
-    out = capsys.readouterr().out
-    assert "json" in out
+    out2: str = capsys.readouterr().out
+    assert "json" in out2
 
 
 # --------------------------------------------------------------------------- #
@@ -76,13 +78,13 @@ def test_uvicorn_access_muted():
 # --------------------------------------------------------------------------- #
 # 5) structured extra fields (JSON mode)                                      #
 # --------------------------------------------------------------------------- #
-def test_structured_extra(capsys):
+def test_structured_extra(capsys: pytest.CaptureFixture[str]) -> None:
     log_mod = _reload()
     log_mod.init_logging(json=True)
     import logging
 
     logging.getLogger("svc").info("with-extra", extra={"request_id": "abc"})
-    out = capsys.readouterr().out
+    out: str = capsys.readouterr().out
     assert "with-extra" in out
 
 
