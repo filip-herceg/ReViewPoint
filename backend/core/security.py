@@ -2,9 +2,7 @@
 JWT creation and validation utilities for authentication.
 """
 
-import sys
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
 from typing import Any
 
 from jose import JWTError, jwt  # type: ignore[import]
@@ -13,7 +11,7 @@ from loguru import logger
 from backend.core.config import settings
 
 # Add current dir to path for stubs
-sys.path.append(str(Path(__file__).parent))
+# NOTE: Removed sys.path modification as it is not essential for production.
 
 __all__ = ["create_access_token", "verify_access_token"]
 
