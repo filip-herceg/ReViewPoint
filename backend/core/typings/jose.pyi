@@ -1,23 +1,22 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 class JWTError(Exception): ...
 
 def encode(
-    claims: Dict[str, Any],
-    key: Union[str, bytes],
+    claims: dict[str, Any],
+    key: str | bytes,
     algorithm: str = ...,
-    headers: Optional[Dict[str, Any]] = ...,
+    headers: dict[str, Any] | None = ...,
     json_encoder: Any = ...,
 ) -> str: ...
-
 def decode(
     token: str,
-    key: Union[str, bytes],
-    algorithms: List[str],
-    options: Optional[Dict[str, Any]] = ...,
-    audience: Optional[str] = ...,
-    issuer: Optional[str] = ...,
-    subject: Optional[str] = ...,
-    access_token: Optional[str] = ...,
+    key: str | bytes,
+    algorithms: list[str],
+    options: dict[str, Any] | None = ...,
+    audience: str | None = ...,
+    issuer: str | None = ...,
+    subject: str | None = ...,
+    access_token: str | None = ...,
     leeway: int = ...,
-) -> Dict[str, Any]: ...
+) -> dict[str, Any]: ...

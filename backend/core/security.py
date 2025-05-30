@@ -2,9 +2,9 @@
 JWT creation and validation utilities for authentication.
 """
 
+import sys
 from datetime import UTC, datetime, timedelta
 from typing import Any
-import sys
 
 from jose import JWTError, jwt  # type: ignore[import]
 from loguru import logger
@@ -12,7 +12,7 @@ from loguru import logger
 from backend.core.config import settings
 
 # Add current dir to path for stubs
-sys.path.append(str((__file__[:-13] if __file__.endswith('security.py') else __file__)))
+sys.path.append(str(__file__[:-13] if __file__.endswith("security.py") else __file__))
 
 __all__ = ["create_access_token", "verify_access_token"]
 
@@ -32,7 +32,10 @@ def create_access_token(data: dict[str, Any]) -> str:
             settings.jwt_secret_key or "",  # type: ignore[arg-type]
             algorithm=settings.jwt_algorithm,
         )
-        logger.debug("JWT access token created (claims: {})", {k: v for k, v in to_encode.items() if k != 'exp'})
+        logger.debug(
+            "JWT access token created (claims: {})",
+            {k: v for k, v in to_encode.items() if k != "exp"},
+        )
         return token
     except Exception as e:
         logger.error("Failed to create JWT access token: {}", str(e))
@@ -50,7 +53,10 @@ def verify_access_token(token: str) -> dict[str, Any]:
             settings.jwt_secret_key or "",  # type: ignore[arg-type]
             algorithms=[settings.jwt_algorithm],
         )
-        logger.debug("JWT access token successfully verified (claims: {})", {k: v for k, v in payload.items() if k != 'exp'})
+        logger.debug(
+            "JWT access token successfully verified (claims: {})",
+            {k: v for k, v in payload.items() if k != "exp"},
+        )
         return payload
     except JWTError as e:
         logger.warning("JWT access token validation failed: {}", str(e))
