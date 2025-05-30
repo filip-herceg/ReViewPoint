@@ -38,8 +38,7 @@ Provides secure password hashing and verification using [passlib]'s bcrypt algor
 
 ## 5. Tests  
 | Test file | Scenario |
-|-----------|----------|
-| `tests/utils/test_hashing.py` | Hashing and verifying passwords |
+| `backend/tests/utils/test_hashing.py` | Hashing and verifying passwords |
 
 ## 6. Open TODOs  
 - [ ] Integrate with user registration/authentication
