@@ -8,6 +8,8 @@ from types import ModuleType
 
 import pytest
 
+import backend.core.logging  # Ensure coverage always sees this import
+
 # Add the backend directory to the path for imports
 backend_dir = Path(__file__).parent.parent.parent
 if str(backend_dir) not in sys.path:
@@ -98,3 +100,12 @@ def test_file_logging(tmp_path: Path):
 
     logging.getLogger().info("to-file")
     assert logfile.exists() and "to-file" in logfile.read_text()
+
+
+# --------------------------------------------------------------------------- #
+# 7) core.logging import smoke test                                           #
+# --------------------------------------------------------------------------- #
+
+
+def test_core_logging_import_smoke():
+    assert hasattr(backend.core.logging, "init_logging")
