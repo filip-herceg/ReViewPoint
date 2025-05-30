@@ -54,9 +54,26 @@ class Settings(BaseSettings):
     db_url: str = Field(..., description="Async SQLAlchemy database URL")
 
     # Authentication settings
-    jwt_secret: str = Field(..., repr=False)
-    jwt_algorithm: str = "HS256"
-    jwt_exp_minutes: int = 30
+    auth_enabled: bool = Field(
+        True,
+        description="Enable or disable authentication features (env: REVIEWPOINT_AUTH_ENABLED)",
+    )
+    jwt_secret_key: str | None = Field(
+        None,
+        repr=False,
+        description="Secret key for JWT signing (env: REVIEWPOINT_JWT_SECRET_KEY)",
+    )
+    jwt_algorithm: str = Field(
+        "HS256", description="JWT signing algorithm (env: REVIEWPOINT_JWT_ALGORITHM)"
+    )
+    jwt_expire_minutes: int = Field(
+        30,
+        description="JWT expiration in minutes (env: REVIEWPOINT_JWT_EXPIRE_MINUTES)",
+    )
+    # Backward compatibility: allow jwt_secret as alias for jwt_secret_key
+    jwt_secret: str | None = Field(
+        None, repr=False, description="[DEPRECATED] Use jwt_secret_key instead."
+    )
 
     pwd_hash_scheme: str = "pbkdf2_sha256"
     pwd_rounds: int = 100_000
@@ -95,6 +112,7 @@ class Settings(BaseSettings):
         case_sensitive=False,
         env_file=str(_env_file) if _env_file else None,
         extra="ignore",
+        # env_map removed; use Field(..., alias=...) for env var mapping if needed
     )
 
     @field_validator("db_url", mode="before")
@@ -150,10 +168,20 @@ class Settings(BaseSettings):
         Post-initialization adjustments for specific environments.
 
         - In 'test' environment, use in-memory SQLite and set log level to WARNING.
+        - If jwt_secret_key is not set but jwt_secret is, use it (for backward compatibility)
+        - Raise error if neither is set
         """
         if self.environment == "test":
             object.__setattr__(self, "db_url", "sqlite+aiosqlite:///:memory:")
             object.__setattr__(self, "log_level", "WARNING")
+        if not getattr(self, "jwt_secret_key", None) and getattr(
+            self, "jwt_secret", None
+        ):
+            object.__setattr__(self, "jwt_secret_key", self.jwt_secret)
+        if not getattr(self, "jwt_secret_key", None):
+            raise RuntimeError(
+                "Missing JWT secret: set REVIEWPOINT_JWT_SECRET_KEY or legacy REVIEWPOINT_JWT_SECRET."
+            )
 
     @property
     def async_db_url(self) -> str:
@@ -171,6 +199,7 @@ class Settings(BaseSettings):
         """
         data = self.model_dump()
         data.pop("jwt_secret", None)
+        data.pop("jwt_secret_key", None)
         return data
 
 

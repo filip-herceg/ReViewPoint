@@ -225,3 +225,63 @@ def test_optional_env_vars(monkeypatch: MonkeyPatch):
     assert s.email_from == "from@example.com"
     assert s.sentry_dsn == "dsn"
     assert s.loggly_token == "token"
+
+
+def test_jwt_config_fields(monkeypatch: MonkeyPatch):
+    cfg = _reload(
+        monkeypatch,
+        DB_URL="postgresql+asyncpg://db",
+        JWT_SECRET_KEY="supersecret",
+        JWT_ALGORITHM="HS512",
+        JWT_EXPIRE_MINUTES="123",
+        AUTH_ENABLED="false",
+    )
+    s = cfg.settings
+    assert s.jwt_secret_key == "supersecret"
+    assert s.jwt_algorithm == "HS512"
+    assert s.jwt_expire_minutes == 123
+    assert s.auth_enabled is False
+
+
+def test_jwt_config_defaults(monkeypatch: MonkeyPatch):
+    cfg = _reload(
+        monkeypatch,
+        DB_URL="postgresql+asyncpg://db",
+        JWT_SECRET_KEY="abc",
+    )
+    s = cfg.settings
+    assert s.jwt_algorithm == "HS256"
+    assert s.jwt_expire_minutes == 30
+    assert s.auth_enabled is True
+
+
+def test_jwt_secret_legacy(monkeypatch: MonkeyPatch):
+    # Only set legacy JWT_SECRET, not JWT_SECRET_KEY
+    cfg = _reload(
+        monkeypatch,
+        DB_URL="postgresql+asyncpg://db",
+        JWT_SECRET="legacysecret",
+    )
+    s = cfg.settings
+    assert s.jwt_secret_key == "legacysecret"
+    # Both fields should be hidden from public dict
+    public = s.to_public_dict()
+    assert "jwt_secret" not in public
+    assert "jwt_secret_key" not in public
+
+
+def test_auth_enabled_toggle(monkeypatch: MonkeyPatch):
+    cfg = _reload(
+        monkeypatch,
+        DB_URL="postgresql+asyncpg://db",
+        JWT_SECRET_KEY="s",
+        AUTH_ENABLED="0",
+    )
+    assert cfg.settings.auth_enabled is False
+    cfg2 = _reload(
+        monkeypatch,
+        DB_URL="postgresql+asyncpg://db",
+        JWT_SECRET_KEY="s",
+        AUTH_ENABLED="1",
+    )
+    assert cfg2.settings.auth_enabled is True
