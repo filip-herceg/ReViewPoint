@@ -27,9 +27,14 @@ def create_access_token(data: dict[str, Any]) -> str:
         to_encode = data.copy()
         expire = datetime.now(UTC) + timedelta(minutes=settings.jwt_expire_minutes)
         to_encode["exp"] = expire
+        if not settings.jwt_secret_key:
+            logger.error(
+                "JWT secret key is not configured. Cannot create access token."
+            )
+            raise ValueError("JWT secret key is not configured.")
         token = jwt.encode(
             to_encode,
-            settings.jwt_secret_key or "",  # type: ignore[arg-type]
+            settings.jwt_secret_key,  # type: ignore[arg-type]
             algorithm=settings.jwt_algorithm,
         )
         logger.debug(
@@ -45,12 +50,16 @@ def create_access_token(data: dict[str, Any]) -> str:
 def verify_access_token(token: str) -> dict[str, Any]:
     """
     Validate a JWT access token and return the decoded payload.
-    Raises JWTError if invalid or expired. Never log or expose the token.
     """
     try:
+        if not settings.jwt_secret_key:
+            logger.error(
+                "JWT secret key is not configured. Cannot verify access token."
+            )
+            raise ValueError("JWT secret key is not configured.")
         payload = jwt.decode(
             token,
-            settings.jwt_secret_key or "",  # type: ignore[arg-type]
+            settings.jwt_secret_key,  # type: ignore[arg-type]
             algorithms=[settings.jwt_algorithm],
         )
         logger.debug(
