@@ -1,0 +1,16 @@
+[run]
+source = backend
+branch = True
+
+[report]
+omit =
+    */__init__.py
+    */__pycache__/*
+    */tests/*
+    */typings/*
+    */migrations/*
+    */alembic_migrations/*
+    */site/*
+    */uploads/*
+    */docs/*
+show_missing = True

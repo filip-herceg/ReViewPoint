@@ -121,3 +121,18 @@ def test_double_import_does_not_duplicate_middleware(monkeypatch: pytest.MonkeyP
     ]
     assert names1 == names2
     assert names1.count("RequestLoggingMiddleware") == 1
+
+
+def test_main_module_import_and_lifecycle():
+    import importlib
+    import backend.main
+    importlib.reload(backend.main)
+    app = backend.main.app
+    assert app.title == "ReViewPoint Core API"
+    assert hasattr(app, "router")
+    # Simulate startup and shutdown events
+    from fastapi.testclient import TestClient
+    with TestClient(app) as client:
+        response = client.get("/")
+        # Accept 404 or 200, just to trigger the app
+        assert response.status_code in (200, 404)

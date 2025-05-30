@@ -98,3 +98,13 @@ def test_file_logging(tmp_path: Path):
 
     logging.getLogger().info("to-file")
     assert logfile.exists() and "to-file" in logfile.read_text()
+
+
+# --------------------------------------------------------------------------- #
+# 7) core.logging import smoke test                                           #
+# --------------------------------------------------------------------------- #
+import backend.core.logging  # Ensure coverage always sees this import
+
+
+def test_core_logging_import_smoke():
+    assert hasattr(backend.core.logging, "init_logging")
