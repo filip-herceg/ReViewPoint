@@ -9,6 +9,7 @@ package-mode = false
 python = "^3.11"
 mkdocs = "^1.6.1"
 mkdocs-material = "^9.6.13"
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 
 [build-system]
 requires = ["poetry-core"]
