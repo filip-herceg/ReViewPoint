@@ -4,29 +4,46 @@
 | Item | Value |
 |------|-------|
 | **Layer** | Utils |
-| **Responsibility** | (Stub) Intended for password hashing and verification utilities |
-| **Status** | 🔴 TODO |
+| **Responsibility** | Secure password hashing and verification utilities |
+| **Status** | 🟢 Implemented |
 
 ## 1. Purpose  
-This file is a placeholder for password hashing and verification utilities. It will wrap passlib or similar libraries for secure password storage and verification.
+Provides secure password hashing and verification using [passlib]'s bcrypt algorithm.
 
 ## 2. Public API  
-_None yet. To be implemented._
+- `hash_password(password: str) -> str`
+    - Hashes a plain password using bcrypt.
+    - Returns the hashed password as a string.
+    - Example:
+      ```python
+      from backend.utils.hashing import hash_password
+      hashed = hash_password('mysecret')
+      ```
+- `verify_password(plain: str, hashed: str) -> bool`
+    - Verifies a plain password against a bcrypt hash.
+    - Returns `True` if the password matches, `False` otherwise.
+    - Example:
+      ```python
+      from backend.utils.hashing import verify_password
+      is_valid = verify_password('mysecret', hashed)
+      ```
 
 ## 3. Behaviour & Edge-Cases  
-_None yet. To be implemented._
+- Plain passwords are never logged or stored.
+- Only the hash should be stored in the database.
+- Use `verify_password` for authentication checks.
 
 ## 4. Dependencies  
-- **Internal**: None
-- **External**: None
+- **External**: [passlib] (with `bcrypt` extra): `poetry add passlib[bcrypt]`
 
 ## 5. Tests  
 | Test file | Scenario |
 |-----------|----------|
-| _None yet_ | _No implementation to test_ |
+| `tests/utils/test_hashing.py` | Hashing and verifying passwords |
 
 ## 6. Open TODOs  
-- [ ] Implement password hashing and verification helpers
 - [ ] Integrate with user registration/authentication
+
+[passlib]: https://passlib.readthedocs.io/en/stable/
 
 > **Update this page whenever the implementation changes.**
