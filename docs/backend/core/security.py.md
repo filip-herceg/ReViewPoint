@@ -4,7 +4,7 @@
 | Item | Value |
 |------|-------|
 | **Layer** | Core |
-| **Responsibility** | Security utilities for authentication, JWT token handling, and password hashing/verification |
+| **Responsibility** | Security utilities for authentication, including JWT token handling. If password hashing/verification is implemented, document the corresponding public API functions here; otherwise, remove this mention for accuracy. |
 | **Status** | 🟢 Implemented |
 
 ## 1. Purpose  

@@ -4,6 +4,7 @@ JWT creation and validation utilities for authentication.
 
 import sys
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Any
 
 from jose import JWTError, jwt  # type: ignore[import]
@@ -12,7 +13,7 @@ from loguru import logger
 from backend.core.config import settings
 
 # Add current dir to path for stubs
-sys.path.append(str(__file__[:-13] if __file__.endswith("security.py") else __file__))
+sys.path.append(str(Path(__file__).parent))
 
 __all__ = ["create_access_token", "verify_access_token"]
 
@@ -42,8 +43,11 @@ def create_access_token(data: dict[str, Any]) -> str:
             {k: v for k, v in to_encode.items() if k != "exp"},
         )
         return token
-    except Exception as e:
-        logger.error("Failed to create JWT access token: {}", str(e))
+    except ValueError as e:
+        logger.error("ValueError during JWT access token creation: {}", str(e))
+        raise
+    except JWTError as e:
+        logger.error("JWTError during JWT access token creation: {}", str(e))
         raise
 
 
