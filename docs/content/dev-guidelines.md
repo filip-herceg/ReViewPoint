@@ -10,7 +10,7 @@
 - Format: `black`
 - Linter: `ruff`
 - Type checking: `mypy`
-- Dependency manager: `poetry`
+- Dependency manager: `hatch`
 
 ---
 
@@ -19,9 +19,8 @@
 **E402: Module Level Import Not at Top of File**
 1. **Preferred:** Move all imports to the top of your file.
 2. **Auto-fix:**
-    ```shell
-    poetry run ruff check --fix path/to/your_file.py
-    poetry run python -m autopep8 --in-place --aggressive --aggressive path/to/your_file.py
+    ```shell    hatch run ruff check --fix path/to/your_file.py
+    hatch run python -m autopep8 --in-place --aggressive --aggressive path/to/your_file.py
     ```
 3. **Suppress (not recommended):** Add `# noqa: E402` to the import line.
 

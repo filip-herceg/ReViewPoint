@@ -32,5 +32,5 @@ poetry run pytest backend/tests/middlewares/test_logging.py
 - Minimum coverage target is 80%.
 
 ## Troubleshooting
-- If you encounter import errors, ensure you are in the correct Poetry shell and your dependencies are installed.
-- For more details, see [../dev-guidelines.md](../dev-guidelines.md).
+- If you encounter import errors, ensure you are in the correct Hatch environment and your dependencies are installed.
+- For more details, see [dev-guidelines.md](dev-guidelines.md).

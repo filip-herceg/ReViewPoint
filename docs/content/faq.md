@@ -19,8 +19,8 @@ See [Backend Source Guide](backend-source-guide.md#running-backend-tests).
 ## Troubleshooting
 
 **Common Issues**
-- Activate your Poetry shell before running tests.
-- Check [Dev Guidelines](dev-guidelines.md) for linting and formatting help.
+- Activate your Hatch environment before running tests.
+- Check [Developer Guidelines](dev-guidelines.md) for linting and formatting help.
 
 ---
 

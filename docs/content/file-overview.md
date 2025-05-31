@@ -1,7 +1,7 @@
 # Documenta| [LLM Integration](llm-integration.md) | External & internal LLM setups |
 | [Setup](setup.md) | Local dev environment bootstrap |
-| [Backend Documentation](backend/index.md) | Detailed backend component documentation |
-| [Database Implementation](backend/database-implementation.md) | Database layer architecture and design |
+| [Backend Documentation](backend-source-guide.md) | Detailed backend component documentation |
+| [Database Implementation](database-implementation.md) | Database layer architecture and design |
 | **Backend Source Guide** → | Jump straight to every Python file's responsibility |n Gateway 🌐
 
 Welcome! This page links to every major documentation area of **ReViewPoint**.

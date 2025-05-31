@@ -3,6 +3,8 @@ site_description: Documentation and development manual for ReViewPoint. Modular,
 site_author: ReViewPoint Team
 site_url: https://github.com/filip-herceg/ReViewPoint
 
+docs_dir: content
+
 theme:
   name: material
   palette:
@@ -59,7 +61,7 @@ extra:
   favicon: images/favicon.ico
   generator: false
 
-edit_uri: https://github.com/filip-herceg/ReViewPoint/edit/main/docs/
+edit_uri: https://github.com/filip-herceg/ReViewPoint/edit/main/docs/content/
 
 markdown_extensions:
   - admonition

@@ -63,4 +63,4 @@ ReViewPoint streamlines the review process for scientific papers by combining mo
 - **Modules:** Module creation, LLM integration
 - **Resources:** FAQ, troubleshooting
 
-> For backend file details and test instructions, see [Backend Source Guide](backend-source-guide/).
+> For backend file details and test instructions, see [Backend Source Guide](backend-source-guide.md).
