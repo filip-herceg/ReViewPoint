@@ -1,2 +1,0 @@
-line-length = 88
-exclude = ["backend/models/base.py"]

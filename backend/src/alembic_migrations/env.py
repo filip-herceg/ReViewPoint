@@ -1,17 +1,18 @@
 # Implements only the run_migrations_offline and run_migrations_online functions for modular testability
+import logging
 from collections.abc import Callable
 from typing import Any
 
-from loguru import logger
+logger = logging.getLogger("alembic.env")
+logger.setLevel(logging.INFO)
+logger.propagate = True
 
 
 def run_migrations_offline() -> None:
     from logging.config import fileConfig
 
     import alembic.context
-    from backend.core.logging import init_logging
 
-    init_logging()
     logger.info("Starting offline migrations")
     config_file = alembic.context.config.config_file_name
     if config_file:
@@ -38,9 +39,7 @@ def run_migrations_online(engine_from_config: Callable[..., Any]) -> None:
     from logging.config import fileConfig
 
     import alembic.context
-    from backend.core.logging import init_logging
 
-    init_logging()
     logger.info("Starting online migrations")
     config_file = alembic.context.config.config_file_name
     if config_file:

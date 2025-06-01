@@ -7,6 +7,8 @@ from unittest import mock
 
 import pytest
 
+from tests.conftest import TEST_DB_PATH
+
 
 def patch_alembic_context(monkeypatch: pytest.MonkeyPatch, context_mod: Any) -> None:
     monkeypatch.setitem(sys.modules, "alembic.context", context_mod)
@@ -25,7 +27,7 @@ def test_run_migrations_offline_configures_and_runs(
     context_mod = types.SimpleNamespace()
 
     def get_main_option(_: str) -> str:
-        return "sqlite:///:memory:"
+        return f"sqlite:///{TEST_DB_PATH}"
 
     context_mod.config = mock.Mock()
     context_mod.config.get_main_option = get_main_option
@@ -76,11 +78,11 @@ def test_run_migrations_offline_handles_missing_url(
     context_mod.configure = mock.MagicMock()
     context_mod.begin_transaction = mock.MagicMock()
     context_mod.run_migrations = mock.MagicMock()
-    alembic_mod = types.ModuleType("alembic_migrations")
+    alembic_mod = types.SimpleNamespace()
     alembic_mod.context = context_mod
     monkeypatch.setitem(sys.modules, "alembic_migrations", alembic_mod)
     # Patch alembic as well
-    alembic_mod2 = types.ModuleType("alembic")
+    alembic_mod2 = types.SimpleNamespace()
     alembic_mod2.context = context_mod
     monkeypatch.setitem(sys.modules, "alembic", alembic_mod2)
     monkeypatch.setitem(sys.modules, "alembic.context", context_mod)
@@ -109,10 +111,10 @@ def test_run_migrations_offline_configure_raises(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # Arrange: Patch alembic.context.configure to raise
-    context_mod = types.ModuleType("alembic.context")
+    context_mod = types.SimpleNamespace()
 
     def get_main_option(key: str) -> str:
-        return "sqlite:///:memory:"
+        return f"sqlite:///{TEST_DB_PATH}"
 
     context_mod.config = mock.Mock()
     context_mod.config.get_main_option = get_main_option
@@ -123,11 +125,11 @@ def test_run_migrations_offline_configure_raises(
     context_mod.configure = mock.MagicMock(side_effect=raise_configure)
     context_mod.begin_transaction = mock.MagicMock()
     context_mod.run_migrations = mock.MagicMock()
-    alembic_mod = types.ModuleType("alembic_migrations")
+    alembic_mod = types.SimpleNamespace()
     alembic_mod.context = context_mod
     monkeypatch.setitem(sys.modules, "alembic_migrations", alembic_mod)
     # Patch alembic as well
-    alembic_mod2 = types.ModuleType("alembic")
+    alembic_mod2 = types.SimpleNamespace()
     alembic_mod2.context = context_mod
     monkeypatch.setitem(sys.modules, "alembic", alembic_mod2)
     monkeypatch.setitem(sys.modules, "alembic.context", context_mod)
@@ -154,19 +156,10 @@ def test_run_migrations_offline_configure_raises(
 
 def test_run_migrations_online_happy_path(monkeypatch: pytest.MonkeyPatch) -> None:
     # Arrange: Patch alembic.context and provide a mock engine_from_config
-    context_mod = types.ModuleType("alembic.context")
+    context_mod = types.SimpleNamespace()
 
     def get_main_option(key: str) -> str:
         # Use the file-based SQLite DB for test consistency
-        try:
-            from tests.conftest import TEST_DB_PATH
-        except ImportError:
-            # Fallback for test runner context
-            import os
-
-            TEST_DB_PATH = os.path.abspath(
-                os.path.join(os.path.dirname(__file__), "..", "test.db")
-            )
         return f"sqlite:///{TEST_DB_PATH}"
 
     config_mock = mock.Mock()
@@ -214,7 +207,7 @@ def test_run_migrations_online_happy_path(monkeypatch: pytest.MonkeyPatch) -> No
 
 def test_run_migrations_online_missing_url(monkeypatch: pytest.MonkeyPatch) -> None:
     # Arrange: Patch alembic.context with get_main_option returning None
-    context_mod = types.ModuleType("alembic.context")
+    context_mod = types.SimpleNamespace()
 
     def get_main_option(key: str) -> str | None:
         return None
@@ -227,11 +220,11 @@ def test_run_migrations_online_missing_url(monkeypatch: pytest.MonkeyPatch) -> N
     context_mod.configure = mock.MagicMock()
     context_mod.begin_transaction = mock.MagicMock()
     context_mod.run_migrations = mock.MagicMock()
-    alembic_mod = types.ModuleType("alembic_migrations")
+    alembic_mod = types.SimpleNamespace()
     alembic_mod.context = context_mod
     monkeypatch.setitem(sys.modules, "alembic_migrations", alembic_mod)
     # Patch alembic as well
-    alembic_mod2 = types.ModuleType("alembic")
+    alembic_mod2 = types.SimpleNamespace()
     alembic_mod2.context = context_mod
     monkeypatch.setitem(sys.modules, "alembic", alembic_mod2)
     monkeypatch.setitem(sys.modules, "alembic.context", context_mod)
@@ -258,10 +251,10 @@ def test_run_migrations_online_engine_connect_raises(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # Arrange: Patch alembic.context and provide a mock engine_from_config that raises on connect
-    context_mod = types.ModuleType("alembic.context")
+    context_mod = types.SimpleNamespace()
 
     def get_main_option(key: str) -> str:
-        return "sqlite:///:memory:"
+        return f"sqlite:///{TEST_DB_PATH}"
 
     config_mock = mock.Mock()
     config_mock.get_main_option = get_main_option
@@ -298,10 +291,10 @@ def test_run_migrations_offline_configures_logging(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # Arrange: Patch alembic.context and logging.config.fileConfig
-    context_mod = types.ModuleType("alembic.context")
+    context_mod = types.SimpleNamespace()
 
     def get_main_option(key: str) -> str:
-        return "sqlite:///:memory:"
+        return f"sqlite:///{TEST_DB_PATH}"
 
     context_mod.config = mock.Mock()
     context_mod.config.get_main_option = get_main_option
@@ -338,10 +331,10 @@ def test_run_migrations_online_configures_logging(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # Arrange: Patch alembic.context and logging.config.fileConfig
-    context_mod = types.ModuleType("alembic.context")
+    context_mod = types.SimpleNamespace()
 
     def get_main_option(key: str) -> str:
-        return "sqlite:///:memory:"
+        return f"sqlite:///{TEST_DB_PATH}"
 
     context_mod.config = mock.Mock()
     context_mod.config.get_main_option = get_main_option
@@ -384,10 +377,10 @@ def test_run_migrations_offline_logs(
     monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
 ) -> None:
     # Arrange: Patch alembic.context and logging.config.fileConfig
-    context_mod = types.ModuleType("alembic.context")
+    context_mod = types.SimpleNamespace()
 
     def get_main_option(key: str) -> str:
-        return "sqlite:///:memory:"
+        return f"sqlite:///{TEST_DB_PATH}"
 
     context_mod.config = mock.Mock()
     context_mod.config.get_main_option = get_main_option
@@ -426,10 +419,10 @@ def test_run_migrations_online_logs(
     monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
 ) -> None:
     # Arrange: Patch alembic.context and logging.config.fileConfig
-    context_mod = types.ModuleType("alembic.context")
+    context_mod = types.SimpleNamespace()
 
     def get_main_option(key: str) -> str:
-        return "sqlite:///:memory:"
+        return f"sqlite:///{TEST_DB_PATH}"
 
     config_mock = mock.Mock()
     config_mock.get_main_option = get_main_option
@@ -476,10 +469,10 @@ def test_run_migrations_offline_fileConfig_not_called_when_no_config_file(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # Arrange: Patch alembic.context and logging.config
-    context_mod = types.ModuleType("alembic.context")
+    context_mod = types.SimpleNamespace()
 
     def get_main_option(key: str) -> str:
-        return "sqlite:///:memory:"
+        return f"sqlite:///{TEST_DB_PATH}"
 
     config_mock = mock.Mock()
     config_mock.get_main_option = get_main_option
@@ -518,10 +511,10 @@ def test_run_migrations_offline_fileConfig_raises(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # Arrange: Patch alembic.context and logging.config
-    context_mod = types.ModuleType("alembic.context")
+    context_mod = types.SimpleNamespace()
 
     def get_main_option(key: str) -> str:
-        return "sqlite:///:memory:"
+        return f"sqlite:///{TEST_DB_PATH}"
 
     config_mock = mock.Mock()
     config_mock.get_main_option = get_main_option
@@ -555,57 +548,21 @@ def test_run_migrations_offline_fileConfig_raises(
         env.run_migrations_offline()
 
 
-def test_run_migrations_offline_init_logging_raises(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    # Arrange: Patch alembic.context and logging.config
-    context_mod = types.ModuleType("alembic.context")
-
-    def get_main_option(key: str) -> str:
-        return "sqlite:///:memory:"
-
-    config_mock = mock.Mock()
-    config_mock.get_main_option = get_main_option
-    config_mock.config_file_name = None  # So fileConfig is not called
-    context_mod.config = config_mock
-    context_mod.configure = mock.MagicMock()
-    context_mod.begin_transaction = mock.MagicMock()
-    context_mod.run_migrations = mock.MagicMock()
-    monkeypatch.setitem(
-        sys.modules, "alembic", types.SimpleNamespace(context=context_mod)
-    )
-    monkeypatch.setitem(sys.modules, "alembic.context", context_mod)
-    monkeypatch.setitem(
-        sys.modules,
-        "logging.config",
-        types.SimpleNamespace(fileConfig=mock.MagicMock()),
-    )
-    init_logging_mock = mock.MagicMock(side_effect=RuntimeError("init_logging failed"))
-    monkeypatch.setitem(
-        sys.modules,
-        "backend.core.logging",
-        types.SimpleNamespace(init_logging=init_logging_mock),
-    )
-    # Remove env.py from sys.modules to force reload
-    sys.modules.pop("backend.alembic_migrations.env", None)
-    import importlib
-
-    importlib.invalidate_caches()
-    import src.alembic_migrations.env as env
-
-    # Act & Assert
-    with pytest.raises(RuntimeError, match="init_logging failed"):
-        env.run_migrations_offline()
-
-
 def test_run_migrations_offline_begin_transaction_raises(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # Arrange: Patch alembic.context and logging.config
-    context_mod = types.ModuleType("alembic.context")
+    import importlib
+    import sys
+    import types
+    import unittest.mock as mock
+
+    import pytest
+
+    context_mod = types.SimpleNamespace()
 
     def get_main_option(key: str) -> str:
-        return "sqlite:///:memory:"
+        return f"sqlite:///{TEST_DB_PATH}"
 
     config_mock = mock.Mock()
     config_mock.get_main_option = get_main_option
@@ -633,8 +590,6 @@ def test_run_migrations_offline_begin_transaction_raises(
     )
     # Remove env.py from sys.modules to force reload
     sys.modules.pop("backend.alembic_migrations.env", None)
-    import importlib
-
     importlib.invalidate_caches()
     import src.alembic_migrations.env as env
 
@@ -647,10 +602,10 @@ def test_run_migrations_offline_run_migrations_raises(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # Arrange: Patch alembic.context and logging.config
-    context_mod = types.ModuleType("alembic.context")
+    context_mod = types.SimpleNamespace()
 
     def get_main_option(key: str) -> str:
-        return "sqlite:///:memory:"
+        return f"sqlite:///{TEST_DB_PATH}"
 
     config_mock = mock.Mock()
     config_mock.get_main_option = get_main_option
@@ -692,10 +647,10 @@ def test_run_migrations_online_engine_from_config_raises(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # Arrange: Patch alembic.context, alembic.config, and sqlalchemy
-    context_mod = types.ModuleType("alembic.context")
+    context_mod = types.SimpleNamespace()
 
     def get_main_option(key: str) -> str:
-        return "sqlite:///:memory:"
+        return f"sqlite:///{TEST_DB_PATH}"
 
     config_mock = mock.Mock()
     config_mock.get_main_option = get_main_option
