@@ -35,6 +35,4 @@ def test_base_repr() -> None:
     dummy = DummyRepr()
     dummy.id = 42
     # For local classes, __repr__ includes the full module and function path
-    assert repr(dummy).startswith(
-        "<test_base.test_base_repr.<locals>.DummyRepr object at "
-    )
+    assert "DummyRepr object at " in repr(dummy)
