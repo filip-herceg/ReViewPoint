@@ -48,7 +48,7 @@ Issues = "https://github.com/filip-herceg/backend/issues"
 Source = "https://github.com/filip-herceg/backend"
 
 [tool.hatch.version]
-path = "src/backend/__about__.py"
+path = "src/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
