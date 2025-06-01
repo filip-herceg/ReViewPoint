@@ -1,6 +1,7 @@
 # type: ignore
-from src.models.base import Base
 from sqlalchemy.orm import Mapped, mapped_column
+
+from src.models.base import Base
 
 
 # Use a real mapped column for the Dummy model

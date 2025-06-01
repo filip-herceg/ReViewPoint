@@ -6,12 +6,11 @@ from collections.abc import AsyncGenerator
 
 import pytest
 import pytest_asyncio
+from backend.models.base import Base
 from loguru import logger as loguru_logger
 
 # type: ignore[attr-defined]
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-
-from backend.models.base import Base
 
 os.environ["REVIEWPOINT_DB_URL"] = "sqlite+aiosqlite:///:memory:"
 os.environ["REVIEWPOINT_JWT_SECRET"] = "testsecret"

@@ -47,9 +47,8 @@ def test_request_logging_middleware_present():
 
 def test_app_can_start():
     # Use FastAPI TestClient to make a request and check middleware runs
-    from fastapi.testclient import TestClient
-
     import backend.main
+    from fastapi.testclient import TestClient
 
     client = TestClient(backend.main.app)
     response = client.get("/docs")

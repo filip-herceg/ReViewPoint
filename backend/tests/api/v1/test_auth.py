@@ -33,11 +33,20 @@ def test_verify_access_token_expired(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(settings, "jwt_expire_minutes", -1)
     token = security.create_access_token({"sub": "expired"})
     # Decode, set exp to past, re-encode
-    from jose import jwt
     import time
-    payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm], options={"verify_exp": False})
+
+    from jose import jwt
+
+    payload = jwt.decode(
+        token,
+        settings.jwt_secret_key,
+        algorithms=[settings.jwt_algorithm],
+        options={"verify_exp": False},
+    )
     payload["exp"] = int(time.time()) - 60
-    expired_token = jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
+    expired_token = jwt.encode(
+        payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm
+    )
     with pytest.raises(JWTError):
         security.verify_access_token(expired_token)
     # Restore default expiry

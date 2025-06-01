@@ -1,8 +1,9 @@
 # type: ignore
 import pytest
+from sqlalchemy import select
+
 from src.models.file import File
 from src.models.user import User
-from sqlalchemy import select
 
 
 @pytest.mark.asyncio

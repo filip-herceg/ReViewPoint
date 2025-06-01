@@ -3,12 +3,11 @@ from __future__ import annotations
 import importlib
 import logging
 import sys
-from types import ModuleType
 from pathlib import Path
-
-import pytest
+from types import ModuleType
 
 import backend.core.logging  # Ensure coverage always sees this import
+import pytest
 
 MODULE = "core.logging"
 

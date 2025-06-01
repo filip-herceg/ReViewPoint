@@ -9,7 +9,6 @@ def run_migrations_offline():
     from logging.config import fileConfig
 
     import alembic.context
-
     from backend.core.logging import init_logging
 
     init_logging()
@@ -39,7 +38,6 @@ def run_migrations_online(engine_from_config: Callable[..., Any]):
     from logging.config import fileConfig
 
     import alembic.context
-
     from backend.core.logging import init_logging
 
     init_logging()

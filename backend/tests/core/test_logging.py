@@ -15,6 +15,7 @@ MODULE = "src.core.logging"
 def _reload() -> ModuleType:
     """Reload core.logging frisch, reset Handler."""
     import sys
+
     if MODULE in sys.modules:
         importlib.reload(sys.modules[MODULE])
     return importlib.import_module(MODULE)

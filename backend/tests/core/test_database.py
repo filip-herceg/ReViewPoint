@@ -73,7 +73,9 @@ async def test_session_error_handling():
 
 def test_engine_kwargs_sqlite():
     """Test engine kwargs for SQLite configurations."""
-    url_obj = make_url("sqlite+aiosqlite:///C:/Users/00010654/Documents/Git/ReViewPoint/backend/tests/test.db")
+    url_obj = make_url(
+        "sqlite+aiosqlite:///C:/Users/00010654/Documents/Git/ReViewPoint/backend/tests/test.db"
+    )
     engine_kwargs: dict[str, int | bool] = {
         "echo": False,
         "pool_pre_ping": True,
