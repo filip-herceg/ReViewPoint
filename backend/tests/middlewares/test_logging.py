@@ -76,7 +76,9 @@ def test_request_id_generation(client: TestClient, loguru_list_sink: list[str]) 
     assert "Response GET /test completed with status 200" in logs
 
 
-def test_custom_request_id_header(client: TestClient, loguru_list_sink: list[str]) -> None:
+def test_custom_request_id_header(
+    client: TestClient, loguru_list_sink: list[str]
+) -> None:
     """Test that a custom request ID header is respected."""
     custom_id = "test-123"
 

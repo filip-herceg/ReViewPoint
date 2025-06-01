@@ -66,7 +66,9 @@ def test_logging_init_error_propagates(monkeypatch: pytest.MonkeyPatch) -> None:
         create_app()
 
 
-def test_double_import_does_not_duplicate_middleware(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_double_import_does_not_duplicate_middleware(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     # Patch init_logging to do nothing
     monkeypatch.setattr("src.core.logging.init_logging", lambda *a, **k: None)
     sys.modules.pop("src.main", None)

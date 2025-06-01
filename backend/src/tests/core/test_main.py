@@ -97,7 +97,9 @@ def test_missing_log_level(monkeypatch: pytest.MonkeyPatch) -> None:
         config_mod.settings = orig_settings
 
 
-def test_double_import_does_not_duplicate_middleware(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_double_import_does_not_duplicate_middleware(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     # Patch init_logging to do nothing
     monkeypatch.setattr("backend.core.logging.init_logging", lambda *a, **k: None)
     sys.modules.pop("backend.main", None)

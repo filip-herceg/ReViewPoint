@@ -88,6 +88,7 @@ def init_logging(
                     record.levelno
                 )  # Ensure log_level is always str for mypy
             from types import FrameType
+
             frame: FrameType | None = logging.currentframe()
             depth = 2
             while frame and frame.f_code.co_filename == logging.__file__:

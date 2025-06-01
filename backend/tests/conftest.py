@@ -39,7 +39,9 @@ async def async_engine() -> AsyncGenerator[AsyncEngine, None]:
 
 
 @pytest_asyncio.fixture(scope="session")
-async def async_session(async_engine: AsyncEngine) -> AsyncGenerator[AsyncSession, None]:
+async def async_session(
+    async_engine: AsyncEngine,
+) -> AsyncGenerator[AsyncSession, None]:
     async_session_local = async_sessionmaker(
         bind=async_engine, class_=AsyncSession, expire_on_commit=False
     )
@@ -52,6 +54,7 @@ def loguru_to_standard_logging() -> Iterator[None]:
     class PropagateHandler(logging.Handler):
         def emit(self, record: logging.LogRecord) -> None:
             logging.getLogger(record.name).handle(record)
+
     loguru_logger.remove()
     loguru_logger.add(PropagateHandler(), format="{message}")
     yield
