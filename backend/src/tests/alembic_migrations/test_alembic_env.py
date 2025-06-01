@@ -1,3 +1,4 @@
+# mypy: disable-error-code=attr-defined
 import importlib
 import sys
 import types

@@ -4,7 +4,6 @@ from collections.abc import AsyncGenerator, Iterator
 
 import pytest
 import pytest_asyncio
-from backend.models.base import Base
 from loguru import logger as loguru_logger
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -12,6 +11,8 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
+
+from src.models.base import Base
 
 os.environ["REVIEWPOINT_DB_URL"] = "sqlite+aiosqlite:///:memory:"
 os.environ["REVIEWPOINT_JWT_SECRET"] = "testsecret"
@@ -66,7 +67,7 @@ def loguru_to_standard_logging() -> Iterator[None]:
     import logging
 
     class PropagateHandler(logging.Handler):
-        def emit(self, record):
+        def emit(self, record: logging.LogRecord) -> None:
             logging.getLogger(record.name).handle(record)
 
     loguru_logger.remove()
@@ -82,3 +83,10 @@ def loguru_list_sink() -> Iterator[list[str]]:
     sink_id = loguru_logger.add(logs.append, format="{message}")
     yield logs
     loguru_logger.remove(sink_id)
+
+
+# Add missing type annotation for the fixture
+@pytest.fixture
+def some_fixture() -> None:
+    # ...fixture implementation...
+    pass

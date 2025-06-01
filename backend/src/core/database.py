@@ -1,4 +1,3 @@
-# type: ignore
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator
@@ -11,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
-    async_sessionmaker,  # type: ignore[attr-defined]
+    async_sessionmaker,
     create_async_engine,
 )
 
@@ -69,6 +68,10 @@ async def db_healthcheck() -> bool:
         logger.error(f"DB healthcheck failed: {exc}")
         return False
 
+
+AsyncSessionLocal = AsyncSessionLocal
+get_async_session = get_async_session
+db_healthcheck = db_healthcheck
 
 __all__ = [
     "AsyncSessionLocal",

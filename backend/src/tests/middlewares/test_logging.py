@@ -22,26 +22,26 @@ def app() -> FastAPI:
 
     # Add a test route that returns the request ID
     @app.get("/test")
-    def read_test():  # type: ignore[no-untyped-def]
+    def read_test() -> dict[str, str | None]:
         request_id = get_request_id()
         return {"request_id": request_id}
 
     # Add a test route that raises an exception
     @app.get("/error")
-    def read_error():  # type: ignore[no-untyped-def]
+    def read_error() -> None:
         raise ValueError("Test error")
 
     # Add a test route that accesses the request ID in a middleware
     # after our logging middleware
     @app.get("/request-id")
-    def read_request_id():  # type: ignore[no-untyped-def]
+    def read_request_id() -> dict[str, str | None]:
         request_id = get_request_id()
         return {"middleware_request_id": request_id}
 
     @app.middleware("http")
     async def request_id_check_middleware(
         request: Request, call_next: Callable[[Request], Awaitable[Response]]
-    ):
+    ) -> Response:
         # Get the request ID from the context variable - should be set by our
         # middleware
         request_id = get_request_id()

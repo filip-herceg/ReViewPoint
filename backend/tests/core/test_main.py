@@ -21,7 +21,7 @@ def test_logging_initialized(monkeypatch: pytest.MonkeyPatch) -> None:
 
     called: dict[str, Any] = {}
 
-    def fake_init_logging(level: str | None = None, **kwargs: Any):
+    def fake_init_logging(level: str | None = None, **kwargs: Any) -> None:
         called["level"] = level
         called.update(kwargs)
 
