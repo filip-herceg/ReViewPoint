@@ -1,15 +1,15 @@
 # pyright: reportUnusedFunction=false
-# Pylance/pyright: reportUnusedFunction warnings for route/middleware handlers are false positives in FastAPI.
+# Pylance/pyright: reportUnusedFunction warnings for route/middleware
+# handlers are false positives in FastAPI.
 from __future__ import annotations
 
-# filepath: /workspaces/ReViewPoint/backend/tests/middlewares/test_logging.py
-"""Tests for the request logging middleware."""
-
 import re
+from collections.abc import Awaitable, Callable
 
 import pytest
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
+from starlette.responses import Response
 
 from src.middlewares.logging import RequestLoggingMiddleware, get_request_id
 
@@ -38,15 +38,12 @@ def app():
         request_id = get_request_id()
         return {"middleware_request_id": request_id}
 
-    from collections.abc import Awaitable, Callable
-
-    from starlette.responses import Response
-
     @app.middleware("http")
     async def request_id_check_middleware(
         request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ):
-        # Get the request ID from the context variable - should be set by our middleware
+        # Get the request ID from the context variable - should be set by our
+        # middleware
         request_id = get_request_id()
         response = await call_next(request)
         # Add it to a custom header for testing
@@ -64,7 +61,9 @@ def client(app: FastAPI):
     return TestClient(app)
 
 
-def test_request_id_generation(client: TestClient, loguru_list_sink: list[str]):
+def test_request_id_generation(
+        client: TestClient,
+        loguru_list_sink: list[str]):
     """Test that a request ID is generated for each request."""
     response = client.get("/test")
 
@@ -79,7 +78,9 @@ def test_request_id_generation(client: TestClient, loguru_list_sink: list[str]):
     assert "Response GET /test completed with status 200" in logs
 
 
-def test_custom_request_id_header(client: TestClient, loguru_list_sink: list[str]):
+def test_custom_request_id_header(
+        client: TestClient,
+        loguru_list_sink: list[str]):
     """Test that a custom request ID header is respected."""
     custom_id = "test-123"
 
@@ -127,8 +128,8 @@ def test_performance_logging(client: TestClient, loguru_list_sink: list[str]):
 
     # Find the response log entry
     response_log = next(
-        (log for log in loguru_list_sink if "completed with status" in log), None
-    )
+        (log for log in loguru_list_sink if "completed with status" in log),
+        None)
     assert response_log is not None
 
     # Check that the log message includes the status code and time
