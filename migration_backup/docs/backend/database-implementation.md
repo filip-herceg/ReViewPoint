@@ -95,13 +95,12 @@ The database layer is tested comprehensively with over 86% coverage:
 
 Test fixtures in `tests/conftest.py` provide:
 
-- **Isolated in-memory databases**: Each test function gets a unique database 
+- **Real test database**: All tests now use a dedicated real test database (e.g., `test.db` or a test Postgres instance)
 - **Multiple fixture scopes**:
   - `async_engine`: Session-scoped for shared access
-  - `async_engine_function`: Function-scoped for isolation
   - `async_session`: For direct database access in tests
 - **Automatic environment configuration**: Environment variables set consistently
-- **Automated cleanup**: Test databases are disposed after use
+- **Automated cleanup**: All tables are truncated after each test for isolation
 
 ### Test Implementation Pattern
 
@@ -131,18 +130,21 @@ The database connection is configured through environment variables:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `REVIEWPOINT_DB_URL` | Database connection string | `sqlite+aiosqlite:///:memory:` |
+| `REVIEWPOINT_DB_URL` | Database connection string | `sqlite+aiosqlite:///test.db` |
 | `REVIEWPOINT_ENVIRONMENT` | Environment (dev/test/prod) | `dev` |
 | `REVIEWPOINT_DEBUG` | Enable debug mode | `false` |
 
 Connection URL formats:
-- SQLite: `sqlite+aiosqlite:///./backend_dev.db`
+- SQLite: `sqlite+aiosqlite:///test.db`
 - PostgreSQL: `postgresql+asyncpg://user:pass@localhost:5432/dbname`
 
 Environment-specific configurations:
 - **Production**: Larger connection pool (size=10, max_overflow=20)
 - **Development**: Smaller connection pool (size=5, max_overflow=10)
-- **Testing**: In-memory SQLite database, no pooling
+- **Testing**: Real test database, no in-memory DBs
+
+## Migration Note
+- All tests now use a real test database. Remove any use of in-memory DBs in new or existing tests. See `tests/conftest.py` for the new pattern.
 
 ## Design Decisions
 

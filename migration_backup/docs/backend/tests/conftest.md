@@ -7,24 +7,24 @@
 | **Status** | 🟢 Done |
 
 ## 1. Purpose  
-This file sets up the test infrastructure for the application, particularly focusing on providing database fixtures for async SQLAlchemy testing. It ensures that tests run with a clean, isolated database environment and proper environment variables.
+This file sets up the test infrastructure for the application, focusing on providing database fixtures for async SQLAlchemy testing. **All tests now use a real test database (e.g., `test.db` or a dedicated test Postgres instance), not in-memory.** It ensures that tests run with a clean, isolated database environment and proper environment variables.
 
 ## 2. Key Fixtures
 
 | Fixture | Scope | Description |
 |---------|-------|-------------|
 | `set_required_env_vars` | function | Sets test environment variables using monkeypatch |
-| `async_engine` | session | Creates a shared SQLAlchemy engine for the test session |
-| `async_engine_function` | function | Creates isolated engine instances for each test function |
+| `async_engine` | session | Creates a shared SQLAlchemy engine for the test session, using the real test DB |
 | `async_session` | function | Provides an AsyncSession for database operations in tests |
+| `cleanup_db` | function | Truncates all tables after each test for isolation |
 
 ## 3. Behaviour & Edge-Cases  
 
 - Environment variables are set for each test function automatically with `autouse=True`
-- Database schemas are created/dropped for each test function for isolation
-- Unique database identifiers prevent test cross-contamination
-- In-memory SQLite databases are used for performance and cleanup
-- Test engines use shared cache for session-scoped fixtures but unique IDs for function-scoped fixtures
+- Database schemas are created for the test session
+- **A real test database is used for all tests**
+- After each test, all tables are truncated to ensure isolation
+- No in-memory databases are used
 
 ## 4. Dependencies  
 
@@ -47,4 +47,6 @@ async def test_example(async_session):
 ```
 
 ## 6. Notes
-The fixtures handle proper setup and teardown of database connections, ensuring that tests don't leave resources open or leak between test runs.
+- The fixtures handle proper setup and teardown of database connections.
+- **All tests now use a real test database, and cleanup is handled automatically after each test.**
+- Remove any references to in-memory DBs in new or existing tests.

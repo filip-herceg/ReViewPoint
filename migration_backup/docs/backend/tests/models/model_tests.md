@@ -57,4 +57,6 @@ The model tests cover:
   - `sqlalchemy`: For database operations
 
 ## 6. Notes
-The tests use isolated in-memory databases with unique connection strings to ensure test independence.
+- **All model tests now use a real test database (e.g., `test.db` or a test Postgres instance).**
+- Cleanup is handled automatically after each test by truncating all tables.
+- Remove any references to in-memory DBs in new or existing tests.

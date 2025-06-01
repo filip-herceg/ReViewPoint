@@ -55,4 +55,6 @@ The combined tests achieve over 86% coverage of the database.py module, testing:
   - `sqlalchemy`: For database operations
 
 ## 6. Notes
-The tests use in-memory SQLite databases for faster execution and isolation between test runs.
+- **All tests now use a real test database (e.g., `test.db` or a test Postgres instance).**
+- Cleanup is handled automatically after each test by truncating all tables.
+- Remove any references to in-memory DBs in new or existing tests.
