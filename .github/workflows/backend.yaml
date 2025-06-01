@@ -38,7 +38,7 @@ jobs:
       - name: Clear Caches
         run: |
           cd backend
-          Remove-Item -Recurse -Force .mypy_cache, .ruff_cache, .pytest_cache, .hatch
+          python -c "import shutil, os; [shutil.rmtree(p, ignore_errors=True) for p in ['.mypy_cache', '.ruff_cache', '.pytest_cache', '.hatch']]; [shutil.rmtree(os.path.join(root, d), ignore_errors=True) for root, dirs, _ in os.walk('.') for d in dirs if d == '__pycache__']"
 
       - name: Run Black (Format Check)
         run: |
