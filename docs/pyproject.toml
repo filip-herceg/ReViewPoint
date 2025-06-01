@@ -1,0 +1,13 @@
+[project]
+name = "docs"
+version = "0.1.0"
+dependencies = [
+    "mkdocs",
+    "mkdocs-material"
+]
+
+[tool.hatch.envs.default]
+dependencies = [
+    "mkdocs",
+    "mkdocs-material"
+]

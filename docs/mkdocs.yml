@@ -1,0 +1,85 @@
+site_name: ReViewPoint
+site_description: Documentation and development manual for ReViewPoint. Modular, scalable, and LLM-powered platform for scientific paper review.
+site_author: ReViewPoint Team
+site_url: https://github.com/filip-herceg/ReViewPoint
+
+docs_dir: content
+
+theme:
+  name: material
+  palette:
+    scheme: default
+  features:
+    - navigation.tabs
+    - navigation.top
+    - navigation.sections
+    - navigation.expand
+    - navigation.footer
+    - navigation.instant
+    - navigation.path
+    - navigation.indexes
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - content.tabs.link
+    - content.tabs
+    - content.footnotes
+    - content.images.lazy
+    - content.emoji
+    - content.anchors
+    - content.action.edit
+    - content.action.view
+    - content.buttons
+    - content.badges
+    - content.grid
+    - content.cards
+    - content.toc
+    - content.admonition
+
+nav:
+  - Homepage: index.md
+  - System Overview:
+      - Architecture: architecture.md
+      - Backend Source Guide: backend-source-guide.md
+  - Development:
+      - Setup for Developers: setup.md
+      - Developer Guidelines: dev-guidelines.md
+      - CI/CD: ci-cd.md
+  - Modules:
+      - Module Guide: module-guide.md
+      - LLM-Integration: llm-integration.md
+  - Resources:
+      - FAQ: faq.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/filip-herceg/ReViewPoint
+  favicon: images/favicon.ico
+  generator: false
+
+edit_uri: https://github.com/filip-herceg/ReViewPoint/edit/main/docs/content/
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.details
+  - pymdownx.tabbed
+  - pymdownx.emoji
+  - pymdownx.snippets
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.tasklist
+  - pymdownx.keys
+  - pymdownx.betterem
+  - pymdownx.magiclink
+  - pymdownx.progressbar
+  - pymdownx.smartsymbols

@@ -27,36 +27,36 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Poetry
-        run: pip install poetry
+      - name: Install Hatch
+        run: pip install hatch
 
       - name: Install dependencies (incl. dev)
         run: |
           cd backend
-          poetry install --no-root --with dev
+          hatch env create
 
-      - name: Run Ruff (Lint)
+      - name: Clear Caches
         run: |
           cd backend
-          poetry run ruff check .
+          python -c "import shutil, os; [shutil.rmtree(p, ignore_errors=True) for p in ['.mypy_cache', '.ruff_cache', '.pytest_cache', '.hatch']]; [shutil.rmtree(os.path.join(root, d), ignore_errors=True) for root, dirs, _ in os.walk('.') for d in dirs if d == '__pycache__']"
 
       - name: Run Black (Format Check)
         run: |
           cd backend
-          poetry run black . --check
+          hatch run black . --check
 
-      - name: Clear Mypy Cache
+      - name: Run Ruff (Lint)
         run: |
           cd backend
-          rm -rf .mypy_cache
+          hatch run ruff check .
 
       - name: Run Mypy (Typecheck)
         run: |
           cd backend
-          poetry run mypy . --config-file mypy.ini
+          hatch run mypy .
 
       - name: Run Pytest (Tests)
         run: |
           cd backend
-          poetry run pytest --maxfail=1 --disable-warnings --cov=backend --cov-report=xml --cov-report=term
+          hatch run pytest --maxfail=1 --disable-warnings --cov=backend --cov-report=xml --cov-report=term
 

@@ -1,61 +1,49 @@
 # pyright: reportUnusedFunction=false
-# Pylance/pyright: reportUnusedFunction warnings for route/middleware handlers are false positives in FastAPI.
+# Pylance/pyright: reportUnusedFunction warnings for route/middleware
+# handlers are false positives in FastAPI.
 from __future__ import annotations
 
-# filepath: /workspaces/ReViewPoint/backend/tests/middlewares/test_logging.py
-"""Tests for the request logging middleware."""
-
-import sys
-from pathlib import Path
-
-# Adjust Python path to allow absolute imports from backend root
-backend_dir = Path(__file__).parent.parent.parent
-if str(backend_dir) not in sys.path:
-    sys.path.insert(0, str(backend_dir))
-
-# ruff: noqa: E402
 import re
+from collections.abc import Awaitable, Callable
 
 import pytest
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
+from starlette.responses import Response
 
-from backend.middlewares.logging import RequestLoggingMiddleware, get_request_id
+from src.middlewares.logging import RequestLoggingMiddleware, get_request_id
 
 
 @pytest.fixture
-def app():
+def app() -> FastAPI:
     """Create a test FastAPI app with the RequestLoggingMiddleware."""
     app = FastAPI()
     app.add_middleware(RequestLoggingMiddleware)
 
     # Add a test route that returns the request ID
     @app.get("/test")
-    def read_test():
+    def read_test() -> dict[str, str | None]:
         request_id = get_request_id()
         return {"request_id": request_id}
 
     # Add a test route that raises an exception
     @app.get("/error")
-    def read_error():
+    def read_error() -> None:
         raise ValueError("Test error")
 
     # Add a test route that accesses the request ID in a middleware
     # after our logging middleware
     @app.get("/request-id")
-    def read_request_id():
+    def read_request_id() -> dict[str, str | None]:
         request_id = get_request_id()
         return {"middleware_request_id": request_id}
-
-    from collections.abc import Awaitable, Callable
-
-    from starlette.responses import Response
 
     @app.middleware("http")
     async def request_id_check_middleware(
         request: Request, call_next: Callable[[Request], Awaitable[Response]]
-    ):
-        # Get the request ID from the context variable - should be set by our middleware
+    ) -> Response:
+        # Get the request ID from the context variable - should be set by our
+        # middleware
         request_id = get_request_id()
         response = await call_next(request)
         # Add it to a custom header for testing
@@ -68,12 +56,12 @@ def app():
 
 
 @pytest.fixture
-def client(app: FastAPI):
+def client(app: FastAPI) -> TestClient:
     """Create a TestClient for the app."""
     return TestClient(app)
 
 
-def test_request_id_generation(client: TestClient, loguru_list_sink: list[str]):
+def test_request_id_generation(client: TestClient, loguru_list_sink: list[str]) -> None:
     """Test that a request ID is generated for each request."""
     response = client.get("/test")
 
@@ -88,7 +76,9 @@ def test_request_id_generation(client: TestClient, loguru_list_sink: list[str]):
     assert "Response GET /test completed with status 200" in logs
 
 
-def test_custom_request_id_header(client: TestClient, loguru_list_sink: list[str]):
+def test_custom_request_id_header(
+    client: TestClient, loguru_list_sink: list[str]
+) -> None:
     """Test that a custom request ID header is respected."""
     custom_id = "test-123"
 
@@ -103,7 +93,7 @@ def test_custom_request_id_header(client: TestClient, loguru_list_sink: list[str
     assert "Response GET /test completed with status 200" in logs
 
 
-def test_error_logging(client: TestClient, loguru_list_sink: list[str]):
+def test_error_logging(client: TestClient, loguru_list_sink: list[str]) -> None:
     """Test that errors are properly logged with request context."""
     import pytest
 
@@ -119,7 +109,7 @@ def test_error_logging(client: TestClient, loguru_list_sink: list[str]):
     )
 
 
-def test_request_id_propagation_to_other_middleware(client: TestClient):
+def test_request_id_propagation_to_other_middleware(client: TestClient) -> None:
     """Test that the request ID is available to downstream middleware."""
     # Skip this test in TestClient environment as contextvars don't persist
     # This test would pass in a real ASGI environment with proper middleware ordering
@@ -130,7 +120,7 @@ def test_request_id_propagation_to_other_middleware(client: TestClient):
     )
 
 
-def test_performance_logging(client: TestClient, loguru_list_sink: list[str]):
+def test_performance_logging(client: TestClient, loguru_list_sink: list[str]) -> None:
     """Test that request performance is logged."""
     client.get("/test")
 
