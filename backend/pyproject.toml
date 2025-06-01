@@ -61,11 +61,12 @@ dependencies = [
   "mypy>=1.13.0",
   "types-passlib>=1.7.7.20240901"
 ]
+env-vars = { PYTHONPATH = "src" }
 
 [tool.hatch.envs.types]
 extra-dependencies = ["mypy>=1.0.0"]
 [tool.hatch.envs.types.scripts]
-check = "mypy --install-types --non-interactive {args:src/backend tests}"
+check = "mypy --install-types --non-interactive {args:src tests}"
 
 [tool.black]
 line-length = 88
@@ -94,7 +95,8 @@ ignore = ["E501", "B008", "C901"]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
-"tests/alembic_migrations/test_alembic_env.py" = ["B010"]
+"src/alembic_migrations/env.py" = ["B010"]
+"src/tests/alembic_migrations/test_alembic_env.py" = ["B010"]
 
 [tool.mypy]
 python_version = "3.11"
@@ -110,15 +112,15 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 warn_return_any = true
 warn_unreachable = true
-mypy_path = "."
+mypy_path = "src;tests"
 explicit_package_bases = true
 
 [tool.coverage.run]
-source_pkgs = ["backend", "tests"]
+source_pkgs = ["src", "tests"]
 branch = true
 parallel = true
 omit = [
-  "src/backend/__about__.py",
+  "src/__about__.py",
   "tests/*",
   "*/migrations/*",
   "*/alembic/*",
@@ -128,8 +130,8 @@ omit = [
 ]
 
 [tool.coverage.paths]
-backend = ["src/backend", "*/backend/src/backend"]
-tests = ["tests", "*/backend/tests"]
+backend = ["src", "*/backend/src"]
+tests = ["tests", "*/tests"]
 
 [tool.coverage.report]
 exclude_lines = [
