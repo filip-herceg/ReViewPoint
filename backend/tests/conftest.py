@@ -1,15 +1,18 @@
-# type: ignore
-
 import asyncio
 import logging
 import os
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Iterator
 
 import pytest
 import pytest_asyncio
 from loguru import logger as loguru_logger
 from sqlalchemy import create_engine
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from src.models.base import Base
 
@@ -23,32 +26,32 @@ DATABASE_URL = TEST_DB_URL
 
 
 @pytest.fixture(autouse=True, scope="function")
-def set_required_env_vars(monkeypatch):
+def set_required_env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("REVIEWPOINT_DB_URL", TEST_DB_URL)
     monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "testsecret")
 
 
 @pytest_asyncio.fixture(scope="session")
-async def async_engine():
+async def async_engine() -> AsyncGenerator[AsyncEngine, None]:
     engine = create_async_engine(DATABASE_URL, future=True)
     yield engine
     await engine.dispose()
 
 
 @pytest_asyncio.fixture(scope="session")
-async def async_session(async_engine) -> AsyncGenerator[AsyncSession, None]:
-    async_session_local = async_sessionmaker(bind=async_engine, expire_on_commit=False)
+async def async_session(async_engine: AsyncEngine) -> AsyncGenerator[AsyncSession, None]:
+    async_session_local = async_sessionmaker(
+        bind=async_engine, class_=AsyncSession, expire_on_commit=False
+    )
     async with async_session_local() as session:
         yield session
 
 
 @pytest.fixture(autouse=True, scope="session")
-def loguru_to_standard_logging():
-
+def loguru_to_standard_logging() -> Iterator[None]:
     class PropagateHandler(logging.Handler):
-        def emit(self, record):
+        def emit(self, record: logging.LogRecord) -> None:
             logging.getLogger(record.name).handle(record)
-
     loguru_logger.remove()
     loguru_logger.add(PropagateHandler(), format="{message}")
     yield
@@ -56,9 +59,9 @@ def loguru_to_standard_logging():
 
 
 @pytest.fixture
-def loguru_list_sink():
+def loguru_list_sink() -> Iterator[list[str]]:
     """Fixture to capture loguru logs in a list for assertions."""
-    logs = []
+    logs: list[str] = []
     sink_id = loguru_logger.add(logs.append, format="{message}")
     yield logs
     loguru_logger.remove(sink_id)
@@ -66,7 +69,7 @@ def loguru_list_sink():
 
 # Clean up the test DB file before and after all tests
 @pytest.fixture(scope="session", autouse=True)
-def cleanup_test_db_file(request):
+def cleanup_test_db_file(request: pytest.FixtureRequest) -> None:
     import time
 
     # Remove before tests
@@ -79,12 +82,12 @@ def cleanup_test_db_file(request):
             time.sleep(0.2)
 
     # Remove after tests
-    def remove_db():
+    def remove_db() -> None:
         import aiosqlite
 
         try:
 
-            async def close_connections():
+            async def close_connections() -> None:
                 try:
                     async with aiosqlite.connect(TEST_DB_PATH) as db:
                         await db.close()
@@ -113,7 +116,7 @@ def cleanup_test_db_file(request):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def create_test_db_tables():
+def create_test_db_tables() -> None:
 
     # Use a synchronous engine to create tables
     sync_engine = create_engine(f"sqlite:///{TEST_DB_PATH}")

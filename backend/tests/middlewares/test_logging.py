@@ -15,26 +15,26 @@ from src.middlewares.logging import RequestLoggingMiddleware, get_request_id
 
 
 @pytest.fixture
-def app():
+def app() -> FastAPI:
     """Create a test FastAPI app with the RequestLoggingMiddleware."""
     app = FastAPI()
     app.add_middleware(RequestLoggingMiddleware)
 
     # Add a test route that returns the request ID
     @app.get("/test")
-    def read_test():
+    def read_test():  # type: ignore[no-untyped-def]
         request_id = get_request_id()
         return {"request_id": request_id}
 
     # Add a test route that raises an exception
     @app.get("/error")
-    def read_error():
+    def read_error():  # type: ignore[no-untyped-def]
         raise ValueError("Test error")
 
     # Add a test route that accesses the request ID in a middleware
     # after our logging middleware
     @app.get("/request-id")
-    def read_request_id():
+    def read_request_id():  # type: ignore[no-untyped-def]
         request_id = get_request_id()
         return {"middleware_request_id": request_id}
 
@@ -56,14 +56,12 @@ def app():
 
 
 @pytest.fixture
-def client(app: FastAPI):
+def client(app: FastAPI) -> TestClient:
     """Create a TestClient for the app."""
     return TestClient(app)
 
 
-def test_request_id_generation(
-        client: TestClient,
-        loguru_list_sink: list[str]):
+def test_request_id_generation(client: TestClient, loguru_list_sink: list[str]) -> None:
     """Test that a request ID is generated for each request."""
     response = client.get("/test")
 
@@ -78,9 +76,7 @@ def test_request_id_generation(
     assert "Response GET /test completed with status 200" in logs
 
 
-def test_custom_request_id_header(
-        client: TestClient,
-        loguru_list_sink: list[str]):
+def test_custom_request_id_header(client: TestClient, loguru_list_sink: list[str]) -> None:
     """Test that a custom request ID header is respected."""
     custom_id = "test-123"
 
@@ -95,7 +91,7 @@ def test_custom_request_id_header(
     assert "Response GET /test completed with status 200" in logs
 
 
-def test_error_logging(client: TestClient, loguru_list_sink: list[str]):
+def test_error_logging(client: TestClient, loguru_list_sink: list[str]) -> None:
     """Test that errors are properly logged with request context."""
     import pytest
 
@@ -111,7 +107,7 @@ def test_error_logging(client: TestClient, loguru_list_sink: list[str]):
     )
 
 
-def test_request_id_propagation_to_other_middleware(client: TestClient):
+def test_request_id_propagation_to_other_middleware(client: TestClient) -> None:
     """Test that the request ID is available to downstream middleware."""
     # Skip this test in TestClient environment as contextvars don't persist
     # This test would pass in a real ASGI environment with proper middleware ordering
@@ -122,14 +118,14 @@ def test_request_id_propagation_to_other_middleware(client: TestClient):
     )
 
 
-def test_performance_logging(client: TestClient, loguru_list_sink: list[str]):
+def test_performance_logging(client: TestClient, loguru_list_sink: list[str]) -> None:
     """Test that request performance is logged."""
     client.get("/test")
 
     # Find the response log entry
     response_log = next(
-        (log for log in loguru_list_sink if "completed with status" in log),
-        None)
+        (log for log in loguru_list_sink if "completed with status" in log), None
+    )
     assert response_log is not None
 
     # Check that the log message includes the status code and time

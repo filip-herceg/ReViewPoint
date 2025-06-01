@@ -1,16 +1,15 @@
-# type: ignore
 from backend.models.base import Base
 from sqlalchemy.orm import Mapped, mapped_column
+from typing import Any
 
 
-# Use a real mapped column for the Dummy model
-def test_base_to_dict():
+def test_base_to_dict() -> None:
     class DummyToDict(Base):
         __tablename__ = "dummy_to_dict"
         id: Mapped[int] = mapped_column(primary_key=True)
         name: Mapped[str] = mapped_column(nullable=True)
 
-        def to_dict(self):
+        def to_dict(self) -> dict[str, Any]:
             # Simple implementation for test purposes
             return {
                 "id": self.id,
@@ -26,7 +25,7 @@ def test_base_to_dict():
     assert "name" in d
 
 
-def test_base_repr():
+def test_base_repr() -> None:
     class DummyRepr(Base):
         __tablename__ = "dummy_repr"
         id: Mapped[int] = mapped_column(primary_key=True)

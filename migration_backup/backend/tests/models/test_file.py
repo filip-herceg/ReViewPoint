@@ -1,12 +1,12 @@
-# type: ignore
 import pytest
 from backend.models.file import File
 from backend.models.user import User
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 @pytest.mark.asyncio
-async def test_file_crud(async_session):
+async def test_file_crud(async_session: AsyncSession) -> None:
     # Create user
     user = User(email="fileuser@example.com", hashed_password="hashed", is_active=True)
     async_session.add(user)

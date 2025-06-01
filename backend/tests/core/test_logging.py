@@ -56,7 +56,7 @@ def test_color_and_json_flags(capsys: pytest.CaptureFixture[str]) -> None:
 # --------------------------------------------------------------------------- #
 # 3) idempotent init                                                          #
 # --------------------------------------------------------------------------- #
-def test_idempotent():
+def test_idempotent() -> None:
     log_mod = _reload()
     log_mod.init_logging()
     first_cnt = len(logging.root.handlers)
@@ -67,7 +67,7 @@ def test_idempotent():
 # --------------------------------------------------------------------------- #
 # 4) uvicorn access logger muted                                              #
 # --------------------------------------------------------------------------- #
-def test_uvicorn_access_muted():
+def test_uvicorn_access_muted() -> None:
     log_mod = _reload()
     log_mod.init_logging()
     assert logging.getLogger("uvicorn.access").propagate is False
@@ -89,7 +89,7 @@ def test_structured_extra(capsys: pytest.CaptureFixture[str]) -> None:
 # --------------------------------------------------------------------------- #
 # 6) file handler writes to disk (optional)                                   #
 # --------------------------------------------------------------------------- #
-def test_file_logging(tmp_path: Path):
+def test_file_logging(tmp_path: Path) -> None:
     log_mod = _reload()
     logfile = tmp_path / "app.log"
     log_mod.init_logging(level="INFO", logfile=str(logfile))
@@ -103,5 +103,5 @@ def test_file_logging(tmp_path: Path):
 # --------------------------------------------------------------------------- #
 
 
-def test_core_logging_import_smoke():
+def test_core_logging_import_smoke() -> None:
     assert hasattr(src.core.logging, "init_logging")

@@ -6,7 +6,7 @@ import pytest
 from fastapi import FastAPI
 
 
-def test_app_is_fastapi_instance():
+def test_app_is_fastapi_instance() -> None:
     from src.main import create_app
 
     app = create_app()
@@ -15,7 +15,7 @@ def test_app_is_fastapi_instance():
     assert app.version == "0.1.0"
 
 
-def test_logging_initialized(monkeypatch: pytest.MonkeyPatch):
+def test_logging_initialized(monkeypatch: pytest.MonkeyPatch) -> None:
     # Patch init_logging to check it is called with correct level
     from typing import Any
 
@@ -32,7 +32,7 @@ def test_logging_initialized(monkeypatch: pytest.MonkeyPatch):
     assert "level" in called
 
 
-def test_request_logging_middleware_present():
+def test_request_logging_middleware_present() -> None:
     from src.main import create_app
 
     app = create_app()
@@ -42,7 +42,7 @@ def test_request_logging_middleware_present():
     assert "RequestLoggingMiddleware" in middlewares
 
 
-def test_app_can_start():
+def test_app_can_start() -> None:
     # Use FastAPI TestClient to make a request and check middleware runs
     from fastapi.testclient import TestClient
 
@@ -54,7 +54,7 @@ def test_app_can_start():
     assert response.status_code == 200
 
 
-def test_logging_init_error_propagates(monkeypatch: pytest.MonkeyPatch):
+def test_logging_init_error_propagates(monkeypatch: pytest.MonkeyPatch) -> None:
     # Patch init_logging to raise
     def fake_init_logging(*_: object, **__: object) -> None:
         raise RuntimeError("logging failed")
@@ -66,9 +66,9 @@ def test_logging_init_error_propagates(monkeypatch: pytest.MonkeyPatch):
         create_app()
 
 
-def test_double_import_does_not_duplicate_middleware(monkeypatch: pytest.MonkeyPatch):
+def test_double_import_does_not_duplicate_middleware(monkeypatch: pytest.MonkeyPatch) -> None:
     # Patch init_logging to do nothing
-    monkeypatch.setattr("src.core.logging.init_logging", lambda *a, **k: None)  # type: ignore[arg-type]
+    monkeypatch.setattr("src.core.logging.init_logging", lambda *a, **k: None)
     sys.modules.pop("src.main", None)
     importlib.invalidate_caches()
     import src.main  # noqa: F401
@@ -91,7 +91,7 @@ def test_double_import_does_not_duplicate_middleware(monkeypatch: pytest.MonkeyP
     assert names1.count("RequestLoggingMiddleware") == 1
 
 
-def test_main_module_import_and_lifecycle():
+def test_main_module_import_and_lifecycle() -> None:
     import importlib
 
     import src.main

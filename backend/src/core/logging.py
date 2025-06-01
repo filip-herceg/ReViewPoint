@@ -87,10 +87,11 @@ def init_logging(
                 log_level = str(
                     record.levelno
                 )  # Ensure log_level is always str for mypy
-            frame = logging.currentframe()
+            from types import FrameType
+            frame: FrameType | None = logging.currentframe()
             depth = 2
             while frame and frame.f_code.co_filename == logging.__file__:
-                frame = frame.f_back  # type: ignore
+                frame = frame.f_back
                 depth += 1
             loguru_logger.opt(depth=depth, exception=record.exc_info).log(
                 log_level, record.getMessage()

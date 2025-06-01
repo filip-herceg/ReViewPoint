@@ -1,7 +1,7 @@
 from src.utils.hashing import hash_password, verify_password
 
 
-def test_hash_password_and_verify():
+def test_hash_password_and_verify() -> None:
     password = "s3cr3t!"
     hashed = hash_password(password)
     assert hashed != password
@@ -10,7 +10,7 @@ def test_hash_password_and_verify():
     assert not verify_password("wrong", hashed)
 
 
-def test_hash_uniqueness():
+def test_hash_uniqueness() -> None:
     password = "repeatable"
     hash1 = hash_password(password)
     hash2 = hash_password(password)

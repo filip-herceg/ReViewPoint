@@ -5,7 +5,7 @@ from typing import Any
 from loguru import logger
 
 
-def run_migrations_offline():
+def run_migrations_offline() -> None:
     from logging.config import fileConfig
 
     import alembic.context
@@ -31,7 +31,7 @@ def run_migrations_offline():
         logger.info("Offline migrations complete.")
 
 
-def run_migrations_online(engine_from_config: Callable[..., Any]):
+def run_migrations_online(engine_from_config: Callable[..., Any]) -> None:
     """
     Run migrations in 'online' mode. The engine_from_config dependency must be provided for testability.
     """

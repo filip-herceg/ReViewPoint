@@ -1,11 +1,10 @@
-# type: ignore
 # Ruff: Remove unused import of relationship
 # Black: Reformat file
 
 from __future__ import annotations
 
 from sqlalchemy import Boolean, String
-from sqlalchemy.orm import Mapped, mapped_column  # type: ignore[attr-defined]
+from sqlalchemy.orm import Mapped, mapped_column
 
 from src.models.base import BaseModel
 

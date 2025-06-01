@@ -1,4 +1,3 @@
-# type: ignore
 """Tests for the database module."""
 
 from __future__ import annotations
@@ -17,13 +16,13 @@ from core.database import (
 
 
 @pytest.mark.asyncio
-async def test_db_healthcheck():
+async def test_db_healthcheck() -> None:
     """Test that db_healthcheck succeeds on a valid connection."""
     assert await db_healthcheck() is True
 
 
 @pytest.mark.asyncio
-async def test_db_session_context():
+async def test_db_session_context() -> None:
     """Test that session context manager works properly."""
     session = None
     async with get_async_session() as s:
@@ -35,7 +34,7 @@ async def test_db_session_context():
 
 
 @pytest.mark.asyncio
-async def test_session_rollback():
+async def test_session_rollback() -> None:
     """Test session rollback on error."""
     # Create a direct session without the context manager
     session = AsyncSessionLocal()
@@ -58,7 +57,7 @@ async def test_session_rollback():
 
 
 @pytest.mark.asyncio
-async def test_session_error_handling():
+async def test_session_error_handling() -> None:
     """Test the error handling in get_async_session context manager."""
     error_occurred = False
     try:
@@ -71,7 +70,7 @@ async def test_session_error_handling():
     assert error_occurred is True
 
 
-def test_engine_kwargs_sqlite():
+def test_engine_kwargs_sqlite() -> None:
     """Test engine kwargs for SQLite configurations."""
     url_obj = make_url("sqlite+aiosqlite:///:memory:")
     engine_kwargs: dict[str, int | bool] = {
@@ -90,7 +89,7 @@ def test_engine_kwargs_sqlite():
     assert "pool_size" not in engine_kwargs
 
 
-def test_engine_kwargs_postgres_prod():
+def test_engine_kwargs_postgres_prod() -> None:
     """Test engine kwargs for PostgreSQL in production."""
     url_obj = make_url("postgresql+asyncpg://user:pass@localhost/db")
     engine_kwargs: dict[str, int | bool] = {
@@ -114,7 +113,7 @@ def test_engine_kwargs_postgres_prod():
     assert engine_kwargs["max_overflow"] == 20
 
 
-def test_engine_kwargs_postgres_dev():
+def test_engine_kwargs_postgres_dev() -> None:
     """Test engine kwargs for PostgreSQL in development."""
     url_obj = make_url("postgresql+asyncpg://user:pass@localhost/db")
     engine_kwargs: dict[str, int | bool] = {

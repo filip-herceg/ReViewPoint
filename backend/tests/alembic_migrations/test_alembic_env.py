@@ -7,7 +7,7 @@ from unittest import mock
 import pytest
 
 
-def patch_alembic_context(monkeypatch: pytest.MonkeyPatch, context_mod: Any):
+def patch_alembic_context(monkeypatch: pytest.MonkeyPatch, context_mod: Any) -> None:
     monkeypatch.setitem(sys.modules, "alembic.context", context_mod)
     monkeypatch.setitem(sys.modules, "alembic_migrations.context", context_mod)
     monkeypatch.setitem(
@@ -18,7 +18,7 @@ def patch_alembic_context(monkeypatch: pytest.MonkeyPatch, context_mod: Any):
     )
 
 
-def test_run_migrations_offline_configures_and_runs(monkeypatch: pytest.MonkeyPatch):
+def test_run_migrations_offline_configures_and_runs(monkeypatch: pytest.MonkeyPatch) -> None:
     context_mod = types.SimpleNamespace()
 
     def get_main_option(_: str) -> str:
@@ -58,7 +58,7 @@ def test_run_migrations_offline_configures_and_runs(monkeypatch: pytest.MonkeyPa
     ), "context.run_migrations should be called in offline mode"
 
 
-def test_run_migrations_offline_handles_missing_url(monkeypatch: pytest.MonkeyPatch):
+def test_run_migrations_offline_handles_missing_url(monkeypatch: pytest.MonkeyPatch) -> None:
     # Arrange: Patch alembic.context with get_main_option returning None
     context_mod = types.SimpleNamespace()
 
@@ -100,7 +100,7 @@ def test_run_migrations_offline_handles_missing_url(monkeypatch: pytest.MonkeyPa
         env.run_migrations_offline()
 
 
-def test_run_migrations_offline_configure_raises(monkeypatch: pytest.MonkeyPatch):
+def test_run_migrations_offline_configure_raises(monkeypatch: pytest.MonkeyPatch) -> None:
     # Arrange: Patch alembic.context.configure to raise
     context_mod = types.ModuleType("alembic.context")
 
@@ -145,7 +145,7 @@ def test_run_migrations_offline_configure_raises(monkeypatch: pytest.MonkeyPatch
         env.run_migrations_offline()
 
 
-def test_run_migrations_online_happy_path(monkeypatch: pytest.MonkeyPatch):
+def test_run_migrations_online_happy_path(monkeypatch: pytest.MonkeyPatch) -> None:
     # Arrange: Patch alembic.context and provide a mock engine_from_config
     context_mod = types.ModuleType("alembic.context")
 
@@ -205,7 +205,7 @@ def test_run_migrations_online_happy_path(monkeypatch: pytest.MonkeyPatch):
     ), "context.run_migrations should be called in online mode"
 
 
-def test_run_migrations_online_missing_url(monkeypatch: pytest.MonkeyPatch):
+def test_run_migrations_online_missing_url(monkeypatch: pytest.MonkeyPatch) -> None:
     # Arrange: Patch alembic.context with get_main_option returning None
     context_mod = types.ModuleType("alembic.context")
 
@@ -247,7 +247,7 @@ def test_run_migrations_online_missing_url(monkeypatch: pytest.MonkeyPatch):
         env.run_migrations_online(lambda *a, **kw: mock.MagicMock())
 
 
-def test_run_migrations_online_engine_connect_raises(monkeypatch: pytest.MonkeyPatch):
+def test_run_migrations_online_engine_connect_raises(monkeypatch: pytest.MonkeyPatch) -> None:
     # Arrange: Patch alembic.context and provide a mock engine_from_config that raises on connect
     context_mod = types.ModuleType("alembic.context")
 
@@ -285,7 +285,7 @@ def test_run_migrations_online_engine_connect_raises(monkeypatch: pytest.MonkeyP
         env.run_migrations_online(lambda *a, **kw: mock_engine)
 
 
-def test_run_migrations_offline_configures_logging(monkeypatch: pytest.MonkeyPatch):
+def test_run_migrations_offline_configures_logging(monkeypatch: pytest.MonkeyPatch) -> None:
     # Arrange: Patch alembic.context and logging.config.fileConfig
     context_mod = types.ModuleType("alembic.context")
 
@@ -323,7 +323,7 @@ def test_run_migrations_offline_configures_logging(monkeypatch: pytest.MonkeyPat
     ), "logging.config.fileConfig should be called in offline mode"
 
 
-def test_run_migrations_online_configures_logging(monkeypatch: pytest.MonkeyPatch):
+def test_run_migrations_online_configures_logging(monkeypatch: pytest.MonkeyPatch) -> None:
     # Arrange: Patch alembic.context and logging.config.fileConfig
     context_mod = types.ModuleType("alembic.context")
 
@@ -369,7 +369,7 @@ def test_run_migrations_online_configures_logging(monkeypatch: pytest.MonkeyPatc
 
 def test_run_migrations_offline_logs(
     monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
-):
+) -> None:
     # Arrange: Patch alembic.context and logging.config.fileConfig
     context_mod = types.ModuleType("alembic.context")
 
@@ -411,7 +411,7 @@ def test_run_migrations_offline_logs(
 
 def test_run_migrations_online_logs(
     monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
-):
+) -> None:
     # Arrange: Patch alembic.context and logging.config.fileConfig
     context_mod = types.ModuleType("alembic.context")
 
@@ -461,7 +461,7 @@ def test_run_migrations_online_logs(
 
 def test_run_migrations_offline_fileConfig_not_called_when_no_config_file(
     monkeypatch: pytest.MonkeyPatch,
-):
+) -> None:
     # Arrange: Patch alembic.context and logging.config
     context_mod = types.ModuleType("alembic.context")
 
@@ -501,7 +501,7 @@ def test_run_migrations_offline_fileConfig_not_called_when_no_config_file(
     fileConfig_mock.assert_not_called()
 
 
-def test_run_migrations_offline_fileConfig_raises(monkeypatch: pytest.MonkeyPatch):
+def test_run_migrations_offline_fileConfig_raises(monkeypatch: pytest.MonkeyPatch) -> None:
     # Arrange: Patch alembic.context and logging.config
     context_mod = types.ModuleType("alembic.context")
 
@@ -540,7 +540,7 @@ def test_run_migrations_offline_fileConfig_raises(monkeypatch: pytest.MonkeyPatc
         env.run_migrations_offline()
 
 
-def test_run_migrations_offline_init_logging_raises(monkeypatch: pytest.MonkeyPatch):
+def test_run_migrations_offline_init_logging_raises(monkeypatch: pytest.MonkeyPatch) -> None:
     # Arrange: Patch alembic.context and logging.config
     context_mod = types.ModuleType("alembic.context")
 
@@ -583,7 +583,7 @@ def test_run_migrations_offline_init_logging_raises(monkeypatch: pytest.MonkeyPa
 
 def test_run_migrations_offline_begin_transaction_raises(
     monkeypatch: pytest.MonkeyPatch,
-):
+) -> None:
     # Arrange: Patch alembic.context and logging.config
     context_mod = types.ModuleType("alembic.context")
 
@@ -626,7 +626,7 @@ def test_run_migrations_offline_begin_transaction_raises(
         env.run_migrations_offline()
 
 
-def test_run_migrations_offline_run_migrations_raises(monkeypatch: pytest.MonkeyPatch):
+def test_run_migrations_offline_run_migrations_raises(monkeypatch: pytest.MonkeyPatch) -> None:
     # Arrange: Patch alembic.context and logging.config
     context_mod = types.ModuleType("alembic.context")
 
@@ -671,7 +671,7 @@ def test_run_migrations_offline_run_migrations_raises(monkeypatch: pytest.Monkey
 
 def test_run_migrations_online_engine_from_config_raises(
     monkeypatch: pytest.MonkeyPatch,
-):
+) -> None:
     # Arrange: Patch alembic.context, alembic.config, and sqlalchemy
     context_mod = types.ModuleType("alembic.context")
 

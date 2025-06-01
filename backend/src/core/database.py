@@ -38,7 +38,7 @@ engine: AsyncEngine = create_async_engine(
 )
 
 # Session factory for dependency injection
-AsyncSessionLocal = async_sessionmaker(
+AsyncSessionLocal: async_sessionmaker[AsyncSession] = async_sessionmaker(
     bind=engine,
     expire_on_commit=False,
     autoflush=False,
@@ -60,14 +60,18 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def db_healthcheck() -> bool:
-    """Check DB connectivity (for /health endpoint or startup)."""
+    """Check if the database connection is healthy."""
     try:
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
         return True
     except Exception as exc:
-        logger.error(f"Database healthcheck failed: {exc}")
+        logger.error(f"DB healthcheck failed: {exc}")
         return False
 
 
-# Removed the reassignment of async_sessionmaker to None to avoid conflicts.
+__all__ = [
+    "AsyncSessionLocal",
+    "db_healthcheck",
+    "get_async_session",
+]

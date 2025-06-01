@@ -6,7 +6,7 @@ import pytest
 from fastapi import FastAPI
 
 
-def test_app_is_fastapi_instance():
+def test_app_is_fastapi_instance() -> None:
     import backend.main
 
     assert isinstance(backend.main.app, FastAPI)
@@ -14,7 +14,7 @@ def test_app_is_fastapi_instance():
     assert backend.main.app.version == "0.1.0"
 
 
-def test_logging_initialized(monkeypatch: pytest.MonkeyPatch):
+def test_logging_initialized(monkeypatch: pytest.MonkeyPatch) -> None:
     # Patch init_logging to check it is called with correct level
     from typing import Any
 
@@ -24,7 +24,7 @@ def test_logging_initialized(monkeypatch: pytest.MonkeyPatch):
         called["level"] = level
         called.update(kwargs)
 
-    monkeypatch.setattr("backend.core.logging.init_logging", fake_init_logging)  # type: ignore[arg-type]
+    monkeypatch.setattr("backend.core.logging.init_logging", fake_init_logging)
     # Reload main.py to trigger logging init
     sys.modules.pop("backend.main", None)
     importlib.invalidate_caches()
@@ -35,7 +35,7 @@ def test_logging_initialized(monkeypatch: pytest.MonkeyPatch):
     assert called["level"] == backend.main.settings.log_level
 
 
-def test_request_logging_middleware_present():
+def test_request_logging_middleware_present() -> None:
 
     import backend.main
 
@@ -45,7 +45,7 @@ def test_request_logging_middleware_present():
     assert "RequestLoggingMiddleware" in middlewares
 
 
-def test_app_can_start():
+def test_app_can_start() -> None:
     # Use FastAPI TestClient to make a request and check middleware runs
     import backend.main
     from fastapi.testclient import TestClient
@@ -56,12 +56,12 @@ def test_app_can_start():
     # Optionally check for middleware effect (headers, logs, etc.)
 
 
-def test_logging_init_error_propagates(monkeypatch: pytest.MonkeyPatch):
+def test_logging_init_error_propagates(monkeypatch: pytest.MonkeyPatch) -> None:
     # Patch init_logging to raise
     def fake_init_logging(*_: object, **__: object) -> None:
         raise RuntimeError("logging failed")
 
-    monkeypatch.setattr("backend.core.logging.init_logging", fake_init_logging)  # type: ignore[arg-type]
+    monkeypatch.setattr("backend.core.logging.init_logging", fake_init_logging)
     sys.modules.pop("backend.main", None)
     importlib.invalidate_caches()
     with pytest.raises(RuntimeError, match="logging failed"):
@@ -70,7 +70,7 @@ def test_logging_init_error_propagates(monkeypatch: pytest.MonkeyPatch):
         _ = getattr(backend.main, "app", None)
 
 
-def test_missing_log_level(monkeypatch: pytest.MonkeyPatch):
+def test_missing_log_level(monkeypatch: pytest.MonkeyPatch) -> None:
     # Patch settings to remove log_level
     import backend.core.config as config_mod
 
@@ -79,8 +79,8 @@ def test_missing_log_level(monkeypatch: pytest.MonkeyPatch):
     class DummySettings:
         pass
 
-    config_mod.settings = DummySettings()  # type: ignore[assignment]
-    monkeypatch.setattr("backend.core.logging.init_logging", lambda *a: None)  # type: ignore[arg-type]
+    config_mod.settings = DummySettings()
+    monkeypatch.setattr("backend.core.logging.init_logging", lambda *a: None)
     sys.modules.pop("backend.main", None)
     importlib.invalidate_caches()
     try:
@@ -97,9 +97,9 @@ def test_missing_log_level(monkeypatch: pytest.MonkeyPatch):
         config_mod.settings = orig_settings
 
 
-def test_double_import_does_not_duplicate_middleware(monkeypatch: pytest.MonkeyPatch):
+def test_double_import_does_not_duplicate_middleware(monkeypatch: pytest.MonkeyPatch) -> None:
     # Patch init_logging to do nothing
-    monkeypatch.setattr("backend.core.logging.init_logging", lambda *a, **k: None)  # type: ignore[arg-type]
+    monkeypatch.setattr("backend.core.logging.init_logging", lambda *a, **k: None)
     sys.modules.pop("backend.main", None)
     importlib.invalidate_caches()
     import backend.main  # noqa: F401
@@ -122,7 +122,7 @@ def test_double_import_does_not_duplicate_middleware(monkeypatch: pytest.MonkeyP
     assert names1.count("RequestLoggingMiddleware") == 1
 
 
-def test_main_module_import_and_lifecycle():
+def test_main_module_import_and_lifecycle() -> None:
     import importlib
 
     import backend.main
