@@ -25,13 +25,13 @@ from src.utils.validation import (
 
 
 @pytest_asyncio.fixture(autouse=True)
-async def cleanup_users(async_session: AsyncSession):
+async def cleanup_users(async_session: AsyncSession) -> None:
     await async_session.execute(delete(User))
     await async_session.commit()
 
 
 @pytest.mark.asyncio
-async def test_get_user_by_id(async_session: AsyncSession):
+async def test_get_user_by_id(async_session: AsyncSession) -> None:
     user = User(email="a@b.com", hashed_password="pw", is_active=True)
     async_session.add(user)
     await async_session.commit()
@@ -42,7 +42,7 @@ async def test_get_user_by_id(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_get_users_by_ids(async_session: AsyncSession):
+async def test_get_users_by_ids(async_session: AsyncSession) -> None:
     users = [
         User(email=f"u{i}@b.com", hashed_password="pw", is_active=True)
         for i in range(3)
@@ -58,7 +58,7 @@ async def test_get_users_by_ids(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_list_users_paginated(async_session: AsyncSession):
+async def test_list_users_paginated(async_session: AsyncSession) -> None:
     users = [
         User(email=f"p{i}@b.com", hashed_password="pw", is_active=True)
         for i in range(10)
@@ -71,7 +71,7 @@ async def test_list_users_paginated(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_search_users_by_name_or_email(async_session: AsyncSession):
+async def test_search_users_by_name_or_email(async_session: AsyncSession) -> None:
     users = [
         User(email=f"search{i}@b.com", hashed_password="pw", is_active=True)
         for i in range(5)
@@ -87,7 +87,7 @@ async def test_search_users_by_name_or_email(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_filter_users_by_status(async_session: AsyncSession):
+async def test_filter_users_by_status(async_session: AsyncSession) -> None:
     users = [
         User(email="active1@b.com", hashed_password="pw", is_active=True),
         User(email="inactive1@b.com", hashed_password="pw", is_active=False),
@@ -104,7 +104,7 @@ async def test_filter_users_by_status(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_get_users_created_within(async_session: AsyncSession):
+async def test_get_users_created_within(async_session: AsyncSession) -> None:
 
     now = datetime.now(UTC)
     users = [
@@ -134,7 +134,7 @@ async def test_get_users_created_within(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_count_users(async_session: AsyncSession):
+async def test_count_users(async_session: AsyncSession) -> None:
     users = [
         User(email=f"c{i}@b.com", hashed_password="pw", is_active=(i % 2 == 0))
         for i in range(6)
@@ -150,7 +150,7 @@ async def test_count_users(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_get_active_inactive_users(async_session: AsyncSession):
+async def test_get_active_inactive_users(async_session: AsyncSession) -> None:
     users = [
         User(email="a@b.com", hashed_password="pw", is_active=True),
         User(email="b@b.com", hashed_password="pw", is_active=False),
@@ -164,7 +164,7 @@ async def test_get_active_inactive_users(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_filter_users_by_role_stub(async_session: AsyncSession):
+async def test_filter_users_by_role_stub(async_session: AsyncSession) -> None:
     users = [User(email="r@b.com", hashed_password="pw", is_active=True)]
     async_session.add_all(users)
     await async_session.commit()
@@ -173,7 +173,7 @@ async def test_filter_users_by_role_stub(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_get_users_by_custom_field_stub(async_session: AsyncSession):
+async def test_get_users_by_custom_field_stub(async_session: AsyncSession) -> None:
     users = [User(email="cf@b.com", hashed_password="pw", is_active=True)]
     async_session.add_all(users)
     await async_session.commit()
@@ -184,7 +184,7 @@ async def test_get_users_by_custom_field_stub(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_bulk_create_users(async_session: AsyncSession):
+async def test_bulk_create_users(async_session: AsyncSession) -> None:
     users = [
         User(email=f"bulk{i}@b.com", hashed_password="pw", is_active=True)
         for i in range(3)
@@ -197,7 +197,7 @@ async def test_bulk_create_users(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_bulk_update_users(async_session: AsyncSession):
+async def test_bulk_update_users(async_session: AsyncSession) -> None:
     users = [
         User(email=f"upd{i}@b.com", hashed_password="pw", is_active=True)
         for i in range(2)
@@ -215,7 +215,7 @@ async def test_bulk_update_users(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_bulk_delete_users(async_session: AsyncSession):
+async def test_bulk_delete_users(async_session: AsyncSession) -> None:
     users = [
         User(email=f"del{i}@b.com", hashed_password="pw", is_active=True)
         for i in range(2)
@@ -230,7 +230,7 @@ async def test_bulk_delete_users(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_soft_delete_and_restore_user(async_session: AsyncSession):
+async def test_soft_delete_and_restore_user(async_session: AsyncSession) -> None:
     user = User(email="soft@b.com", hashed_password="pw", is_active=True)
     async_session.add(user)
     await async_session.commit()
@@ -248,7 +248,7 @@ async def test_soft_delete_and_restore_user(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_upsert_user(async_session: AsyncSession):
+async def test_upsert_user(async_session: AsyncSession) -> None:
     # Insert
     user = await user_repo.upsert_user(
         async_session, "upsert@b.com", {"hashed_password": "pw", "is_active": True}
@@ -265,7 +265,7 @@ async def test_upsert_user(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_partial_update_user(async_session: AsyncSession):
+async def test_partial_update_user(async_session: AsyncSession) -> None:
     user = User(email="patch@b.com", hashed_password="pw", is_active=True)
     async_session.add(user)
     await async_session.commit()
@@ -284,7 +284,7 @@ async def test_partial_update_user(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_user_exists(async_session: AsyncSession):
+async def test_user_exists(async_session: AsyncSession) -> None:
     user = User(email="exists@b.com", hashed_password="pw", is_active=True)
     async_session.add(user)
     await async_session.commit()
@@ -295,7 +295,7 @@ async def test_user_exists(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_is_email_unique(async_session: AsyncSession):
+async def test_is_email_unique(async_session: AsyncSession) -> None:
     user = User(email="unique@b.com", hashed_password="pw", is_active=True)
     async_session.add(user)
     await async_session.commit()
@@ -313,7 +313,7 @@ async def test_is_email_unique(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_change_user_password(async_session: AsyncSession):
+async def test_change_user_password(async_session: AsyncSession) -> None:
     user = User(email="pw@b.com", hashed_password="old", is_active=True)
     async_session.add(user)
     await async_session.commit()
@@ -325,7 +325,7 @@ async def test_change_user_password(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_audit_log_user_change(async_session: AsyncSession):
+async def test_audit_log_user_change(async_session: AsyncSession) -> None:
     import logging
 
     logger = logging.getLogger("user_audit")
@@ -343,7 +343,7 @@ async def test_audit_log_user_change(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_get_user_with_files(async_session: AsyncSession):
+async def test_get_user_with_files(async_session: AsyncSession) -> None:
     user = User(email="files@b.com", hashed_password="pw", is_active=True)
     async_session.add(user)
     await async_session.commit()
@@ -362,7 +362,7 @@ async def test_get_user_with_files(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_db_session_context_and_transaction():
+async def test_db_session_context_and_transaction() -> None:
     from src.repositories.user import db_session_context, db_transaction
 
     async with db_session_context() as session:
@@ -375,7 +375,7 @@ async def test_db_session_context_and_transaction():
 
 
 @pytest.mark.asyncio
-async def test_export_users_to_csv_and_json(async_session: AsyncSession):
+async def test_export_users_to_csv_and_json(async_session: AsyncSession) -> None:
     users = [
         User(email=f"exp{i}@b.com", hashed_password="pw", is_active=(i % 2 == 0))
         for i in range(3)
@@ -396,7 +396,7 @@ async def test_export_users_to_csv_and_json(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_import_users_from_dicts(async_session: AsyncSession):
+async def test_import_users_from_dicts(async_session: AsyncSession) -> None:
     user_dicts = [
         {"email": "imp1@b.com", "hashed_password": "pw", "is_active": True},
         {"email": "imp2@b.com", "hashed_password": "pw", "is_active": False},
@@ -411,7 +411,7 @@ async def test_import_users_from_dicts(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_deactivate_and_reactivate_user(async_session: AsyncSession):
+async def test_deactivate_and_reactivate_user(async_session: AsyncSession) -> None:
     user = User(email="active@b.com", hashed_password="pw", is_active=True)
     async_session.add(user)
     await async_session.commit()
@@ -429,7 +429,7 @@ async def test_deactivate_and_reactivate_user(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_update_last_login(async_session: AsyncSession):
+async def test_update_last_login(async_session: AsyncSession) -> None:
     from datetime import datetime
 
     user = User(email="login@b.com", hashed_password="pw", is_active=True)
@@ -446,7 +446,7 @@ async def test_update_last_login(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_validate_email_and_password():
+async def test_validate_email_and_password() -> None:
     assert validate_email("test@example.com")
     assert not validate_email("bademail")
     assert validate_password("Abc12345")
@@ -469,7 +469,7 @@ async def test_validate_email_and_password():
 
 
 @pytest.mark.asyncio
-async def test_async_in_memory_cache():
+async def test_async_in_memory_cache() -> None:
     cache = AsyncInMemoryCache()
     await cache.set("foo", 123, ttl=0.1)
     assert await cache.get("foo") == 123
@@ -481,7 +481,7 @@ async def test_async_in_memory_cache():
 
 
 @pytest.mark.asyncio
-async def test_async_rate_limiter():
+async def test_async_rate_limiter() -> None:
     limiter = AsyncRateLimiter(max_calls=2, period=0.5)
     key = "user:1:test"
     assert await limiter.is_allowed(key)
@@ -492,7 +492,7 @@ async def test_async_rate_limiter():
 
 
 @pytest.mark.asyncio
-async def test_error_handling_utilities(async_session: AsyncSession):
+async def test_error_handling_utilities(async_session: AsyncSession) -> None:
     create_user_with_validation = user_repo.create_user_with_validation
     sensitive_user_action = user_repo.sensitive_user_action
     safe_get_user_by_id = user_repo.safe_get_user_by_id
@@ -514,7 +514,7 @@ async def test_error_handling_utilities(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_anonymize_user(async_session: AsyncSession):
+async def test_anonymize_user(async_session: AsyncSession) -> None:
     from src.repositories.user import anonymize_user, get_user_by_id
 
     user = User(email="gdpr@b.com", hashed_password="pw", is_active=True)
@@ -537,7 +537,7 @@ async def test_anonymize_user(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_user_signups_per_month(async_session: AsyncSession):
+async def test_user_signups_per_month(async_session: AsyncSession) -> None:
     from datetime import datetime
 
     from src.repositories.user import user_signups_per_month

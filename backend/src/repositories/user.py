@@ -2,7 +2,7 @@ import csv
 import io
 import json
 import logging
-from collections.abc import Sequence
+from collections.abc import AsyncIterator, Sequence
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from typing import Any
@@ -288,7 +288,7 @@ async def change_user_password(
     return True
 
 
-logger = logging.getLogger("user_audit")
+logger: logging.Logger = logging.getLogger("user_audit")
 
 
 async def audit_log_user_change(
@@ -310,7 +310,7 @@ async def revoke_role_from_user(session: AsyncSession, user_id: int, role: str) 
 
 
 @asynccontextmanager
-async def db_session_context():
+async def db_session_context() -> AsyncIterator[Any]:
     """Async context manager for DB session."""
     from src.core.database import AsyncSessionLocal
 
@@ -322,7 +322,7 @@ async def db_session_context():
 
 
 @asynccontextmanager
-async def db_transaction(session: AsyncSession):
+async def db_transaction(session: AsyncSession) -> AsyncIterator[Any]:
     """Async context manager for DB transaction (atomic operations)."""
     async with session.begin():
         yield

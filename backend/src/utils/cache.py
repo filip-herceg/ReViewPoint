@@ -3,7 +3,7 @@ from typing import Any
 
 
 class AsyncInMemoryCache:
-    def __init__(self):
+    def __init__(self) -> None:
         self._cache: dict[str, tuple[Any, float]] = {}
         self._lock = asyncio.Lock()
 

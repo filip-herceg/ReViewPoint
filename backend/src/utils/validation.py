@@ -20,6 +20,7 @@ def validate_password(password: str, min_length: int = 8) -> bool:
 
 
 def get_password_validation_error(password: str, min_length: int = 8) -> str | None:
+    """Get the error message for password validation."""
     if len(password) < min_length:
         return f"Password must be at least {min_length} characters."
     if not re.search(r"[A-Za-z]", password):

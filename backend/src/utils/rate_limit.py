@@ -3,7 +3,7 @@ from collections import defaultdict
 
 
 class AsyncRateLimiter:
-    def __init__(self, max_calls: int, period: float):
+    def __init__(self, max_calls: int, period: float) -> None:
         self.max_calls = max_calls
         self.period = period
         self.calls: dict[str, list[float]] = defaultdict(list)
