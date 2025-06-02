@@ -34,7 +34,7 @@ Provides secure password hashing and verification using [passlib]'s bcrypt algor
 - Use `verify_password` for authentication checks.
 
 ## 4. Dependencies  
-- **External**: [passlib] (with `bcrypt` extra): `poetry add passlib[bcrypt]`
+- **External**: [passlib] (with `bcrypt` extra): `hatch run pip install 'passlib[bcrypt]'`
 
 ## 5. Tests  
 | Test file | Scenario |

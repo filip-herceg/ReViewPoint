@@ -8,22 +8,22 @@ This guide explains how to run all backend tests, including unit, async, API, an
   - `pytest-asyncio`
   - `pytest-httpx`
   - `pytest-mock`
-- Activate your Poetry environment: `poetry shell`
+- Activate your Hatch environment: `hatch shell`
 
 ## Running All Tests
 ```powershell
-poetry run pytest
+hatch run pytest
 ```
 
 ## Running Tests with Coverage Report
 ```powershell
-poetry run pytest --cov=backend --cov-report=term --cov-report=xml
+hatch run pytest --cov=backend --cov-report=term --cov-report=xml
 ```
 
 ## Running Specific Tests (Async/API)
 ```powershell
-poetry run pytest backend/tests/core/test_database.py
-poetry run pytest backend/tests/middlewares/test_logging.py
+hatch run pytest backend/tests/core/test_database.py
+hatch run pytest backend/tests/middlewares/test_logging.py
 ```
 
 ## Notes
