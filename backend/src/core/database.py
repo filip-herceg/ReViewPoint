@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from core.config import settings
+from src.core.config import settings
 
 # Create the async engine
 url_obj = make_url(settings.async_db_url)

@@ -18,7 +18,7 @@ class File(BaseModel):
     content_type: Mapped[str] = mapped_column(String(128), nullable=False)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 
-    user = relationship("User", backref="files")
+    user = relationship("User", back_populates="files")
     # created_at, updated_at inherited from BaseModel
 
     def __repr__(self) -> str:
