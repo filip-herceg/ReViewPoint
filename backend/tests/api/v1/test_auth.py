@@ -39,13 +39,13 @@ def test_verify_access_token_expired(monkeypatch: pytest.MonkeyPatch) -> None:
 
     payload = jwt.decode(
         token,
-        settings.jwt_secret_key,
+        str(settings.jwt_secret_key),
         algorithms=[settings.jwt_algorithm],
         options={"verify_exp": False},
     )
     payload["exp"] = int(time.time()) - 60
     expired_token = jwt.encode(
-        payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm
+        payload, str(settings.jwt_secret_key), algorithm=settings.jwt_algorithm
     )
     with pytest.raises(JWTError):
         security.verify_access_token(expired_token)
