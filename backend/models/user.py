@@ -18,6 +18,7 @@ class User(BaseModel):
     )
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     # created_at, updated_at inherited from BaseModel
 
     def __repr__(self) -> str:

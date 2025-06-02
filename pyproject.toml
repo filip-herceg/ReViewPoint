@@ -1,3 +1,9 @@
+[project]
+name = "reviewpoint"
+version = "0.1.0"
+description = "Root monorepo tools and docs for ReViewPoint"
+authors = ["Filip Herceg"]
+
 [tool.poetry]
 name = "reviewpoint-root"
 version = "0.1.0"
@@ -10,6 +16,12 @@ python = "^3.11"
 mkdocs = "^1.6.1"
 mkdocs-material = "^9.6.13"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+
+[tool.poetry.group.dev.dependencies]
+types-python-jose = "*"
+
+[project.optional-dependencies.dev]
+types-python-jose = "*"
 
 [build-system]
 requires = ["poetry-core"]
