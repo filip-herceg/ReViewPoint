@@ -51,6 +51,8 @@ Source = "https://github.com/filip-herceg/backend"
 path = "src/__about__.py"
 
 [tool.hatch.envs.default]
+# Default virtual environment path
+path = ".venv"
 dependencies = [
   "pytest>=8.3.4",
   "pytest-asyncio>=0.24.0",

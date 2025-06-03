@@ -16,3 +16,7 @@ license = "MIT"
 
 [tool.hatch.build.targets.wheel]
 packages = ["backend/src"]
+
+[tool.hatch.envs.project]
+path = ".venv"
+dependencies = []
