@@ -95,3 +95,52 @@ async def test_logout_user_nonexistent(async_session: AsyncSession):
         await user_service.logout_user(async_session, user_id=999999)
     except Exception as e:
         pytest.fail(f"logout_user raised an exception for nonexistent user: {e}")
+
+def test_refresh_access_token_valid():
+    user_id = 123
+    email = "refresh@example.com"
+    payload = {"sub": str(user_id), "email": email, "nonce": "1"}
+    token = user_service.create_access_token(payload)
+    # Wait a second to ensure exp is different (if needed)
+    import time
+    time.sleep(1)
+    # Add a different nonce to force a new token
+    new_payload = {"sub": str(user_id), "email": email, "nonce": "2"}
+    new_token = user_service.create_access_token(new_payload)
+    assert new_token != token
+    # Now test refresh_access_token returns a valid token (may be same if claims are identical)
+    refreshed_token = user_service.refresh_access_token(user_id, token)
+    assert isinstance(refreshed_token, str)
+    # Accept that the token may be the same if claims and exp are identical
+    # But it should decode to the same payload
+    decoded = user_service.verify_email_token(refreshed_token)
+    assert decoded["email"] == email
+
+def test_refresh_access_token_invalid_subject():
+    user_id = 123
+    payload = {"sub": "999", "email": "refresh@example.com"}
+    token = user_service.create_access_token(payload)
+    with pytest.raises(ValidationError):
+        user_service.refresh_access_token(user_id, token)
+
+def test_refresh_access_token_invalid_token():
+    with pytest.raises(ValidationError):
+        user_service.refresh_access_token(1, "not.a.jwt.token")
+
+def test_revoke_refresh_token_stub():
+    # Should not raise or do anything
+    try:
+        user_service.revoke_refresh_token(1, "sometoken")
+    except Exception as e:
+        pytest.fail(f"revoke_refresh_token raised: {e}")
+
+def test_verify_email_token_valid():
+    payload = {"sub": "1", "email": "verify@example.com", "purpose": "email_verify"}
+    token = user_service.create_access_token(payload)
+    decoded = user_service.verify_email_token(token)
+    assert decoded["email"] == "verify@example.com"
+    assert decoded["purpose"] == "email_verify"
+
+def test_verify_email_token_invalid():
+    with pytest.raises(ValidationError):
+        user_service.verify_email_token("not.a.jwt.token")
