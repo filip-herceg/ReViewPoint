@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.repositories import user as user_repo
 from src.models.user import User
 from src.utils.hashing import hash_password, verify_password
-from src.utils.validation import get_password_validation_error
+from src.utils.validation import get_password_validation_error, validate_email
 from src.repositories.user import get_user_by_id, change_user_password
 from src.core.security import create_access_token, verify_access_token
 from src.utils.errors import ValidationError, UserNotFoundError
@@ -268,3 +268,38 @@ async def reactivate_user(session: AsyncSession, user_id: int) -> bool:
     result = await user_repo.reactivate_user(session, user_id)
     await user_repo.audit_log_user_change(session, user_id, "reactivate", "User reactivated (is_active=True).")
     return result
+
+async def get_user_by_username(session: AsyncSession, username: str) -> User | None:
+    """
+    Look up a user by username (email). Returns user if found, else None. Validates input.
+    """
+    if not username:
+        raise ValidationError("Username (email) is required.")
+    if not validate_email(username):
+        raise ValidationError("Invalid email format.")
+    result = await session.execute(user_repo.select(User).where(User.email == username))
+    user = result.scalar_one_or_none()
+    return user
+
+async def get_users_paginated(session: AsyncSession, page: int = 1, limit: int = 20) -> dict[str, Any]:
+    """
+    Return paginated users and total count. Validates input and returns structured response.
+    """
+    if page < 1 or limit < 1 or limit > 100:
+        raise ValidationError("Invalid pagination parameters.")
+    offset = (page - 1) * limit
+    users = await user_repo.list_users_paginated(session, offset=offset, limit=limit)
+    total = await user_repo.count_users(session)
+    return {"users": users, "total": total, "page": page, "limit": limit}
+
+async def user_exists(session: AsyncSession, email: str) -> bool:
+    """
+    Return whether the email is already registered. Validates input.
+    """
+    if not email:
+        raise ValidationError("Email is required.")
+    if not validate_email(email):
+        raise ValidationError("Invalid email format.")
+    # is_email_unique returns True if not found, so invert
+    exists = not await user_repo.is_email_unique(session, email)
+    return exists

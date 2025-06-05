@@ -579,3 +579,63 @@ async def test_delete_user_account_on_inactive_user(async_session, caplog):
         result2 = await user_service.delete_user_account(async_session, user_id, anonymize=True)
         assert result2 is False
         assert "anonymize" in caplog.text
+
+@pytest.mark.asyncio
+async def test_get_user_by_username_success(async_session: AsyncSession):
+    email = f"lookup_{uuid.uuid4().hex[:8]}@example.com"
+    await user_service.register_user(async_session, {"email": email, "password": "Abc12345"})
+    found = await user_service.get_user_by_username(async_session, email)
+    assert found is not None
+    assert found.email == email
+
+@pytest.mark.asyncio
+async def test_get_user_by_username_not_found(async_session: AsyncSession):
+    found = await user_service.get_user_by_username(async_session, "notfound@example.com")
+    assert found is None
+
+@pytest.mark.asyncio
+async def test_get_user_by_username_invalid(async_session: AsyncSession):
+    with pytest.raises(ValidationError):
+        await user_service.get_user_by_username(async_session, "bademail")
+    with pytest.raises(ValidationError):
+        await user_service.get_user_by_username(async_session, "")
+
+@pytest.mark.asyncio
+async def test_get_users_paginated_basic(async_session: AsyncSession):
+    # Create 7 users
+    emails = [f"page_{i}_{uuid.uuid4().hex[:6]}@example.com" for i in range(7)]
+    for email in emails:
+        await user_service.register_user(async_session, {"email": email, "password": "Abc12345"})
+    result = await user_service.get_users_paginated(async_session, page=1, limit=5)
+    assert "users" in result and "total" in result
+    assert result["page"] == 1
+    assert result["limit"] == 5
+    assert result["total"] >= 7
+    assert len(result["users"]) == 5
+    # Page 2
+    result2 = await user_service.get_users_paginated(async_session, page=2, limit=5)
+    assert result2["page"] == 2
+    assert len(result2["users"]) >= 2
+
+@pytest.mark.asyncio
+async def test_get_users_paginated_invalid(async_session: AsyncSession):
+    with pytest.raises(ValidationError):
+        await user_service.get_users_paginated(async_session, page=0, limit=5)
+    with pytest.raises(ValidationError):
+        await user_service.get_users_paginated(async_session, page=1, limit=0)
+    with pytest.raises(ValidationError):
+        await user_service.get_users_paginated(async_session, page=1, limit=101)
+
+@pytest.mark.asyncio
+async def test_user_exists_true_false(async_session: AsyncSession):
+    email = f"exists_{uuid.uuid4().hex[:8]}@example.com"
+    await user_service.register_user(async_session, {"email": email, "password": "Abc12345"})
+    assert await user_service.user_exists(async_session, email) is True
+    assert await user_service.user_exists(async_session, "notfound@example.com") is False
+
+@pytest.mark.asyncio
+async def test_user_exists_invalid(async_session: AsyncSession):
+    with pytest.raises(ValidationError):
+        await user_service.user_exists(async_session, "bademail")
+    with pytest.raises(ValidationError):
+        await user_service.user_exists(async_session, "")
