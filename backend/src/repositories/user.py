@@ -531,4 +531,6 @@ __all__ = [
     "sensitive_user_action",
     "anonymize_user",
     "user_signups_per_month",
+    "UserNotFoundError",
+    "select",
 ]

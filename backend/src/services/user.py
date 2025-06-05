@@ -395,3 +395,8 @@ async def check_user_role(user_id: int, required_role: str) -> bool:
 # Example usage in FastAPI route:
 #   if not await check_user_role(current_user.id, UserRole.ADMIN):
 #       raise HTTPException(status_code=403, detail="Admin access required")
+
+__all__ = [
+    "create_access_token",
+    # Add other public symbols here as needed
+]

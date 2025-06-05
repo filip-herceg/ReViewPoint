@@ -6,7 +6,7 @@ import sqlalchemy as sa
 from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.create_table(
         "used_password_reset_tokens",
         sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
@@ -22,7 +22,7 @@ def upgrade():
     )
 
 
-def downgrade():
+def downgrade() -> None:
     op.drop_index(
         "ix_used_password_reset_tokens_email", table_name="used_password_reset_tokens"
     )

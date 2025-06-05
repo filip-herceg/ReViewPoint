@@ -14,7 +14,7 @@ from src.utils.errors import UserAlreadyExistsError, UserNotFoundError, Validati
 
 
 @pytest.mark.asyncio
-async def test_register_user_success(async_session: AsyncSession):
+async def test_register_user_success(async_session: AsyncSession) -> None:
     data = {"email": "testuser@example.com", "password": "Abc12345"}
     user = await user_service.register_user(async_session, data)
     assert user.id is not None
@@ -24,7 +24,7 @@ async def test_register_user_success(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_register_user_duplicate_email(async_session: AsyncSession):
+async def test_register_user_duplicate_email(async_session: AsyncSession) -> None:
     data = {"email": "dupe@example.com", "password": "Abc12345"}
     await user_service.register_user(async_session, data)
     with pytest.raises(UserAlreadyExistsError):
@@ -34,7 +34,7 @@ async def test_register_user_duplicate_email(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_register_user_invalid_email(async_session: AsyncSession):
+async def test_register_user_invalid_email(async_session: AsyncSession) -> None:
     data = {"email": "bademail", "password": "Abc12345"}
     with pytest.raises(ValidationError):
         await user_service.register_user(async_session, data)
@@ -42,7 +42,7 @@ async def test_register_user_invalid_email(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_register_user_invalid_password(async_session: AsyncSession):
+async def test_register_user_invalid_password(async_session: AsyncSession) -> None:
     data = {"email": "pwfail@example.com", "password": "short"}
     with pytest.raises(ValidationError):
         await user_service.register_user(async_session, data)
@@ -50,7 +50,7 @@ async def test_register_user_invalid_password(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_authenticate_user_success(async_session: AsyncSession):
+async def test_authenticate_user_success(async_session: AsyncSession) -> None:
     data = {"email": "authuser@example.com", "password": "Abc12345"}
     await user_service.register_user(async_session, data)
     token = await user_service.authenticate_user(
@@ -61,7 +61,7 @@ async def test_authenticate_user_success(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_authenticate_user_wrong_password(async_session: AsyncSession):
+async def test_authenticate_user_wrong_password(async_session: AsyncSession) -> None:
     data = {"email": "wrongpw@example.com", "password": "Abc12345"}
     await user_service.register_user(async_session, data)
     with pytest.raises(ValidationError):
@@ -70,7 +70,7 @@ async def test_authenticate_user_wrong_password(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_authenticate_user_not_found(async_session: AsyncSession):
+async def test_authenticate_user_not_found(async_session: AsyncSession) -> None:
     with pytest.raises(UserNotFoundError):
         await user_service.authenticate_user(
             async_session, "notfound@example.com", "Abc12345"
@@ -79,7 +79,7 @@ async def test_authenticate_user_not_found(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_logout_user_deactivates(async_session: AsyncSession):
+async def test_logout_user_deactivates(async_session: AsyncSession) -> None:
     data = {"email": "logout@example.com", "password": "Abc12345"}
     user = await user_service.register_user(async_session, data)
     await user_service.logout_user(async_session, user.id)
@@ -88,7 +88,7 @@ async def test_logout_user_deactivates(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_is_authenticated():
+async def test_is_authenticated() -> None:
     user = User(
         email="active@example.com",
         hashed_password="x",
@@ -104,7 +104,7 @@ async def test_is_authenticated():
 
 
 @pytest.mark.asyncio
-async def test_is_authenticated_stub_cases():
+async def test_is_authenticated_stub_cases() -> None:
     # Active and not deleted
     user = User(
         email="active@example.com",
@@ -128,7 +128,7 @@ async def test_is_authenticated_stub_cases():
 
 
 @pytest.mark.asyncio
-async def test_logout_user_nonexistent(async_session: AsyncSession):
+async def test_logout_user_nonexistent(async_session: AsyncSession) -> None:
     # Should not raise, but should not fail if user does not exist
     try:
         await user_service.logout_user(async_session, user_id=999999)
@@ -136,7 +136,7 @@ async def test_logout_user_nonexistent(async_session: AsyncSession):
         pytest.fail(f"logout_user raised an exception for nonexistent user: {e}")
 
 
-def test_refresh_access_token_valid():
+def test_refresh_access_token_valid() -> None:
     user_id = 123
     email = "refresh@example.com"
     payload = {"sub": str(user_id), "email": email, "nonce": "1"}
@@ -159,7 +159,7 @@ def test_refresh_access_token_valid():
     assert decoded["email"] == email
 
 
-def test_refresh_access_token_invalid_subject():
+def test_refresh_access_token_invalid_subject() -> None:
     user_id = 123
     payload = {"sub": "999", "email": "refresh@example.com"}
     token = user_service.create_access_token(payload)
@@ -167,12 +167,12 @@ def test_refresh_access_token_invalid_subject():
         user_service.refresh_access_token(user_id, token)
 
 
-def test_refresh_access_token_invalid_token():
+def test_refresh_access_token_invalid_token() -> None:
     with pytest.raises(ValidationError):
         user_service.refresh_access_token(1, "not.a.jwt.token")
 
 
-def test_revoke_refresh_token_stub():
+def test_revoke_refresh_token_stub() -> None:
     # Should not raise or do anything
     try:
         user_service.revoke_refresh_token(1, "sometoken")
@@ -180,7 +180,7 @@ def test_revoke_refresh_token_stub():
         pytest.fail(f"revoke_refresh_token raised: {e}")
 
 
-def test_verify_email_token_valid():
+def test_verify_email_token_valid() -> None:
     payload = {"sub": "1", "email": "verify@example.com", "purpose": "email_verify"}
     token = user_service.create_access_token(payload)
     decoded = user_service.verify_email_token(token)
@@ -188,18 +188,19 @@ def test_verify_email_token_valid():
     assert decoded["purpose"] == "email_verify"
 
 
-def test_verify_email_token_invalid():
+def test_verify_email_token_invalid() -> None:
     with pytest.raises(ValidationError):
         user_service.verify_email_token("not.a.jwt.token")
 
 
 @pytest.mark.asyncio
 async def test_get_password_reset_token_and_reset_password(
-    async_session: AsyncSession, caplog
-):
+    async_session: AsyncSession, caplog: pytest.LogCaptureFixture
+) -> None:
     # Register user
     data = {"email": "resetme@example.com", "password": "Abc12345"}
-    user = await user_service.register_user(async_session, data)
+    user: User | None = await user_service.register_user(async_session, data)
+    assert user is not None
     # Generate reset token
     with caplog.at_level("INFO"):
         token = user_service.get_password_reset_token(user.email)
@@ -220,14 +221,14 @@ async def test_get_password_reset_token_and_reset_password(
 
 
 @pytest.mark.asyncio
-async def test_reset_password_invalid_token(async_session: AsyncSession):
+async def test_reset_password_invalid_token(async_session: AsyncSession) -> None:
     with pytest.raises(ValidationError):
         await user_service.reset_password(async_session, "not.a.jwt.token", "Abc12345")
     await async_session.rollback()
 
 
 @pytest.mark.asyncio
-async def test_reset_password_weak_password(async_session: AsyncSession):
+async def test_reset_password_weak_password(async_session: AsyncSession) -> None:
     data = {"email": "weakreset@example.com", "password": "Abc12345"}
     await user_service.register_user(async_session, data)
     token = user_service.get_password_reset_token(data["email"])
@@ -237,7 +238,7 @@ async def test_reset_password_weak_password(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_reset_password_wrong_purpose(async_session: AsyncSession):
+async def test_reset_password_wrong_purpose(async_session: AsyncSession) -> None:
     token = create_access_token({"sub": "resetme@example.com", "purpose": "notreset"})
     with pytest.raises(ValidationError):
         await user_service.reset_password(async_session, token, "Abc12345")
@@ -246,10 +247,11 @@ async def test_reset_password_wrong_purpose(async_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_change_password_success_and_failures(
-    async_session: AsyncSession, caplog
-):
+    async_session: AsyncSession, caplog: pytest.LogCaptureFixture
+) -> None:
     data = {"email": "changepw@example.com", "password": "Abc12345"}
-    user = await user_service.register_user(async_session, data)
+    user: User | None = await user_service.register_user(async_session, data)
+    assert user is not None
     user_id = user.id
     # Success
     with caplog.at_level("INFO"):
@@ -265,6 +267,7 @@ async def test_change_password_success_and_failures(
     await async_session.rollback()
     # Re-fetch user after rollback
     user = await async_session.get(User, user_id)
+    assert user is not None
     # Weak new password
     with pytest.raises(ValidationError):
         await user_service.change_password(
@@ -272,6 +275,7 @@ async def test_change_password_success_and_failures(
         )
     await async_session.rollback()
     user = await async_session.get(User, user_id)
+    assert user is not None
     # User not found
     with pytest.raises(UserNotFoundError):
         await user_service.change_password(
@@ -280,7 +284,7 @@ async def test_change_password_success_and_failures(
     await async_session.rollback()
 
 
-def test_validate_password_strength():
+def test_validate_password_strength() -> None:
     # Strong password
     user_service.validate_password_strength("Abc12345")
     # Too short
@@ -295,7 +299,7 @@ def test_validate_password_strength():
 
 
 @pytest.mark.asyncio
-async def test_password_reset_token_expiry(async_session):
+async def test_password_reset_token_expiry(async_session: AsyncSession) -> None:
     """Simulate expired password reset token."""
     import time
 
@@ -321,7 +325,7 @@ async def test_password_reset_token_expiry(async_session):
 
 
 @pytest.mark.asyncio
-async def test_password_reset_nonexistent_email(async_session):
+async def test_password_reset_nonexistent_email(async_session: AsyncSession) -> None:
     """Password reset for nonexistent email should raise UserNotFoundError."""
     token = user_service.get_password_reset_token("notfound@example.com")
     with pytest.raises(UserNotFoundError):
@@ -330,7 +334,7 @@ async def test_password_reset_nonexistent_email(async_session):
 
 
 @pytest.mark.asyncio
-async def test_password_reset_token_reuse(async_session):
+async def test_password_reset_token_reuse(async_session: AsyncSession) -> None:
     """Password reset token should not be reusable (future-proofing: currently allowed, but should succeed only once)."""
     data = {"email": "reuse@example.com", "password": "Abc12345"}
     await user_service.register_user(async_session, data)
@@ -345,7 +349,7 @@ async def test_password_reset_token_reuse(async_session):
 
 
 @pytest.mark.asyncio
-async def test_change_password_same_as_old(async_session):
+async def test_change_password_same_as_old(async_session: AsyncSession) -> None:
     """Changing password to the same as old should raise ValidationError (if enforced)."""
     data = {"email": "samepw@example.com", "password": "Abc12345"}
     user = await user_service.register_user(async_session, data)
@@ -358,7 +362,7 @@ async def test_change_password_same_as_old(async_session):
 
 
 @pytest.mark.asyncio
-async def test_password_reset_tampered_token(async_session):
+async def test_password_reset_tampered_token(async_session: AsyncSession) -> None:
     """Tampered reset token should fail."""
     data = {"email": "tampered@example.com", "password": "Abc12345"}
     await user_service.register_user(async_session, data)
@@ -370,7 +374,7 @@ async def test_password_reset_tampered_token(async_session):
 
 
 @pytest.mark.asyncio
-async def test_password_reset_missing_claims(async_session):
+async def test_password_reset_missing_claims(async_session: AsyncSession) -> None:
     """Reset token missing claims (purpose/sub) should fail."""
     # Missing purpose
     token1 = create_access_token({"sub": "missingpurpose@example.com"})
@@ -385,9 +389,12 @@ async def test_password_reset_missing_claims(async_session):
 
 
 @pytest.mark.asyncio
-async def test_change_password_inactive_deleted_user(async_session: AsyncSession):
+async def test_change_password_inactive_deleted_user(
+    async_session: AsyncSession,
+) -> None:
     data = {"email": "inactive@example.com", "password": "Abc12345"}
-    user = await user_service.register_user(async_session, data)
+    user: User | None = await user_service.register_user(async_session, data)
+    assert user is not None
     user_id = user.id
     # Deactivate user
     await user_service.logout_user(async_session, user_id)
@@ -398,6 +405,7 @@ async def test_change_password_inactive_deleted_user(async_session: AsyncSession
     await async_session.rollback()
     # Re-fetch user after rollback
     user = await async_session.get(User, user_id)
+    assert user is not None
     await user_service.register_user(
         async_session, {"email": "deleted@example.com", "password": "Abc12345"}
     )
@@ -413,7 +421,7 @@ async def test_change_password_inactive_deleted_user(async_session: AsyncSession
 
 
 @pytest.mark.asyncio
-async def test_get_user_profile_and_update(async_session: AsyncSession):
+async def test_get_user_profile_and_update(async_session: AsyncSession) -> None:
     data = {"email": "profile@example.com", "password": "Abc12345"}
     user = await user_service.register_user(async_session, data)
     # Initially, profile fields are None
@@ -431,7 +439,7 @@ async def test_get_user_profile_and_update(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_set_user_preferences(async_session: AsyncSession):
+async def test_set_user_preferences(async_session: AsyncSession) -> None:
     data = {"email": "prefs@example.com", "password": "Abc12345"}
     user = await user_service.register_user(async_session, data)
     prefs = {"theme": "dark", "locale": "en"}
@@ -449,7 +457,7 @@ async def test_set_user_preferences(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_upload_avatar(async_session: AsyncSession, tmp_path: str):
+async def test_upload_avatar(async_session: AsyncSession, tmp_path: str) -> None:
     data = {"email": "avatar@example.com", "password": "Abc12345"}
     user = await user_service.register_user(async_session, data)
     # Simulate file upload
@@ -464,7 +472,9 @@ async def test_upload_avatar(async_session: AsyncSession, tmp_path: str):
 
 
 @pytest.mark.asyncio
-async def test_update_user_profile_empty_and_invalid(async_session: AsyncSession):
+async def test_update_user_profile_empty_and_invalid(
+    async_session: AsyncSession,
+) -> None:
     data = {"email": "emptyprofile@example.com", "password": "Abc12345"}
     user = await user_service.register_user(async_session, data)
     # Empty update should not change anything
@@ -486,7 +496,9 @@ async def test_update_user_profile_empty_and_invalid(async_session: AsyncSession
 
 
 @pytest.mark.asyncio
-async def test_set_user_preferences_partial_and_invalid(async_session: AsyncSession):
+async def test_set_user_preferences_partial_and_invalid(
+    async_session: AsyncSession,
+) -> None:
     data = {"email": "partialprefs@example.com", "password": "Abc12345"}
     user = await user_service.register_user(async_session, data)
     # Partial preferences
@@ -502,7 +514,7 @@ async def test_set_user_preferences_partial_and_invalid(async_session: AsyncSess
 
 
 @pytest.mark.asyncio
-async def test_upload_avatar_invalid_file(async_session: AsyncSession):
+async def test_upload_avatar_invalid_file(async_session: AsyncSession) -> None:
     data = {"email": "badavatar@example.com", "password": "Abc12345"}
     user = await user_service.register_user(async_session, data)
     import io
@@ -523,7 +535,9 @@ async def test_upload_avatar_invalid_file(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_delete_user_account_soft_delete_and_audit(async_session, caplog):
+async def test_delete_user_account_soft_delete_and_audit(
+    async_session: AsyncSession, caplog: pytest.LogCaptureFixture
+) -> None:
     data = {"email": "softdel@example.com", "password": "Abc12345"}
     user = await user_service.register_user(async_session, data)
     user_id = user.id
@@ -534,13 +548,15 @@ async def test_delete_user_account_soft_delete_and_audit(async_session, caplog):
         assert result is True
         # User should be soft-deleted (is_deleted=True)
         user_db = await async_session.get(User, user_id)
-        assert user_db.is_deleted is True
+        assert user_db is not None and user_db.is_deleted is True
         assert "soft_delete" in caplog.text
         assert "User soft-deleted" in caplog.text
 
 
 @pytest.mark.asyncio
-async def test_delete_user_account_anonymize_and_audit(async_session, caplog):
+async def test_delete_user_account_anonymize_and_audit(
+    async_session: AsyncSession, caplog: pytest.LogCaptureFixture
+) -> None:
     data = {"email": "anon@example.com", "password": "Abc12345"}
     user = await user_service.register_user(async_session, data)
     user_id = user.id
@@ -550,17 +566,21 @@ async def test_delete_user_account_anonymize_and_audit(async_session, caplog):
         )
         assert result is True
         user_db = await async_session.get(User, user_id)
-        assert user_db.is_deleted is True
+        assert user_db is not None and user_db.is_deleted is True
         assert user_db.is_active is False
         assert user_db.hashed_password == ""
-        assert user_db.email.startswith(f"anon_{user_id}_")
-        assert user_db.email.endswith("@anon.invalid")
+        assert user_db.email is not None and user_db.email.startswith(
+            f"anon_{user_id}_"
+        )
+        assert user_db.email is not None and user_db.email.endswith("@anon.invalid")
         assert "anonymize" in caplog.text
         assert "User data anonymized" in caplog.text
 
 
 @pytest.mark.asyncio
-async def test_deactivate_and_reactivate_user_service_and_audit(async_session, caplog):
+async def test_deactivate_and_reactivate_user_service_and_audit(
+    async_session: AsyncSession, caplog: pytest.LogCaptureFixture
+) -> None:
     data = {"email": "deact@example.com", "password": "Abc12345"}
     user = await user_service.register_user(async_session, data)
     user_id = user.id
@@ -569,7 +589,7 @@ async def test_deactivate_and_reactivate_user_service_and_audit(async_session, c
         result = await user_service.deactivate_user(async_session, user_id)
         assert result is True
         user_db = await async_session.get(User, user_id)
-        assert user_db.is_active is False
+        assert user_db is not None and user_db.is_active is False
         assert "deactivate" in caplog.text
         assert "User deactivated" in caplog.text
     # Reactivate
@@ -577,13 +597,15 @@ async def test_deactivate_and_reactivate_user_service_and_audit(async_session, c
         result = await user_service.reactivate_user(async_session, user_id)
         assert result is True
         user_db = await async_session.get(User, user_id)
-        assert user_db.is_active is True
+        assert user_db is not None and user_db.is_active is True
         assert "reactivate" in caplog.text
         assert "User reactivated" in caplog.text
 
 
 @pytest.mark.asyncio
-async def test_delete_user_account_invalid_id(async_session, caplog):
+async def test_delete_user_account_invalid_id(
+    async_session: AsyncSession, caplog: pytest.LogCaptureFixture
+) -> None:
     # Should return False and still log
     with caplog.at_level("INFO"):
         result = await user_service.delete_user_account(
@@ -599,7 +621,9 @@ async def test_delete_user_account_invalid_id(async_session, caplog):
 
 
 @pytest.mark.asyncio
-async def test_deactivate_reactivate_user_invalid_id(async_session, caplog):
+async def test_deactivate_reactivate_user_invalid_id(
+    async_session: AsyncSession, caplog: pytest.LogCaptureFixture
+) -> None:
     with caplog.at_level("INFO"):
         result = await user_service.deactivate_user(async_session, 999999)
         assert result is False
@@ -610,7 +634,9 @@ async def test_deactivate_reactivate_user_invalid_id(async_session, caplog):
 
 
 @pytest.mark.asyncio
-async def test_delete_user_account_already_deleted(async_session, caplog):
+async def test_delete_user_account_already_deleted(
+    async_session: AsyncSession, caplog: pytest.LogCaptureFixture
+) -> None:
     data = {"email": "alreadydeleted@example.com", "password": "Abc12345"}
     user = await user_service.register_user(async_session, data)
     user_id = user.id
@@ -633,7 +659,9 @@ async def test_delete_user_account_already_deleted(async_session, caplog):
 
 
 @pytest.mark.asyncio
-async def test_delete_user_account_already_anonymized(async_session, caplog):
+async def test_delete_user_account_already_anonymized(
+    async_session: AsyncSession, caplog: pytest.LogCaptureFixture
+) -> None:
     data = {"email": "alreadyanon@example.com", "password": "Abc12345"}
     user = await user_service.register_user(async_session, data)
     user_id = user.id
@@ -656,10 +684,13 @@ async def test_delete_user_account_already_anonymized(async_session, caplog):
 
 
 @pytest.mark.asyncio
-async def test_deactivate_user_already_inactive(async_session, caplog):
+async def test_deactivate_user_already_inactive(
+    async_session: AsyncSession, caplog: pytest.LogCaptureFixture
+) -> None:
     unique_email = f"inactive_{uuid.uuid4().hex[:8]}@example.com"
     data = {"email": unique_email, "password": "Abc12345"}
-    user = await user_service.register_user(async_session, data)
+    user: User | None = await user_service.register_user(async_session, data)
+    assert user is not None
     user_id = user.id
     # Deactivate first
     await user_service.deactivate_user(async_session, user_id)
@@ -671,13 +702,16 @@ async def test_deactivate_user_already_inactive(async_session, caplog):
 
 
 @pytest.mark.asyncio
-async def test_reactivate_user_already_active(async_session, caplog):
+async def test_reactivate_user_already_active(
+    async_session: AsyncSession, caplog: pytest.LogCaptureFixture
+) -> None:
     data = {"email": "activeagain@example.com", "password": "Abc12345"}
-    user = await user_service.register_user(async_session, data)
+    user: User | None = await user_service.register_user(async_session, data)
+    assert user is not None
     user_id = user.id
     # Ensure active
     user_db = await async_session.get(User, user_id)
-    assert user_db.is_active is True
+    assert user_db is not None and user_db.is_active is True
     # Try to reactivate again
     with caplog.at_level("INFO"):
         result = await user_service.reactivate_user(async_session, user_id)
@@ -686,7 +720,9 @@ async def test_reactivate_user_already_active(async_session, caplog):
 
 
 @pytest.mark.asyncio
-async def test_delete_user_account_on_inactive_user(async_session, caplog):
+async def test_delete_user_account_on_inactive_user(
+    async_session: AsyncSession, caplog: pytest.LogCaptureFixture
+) -> None:
     data = {"email": "delinactive@example.com", "password": "Abc12345"}
     user = await user_service.register_user(async_session, data)
     user_id = user.id
@@ -709,7 +745,7 @@ async def test_delete_user_account_on_inactive_user(async_session, caplog):
 
 
 @pytest.mark.asyncio
-async def test_get_user_by_username_success(async_session: AsyncSession):
+async def test_get_user_by_username_success(async_session: AsyncSession) -> None:
     email = f"lookup_{uuid.uuid4().hex[:8]}@example.com"
     await user_service.register_user(
         async_session, {"email": email, "password": "Abc12345"}
@@ -720,7 +756,7 @@ async def test_get_user_by_username_success(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_get_user_by_username_not_found(async_session: AsyncSession):
+async def test_get_user_by_username_not_found(async_session: AsyncSession) -> None:
     found = await user_service.get_user_by_username(
         async_session, "notfound@example.com"
     )
@@ -728,7 +764,7 @@ async def test_get_user_by_username_not_found(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_get_user_by_username_invalid(async_session: AsyncSession):
+async def test_get_user_by_username_invalid(async_session: AsyncSession) -> None:
     with pytest.raises(ValidationError):
         await user_service.get_user_by_username(async_session, "bademail")
     with pytest.raises(ValidationError):
@@ -736,7 +772,7 @@ async def test_get_user_by_username_invalid(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_get_users_paginated_basic(async_session: AsyncSession):
+async def test_get_users_paginated_basic(async_session: AsyncSession) -> None:
     # Create 7 users
     emails = [f"page_{i}_{uuid.uuid4().hex[:6]}@example.com" for i in range(7)]
     for email in emails:
@@ -756,7 +792,7 @@ async def test_get_users_paginated_basic(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_get_users_paginated_invalid(async_session: AsyncSession):
+async def test_get_users_paginated_invalid(async_session: AsyncSession) -> None:
     with pytest.raises(ValidationError):
         await user_service.get_users_paginated(async_session, page=0, limit=5)
     with pytest.raises(ValidationError):
@@ -766,7 +802,7 @@ async def test_get_users_paginated_invalid(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_user_exists_true_false(async_session: AsyncSession):
+async def test_user_exists_true_false(async_session: AsyncSession) -> None:
     email = f"exists_{uuid.uuid4().hex[:8]}@example.com"
     await user_service.register_user(
         async_session, {"email": email, "password": "Abc12345"}
@@ -778,7 +814,7 @@ async def test_user_exists_true_false(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_user_exists_invalid(async_session: AsyncSession):
+async def test_user_exists_invalid(async_session: AsyncSession) -> None:
     with pytest.raises(ValidationError):
         await user_service.user_exists(async_session, "bademail")
     with pytest.raises(ValidationError):
@@ -786,7 +822,7 @@ async def test_user_exists_invalid(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_assign_and_check_role():
+async def test_assign_and_check_role() -> None:
     from src.services.user import UserRole, assign_role, check_user_role
 
     user_id = 12345
@@ -803,7 +839,7 @@ async def test_assign_and_check_role():
 
 
 @pytest.mark.asyncio
-async def test_assign_role_invalid():
+async def test_assign_role_invalid() -> None:
     from src.services.user import assign_role
 
     user_id = 54321
@@ -812,7 +848,7 @@ async def test_assign_role_invalid():
 
 
 @pytest.mark.asyncio
-async def test_check_user_role_empty():
+async def test_check_user_role_empty() -> None:
     from src.services.user import UserRole, check_user_role
 
     user_id = 99999
@@ -820,7 +856,7 @@ async def test_check_user_role_empty():
 
 
 @pytest.mark.asyncio
-async def test_assign_role_duplicate_and_case():
+async def test_assign_role_duplicate_and_case() -> None:
     from src.services.user import UserRole, assign_role, check_user_role
 
     user_id = 11111
@@ -834,7 +870,7 @@ async def test_assign_role_duplicate_and_case():
 
 
 @pytest.mark.asyncio
-async def test_assign_role_multiple_users():
+async def test_assign_role_multiple_users() -> None:
     from src.services.user import UserRole, assign_role, check_user_role
 
     user1, user2 = 20001, 20002
@@ -846,7 +882,7 @@ async def test_assign_role_multiple_users():
 
 
 @pytest.mark.asyncio
-async def test_assign_role_empty_and_none():
+async def test_assign_role_empty_and_none() -> None:
     from src.services.user import assign_role
 
     with pytest.raises(ValidationError):
@@ -856,7 +892,7 @@ async def test_assign_role_empty_and_none():
 
 
 @pytest.mark.asyncio
-async def test_check_user_role_empty_and_none():
+async def test_check_user_role_empty_and_none() -> None:
     from src.services.user import check_user_role
 
     # User with no roles
