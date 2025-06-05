@@ -639,3 +639,70 @@ async def test_user_exists_invalid(async_session: AsyncSession):
         await user_service.user_exists(async_session, "bademail")
     with pytest.raises(ValidationError):
         await user_service.user_exists(async_session, "")
+
+@pytest.mark.asyncio
+async def test_assign_and_check_role():
+    from src.services.user import assign_role, check_user_role, UserRole
+    user_id = 12345
+    # Assign admin role
+    result = await assign_role(user_id, UserRole.ADMIN)
+    assert result is True
+    # Check admin
+    assert await check_user_role(user_id, UserRole.ADMIN) is True
+    # Check user (not assigned)
+    assert await check_user_role(user_id, UserRole.USER) is False
+    # Assign user role
+    await assign_role(user_id, UserRole.USER)
+    assert await check_user_role(user_id, UserRole.USER) is True
+
+@pytest.mark.asyncio
+async def test_assign_role_invalid():
+    from src.services.user import assign_role
+    user_id = 54321
+    with pytest.raises(Exception):
+        await assign_role(user_id, "notarole")
+
+@pytest.mark.asyncio
+async def test_check_user_role_empty():
+    from src.services.user import check_user_role, UserRole
+    user_id = 99999
+    assert await check_user_role(user_id, UserRole.ADMIN) is False
+
+@pytest.mark.asyncio
+async def test_assign_role_duplicate_and_case():
+    from src.services.user import assign_role, check_user_role, UserRole
+    user_id = 11111
+    # Assign same role twice
+    await assign_role(user_id, UserRole.ADMIN)
+    await assign_role(user_id, UserRole.ADMIN)
+    assert await check_user_role(user_id, UserRole.ADMIN) is True
+    # Assign with different case (should fail if strict)
+    with pytest.raises(Exception):
+        await assign_role(user_id, "Admin")
+
+@pytest.mark.asyncio
+async def test_assign_role_multiple_users():
+    from src.services.user import assign_role, check_user_role, UserRole
+    user1, user2 = 20001, 20002
+    await assign_role(user1, UserRole.USER)
+    await assign_role(user2, UserRole.MODERATOR)
+    assert await check_user_role(user1, UserRole.USER) is True
+    assert await check_user_role(user2, UserRole.USER) is False
+    assert await check_user_role(user2, UserRole.MODERATOR) is True
+
+@pytest.mark.asyncio
+async def test_assign_role_empty_and_none():
+    from src.services.user import assign_role
+    with pytest.raises(Exception):
+        await assign_role(123, "")
+    with pytest.raises(Exception):
+        await assign_role(123, None)  # type: ignore
+
+@pytest.mark.asyncio
+async def test_check_user_role_empty_and_none():
+    from src.services.user import check_user_role
+    # User with no roles
+    assert await check_user_role(55555, "admin") is False
+    # None/empty role
+    assert await check_user_role(55555, "") is False
+    assert await check_user_role(55555, None) is False  # type: ignore

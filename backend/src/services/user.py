@@ -1,7 +1,7 @@
 """
 User service: registration, authentication, logout, and authentication check.
 """
-from typing import Any, Dict
+from typing import Any, Dict, Set
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.repositories import user as user_repo
 from src.models.user import User
@@ -17,13 +17,22 @@ import secrets
 from fastapi import UploadFile
 from src.schemas.user import UserProfile, UserProfileUpdate, UserPreferences, UserAvatarResponse
 from src.repositories.user import partial_update_user
-import os
 from src.core.config import settings
+from enum import Enum
 
 # Patch for test/discovery import issues in src/services/user.py
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+
+class UserRole(str, Enum):
+    ADMIN = "admin"
+    USER = "user"
+    MODERATOR = "moderator"
+
+# In-memory mock role store (user_id -> set of roles)
+# In production, this would be persisted in the database
+_mock_user_roles: dict[int, Set[str]] = {}
 
 async def register_user(session: AsyncSession, data: dict[str, Any]) -> User:
     """
@@ -303,3 +312,26 @@ async def user_exists(session: AsyncSession, email: str) -> bool:
     # is_email_unique returns True if not found, so invert
     exists = not await user_repo.is_email_unique(session, email)
     return exists
+
+async def assign_role(user_id: int, role: str) -> bool:
+    """
+    Assign a role to a user. Allowed roles: admin, user, moderator.
+    This is a stub; in production, store in DB.
+    """
+    if role not in UserRole.__members__.values() and role not in [r.value for r in UserRole]:
+        raise ValidationError(f"Invalid role: {role}")
+    roles = _mock_user_roles.setdefault(user_id, set())
+    roles.add(role)
+    return True
+
+async def check_user_role(user_id: int, required_role: str) -> bool:
+    """
+    Check if user has the required role. Stub: checks in-memory store.
+    """
+    roles = _mock_user_roles.get(user_id, set())
+    return required_role in roles
+
+# For future: integrate with route-based access control (RBAC)
+# Example usage in FastAPI route:
+#   if not await check_user_role(current_user.id, UserRole.ADMIN):
+#       raise HTTPException(status_code=403, detail="Admin access required")
