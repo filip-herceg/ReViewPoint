@@ -494,7 +494,7 @@ async def update_last_login(
 async def anonymize_user(session: AsyncSession, user_id: int) -> bool:
     """Anonymize user data for privacy/GDPR (irreversibly removes PII, disables account)."""
     user = await get_user_by_id(session, user_id, use_cache=False)
-    if not user:
+    if not user or user.is_deleted:
         return False
     user.email = f"anon_{user.id}_{int(datetime.now(UTC).timestamp())}@anon.invalid"
     user.hashed_password = ""

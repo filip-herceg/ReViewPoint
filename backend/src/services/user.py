@@ -231,3 +231,40 @@ async def upload_avatar(session: AsyncSession, user_id: int, file: UploadFile) -
     user.avatar_url = f"/uploads/avatars/{filename}"
     await session.commit()
     return UserAvatarResponse(avatar_url=user.avatar_url or "")
+
+async def delete_user_account(session: AsyncSession, user_id: int, *, anonymize: bool = False) -> bool:
+    """
+    Delete or anonymize a user account depending on policy.
+    If anonymize=True, irreversibly remove PII and disable account (GDPR).
+    Otherwise, perform a soft delete (set is_deleted flag).
+    Always logs the action for audit purposes.
+    Returns True if operation succeeded, False otherwise.
+    """
+    if anonymize:
+        result = await user_repo.anonymize_user(session, user_id)
+        action = "anonymize"
+        details = "User data anonymized (GDPR/CCPA)."
+    else:
+        result = await user_repo.soft_delete_user(session, user_id)
+        action = "soft_delete"
+        details = "User soft-deleted (is_deleted=True)."
+    await user_repo.audit_log_user_change(session, user_id, action, details)
+    return result
+
+async def deactivate_user(session: AsyncSession, user_id: int) -> bool:
+    """
+    Mark the user as inactive (is_active=False). Logs the change for audit.
+    Returns True if operation succeeded, False otherwise.
+    """
+    result = await user_repo.deactivate_user(session, user_id)
+    await user_repo.audit_log_user_change(session, user_id, "deactivate", "User deactivated (is_active=False).")
+    return result
+
+async def reactivate_user(session: AsyncSession, user_id: int) -> bool:
+    """
+    Reactivate a previously deactivated user (is_active=True). Logs the change for audit.
+    Returns True if operation succeeded, False otherwise.
+    """
+    result = await user_repo.reactivate_user(session, user_id)
+    await user_repo.audit_log_user_change(session, user_id, "reactivate", "User reactivated (is_active=True).")
+    return result

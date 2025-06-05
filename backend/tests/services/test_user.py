@@ -7,6 +7,7 @@ import string
 from jose import jwt
 from src.core.security import create_access_token
 from src.core.config import settings
+import uuid
 
 @pytest.mark.asyncio
 async def test_register_user_success(async_session: AsyncSession):
@@ -422,3 +423,159 @@ async def test_upload_avatar_invalid_file(async_session: AsyncSession):
     big_file = UploadFile(filename="big.png", file=io.BytesIO(big_content))
     resp2 = await user_service.upload_avatar(async_session, user.id, big_file)
     assert resp2.avatar_url.endswith("big.png")
+
+@pytest.mark.asyncio
+async def test_delete_user_account_soft_delete_and_audit(async_session, caplog):
+    data = {"email": "softdel@example.com", "password": "Abc12345"}
+    user = await user_service.register_user(async_session, data)
+    user_id = user.id
+    with caplog.at_level("INFO"):
+        result = await user_service.delete_user_account(async_session, user_id, anonymize=False)
+        assert result is True
+        # User should be soft-deleted (is_deleted=True)
+        user_db = await async_session.get(User, user_id)
+        assert user_db.is_deleted is True
+        assert "soft_delete" in caplog.text
+        assert "User soft-deleted" in caplog.text
+
+@pytest.mark.asyncio
+async def test_delete_user_account_anonymize_and_audit(async_session, caplog):
+    data = {"email": "anon@example.com", "password": "Abc12345"}
+    user = await user_service.register_user(async_session, data)
+    user_id = user.id
+    with caplog.at_level("INFO"):
+        result = await user_service.delete_user_account(async_session, user_id, anonymize=True)
+        assert result is True
+        user_db = await async_session.get(User, user_id)
+        assert user_db.is_deleted is True
+        assert user_db.is_active is False
+        assert user_db.hashed_password == ""
+        assert user_db.email.startswith(f"anon_{user_id}_")
+        assert user_db.email.endswith("@anon.invalid")
+        assert "anonymize" in caplog.text
+        assert "User data anonymized" in caplog.text
+
+@pytest.mark.asyncio
+async def test_deactivate_and_reactivate_user_service_and_audit(async_session, caplog):
+    data = {"email": "deact@example.com", "password": "Abc12345"}
+    user = await user_service.register_user(async_session, data)
+    user_id = user.id
+    # Deactivate
+    with caplog.at_level("INFO"):
+        result = await user_service.deactivate_user(async_session, user_id)
+        assert result is True
+        user_db = await async_session.get(User, user_id)
+        assert user_db.is_active is False
+        assert "deactivate" in caplog.text
+        assert "User deactivated" in caplog.text
+    # Reactivate
+    with caplog.at_level("INFO"):
+        result = await user_service.reactivate_user(async_session, user_id)
+        assert result is True
+        user_db = await async_session.get(User, user_id)
+        assert user_db.is_active is True
+        assert "reactivate" in caplog.text
+        assert "User reactivated" in caplog.text
+
+@pytest.mark.asyncio
+async def test_delete_user_account_invalid_id(async_session, caplog):
+    # Should return False and still log
+    with caplog.at_level("INFO"):
+        result = await user_service.delete_user_account(async_session, 999999, anonymize=False)
+        assert result is False
+        assert "soft_delete" in caplog.text
+        result2 = await user_service.delete_user_account(async_session, 999999, anonymize=True)
+        assert result2 is False
+        assert "anonymize" in caplog.text
+
+@pytest.mark.asyncio
+async def test_deactivate_reactivate_user_invalid_id(async_session, caplog):
+    with caplog.at_level("INFO"):
+        result = await user_service.deactivate_user(async_session, 999999)
+        assert result is False
+        assert "deactivate" in caplog.text
+        result2 = await user_service.reactivate_user(async_session, 999999)
+        assert result2 is False
+        assert "reactivate" in caplog.text
+
+@pytest.mark.asyncio
+async def test_delete_user_account_already_deleted(async_session, caplog):
+    data = {"email": "alreadydeleted@example.com", "password": "Abc12345"}
+    user = await user_service.register_user(async_session, data)
+    user_id = user.id
+    # Soft delete first
+    await user_service.delete_user_account(async_session, user_id, anonymize=False)
+    # Try to soft delete again
+    with caplog.at_level("INFO"):
+        result = await user_service.delete_user_account(async_session, user_id, anonymize=False)
+        assert result is False
+        assert "soft_delete" in caplog.text
+    # Try to anonymize after soft delete
+    with caplog.at_level("INFO"):
+        result2 = await user_service.delete_user_account(async_session, user_id, anonymize=True)
+        assert result2 is False
+        assert "anonymize" in caplog.text
+
+@pytest.mark.asyncio
+async def test_delete_user_account_already_anonymized(async_session, caplog):
+    data = {"email": "alreadyanon@example.com", "password": "Abc12345"}
+    user = await user_service.register_user(async_session, data)
+    user_id = user.id
+    # Anonymize first
+    await user_service.delete_user_account(async_session, user_id, anonymize=True)
+    # Try to anonymize again
+    with caplog.at_level("INFO"):
+        result = await user_service.delete_user_account(async_session, user_id, anonymize=True)
+        assert result is False
+        assert "anonymize" in caplog.text
+    # Try to soft delete after anonymize
+    with caplog.at_level("INFO"):
+        result2 = await user_service.delete_user_account(async_session, user_id, anonymize=False)
+        assert result2 is False
+        assert "soft_delete" in caplog.text
+
+@pytest.mark.asyncio
+async def test_deactivate_user_already_inactive(async_session, caplog):
+    unique_email = f"inactive_{uuid.uuid4().hex[:8]}@example.com"
+    data = {"email": unique_email, "password": "Abc12345"}
+    user = await user_service.register_user(async_session, data)
+    user_id = user.id
+    # Deactivate first
+    await user_service.deactivate_user(async_session, user_id)
+    # Try to deactivate again
+    with caplog.at_level("INFO"):
+        result = await user_service.deactivate_user(async_session, user_id)
+        assert result is False
+        assert "deactivate" in caplog.text
+
+@pytest.mark.asyncio
+async def test_reactivate_user_already_active(async_session, caplog):
+    data = {"email": "activeagain@example.com", "password": "Abc12345"}
+    user = await user_service.register_user(async_session, data)
+    user_id = user.id
+    # Ensure active
+    user_db = await async_session.get(User, user_id)
+    assert user_db.is_active is True
+    # Try to reactivate again
+    with caplog.at_level("INFO"):
+        result = await user_service.reactivate_user(async_session, user_id)
+        assert result is False
+        assert "reactivate" in caplog.text
+
+@pytest.mark.asyncio
+async def test_delete_user_account_on_inactive_user(async_session, caplog):
+    data = {"email": "delinactive@example.com", "password": "Abc12345"}
+    user = await user_service.register_user(async_session, data)
+    user_id = user.id
+    # Deactivate first
+    await user_service.deactivate_user(async_session, user_id)
+    # Now soft delete
+    with caplog.at_level("INFO"):
+        result = await user_service.delete_user_account(async_session, user_id, anonymize=False)
+        assert result is True
+        assert "soft_delete" in caplog.text
+    # Now anonymize (should fail, already deleted)
+    with caplog.at_level("INFO"):
+        result2 = await user_service.delete_user_account(async_session, user_id, anonymize=True)
+        assert result2 is False
+        assert "anonymize" in caplog.text
