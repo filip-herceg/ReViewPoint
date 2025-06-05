@@ -17,7 +17,4 @@ class UsedPasswordResetToken(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<UsedPasswordResetToken email={
-            self.email} nonce={
-            self.nonce} used_at={
-            self.used_at}>"
+        return f"<UsedPasswordResetToken email={self.email} nonce={self.nonce} used_at={self.used_at}>"
