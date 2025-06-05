@@ -27,9 +27,7 @@ def create_app() -> FastAPI:
             # Let FastAPI handle HTTPExceptions (like 404, 422, etc.)
             raise exc
         logger.exception(
-            f"Unhandled exception for {
-                request.method} {
-                request.url.path}: {exc}"
+            f"Unhandled exception for {request.method} {request.url.path}: {exc}"
         )
         return JSONResponse(
             status_code=500,
