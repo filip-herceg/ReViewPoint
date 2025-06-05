@@ -325,3 +325,100 @@ async def test_change_password_inactive_deleted_user(async_session: AsyncSession
         with pytest.raises(UserNotFoundError):
             await user_service.change_password(async_session, user_id, data["password"], "Another123")
         await async_session.rollback()
+
+@pytest.mark.asyncio
+async def test_get_user_profile_and_update(async_session: AsyncSession):
+    data = {"email": "profile@example.com", "password": "Abc12345"}
+    user = await user_service.register_user(async_session, data)
+    # Initially, profile fields are None
+    profile = await user_service.get_user_profile(async_session, user.id)
+    assert profile.email == data["email"]
+    assert profile.name is None and profile.bio is None
+    # Update profile
+    update = {"name": "Test User", "bio": "Hello!"}
+    updated = await user_service.update_user_profile(async_session, user.id, update)
+    assert updated.name == "Test User"
+    assert updated.bio == "Hello!"
+    # Not found case
+    with pytest.raises(UserNotFoundError):
+        await user_service.get_user_profile(async_session, 999999)
+
+@pytest.mark.asyncio
+async def test_set_user_preferences(async_session: AsyncSession):
+    data = {"email": "prefs@example.com", "password": "Abc12345"}
+    user = await user_service.register_user(async_session, data)
+    prefs = {"theme": "dark", "locale": "en"}
+    result = await user_service.set_user_preferences(async_session, user.id, prefs)
+    assert result.theme == "dark"
+    assert result.locale == "en"
+    # Update preferences
+    new_prefs = {"theme": "light", "locale": "fr"}
+    result2 = await user_service.set_user_preferences(async_session, user.id, new_prefs)
+    assert result2.theme == "light"
+    assert result2.locale == "fr"
+    # Not found case
+    with pytest.raises(UserNotFoundError):
+        await user_service.set_user_preferences(async_session, 999999, prefs)
+
+import io
+from fastapi import UploadFile
+@pytest.mark.asyncio
+async def test_upload_avatar(async_session: AsyncSession, tmp_path: str):
+    data = {"email": "avatar@example.com", "password": "Abc12345"}
+    user = await user_service.register_user(async_session, data)
+    # Simulate file upload
+    content = b"fake image data"
+    file = UploadFile(filename="avatar.png", file=io.BytesIO(content))
+    resp = await user_service.upload_avatar(async_session, user.id, file)
+    assert resp.avatar_url.endswith("avatar.png")
+    # Not found case
+    file2 = UploadFile(filename="avatar2.png", file=io.BytesIO(content))
+    with pytest.raises(UserNotFoundError):
+        await user_service.upload_avatar(async_session, 999999, file2)
+
+@pytest.mark.asyncio
+async def test_update_user_profile_empty_and_invalid(async_session: AsyncSession):
+    data = {"email": "emptyprofile@example.com", "password": "Abc12345"}
+    user = await user_service.register_user(async_session, data)
+    # Empty update should not change anything
+    updated = await user_service.update_user_profile(async_session, user.id, {})
+    assert updated.name is None and updated.bio is None
+    # Invalid field should raise ValidationError due to extra = 'forbid'
+    import pydantic
+    with pytest.raises(pydantic.ValidationError):
+        await user_service.update_user_profile(async_session, user.id, {"notafield": "value"})
+    # Update with too long name
+    long_name = "x" * 200
+    with pytest.raises(ValueError):
+        await user_service.update_user_profile(async_session, user.id, {"name": long_name})
+
+@pytest.mark.asyncio
+async def test_set_user_preferences_partial_and_invalid(async_session: AsyncSession):
+    data = {"email": "partialprefs@example.com", "password": "Abc12345"}
+    user = await user_service.register_user(async_session, data)
+    # Partial preferences
+    prefs = {"theme": "dark"}
+    result = await user_service.set_user_preferences(async_session, user.id, prefs)
+    assert result.theme == "dark"
+    assert result.locale is None
+    # Preferences with extra fields
+    extra: dict[str, object] = {"theme": "dark", "locale": "en", "extra": 123}
+    result2 = await user_service.set_user_preferences(async_session, user.id, extra)
+    assert result2.theme == "dark"
+    assert result2.locale == "en"
+
+@pytest.mark.asyncio
+async def test_upload_avatar_invalid_file(async_session: AsyncSession):
+    data = {"email": "badavatar@example.com", "password": "Abc12345"}
+    user = await user_service.register_user(async_session, data)
+    import io
+    from fastapi import UploadFile
+    # Simulate file with no filename
+    file = UploadFile(filename="", file=io.BytesIO(b""))
+    resp = await user_service.upload_avatar(async_session, user.id, file)
+    assert resp.avatar_url.endswith("_")  # Should still create a file with _ as filename
+    # Simulate very large file (should not error, but test for performance)
+    big_content = b"0" * 1024 * 1024  # 1MB
+    big_file = UploadFile(filename="big.png", file=io.BytesIO(big_content))
+    resp2 = await user_service.upload_avatar(async_session, user.id, big_file)
+    assert resp2.avatar_url.endswith("big.png")

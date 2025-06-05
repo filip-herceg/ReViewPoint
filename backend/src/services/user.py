@@ -10,10 +10,15 @@ from src.utils.validation import get_password_validation_error
 from src.repositories.user import get_user_by_id, change_user_password
 from src.core.security import create_access_token, verify_access_token
 from src.utils.errors import ValidationError, UserNotFoundError
-from sqlalchemy import select
+from sqlalchemy import select, update
 from src.models.used_password_reset_token import UsedPasswordResetToken
 import logging
 import secrets
+from fastapi import UploadFile
+from src.schemas.user import UserProfile, UserProfileUpdate, UserPreferences, UserAvatarResponse
+from src.repositories.user import partial_update_user
+import os
+from src.core.config import settings
 
 # Patch for test/discovery import issues in src/services/user.py
 import sys
@@ -179,3 +184,50 @@ def validate_password_strength(password: str) -> None:
     err = get_password_validation_error(password)
     if err:
         raise ValidationError(err)
+
+async def get_user_profile(session: AsyncSession, user_id: int) -> UserProfile:
+    user = await get_user_by_id(session, user_id)
+    if not user or user.is_deleted:
+        raise UserNotFoundError("User not found.")
+    return UserProfile(
+        id=user.id,
+        email=user.email,
+        name=user.name,
+        bio=user.bio,
+        avatar_url=user.avatar_url,
+        created_at=user.created_at,
+        updated_at=user.updated_at,
+    )
+
+async def update_user_profile(session: AsyncSession, user_id: int, data: dict[str, Any]) -> UserProfile:
+    update_data = UserProfileUpdate(**data).model_dump(exclude_unset=True)
+    user = await partial_update_user(session, user_id, update_data)
+    if not user:
+        raise UserNotFoundError("User not found.")
+    return await get_user_profile(session, user_id)
+
+async def set_user_preferences(session: AsyncSession, user_id: int, preferences: dict[str, Any]) -> UserPreferences:
+    user = await get_user_by_id(session, user_id)
+    if not user or user.is_deleted:
+        raise UserNotFoundError("User not found.")
+    user.preferences = preferences
+    await session.commit()
+    # Defensive: Only pass known fields to UserPreferences
+    theme = preferences.get("theme")
+    locale = preferences.get("locale")
+    return UserPreferences(theme=theme, locale=locale)
+
+async def upload_avatar(session: AsyncSession, user_id: int, file: UploadFile) -> UserAvatarResponse:
+    user = await get_user_by_id(session, user_id)
+    if not user or user.is_deleted:
+        raise UserNotFoundError("User not found.")
+    upload_dir = os.path.join("uploads", "avatars")
+    os.makedirs(upload_dir, exist_ok=True)
+    filename = f"{user_id}_{file.filename}"
+    file_path = os.path.join(upload_dir, filename)
+    content = await file.read()
+    with open(file_path, "wb") as f:
+        f.write(content)
+    user.avatar_url = f"/uploads/avatars/{filename}"
+    await session.commit()
+    return UserAvatarResponse(avatar_url=user.avatar_url or "")
