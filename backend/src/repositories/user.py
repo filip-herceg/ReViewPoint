@@ -496,10 +496,7 @@ async def anonymize_user(session: AsyncSession, user_id: int) -> bool:
     user = await get_user_by_id(session, user_id, use_cache=False)
     if not user or user.is_deleted:
         return False
-    user.email = f"anon_{
-        user.id}_{
-        int(
-            datetime.now(UTC).timestamp())}@anon.invalid"
+    user.email = f"anon_{user.id}_{int(datetime.now(UTC).timestamp())}@anon.invalid"
     user.hashed_password = ""
     user.is_active = False
     user.is_deleted = True
