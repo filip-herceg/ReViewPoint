@@ -42,10 +42,18 @@ jobs:
           cd docs
           python -c "import shutil, os; [shutil.rmtree(p, ignore_errors=True) for p in ['.mypy_cache', '.ruff_cache', '.pytest_cache', '.hatch']]; [shutil.rmtree(os.path.join(root, d), ignore_errors=True) for root, dirs, _ in os.walk('.') for d in dirs if d == '__pycache__']"
 
+      - name: Debug Docs Directory
+        run: ls -la docs || echo "The 'docs' directory is missing."
+
       - name: Build MkDocs site
         run: |
-          cd docs
-          hatch run mkdocs build --clean
+          if [ -d "docs" ] && [ -f "docs/mkdocs.yml" ]; then
+            cd docs
+            hatch run mkdocs build --clean
+          else
+            echo "The 'docs' directory or 'mkdocs.yml' file is missing."
+            exit 1
+          fi
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v4
@@ -53,7 +61,7 @@ jobs:
       - name: Upload built site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: docs/site
 
   deploy:
     needs: build
