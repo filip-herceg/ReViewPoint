@@ -1,38 +1,52 @@
 """
 User service: registration, authentication, logout, and authentication check.
 """
-from typing import Any, Dict, Set
-from sqlalchemy.ext.asyncio import AsyncSession
-from src.repositories import user as user_repo
-from src.models.user import User
-from src.utils.hashing import hash_password, verify_password
-from src.utils.validation import get_password_validation_error, validate_email
-from src.repositories.user import get_user_by_id, change_user_password
-from src.core.security import create_access_token, verify_access_token
-from src.utils.errors import ValidationError, UserNotFoundError
-from sqlalchemy import select, update
-from src.models.used_password_reset_token import UsedPasswordResetToken
+
 import logging
+import os
 import secrets
-from fastapi import UploadFile
-from src.schemas.user import UserProfile, UserProfileUpdate, UserPreferences, UserAvatarResponse
-from src.repositories.user import partial_update_user
-from src.core.config import settings
-from enum import Enum
 
 # Patch for test/discovery import issues in src/services/user.py
 import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+from enum import Enum
+from typing import Any
+
+from fastapi import UploadFile
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.core.security import create_access_token, verify_access_token
+from src.models.used_password_reset_token import UsedPasswordResetToken
+from src.models.user import User
+from src.repositories import user as user_repo
+from src.repositories.user import (
+    change_user_password,
+    get_user_by_id,
+    partial_update_user,
+)
+from src.schemas.user import (
+    UserAvatarResponse,
+    UserPreferences,
+    UserProfile,
+    UserProfileUpdate,
+)
+from src.utils.errors import UserNotFoundError, ValidationError
+from src.utils.hashing import hash_password, verify_password
+from src.utils.validation import get_password_validation_error, validate_email
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+
 
 class UserRole(str, Enum):
     ADMIN = "admin"
     USER = "user"
     MODERATOR = "moderator"
 
+
 # In-memory mock role store (user_id -> set of roles)
 # In production, this would be persisted in the database
-_mock_user_roles: dict[int, Set[str]] = {}
+_mock_user_roles: dict[int, set[str]] = {}
+
 
 async def register_user(session: AsyncSession, data: dict[str, Any]) -> User:
     """
@@ -46,6 +60,7 @@ async def register_user(session: AsyncSession, data: dict[str, Any]) -> User:
     # Use repo helper for validation and creation
     user = await user_repo.create_user_with_validation(session, email, password)
     return user
+
 
 async def authenticate_user(session: AsyncSession, email: str, password: str) -> str:
     """
@@ -65,12 +80,15 @@ async def authenticate_user(session: AsyncSession, email: str, password: str) ->
     token = create_access_token({"sub": str(user.id), "email": user.email})
     return token
 
+
 async def logout_user(session: AsyncSession, user_id: int) -> None:
     """
     Invalidate the user's session or refresh token (stub: deactivate user for now).
     """
-    # For demo: deactivate user (real implementation would revoke refresh token/session)
+    # For demo: deactivate user (real implementation would revoke refresh
+    # token/session)
     await user_repo.deactivate_user(session, user_id)
+
 
 # Make is_authenticated a synchronous function (not async)
 def is_authenticated(user: User) -> bool:
@@ -78,6 +96,7 @@ def is_authenticated(user: User) -> bool:
     Check if a user is currently authenticated.
     """
     return user.is_active and not user.is_deleted
+
 
 def refresh_access_token(user_id: int, refresh_token: str) -> str:
     """
@@ -92,7 +111,8 @@ def refresh_access_token(user_id: int, refresh_token: str) -> str:
         # Issue new access token
         return create_access_token({"sub": str(user_id), "email": payload.get("email")})
     except Exception as e:
-        raise ValidationError(f"Invalid refresh token: {e}")
+        raise ValidationError(f"Invalid refresh token: {e}") from e
+
 
 def revoke_refresh_token(user_id: int, token: str) -> None:
     """
@@ -101,7 +121,8 @@ def revoke_refresh_token(user_id: int, token: str) -> None:
     # Placeholder: In production, store revoked tokens in a DB or cache
     pass
 
-def verify_email_token(token: str) -> Dict[str, Any]:
+
+def verify_email_token(token: str) -> dict[str, Any]:
     """
     Decode and verify an email confirmation token.
     """
@@ -110,15 +131,19 @@ def verify_email_token(token: str) -> Dict[str, Any]:
         # Optionally check for specific claims (purpose, exp, etc.)
         return payload
     except Exception as e:
-        raise ValidationError(f"Invalid email verification token: {e}")
+        raise ValidationError(f"Invalid email verification token: {e}") from e
+
 
 def get_password_reset_token(email: str) -> str:
     """
     Generate a secure token and simulate sending a reset link via logging.
     """
-    token = create_access_token({"sub": email, "purpose": "reset", "nonce": secrets.token_urlsafe(8)})
+    token = create_access_token(
+        {"sub": email, "purpose": "reset", "nonce": secrets.token_urlsafe(8)}
+    )
     logging.info(f"Password reset link sent to {email}: /reset?token={token}")
     return token
+
 
 async def reset_password(session: AsyncSession, token: str, new_password: str) -> None:
     """
@@ -138,7 +163,7 @@ async def reset_password(session: AsyncSession, token: str, new_password: str) -
         used = await session.execute(
             select(UsedPasswordResetToken).where(
                 UsedPasswordResetToken.email == email,
-                UsedPasswordResetToken.nonce == nonce
+                UsedPasswordResetToken.nonce == nonce,
             )
         )
         if used.scalar_one_or_none():
@@ -146,7 +171,9 @@ async def reset_password(session: AsyncSession, token: str, new_password: str) -
         err = get_password_validation_error(new_password)
         if err:
             raise ValidationError(err)
-        result = await session.execute(user_repo.select(User).where(User.email == email))
+        result = await session.execute(
+            user_repo.select(User).where(User.email == email)
+        )
         user = result.scalar_one_or_none()
         if not user or not user.is_active or user.is_deleted:
             raise UserNotFoundError("User not found.")
@@ -159,9 +186,12 @@ async def reset_password(session: AsyncSession, token: str, new_password: str) -
     except UserNotFoundError:
         raise
     except Exception as e:
-        raise ValidationError(f"Invalid or expired reset token: {e}")
+        raise ValidationError(f"Invalid or expired reset token: {e}") from e
 
-async def change_password(session: AsyncSession, user_id: int, old_pw: str, new_pw: str) -> None:
+
+async def change_password(
+    session: AsyncSession, user_id: int, old_pw: str, new_pw: str
+) -> None:
     """
     Check old password and update if correct.
     """
@@ -179,6 +209,7 @@ async def change_password(session: AsyncSession, user_id: int, old_pw: str, new_
     await change_user_password(session, user_id, hashed)
     logging.info(f"Password changed for user {user.email}")
 
+
 def validate_password_strength(password: str) -> None:
     """
     Ensure the password is strong (length, characters, etc). Raise if not.
@@ -187,12 +218,13 @@ def validate_password_strength(password: str) -> None:
     if any(c.isspace() for c in password):
         raise ValidationError("Password must not contain whitespace characters.")
     try:
-        password.encode('ascii')
-    except UnicodeEncodeError:
-        raise ValidationError("Password must only contain ASCII characters.")
+        password.encode("ascii")
+    except UnicodeEncodeError as e:
+        raise ValidationError("Password must only contain ASCII characters.") from e
     err = get_password_validation_error(password)
     if err:
         raise ValidationError(err)
+
 
 async def get_user_profile(session: AsyncSession, user_id: int) -> UserProfile:
     user = await get_user_by_id(session, user_id)
@@ -208,14 +240,20 @@ async def get_user_profile(session: AsyncSession, user_id: int) -> UserProfile:
         updated_at=user.updated_at,
     )
 
-async def update_user_profile(session: AsyncSession, user_id: int, data: dict[str, Any]) -> UserProfile:
+
+async def update_user_profile(
+    session: AsyncSession, user_id: int, data: dict[str, Any]
+) -> UserProfile:
     update_data = UserProfileUpdate(**data).model_dump(exclude_unset=True)
     user = await partial_update_user(session, user_id, update_data)
     if not user:
         raise UserNotFoundError("User not found.")
     return await get_user_profile(session, user_id)
 
-async def set_user_preferences(session: AsyncSession, user_id: int, preferences: dict[str, Any]) -> UserPreferences:
+
+async def set_user_preferences(
+    session: AsyncSession, user_id: int, preferences: dict[str, Any]
+) -> UserPreferences:
     user = await get_user_by_id(session, user_id)
     if not user or user.is_deleted:
         raise UserNotFoundError("User not found.")
@@ -226,7 +264,10 @@ async def set_user_preferences(session: AsyncSession, user_id: int, preferences:
     locale = preferences.get("locale")
     return UserPreferences(theme=theme, locale=locale)
 
-async def upload_avatar(session: AsyncSession, user_id: int, file: UploadFile) -> UserAvatarResponse:
+
+async def upload_avatar(
+    session: AsyncSession, user_id: int, file: UploadFile
+) -> UserAvatarResponse:
     user = await get_user_by_id(session, user_id)
     if not user or user.is_deleted:
         raise UserNotFoundError("User not found.")
@@ -241,7 +282,10 @@ async def upload_avatar(session: AsyncSession, user_id: int, file: UploadFile) -
     await session.commit()
     return UserAvatarResponse(avatar_url=user.avatar_url or "")
 
-async def delete_user_account(session: AsyncSession, user_id: int, *, anonymize: bool = False) -> bool:
+
+async def delete_user_account(
+    session: AsyncSession, user_id: int, *, anonymize: bool = False
+) -> bool:
     """
     Delete or anonymize a user account depending on policy.
     If anonymize=True, irreversibly remove PII and disable account (GDPR).
@@ -260,14 +304,18 @@ async def delete_user_account(session: AsyncSession, user_id: int, *, anonymize:
     await user_repo.audit_log_user_change(session, user_id, action, details)
     return result
 
+
 async def deactivate_user(session: AsyncSession, user_id: int) -> bool:
     """
     Mark the user as inactive (is_active=False). Logs the change for audit.
     Returns True if operation succeeded, False otherwise.
     """
     result = await user_repo.deactivate_user(session, user_id)
-    await user_repo.audit_log_user_change(session, user_id, "deactivate", "User deactivated (is_active=False).")
+    await user_repo.audit_log_user_change(
+        session, user_id, "deactivate", "User deactivated (is_active=False)."
+    )
     return result
+
 
 async def reactivate_user(session: AsyncSession, user_id: int) -> bool:
     """
@@ -275,8 +323,11 @@ async def reactivate_user(session: AsyncSession, user_id: int) -> bool:
     Returns True if operation succeeded, False otherwise.
     """
     result = await user_repo.reactivate_user(session, user_id)
-    await user_repo.audit_log_user_change(session, user_id, "reactivate", "User reactivated (is_active=True).")
+    await user_repo.audit_log_user_change(
+        session, user_id, "reactivate", "User reactivated (is_active=True)."
+    )
     return result
+
 
 async def get_user_by_username(session: AsyncSession, username: str) -> User | None:
     """
@@ -290,7 +341,10 @@ async def get_user_by_username(session: AsyncSession, username: str) -> User | N
     user = result.scalar_one_or_none()
     return user
 
-async def get_users_paginated(session: AsyncSession, page: int = 1, limit: int = 20) -> dict[str, Any]:
+
+async def get_users_paginated(
+    session: AsyncSession, page: int = 1, limit: int = 20
+) -> dict[str, Any]:
     """
     Return paginated users and total count. Validates input and returns structured response.
     """
@@ -300,6 +354,7 @@ async def get_users_paginated(session: AsyncSession, page: int = 1, limit: int =
     users = await user_repo.list_users_paginated(session, offset=offset, limit=limit)
     total = await user_repo.count_users(session)
     return {"users": users, "total": total, "page": page, "limit": limit}
+
 
 async def user_exists(session: AsyncSession, email: str) -> bool:
     """
@@ -313,16 +368,20 @@ async def user_exists(session: AsyncSession, email: str) -> bool:
     exists = not await user_repo.is_email_unique(session, email)
     return exists
 
+
 async def assign_role(user_id: int, role: str) -> bool:
     """
     Assign a role to a user. Allowed roles: admin, user, moderator.
     This is a stub; in production, store in DB.
     """
-    if role not in UserRole.__members__.values() and role not in [r.value for r in UserRole]:
+    if role not in UserRole.__members__.values() and role not in [
+        r.value for r in UserRole
+    ]:
         raise ValidationError(f"Invalid role: {role}")
     roles = _mock_user_roles.setdefault(user_id, set())
     roles.add(role)
     return True
+
 
 async def check_user_role(user_id: int, required_role: str) -> bool:
     """
@@ -330,6 +389,7 @@ async def check_user_role(user_id: int, required_role: str) -> bool:
     """
     roles = _mock_user_roles.get(user_id, set())
     return required_role in roles
+
 
 # For future: integrate with route-based access control (RBAC)
 # Example usage in FastAPI route:

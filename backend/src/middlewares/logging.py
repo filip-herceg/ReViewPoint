@@ -91,7 +91,8 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 
         # Generate or extract request ID
         request_id = request.headers.get(self.header_name, str(uuid.uuid4()))
-        # Set the request ID in the context variable for this request/response cycle
+        # Set the request ID in the context variable for this request/response
+        # cycle
         token = request_id_var.set(request_id)
 
         # Prepare request details for logging
@@ -139,7 +140,9 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
                 error=str(exc),
                 process_time_ms=process_time_ms,
             ).exception(
-                f"Error processing request {request.method} {request.url.path}: {exc}"
+                f"Error processing request {
+                    request.method} {
+                    request.url.path}: {exc}"
             )
             raise
         finally:

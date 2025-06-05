@@ -112,7 +112,8 @@ class Settings(BaseSettings):
         case_sensitive=False,
         env_file=str(_env_file) if _env_file else None,
         extra="ignore",
-        # env_map removed; use Field(..., alias=...) for env var mapping if needed
+        # env_map removed; use Field(..., alias=...) for env var mapping if
+        # needed
     )
 
     @field_validator("db_url", mode="before")

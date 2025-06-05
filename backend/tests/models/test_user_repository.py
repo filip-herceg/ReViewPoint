@@ -1,5 +1,6 @@
 # All repository tests have been migrated to tests/repositories/test_user.py and verified passing as of 2025-06-05.
-# This file is now legacy and can be safely removed if no shared fixtures or model tests remain.
+# This file is now legacy and can be safely removed if no shared fixtures
+# or model tests remain.
 
 import asyncio
 from datetime import UTC, datetime, timedelta

@@ -1,9 +1,17 @@
+from datetime import UTC, datetime
+
 import pytest
-from src.schemas.user import UserProfile, UserProfileUpdate, UserPreferences, UserAvatarResponse
-from datetime import datetime, timezone
+
+from src.schemas.user import (
+    UserAvatarResponse,
+    UserPreferences,
+    UserProfile,
+    UserProfileUpdate,
+)
+
 
 def test_user_profile_schema_basic():
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     profile = UserProfile(
         id=1,
         email="test@example.com",
@@ -21,6 +29,7 @@ def test_user_profile_schema_basic():
     assert profile.created_at == now
     assert profile.updated_at == now
 
+
 def test_user_profile_update_schema():
     # Valid update
     update = UserProfileUpdate(name="New Name", bio="New bio")
@@ -32,6 +41,7 @@ def test_user_profile_update_schema():
     # Too long name
     with pytest.raises(ValueError):
         UserProfileUpdate(name="x" * 200, bio="bio")
+
 
 def test_user_preferences_schema():
     prefs = UserPreferences(theme="dark", locale="en")
@@ -45,15 +55,19 @@ def test_user_preferences_schema():
     prefs3 = UserPreferences(theme=None, locale=None)
     assert prefs3.theme is None and prefs3.locale is None
 
+
 def test_user_avatar_response_schema():
     resp = UserAvatarResponse(avatar_url="/uploads/avatars/1_avatar.png")
     assert resp.avatar_url.endswith("avatar.png")
     import pydantic
+
     with pytest.raises(pydantic.ValidationError):
         UserAvatarResponse(avatar_url=None)
 
+
 def test_user_profile_schema_edge_cases():
     import pydantic
+
     # Missing required fields
     with pytest.raises(pydantic.ValidationError):
         UserProfile(id=None, email=None)
@@ -63,6 +77,7 @@ def test_user_profile_schema_edge_cases():
     # Extra fields should raise ValidationError
     with pytest.raises(pydantic.ValidationError):
         UserProfile(id=1, email="a@b.com", extra_field="ignored")
+
 
 def test_user_profile_update_schema_edge_cases():
     # Name at max length
@@ -80,6 +95,7 @@ def test_user_profile_update_schema_edge_cases():
     with pytest.raises(ValueError):
         UserProfileUpdate(name=None, bio="y" * 513)
 
+
 def test_user_preferences_schema_edge_cases():
     # Both fields None
     prefs = UserPreferences(theme=None, locale=None)
@@ -89,13 +105,16 @@ def test_user_preferences_schema_edge_cases():
     assert prefs2.theme == "dark" and prefs2.locale == "en"
     # Extra field should raise ValidationError (simulate by passing as dict)
     import pydantic
+
     with pytest.raises(pydantic.ValidationError):
         UserPreferences(**{"theme": "dark", "locale": "en", "unknown": "ignored"})
+
 
 def test_user_avatar_response_schema_edge_cases():
     # Empty string for avatar_url
     resp = UserAvatarResponse(avatar_url="")
     assert resp.avatar_url == ""
+
 
 def test_user_profile_boundary_values():
     # Name and bio at max length
@@ -110,21 +129,23 @@ def test_user_profile_boundary_values():
     with pytest.raises(ValueError):
         UserProfileUpdate(name=None, bio="b" * 513)
 
+
 def test_user_profile_unicode_and_special_characters():
     profile = UserProfile(
         id=11,
         email="üñîçødë@example.com",
         name="测试用户 🚀",
         bio="Résumé: naïve façade. 💡",
-        avatar_url="/uploads/avatars/11_😀.png"
+        avatar_url="/uploads/avatars/11_😀.png",
     )
     assert "üñîçødë" in profile.email
     assert profile.name and "测试用户" in profile.name
     assert profile.bio and "💡" in profile.bio
     assert profile.avatar_url and profile.avatar_url.endswith("😀.png")
 
+
 def test_user_profile_serialization():
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     profile = UserProfile(
         id=12,
         email="serial@example.com",
@@ -141,6 +162,7 @@ def test_user_profile_serialization():
     assert '"name":"Serial"' in j
     assert '"created_at":' in j
 
+
 def test_user_profile_default_values():
     profile = UserProfile(id=13, email="default@example.com")
     assert profile.name is None
@@ -149,8 +171,10 @@ def test_user_profile_default_values():
     assert profile.created_at is None
     assert profile.updated_at is None
 
+
 def test_user_profile_invalid_types():
     import pydantic
+
     with pytest.raises(pydantic.ValidationError):
         UserProfile(id=14, email="badtype@example.com", name=123)
     with pytest.raises(pydantic.ValidationError):
@@ -158,8 +182,10 @@ def test_user_profile_invalid_types():
     with pytest.raises(pydantic.ValidationError):
         UserProfile(id=16, email=123)
 
+
 def test_user_preferences_empty_and_invalid():
     import pydantic
+
     # Empty dict
     prefs = UserPreferences(theme=None, locale=None)
     assert prefs.theme is None and prefs.locale is None
@@ -172,6 +198,7 @@ def test_user_preferences_empty_and_invalid():
     with pytest.raises(pydantic.ValidationError):
         UserPreferences(theme=None, locale=object())
 
+
 def test_user_avatar_url_edge_cases():
     # Spaces in URL
     resp = UserAvatarResponse(avatar_url="/uploads/avatars/with space.png")
@@ -183,16 +210,18 @@ def test_user_avatar_url_edge_cases():
     resp3 = UserAvatarResponse(avatar_url="")
     assert resp3.avatar_url == ""
 
+
 def test_user_profile_extreme_id():
     # Very large id
-    profile = UserProfile(id=2**31-1, email="bigid@example.com")
-    assert profile.id == 2**31-1
+    profile = UserProfile(id=2**31 - 1, email="bigid@example.com")
+    assert profile.id == 2**31 - 1
     # Very small id
     profile2 = UserProfile(id=0, email="zeroid@example.com")
     assert profile2.id == 0
     # Negative id (should be allowed unless schema restricts)
     profile3 = UserProfile(id=-1, email="negid@example.com")
     assert profile3.id == -1
+
 
 def test_user_profile_invalid_email_formats():
     # Not an email, but schema only requires str, so this should pass
@@ -202,14 +231,20 @@ def test_user_profile_invalid_email_formats():
     profile2 = UserProfile(id=101, email="")
     assert profile2.email == ""
 
+
 def test_user_profile_empty_strings():
-    profile = UserProfile(id=102, email="empty@example.com", name="", bio="", avatar_url="")
+    profile = UserProfile(
+        id=102, email="empty@example.com", name="", bio="", avatar_url=""
+    )
     assert profile.name == ""
     assert profile.bio == ""
     assert profile.avatar_url == ""
 
+
 def test_user_profile_whitespace_fields():
-    profile = UserProfile(id=103, email="ws@example.com", name="   ", bio="\t\n", avatar_url=" ")
+    profile = UserProfile(
+        id=103, email="ws@example.com", name="   ", bio="\t\n", avatar_url=" "
+    )
     if profile.name is not None:
         assert profile.name.isspace()
     if profile.bio is not None:
@@ -217,16 +252,21 @@ def test_user_profile_whitespace_fields():
     if profile.avatar_url is not None:
         assert profile.avatar_url.isspace()
 
+
 def test_user_profile_future_and_past_dates():
-    from datetime import datetime, timedelta, timezone
-    now = datetime.now(timezone.utc)
+    from datetime import datetime, timedelta
+
+    now = datetime.now(UTC)
     future = now + timedelta(days=365)
     past = now - timedelta(days=365)
-    profile = UserProfile(id=104, email="date@example.com", created_at=future, updated_at=past)
+    profile = UserProfile(
+        id=104, email="date@example.com", created_at=future, updated_at=past
+    )
     if profile.created_at is not None:
         assert profile.created_at > now
     if profile.updated_at is not None:
         assert profile.updated_at < now
+
 
 def test_user_profile_update_whitespace():
     update = UserProfileUpdate(name="   ", bio="\n\t")
@@ -235,20 +275,30 @@ def test_user_profile_update_whitespace():
     if update.bio is not None:
         assert update.bio.isspace()
 
+
 def test_user_preferences_deeply_nested():
     from src.schemas.user import UserPreferencesUpdate
-    nested = {"theme": "dark", "settings": {"notifications": {"email": True, "sms": False}}}
+
+    nested = {
+        "theme": "dark",
+        "settings": {"notifications": {"email": True, "sms": False}},
+    }
     prefs = UserPreferencesUpdate(preferences=nested)
     assert isinstance(prefs.preferences["settings"], dict)
 
+
 def test_user_preferences_empty_dict():
     from src.schemas.user import UserPreferencesUpdate
+
     prefs = UserPreferencesUpdate(preferences={})
     assert prefs.preferences == {}
 
+
 def test_user_preferences_non_string_keys_values():
-    from src.schemas.user import UserPreferencesUpdate
     import pydantic
+
+    from src.schemas.user import UserPreferencesUpdate
+
     # Non-string key should raise validation error
     with pytest.raises(pydantic.ValidationError):
         UserPreferencesUpdate(preferences={1: "one", "two": 2})
@@ -256,9 +306,11 @@ def test_user_preferences_non_string_keys_values():
     prefs = UserPreferencesUpdate(preferences={"two": 2})
     assert prefs.preferences["two"] == 2
 
+
 def test_user_avatar_url_special_characters():
     resp = UserAvatarResponse(avatar_url="/uploads/avatars/!@#$%^&*().png")
     assert any(c in resp.avatar_url for c in "!@#$%^&*()")
+
 
 def test_user_profile_unicode_everywhere():
     profile = UserProfile(
@@ -266,7 +318,7 @@ def test_user_profile_unicode_everywhere():
         email="用户@例子.公司",
         name="名字🌟",
         bio="简介💬",
-        avatar_url="/uploads/avatars/用户🌟.png"
+        avatar_url="/uploads/avatars/用户🌟.png",
     )
     if profile.email is not None:
         assert "用户" in profile.email

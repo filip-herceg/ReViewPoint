@@ -1,7 +1,6 @@
-import asyncio
-from datetime import UTC, datetime, timedelta
-import uuid
 import logging
+import uuid
+from datetime import UTC, datetime, timedelta
 from io import StringIO
 
 import pytest
@@ -12,14 +11,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.file import File
 from src.models.user import User
 from src.repositories import user as user_repo
-from src.utils.cache import AsyncInMemoryCache
 from src.utils.errors import (
     RateLimitExceededError,
     UserAlreadyExistsError,
     UserNotFoundError,
     ValidationError,
 )
-from src.utils.rate_limit import AsyncRateLimiter
 from src.utils.validation import (
     get_password_validation_error,
     validate_email,
@@ -69,13 +66,26 @@ async def file_instance(async_session, user_instance):
         ("test@example.com", "password1", None, None),
         ("invalid_email", "password1", "Invalid email address.", None),
         ("test@example.com", "short", None, "Password must be at least 8 characters."),
-        ("test@example.com", "NoDigitsHere", None, "Password must contain at least one digit."),
-        ("test@example.com", "12345678", None, "Password must contain at least one letter."),
+        (
+            "test@example.com",
+            "NoDigitsHere",
+            None,
+            "Password must contain at least one digit.",
+        ),
+        (
+            "test@example.com",
+            "12345678",
+            None,
+            "Password must contain at least one letter.",
+        ),
     ],
 )
-async def test_user_validation(email, password, expected_email_error, expected_password_error):
+async def test_user_validation(
+    email, password, expected_email_error, expected_password_error
+):
     """Test user email and password validation separately."""
-    from src.utils.validation import validate_email, get_password_validation_error
+    from src.utils.validation import validate_email
+
     # Email validation
     if expected_email_error:
         assert not validate_email(email)
@@ -105,7 +115,7 @@ async def test_create_user(async_session):
 
 async def test_create_user_already_exists(async_session, user_instance):
     """Test creating a user that already exists."""
-    with pytest.raises(Exception):
+    with pytest.raises(UserAlreadyExistsError):
         # Try to add the same user again
         user = User(
             email=user_instance.email,
@@ -168,7 +178,9 @@ async def test_create_file_for_user(async_session, user_instance):
 
 async def test_get_user_files(async_session, user_instance, file_instance):
     """Test retrieving files for a user."""
-    result = await async_session.execute(select(File).where(File.user_id == user_instance.id))
+    result = await async_session.execute(
+        select(File).where(File.user_id == user_instance.id)
+    )
     files = result.scalars().all()
     assert len(files) >= 1
     assert any(f.id == file_instance.id for f in files)
@@ -187,6 +199,7 @@ async def test_email_validation():
             raise ValidationError()
     # No DB session to rollback here
 
+
 async def test_password_validation():
     """Test password validation."""
     valid_password = "StrongPassw0rd!"
@@ -196,6 +209,7 @@ async def test_password_validation():
         if not validate_password(short_password):
             raise ValidationError()
     # No DB session to rollback here
+
 
 @pytest.mark.asyncio
 async def test_get_user_by_id(async_session: AsyncSession):
@@ -351,7 +365,10 @@ async def test_get_users_by_custom_field_stub(async_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_bulk_create_users(async_session: AsyncSession):
-    users = [User(email=f"bulk{i}@b.com", hashed_password="pw", is_active=True) for i in range(3)]
+    users = [
+        User(email=f"bulk{i}@b.com", hashed_password="pw", is_active=True)
+        for i in range(3)
+    ]
     created = await user_repo.bulk_create_users(async_session, users)
     assert all(u.id is not None for u in created)
     emails = {u.email for u in created}
@@ -361,11 +378,16 @@ async def test_bulk_create_users(async_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_bulk_update_users(async_session: AsyncSession):
-    users = [User(email=f"upd{i}@b.com", hashed_password="pw", is_active=True) for i in range(2)]
+    users = [
+        User(email=f"upd{i}@b.com", hashed_password="pw", is_active=True)
+        for i in range(2)
+    ]
     async_session.add_all(users)
     await async_session.commit()
     ids = [u.id for u in users]
-    updated_count = await user_repo.bulk_update_users(async_session, ids, {"is_active": False})
+    updated_count = await user_repo.bulk_update_users(
+        async_session, ids, {"is_active": False}
+    )
     assert updated_count == 2
     result = await async_session.execute(select(User).where(User.id.in_(ids)))
     updated = result.scalars().all()
@@ -374,7 +396,10 @@ async def test_bulk_update_users(async_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_bulk_delete_users(async_session: AsyncSession):
-    users = [User(email=f"del{i}@b.com", hashed_password="pw", is_active=True) for i in range(2)]
+    users = [
+        User(email=f"del{i}@b.com", hashed_password="pw", is_active=True)
+        for i in range(2)
+    ]
     async_session.add_all(users)
     await async_session.commit()
     ids = [u.id for u in users]
@@ -405,10 +430,14 @@ async def test_soft_delete_and_restore_user(async_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_upsert_user(async_session: AsyncSession):
-    user = await user_repo.upsert_user(async_session, "upsert@b.com", {"hashed_password": "pw", "is_active": True})
+    user = await user_repo.upsert_user(
+        async_session, "upsert@b.com", {"hashed_password": "pw", "is_active": True}
+    )
     assert user.id is not None
     assert user.email == "upsert@b.com"
-    user2 = await user_repo.upsert_user(async_session, "upsert@b.com", {"hashed_password": "pw2", "is_active": False})
+    user2 = await user_repo.upsert_user(
+        async_session, "upsert@b.com", {"hashed_password": "pw2", "is_active": False}
+    )
     assert user2.id == user.id
     assert user2.hashed_password == "pw2"
     assert not user2.is_active
@@ -420,10 +449,14 @@ async def test_partial_update_user(async_session: AsyncSession):
     async_session.add(user)
     await async_session.commit()
     await async_session.refresh(user)
-    updated = await user_repo.partial_update_user(async_session, user.id, {"is_active": False})
+    updated = await user_repo.partial_update_user(
+        async_session, user.id, {"is_active": False}
+    )
     assert updated is not None
     assert not updated.is_active
-    updated2 = await user_repo.partial_update_user(async_session, user.id, {"nonexistent": 123})
+    updated2 = await user_repo.partial_update_user(
+        async_session, user.id, {"nonexistent": 123}
+    )
     assert updated2 is not None
     assert not hasattr(updated2, "nonexistent")
 
@@ -450,7 +483,9 @@ async def test_is_email_unique(async_session: AsyncSession):
     assert unique is False
     unique2 = await user_repo.is_email_unique(async_session, "other@b.com")
     assert unique2 is True
-    unique3 = await user_repo.is_email_unique(async_session, "unique@b.com", exclude_user_id=user.id)
+    unique3 = await user_repo.is_email_unique(
+        async_session, "unique@b.com", exclude_user_id=user.id
+    )
     assert unique3 is True
 
 
@@ -489,19 +524,25 @@ async def test_get_user_with_files(async_session: AsyncSession):
     async_session.add(user)
     await async_session.commit()
     await async_session.refresh(user)
-    files = [File(filename=f"f{i}.txt", content_type="text/plain", user_id=user.id) for i in range(2)]
+    files = [
+        File(filename=f"f{i}.txt", content_type="text/plain", user_id=user.id)
+        for i in range(2)
+    ]
     async_session.add_all(files)
     await async_session.commit()
     user_with_files = await user_repo.get_user_with_files(async_session, user.id)
     # Only count files created in this test
-    test_filenames = {f"f0.txt", f"f1.txt"}
-    user_files = [f for f in getattr(user_with_files, "files", []) if f.filename in test_filenames]
+    test_filenames = {"f0.txt", "f1.txt"}
+    user_files = [
+        f for f in getattr(user_with_files, "files", []) if f.filename in test_filenames
+    ]
     assert len(user_files) == 2
 
 
 @pytest.mark.asyncio
 async def test_db_session_context_and_transaction():
     from src.repositories.user import db_session_context, db_transaction
+
     async with db_session_context() as session:
         user = User(email="tx@b.com", hashed_password="pw", is_active=True)
         async with db_transaction(session):
@@ -513,7 +554,10 @@ async def test_db_session_context_and_transaction():
 
 @pytest.mark.asyncio
 async def test_export_users_to_csv_and_json(async_session: AsyncSession):
-    users = [User(email=f"exp{i}@b.com", hashed_password="pw", is_active=(i % 2 == 0)) for i in range(3)]
+    users = [
+        User(email=f"exp{i}@b.com", hashed_password="pw", is_active=(i % 2 == 0))
+        for i in range(3)
+    ]
     async_session.add_all(users)
     await async_session.commit()
     csv_data = await user_repo.export_users_to_csv(async_session)
@@ -521,6 +565,7 @@ async def test_export_users_to_csv_and_json(async_session: AsyncSession):
     assert csv_data.count("\n") == 4
     assert "email" in csv_data and "exp0@b.com" in csv_data
     import json as _json
+
     data = _json.loads(json_data)
     assert isinstance(data, list) and len(data) == 3
     assert any(u["email"] == "exp1@b.com" for u in data)
@@ -559,6 +604,7 @@ async def test_deactivate_and_reactivate_user(async_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_update_last_login(async_session: AsyncSession):
     from datetime import datetime
+
     user = User(email="login@b.com", hashed_password="pw", is_active=True)
     async_session.add(user)
     await async_session.commit()
@@ -574,6 +620,7 @@ async def test_update_last_login(async_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_anonymize_user(async_session: AsyncSession):
     from src.repositories.user import anonymize_user, get_user_by_id
+
     user = User(email="gdpr@b.com", hashed_password="pw", is_active=True)
     async_session.add(user)
     await async_session.commit()
@@ -587,18 +634,37 @@ async def test_anonymize_user(async_session: AsyncSession):
     assert anon_user.is_deleted is True
     assert anon_user.hashed_password == ""
     assert anon_user.last_login_at is None
-    assert anon_user.email.startswith(f"anon_{user_id}_") and anon_user.email.endswith("@anon.invalid")
+    assert anon_user.email.startswith(f"anon_{user_id}_") and anon_user.email.endswith(
+        "@anon.invalid"
+    )
 
 
 @pytest.mark.asyncio
 async def test_user_signups_per_month(async_session: AsyncSession):
     from datetime import datetime
+
     from src.repositories.user import user_signups_per_month
+
     now = datetime.now(UTC)
     users = [
-        User(email="m1@b.com", hashed_password="pw", is_active=True, created_at=now.replace(month=1)),
-        User(email="m2@b.com", hashed_password="pw", is_active=True, created_at=now.replace(month=2)),
-        User(email="m2b@b.com", hashed_password="pw", is_active=True, created_at=now.replace(month=2)),
+        User(
+            email="m1@b.com",
+            hashed_password="pw",
+            is_active=True,
+            created_at=now.replace(month=1),
+        ),
+        User(
+            email="m2@b.com",
+            hashed_password="pw",
+            is_active=True,
+            created_at=now.replace(month=2),
+        ),
+        User(
+            email="m2b@b.com",
+            hashed_password="pw",
+            is_active=True,
+            created_at=now.replace(month=2),
+        ),
     ]
     async_session.add_all(users)
     await async_session.commit()
@@ -614,8 +680,11 @@ async def test_error_handling_utilities(async_session: AsyncSession):
     create_user_with_validation = user_repo.create_user_with_validation
     sensitive_user_action = user_repo.sensitive_user_action
     safe_get_user_by_id = user_repo.safe_get_user_by_id
-    from src.utils.errors import ValidationError, UserAlreadyExistsError, UserNotFoundError, RateLimitExceededError
     from src.repositories.user import user_action_limiter
+    from src.utils.errors import (
+        ValidationError,
+    )
+
     # ValidationError
     with pytest.raises(ValidationError):
         await create_user_with_validation(async_session, "bademail", "pw")
@@ -645,7 +714,9 @@ async def test_bulk_create_users_empty(async_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_bulk_update_users_empty(async_session: AsyncSession):
-    updated_count = await user_repo.bulk_update_users(async_session, [], {"is_active": False})
+    updated_count = await user_repo.bulk_update_users(
+        async_session, [], {"is_active": False}
+    )
     assert updated_count == 0
 
 
@@ -657,13 +728,15 @@ async def test_bulk_delete_users_empty(async_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_partial_update_user_invalid_id(async_session: AsyncSession):
-    updated = await user_repo.partial_update_user(async_session, 999999, {"is_active": False})
+    updated = await user_repo.partial_update_user(
+        async_session, 999999, {"is_active": False}
+    )
     assert updated is None
 
 
 @pytest.mark.asyncio
 async def test_upsert_user_invalid_email(async_session: AsyncSession):
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         await user_repo.upsert_user(async_session, "", {"hashed_password": "pw"})
     await async_session.rollback()
 
@@ -725,6 +798,7 @@ async def test_update_last_login_invalid_id(async_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_anonymize_user_invalid_id(async_session: AsyncSession):
     from src.repositories.user import anonymize_user
+
     result = await anonymize_user(async_session, 999999)
     assert result is False
 
@@ -741,6 +815,7 @@ async def test_export_users_to_csv_and_json_no_users(async_session: AsyncSession
     json_data = await user_repo.export_users_to_json(async_session)
     assert "email" in csv_data
     import json as _json
+
     data = _json.loads(json_data)
     assert isinstance(data, list) and len(data) == 0
 
@@ -748,7 +823,9 @@ async def test_export_users_to_csv_and_json_no_users(async_session: AsyncSession
 @pytest.mark.asyncio
 async def test_user_signups_per_month_no_users(async_session: AsyncSession):
     from datetime import datetime
+
     from src.repositories.user import user_signups_per_month
+
     now = datetime.now(UTC)
     stats = await user_signups_per_month(async_session, now.year)
     assert all(v == 0 for v in stats.values())
