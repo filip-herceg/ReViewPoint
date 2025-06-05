@@ -140,9 +140,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
                 error=str(exc),
                 process_time_ms=process_time_ms,
             ).exception(
-                f"Error processing request {
-                    request.method} {
-                    request.url.path}: {exc}"
+                f"Error processing request {request.method} {request.url.path}: {exc}"
             )
             raise
         finally:
