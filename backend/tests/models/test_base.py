@@ -15,7 +15,8 @@ def test_base_to_dict() -> None:
             return {
                 "id": self.id,
                 "name": self.name,
-                # created_at and updated_at are not present in this dummy, so skip
+                # created_at and updated_at are not present in this dummy, so
+                # skip
             }
 
     dummy = DummyToDict()

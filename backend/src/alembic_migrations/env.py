@@ -1,11 +1,22 @@
-# Implements only the run_migrations_offline and run_migrations_online functions for modular testability
+# Implements only the run_migrations_offline and run_migrations_online
+# functions for modular testability
 import logging
+import os
+import sys
 from collections.abc import Callable
 from typing import Any
+
+from src.models.base import Base
 
 logger = logging.getLogger("alembic.env")
 logger.setLevel(logging.INFO)
 logger.propagate = True
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
+# Add this to ensure Alembic sees all models for autogenerate
+
+
+target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:

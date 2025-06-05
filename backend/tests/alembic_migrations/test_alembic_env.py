@@ -250,7 +250,8 @@ def test_run_migrations_online_missing_url(monkeypatch: pytest.MonkeyPatch) -> N
 def test_run_migrations_online_engine_connect_raises(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    # Arrange: Patch alembic.context and provide a mock engine_from_config that raises on connect
+    # Arrange: Patch alembic.context and provide a mock engine_from_config
+    # that raises on connect
     context_mod = types.SimpleNamespace()
 
     def get_main_option(key: str) -> str:

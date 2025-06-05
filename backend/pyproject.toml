@@ -62,7 +62,8 @@ dependencies = [
   "ruff>=0.8.4",
   "mypy>=1.13.0",
   "pytest-loguru>=0.2.0",
-  "types-passlib>=1.7.7.20240901"
+  "types-passlib>=1.7.7.20240901",
+  "types-python-jose",
 ]
 env-vars = { PYTHONPATH = "src" }
 
@@ -155,6 +156,7 @@ python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 norecursedirs = "/tests"
+pythonpath = ["src"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src"]

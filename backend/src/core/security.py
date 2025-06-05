@@ -8,7 +8,7 @@ from typing import Any
 from jose import JWTError, jwt
 from loguru import logger
 
-from core.config import settings
+from src.core.config import settings
 
 # Add current dir to path for stubs
 # NOTE: Removed sys.path modification as it is not essential for production.

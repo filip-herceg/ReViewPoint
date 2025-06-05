@@ -62,8 +62,12 @@ async def create_user_with_validation(
     hashed = hash_password(password)
     user = User(email=email, hashed_password=hashed, is_active=True)
     session.add(user)
-    await session.commit()
-    await session.refresh(user)
+    try:
+        await session.commit()
+        await session.refresh(user)
+    except Exception:
+        await session.rollback()
+        raise
     return user
 
 
@@ -71,6 +75,9 @@ async def sensitive_user_action(
     session: AsyncSession, user_id: int, action: str
 ) -> None:
     """Example of a rate-limited sensitive action."""
+    user = await get_user_by_id(session, user_id)
+    if not user:
+        raise UserNotFoundError(f"User with id {user_id} not found.")
     limiter_key = f"user:{user_id}:{action}"
     allowed = await user_action_limiter.is_allowed(limiter_key)
     if not allowed:
@@ -173,9 +180,13 @@ async def bulk_create_users(
 ) -> Sequence[User]:
     """Bulk create users and return them with IDs."""
     session.add_all(users)
-    await session.commit()
-    for user in users:
-        await session.refresh(user)
+    try:
+        await session.commit()
+        for user in users:
+            await session.refresh(user)
+    except Exception:
+        await session.rollback()
+        raise
     return users
 
 
@@ -190,7 +201,11 @@ async def bulk_update_users(
     for user in users:
         for key, value in update_data.items():
             setattr(user, key, value)
-    await session.commit()
+    try:
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise
     return len(users)
 
 
@@ -202,7 +217,11 @@ async def bulk_delete_users(session: AsyncSession, user_ids: Sequence[int]) -> i
     users = result.scalars().all()
     for user in users:
         await session.delete(user)
-    await session.commit()
+    try:
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise
     return len(users)
 
 
@@ -212,7 +231,11 @@ async def soft_delete_user(session: AsyncSession, user_id: int) -> bool:
     if user is None or user.is_deleted:
         return False
     user.is_deleted = True
-    await session.commit()
+    try:
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise
     return True
 
 
@@ -222,7 +245,11 @@ async def restore_user(session: AsyncSession, user_id: int) -> bool:
     if user is None or not user.is_deleted:
         return False
     user.is_deleted = False
-    await session.commit()
+    try:
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise
     return True
 
 
@@ -230,6 +257,8 @@ async def upsert_user(
     session: AsyncSession, email: str, defaults: dict[str, Any]
 ) -> User:
     """Insert or update a user by email. Returns the user."""
+    if not email or not validate_email(email):
+        raise ValidationError("Invalid email format.")
     result = await session.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
     if user:
@@ -239,8 +268,12 @@ async def upsert_user(
     else:
         user = User(email=email, **defaults)
         session.add(user)
-    await session.commit()
-    await session.refresh(user)
+    try:
+        await session.commit()
+        await session.refresh(user)
+    except Exception:
+        await session.rollback()
+        raise
     return user
 
 
@@ -254,8 +287,12 @@ async def partial_update_user(
     for key, value in update_data.items():
         if hasattr(user, key):
             setattr(user, key, value)
-    await session.commit()
-    await session.refresh(user)
+    try:
+        await session.commit()
+        await session.refresh(user)
+    except Exception:
+        await session.rollback()
+        raise
     return user
 
 
@@ -284,7 +321,11 @@ async def change_user_password(
     if user is None:
         return False
     user.hashed_password = new_hashed_password
-    await session.commit()
+    try:
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise
     return True
 
 
@@ -396,9 +437,13 @@ async def import_users_from_dicts(
     """Bulk import users from a list of dicts."""
     users = [User(**d) for d in user_dicts]
     session.add_all(users)
-    await session.commit()
-    for user in users:
-        await session.refresh(user)
+    try:
+        await session.commit()
+        for user in users:
+            await session.refresh(user)
+    except Exception:
+        await session.rollback()
+        raise
     return users
 
 
@@ -408,7 +453,11 @@ async def deactivate_user(session: AsyncSession, user_id: int) -> bool:
     if user is None or not user.is_active:
         return False
     user.is_active = False
-    await session.commit()
+    try:
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise
     return True
 
 
@@ -418,7 +467,11 @@ async def reactivate_user(session: AsyncSession, user_id: int) -> bool:
     if user is None or user.is_active:
         return False
     user.is_active = True
-    await session.commit()
+    try:
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise
     return True
 
 
@@ -430,14 +483,18 @@ async def update_last_login(
     if user is None:
         return False
     user.last_login_at = login_time or datetime.now(UTC)
-    await session.commit()
+    try:
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise
     return True
 
 
 async def anonymize_user(session: AsyncSession, user_id: int) -> bool:
     """Anonymize user data for privacy/GDPR (irreversibly removes PII, disables account)."""
     user = await get_user_by_id(session, user_id, use_cache=False)
-    if not user:
+    if not user or user.is_deleted:
         return False
     user.email = f"anon_{user.id}_{int(datetime.now(UTC).timestamp())}@anon.invalid"
     user.hashed_password = ""
@@ -471,4 +528,6 @@ __all__ = [
     "sensitive_user_action",
     "anonymize_user",
     "user_signups_per_month",
+    "UserNotFoundError",
+    "select",
 ]

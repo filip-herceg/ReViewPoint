@@ -20,5 +20,12 @@ class AsyncRateLimiter:
                 return True
             return False
 
+    def reset(self, key: str | None = None) -> None:
+        """Reset the rate limiter for a specific key or all keys if key is None."""
+        if key is not None:
+            self.calls.pop(key, None)
+        else:
+            self.calls.clear()
+
 
 # Example: user_rate_limiter = AsyncRateLimiter(max_calls=5, period=60.0)
