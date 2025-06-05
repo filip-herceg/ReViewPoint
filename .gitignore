@@ -216,3 +216,6 @@ site/
 
 # Pyenv
 **/.python-version
+
+# User uploads and runtime-generated files
+backend/uploads/
