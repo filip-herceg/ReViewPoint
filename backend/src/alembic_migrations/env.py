@@ -2,10 +2,23 @@
 import logging
 from collections.abc import Callable
 from typing import Any
+import sys
+import os
 
 logger = logging.getLogger("alembic.env")
 logger.setLevel(logging.INFO)
 logger.propagate = True
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+from src.models.base import Base
+from src.models.user import User
+from src.models.file import File
+from src.models.used_password_reset_token import UsedPasswordResetToken
+
+# Add this to ensure Alembic sees all models for autogenerate
+from sqlalchemy import MetaData
+
+target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:

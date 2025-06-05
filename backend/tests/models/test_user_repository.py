@@ -1,3 +1,6 @@
+# All repository tests have been migrated to tests/repositories/test_user.py and verified passing as of 2025-06-05.
+# This file is now legacy and can be safely removed if no shared fixtures or model tests remain.
+
 import asyncio
 from datetime import UTC, datetime, timedelta
 
@@ -35,8 +38,8 @@ async def test_get_user_by_id(async_session: AsyncSession) -> None:
     user = User(email="a@b.com", hashed_password="pw", is_active=True)
     async_session.add(user)
     await async_session.commit()
-    await async_session.refresh(user)
-    found = await user_repo.get_user_by_id(async_session, user.id)
+    user_id = user.id
+    found = await user_repo.get_user_by_id(async_session, user_id)
     assert found is not None
     assert found.email == "a@b.com"
 
@@ -105,7 +108,6 @@ async def test_filter_users_by_status(async_session: AsyncSession) -> None:
 
 @pytest.mark.asyncio
 async def test_get_users_created_within(async_session: AsyncSession) -> None:
-
     now = datetime.now(UTC)
     users = [
         User(
@@ -234,16 +236,17 @@ async def test_soft_delete_and_restore_user(async_session: AsyncSession) -> None
     user = User(email="soft@b.com", hashed_password="pw", is_active=True)
     async_session.add(user)
     await async_session.commit()
+    user_id = user.id
     await async_session.refresh(user)
     # Soft delete
-    deleted = await user_repo.soft_delete_user(async_session, user.id)
+    deleted = await user_repo.soft_delete_user(async_session, user_id)
     assert deleted
-    user_db = await user_repo.get_user_by_id(async_session, user.id)
+    user_db = await user_repo.get_user_by_id(async_session, user_id)
     assert user_db is not None and user_db.is_deleted
     # Restore
-    restored = await user_repo.restore_user(async_session, user.id)
+    restored = await user_repo.restore_user(async_session, user_id)
     assert restored
-    user_db = await user_repo.get_user_by_id(async_session, user.id)
+    user_db = await user_repo.get_user_by_id(async_session, user_id)
     assert user_db is not None and not user_db.is_deleted
 
 
@@ -269,15 +272,16 @@ async def test_partial_update_user(async_session: AsyncSession) -> None:
     user = User(email="patch@b.com", hashed_password="pw", is_active=True)
     async_session.add(user)
     await async_session.commit()
+    user_id = user.id
     await async_session.refresh(user)
     updated = await user_repo.partial_update_user(
-        async_session, user.id, {"is_active": False}
+        async_session, user_id, {"is_active": False}
     )
     assert updated is not None
     assert not updated.is_active
     # Patch non-existent field is ignored
     updated2 = await user_repo.partial_update_user(
-        async_session, user.id, {"nonexistent": 123}
+        async_session, user_id, {"nonexistent": 123}
     )
     assert updated2 is not None
     assert not hasattr(updated2, "nonexistent")
@@ -288,7 +292,8 @@ async def test_user_exists(async_session: AsyncSession) -> None:
     user = User(email="exists@b.com", hashed_password="pw", is_active=True)
     async_session.add(user)
     await async_session.commit()
-    exists = await user_repo.user_exists(async_session, user.id)
+    user_id = user.id
+    exists = await user_repo.user_exists(async_session, user_id)
     not_exists = await user_repo.user_exists(async_session, 99999)
     assert exists is True
     assert not_exists is False
@@ -299,6 +304,7 @@ async def test_is_email_unique(async_session: AsyncSession) -> None:
     user = User(email="unique@b.com", hashed_password="pw", is_active=True)
     async_session.add(user)
     await async_session.commit()
+    user_id = user.id
     # Should not be unique
     unique = await user_repo.is_email_unique(async_session, "unique@b.com")
     assert unique is False
@@ -307,7 +313,7 @@ async def test_is_email_unique(async_session: AsyncSession) -> None:
     assert unique2 is True
     # Should be unique if excluding self
     unique3 = await user_repo.is_email_unique(
-        async_session, "unique@b.com", exclude_user_id=user.id
+        async_session, "unique@b.com", exclude_user_id=user_id
     )
     assert unique3 is True
 
@@ -317,10 +323,11 @@ async def test_change_user_password(async_session: AsyncSession) -> None:
     user = User(email="pw@b.com", hashed_password="old", is_active=True)
     async_session.add(user)
     await async_session.commit()
+    user_id = user.id
     await async_session.refresh(user)
-    changed = await user_repo.change_user_password(async_session, user.id, "newhash")
+    changed = await user_repo.change_user_password(async_session, user_id, "newhash")
     assert changed
-    user_db = await user_repo.get_user_by_id(async_session, user.id)
+    user_db = await user_repo.get_user_by_id(async_session, user_id)
     assert user_db is not None and user_db.hashed_password == "newhash"
 
 
@@ -347,14 +354,15 @@ async def test_get_user_with_files(async_session: AsyncSession) -> None:
     user = User(email="files@b.com", hashed_password="pw", is_active=True)
     async_session.add(user)
     await async_session.commit()
+    user_id = user.id
     await async_session.refresh(user)
     files = [
-        File(filename=f"f{i}.txt", content_type="text/plain", user_id=user.id)
+        File(filename=f"f{i}.txt", content_type="text/plain", user_id=user_id)
         for i in range(2)
     ]
     async_session.add_all(files)
     await async_session.commit()
-    user_with_files = await user_repo.get_user_with_files(async_session, user.id)
+    user_with_files = await user_repo.get_user_with_files(async_session, user_id)
     assert user_with_files is not None
     assert hasattr(user_with_files, "files")
     # Bypass type checker for runtime attribute
@@ -415,16 +423,17 @@ async def test_deactivate_and_reactivate_user(async_session: AsyncSession) -> No
     user = User(email="active@b.com", hashed_password="pw", is_active=True)
     async_session.add(user)
     await async_session.commit()
+    user_id = user.id
     await async_session.refresh(user)
     # Deactivate
-    deactivated = await user_repo.deactivate_user(async_session, user.id)
+    deactivated = await user_repo.deactivate_user(async_session, user_id)
     assert deactivated
-    user_db = await user_repo.get_user_by_id(async_session, user.id)
+    user_db = await user_repo.get_user_by_id(async_session, user_id)
     assert user_db is not None and not user_db.is_active
     # Reactivate
-    reactivated = await user_repo.reactivate_user(async_session, user.id)
+    reactivated = await user_repo.reactivate_user(async_session, user_id)
     assert reactivated
-    user_db = await user_repo.get_user_by_id(async_session, user.id)
+    user_db = await user_repo.get_user_by_id(async_session, user_id)
     assert user_db is not None and user_db.is_active
 
 
@@ -435,11 +444,12 @@ async def test_update_last_login(async_session: AsyncSession) -> None:
     user = User(email="login@b.com", hashed_password="pw", is_active=True)
     async_session.add(user)
     await async_session.commit()
+    user_id = user.id
     await async_session.refresh(user)
     now = datetime.now(UTC)
-    updated = await user_repo.update_last_login(async_session, user.id, login_time=now)
+    updated = await user_repo.update_last_login(async_session, user_id, login_time=now)
     assert updated
-    user_db = await user_repo.get_user_by_id(async_session, user.id)
+    user_db = await user_repo.get_user_by_id(async_session, user_id)
     assert user_db is not None and user_db.last_login_at is not None
     # Should be close to now
     assert abs((user_db.last_login_at - now).total_seconds()) < 2
@@ -501,6 +511,7 @@ async def test_error_handling_utilities(async_session: AsyncSession) -> None:
         await create_user_with_validation(async_session, "bademail", "pw")
     # UserAlreadyExistsError
     user = await create_user_with_validation(async_session, "exists@b.com", "Abc12345")
+    user_id = user.id
     with pytest.raises(UserAlreadyExistsError):
         await create_user_with_validation(async_session, "exists@b.com", "Abc12345")
     # UserNotFoundError
@@ -508,9 +519,9 @@ async def test_error_handling_utilities(async_session: AsyncSession) -> None:
         await safe_get_user_by_id(async_session, 999999)
     # RateLimitExceededError
     for _ in range(5):
-        await sensitive_user_action(async_session, user.id, "test")
+        await sensitive_user_action(async_session, user_id, "test")
     with pytest.raises(RateLimitExceededError):
-        await sensitive_user_action(async_session, user.id, "test")
+        await sensitive_user_action(async_session, user_id, "test")
 
 
 @pytest.mark.asyncio
@@ -520,8 +531,8 @@ async def test_anonymize_user(async_session: AsyncSession) -> None:
     user = User(email="gdpr@b.com", hashed_password="pw", is_active=True)
     async_session.add(user)
     await async_session.commit()
-    await async_session.refresh(user)
     user_id = user.id
+    await async_session.refresh(user)
     # Anonymize
     result = await anonymize_user(async_session, user_id)
     assert result

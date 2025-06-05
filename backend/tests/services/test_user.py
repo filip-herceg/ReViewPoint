@@ -3,6 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.user import User
 from src.services import user as user_service
 from src.utils.errors import ValidationError, UserAlreadyExistsError, UserNotFoundError
+import string
+from jose import jwt
+from src.core.security import create_access_token
+from src.core.config import settings
 
 @pytest.mark.asyncio
 async def test_register_user_success(async_session: AsyncSession):
@@ -19,18 +23,22 @@ async def test_register_user_duplicate_email(async_session: AsyncSession):
     await user_service.register_user(async_session, data)
     with pytest.raises(UserAlreadyExistsError):
         await user_service.register_user(async_session, data)
+    await async_session.rollback()
+    # No ORM object reuse after rollback
 
 @pytest.mark.asyncio
 async def test_register_user_invalid_email(async_session: AsyncSession):
     data = {"email": "bademail", "password": "Abc12345"}
     with pytest.raises(ValidationError):
         await user_service.register_user(async_session, data)
+    await async_session.rollback()
 
 @pytest.mark.asyncio
 async def test_register_user_invalid_password(async_session: AsyncSession):
     data = {"email": "pwfail@example.com", "password": "short"}
     with pytest.raises(ValidationError):
         await user_service.register_user(async_session, data)
+    await async_session.rollback()
 
 @pytest.mark.asyncio
 async def test_authenticate_user_success(async_session: AsyncSession):
@@ -46,11 +54,13 @@ async def test_authenticate_user_wrong_password(async_session: AsyncSession):
     await user_service.register_user(async_session, data)
     with pytest.raises(ValidationError):
         await user_service.authenticate_user(async_session, data["email"], "wrongpass")
+    await async_session.rollback()
 
 @pytest.mark.asyncio
 async def test_authenticate_user_not_found(async_session: AsyncSession):
     with pytest.raises(UserNotFoundError):
         await user_service.authenticate_user(async_session, "notfound@example.com", "Abc12345")
+    await async_session.rollback()
 
 @pytest.mark.asyncio
 async def test_logout_user_deactivates(async_session: AsyncSession):
@@ -144,3 +154,174 @@ def test_verify_email_token_valid():
 def test_verify_email_token_invalid():
     with pytest.raises(ValidationError):
         user_service.verify_email_token("not.a.jwt.token")
+
+@pytest.mark.asyncio
+async def test_get_password_reset_token_and_reset_password(async_session: AsyncSession, caplog):
+    # Register user
+    data = {"email": "resetme@example.com", "password": "Abc12345"}
+    user = await user_service.register_user(async_session, data)
+    # Generate reset token
+    with caplog.at_level("INFO"):
+        token = user_service.get_password_reset_token(user.email)
+        assert f"Password reset link sent to {user.email}" in caplog.text
+    # Reset password with valid token
+    new_password = "Newpass123"
+    await user_service.reset_password(async_session, token, new_password)
+    # Authenticate with new password
+    token2 = await user_service.authenticate_user(async_session, user.email, new_password)
+    assert isinstance(token2, str)
+    # Try with old password (should fail)
+    with pytest.raises(ValidationError):
+        await user_service.authenticate_user(async_session, user.email, data["password"])
+
+@pytest.mark.asyncio
+async def test_reset_password_invalid_token(async_session: AsyncSession):
+    with pytest.raises(ValidationError):
+        await user_service.reset_password(async_session, "not.a.jwt.token", "Abc12345")
+    await async_session.rollback()
+
+@pytest.mark.asyncio
+async def test_reset_password_weak_password(async_session: AsyncSession):
+    data = {"email": "weakreset@example.com", "password": "Abc12345"}
+    await user_service.register_user(async_session, data)
+    token = user_service.get_password_reset_token(data["email"])
+    with pytest.raises(ValidationError):
+        await user_service.reset_password(async_session, token, "short")
+    await async_session.rollback()
+
+@pytest.mark.asyncio
+async def test_reset_password_wrong_purpose(async_session: AsyncSession):
+    token = create_access_token({"sub": "resetme@example.com", "purpose": "notreset"})
+    with pytest.raises(ValidationError):
+        await user_service.reset_password(async_session, token, "Abc12345")
+    await async_session.rollback()
+
+@pytest.mark.asyncio
+async def test_change_password_success_and_failures(async_session: AsyncSession, caplog):
+    data = {"email": "changepw@example.com", "password": "Abc12345"}
+    user = await user_service.register_user(async_session, data)
+    user_id = user.id
+    # Success
+    with caplog.at_level("INFO"):
+        await user_service.change_password(async_session, user_id, data["password"], "Newpass123")
+        assert "Password changed for user" in caplog.text
+    # Old password wrong
+    with pytest.raises(ValidationError):
+        await user_service.change_password(async_session, user_id, "wrongpw", "Another123")
+    await async_session.rollback()
+    # Re-fetch user after rollback
+    user = await async_session.get(User, user_id)
+    # Weak new password
+    with pytest.raises(ValidationError):
+        await user_service.change_password(async_session, user_id, "Newpass123", "short")
+    await async_session.rollback()
+    user = await async_session.get(User, user_id)
+    # User not found
+    with pytest.raises(UserNotFoundError):
+        await user_service.change_password(async_session, 999999, "irrelevant", "Abc12345")
+    await async_session.rollback()
+
+def test_validate_password_strength():
+    # Strong password
+    user_service.validate_password_strength("Abc12345")
+    # Too short
+    with pytest.raises(ValidationError):
+        user_service.validate_password_strength("short")
+    # No digit
+    with pytest.raises(ValidationError):
+        user_service.validate_password_strength("NoDigitsHere")
+    # No letter
+    with pytest.raises(ValidationError):
+        user_service.validate_password_strength("12345678")
+
+@pytest.mark.asyncio
+async def test_password_reset_token_expiry(async_session):
+    """Simulate expired password reset token."""
+    import time
+    email = "expiretoken@example.com"
+    await user_service.register_user(async_session, {"email": email, "password": "Abc12345"})
+    # Create token with exp in the past
+    token = create_access_token({"sub": email, "purpose": "reset"})
+    payload = jwt.decode(token, str(settings.jwt_secret_key), algorithms=[settings.jwt_algorithm], options={"verify_exp": False})
+    payload["exp"] = int(time.time()) - 60
+    expired_token = jwt.encode(payload, str(settings.jwt_secret_key), algorithm=settings.jwt_algorithm)
+    with pytest.raises(ValidationError):
+        await user_service.reset_password(async_session, expired_token, "Newpass123")
+    await async_session.rollback()
+
+@pytest.mark.asyncio
+async def test_password_reset_nonexistent_email(async_session):
+    """Password reset for nonexistent email should raise UserNotFoundError."""
+    token = user_service.get_password_reset_token("notfound@example.com")
+    with pytest.raises(UserNotFoundError):
+        await user_service.reset_password(async_session, token, "Abc12345")
+    await async_session.rollback()
+
+@pytest.mark.asyncio
+async def test_password_reset_token_reuse(async_session):
+    """Password reset token should not be reusable (future-proofing: currently allowed, but should succeed only once)."""
+    data = {"email": "reuse@example.com", "password": "Abc12345"}
+    await user_service.register_user(async_session, data)
+    token = user_service.get_password_reset_token(data["email"])
+    await user_service.reset_password(async_session, token, "Newpass123")
+    # Try to use the same token again (should fail if token is one-time use; currently, it will succeed)
+    # For now, expect ValidationError due to password already changed (if password is the same, else allow)
+    with pytest.raises(ValidationError):
+        await user_service.reset_password(async_session, token, "Another123")
+    await async_session.rollback()
+
+@pytest.mark.asyncio
+async def test_change_password_same_as_old(async_session):
+    """Changing password to the same as old should raise ValidationError (if enforced)."""
+    data = {"email": "samepw@example.com", "password": "Abc12345"}
+    user = await user_service.register_user(async_session, data)
+    # Should raise if password validation checks for same as old
+    with pytest.raises(ValidationError):
+        await user_service.change_password(async_session, user.id, data["password"], data["password"])
+    await async_session.rollback()
+
+@pytest.mark.asyncio
+async def test_password_reset_tampered_token(async_session):
+    """Tampered reset token should fail."""
+    data = {"email": "tampered@example.com", "password": "Abc12345"}
+    await user_service.register_user(async_session, data)
+    token = user_service.get_password_reset_token(data["email"])
+    tampered = token + "x"
+    with pytest.raises(ValidationError):
+        await user_service.reset_password(async_session, tampered, "Newpass123")
+    await async_session.rollback()
+
+@pytest.mark.asyncio
+async def test_password_reset_missing_claims(async_session):
+    """Reset token missing claims (purpose/sub) should fail."""
+    # Missing purpose
+    token1 = create_access_token({"sub": "missingpurpose@example.com"})
+    with pytest.raises(ValidationError):
+        await user_service.reset_password(async_session, token1, "Abc12345")
+    await async_session.rollback()
+    # Missing sub
+    token2 = create_access_token({"purpose": "reset"})
+    with pytest.raises(ValidationError):
+        await user_service.reset_password(async_session, token2, "Abc12345")
+    await async_session.rollback()
+
+@pytest.mark.asyncio
+async def test_change_password_inactive_deleted_user(async_session: AsyncSession):
+    data = {"email": "inactive@example.com", "password": "Abc12345"}
+    user = await user_service.register_user(async_session, data)
+    user_id = user.id
+    # Deactivate user
+    await user_service.logout_user(async_session, user_id)
+    with pytest.raises(UserNotFoundError):
+        await user_service.change_password(async_session, user_id, data["password"], "Newpass123")
+    await async_session.rollback()
+    # Re-fetch user after rollback
+    user = await async_session.get(User, user_id)
+    await user_service.register_user(async_session, {"email": "deleted@example.com", "password": "Abc12345"})
+    deleted_user = await async_session.get(User, user_id)
+    if deleted_user is not None:
+        deleted_user.is_deleted = True
+        await async_session.commit()
+        with pytest.raises(UserNotFoundError):
+            await user_service.change_password(async_session, user_id, data["password"], "Another123")
+        await async_session.rollback()
