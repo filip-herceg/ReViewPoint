@@ -10,7 +10,7 @@ os.environ["REVIEWPOINT_JWT_SECRET"] = (
 
 import asyncio
 import logging
-from collections.abc import AsyncGenerator, Iterator
+from collections.abc import AsyncGenerator, Generator, Iterator
 
 import pytest
 import pytest_asyncio
@@ -131,10 +131,9 @@ def cleanup_test_db_file(request: pytest.FixtureRequest) -> None:
 # Ensure the test DB schema is created after DB file cleanup and before any test runs
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def create_test_db_tables(
-    cleanup_test_db_file, async_engine: AsyncEngine
+    cleanup_test_db_file: None, async_engine: AsyncEngine
 ) -> None:
     # Import all models to register them with Base metadata
-    from src.models import User  # noqa: F401
 
     # Create tables using the async engine
     async with async_engine.begin() as conn:
@@ -142,8 +141,10 @@ async def create_test_db_tables(
 
 
 @pytest.fixture(autouse=True)
-def override_get_async_session(async_session: AsyncSession):
-    async def _override():
+def override_get_async_session(
+    async_session: AsyncSession,
+) -> Generator[None, None, None]:
+    async def _override() -> AsyncGenerator[AsyncSession, None]:
         yield async_session
 
     app.dependency_overrides[get_async_session] = _override

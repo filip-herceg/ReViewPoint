@@ -159,7 +159,7 @@ async def test_get_current_user_logs_warning_when_auth_disabled(
 
 
 @pytest.mark.asyncio
-async def test_register_endpoint(async_session: AsyncSession):
+async def test_register_endpoint(async_session: AsyncSession) -> None:
     """Test user registration endpoint."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -190,7 +190,7 @@ async def test_register_endpoint(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_login_endpoint(async_session: AsyncSession):
+async def test_login_endpoint(async_session: AsyncSession) -> None:
     """Test login endpoint with valid and invalid credentials."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -240,7 +240,7 @@ async def test_login_endpoint(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_me_endpoint(async_session: AsyncSession):
+async def test_me_endpoint(async_session: AsyncSession) -> None:
     """Test the /me endpoint for retrieving user profile."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -275,7 +275,7 @@ async def test_me_endpoint(async_session: AsyncSession):
 
 
 @pytest.mark.asyncio
-async def test_logout_endpoint(async_session: AsyncSession):
+async def test_logout_endpoint(async_session: AsyncSession) -> None:
     """Test the logout endpoint."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -309,7 +309,7 @@ async def test_password_reset_request_endpoint(
     async_session: AsyncSession,
     monkeypatch: pytest.MonkeyPatch,
     loguru_list_sink: list[str],
-):
+) -> None:
     """Test the password reset request endpoint."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -351,7 +351,7 @@ async def test_password_reset_request_endpoint(
 @pytest.mark.asyncio
 async def test_password_reset_confirm_endpoint(
     async_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
-):
+) -> None:
     """Test the password reset confirmation endpoint."""
     from src.services import user as user_service
 
