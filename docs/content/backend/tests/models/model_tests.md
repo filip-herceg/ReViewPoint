@@ -58,3 +58,29 @@ The model tests cover:
 
 ## 6. Notes
 The tests use isolated in-memory databases with unique connection strings to ensure test independence.
+
+## 7. Authentication & User Management Test Coverage
+
+The following test files cover all authentication and user management flows, including registration, login, password hashing, JWT, user CRUD, and edge cases:
+
+| Test File | Description |
+|-----------|-------------|
+| `tests/api/v1/test_auth.py` | API endpoint tests for registration, login, logout, password reset, JWT, and error/edge cases |
+| `tests/services/test_user.py` | Service logic tests for registration, login, password hashing, password reset, user CRUD, roles, preferences, and edge cases |
+| `tests/repositories/test_user.py` | Repository/model tests for user CRUD, validation, constraints, and edge cases |
+| `tests/utils/test_hashing.py` | Password hashing and verification utility tests |
+| `tests/models/test_user.py` | Basic SQLAlchemy User model CRUD tests |
+
+### Key Test Scenarios
+- **Registration:** Success, duplicate email, invalid email, invalid/weak password
+- **Login:** Success, invalid password, non-existent user, inactive/deleted user, auth toggle
+- **Password Hashing:** Hashing, verification, uniqueness, never storing plain text
+- **JWT:** Token creation, validation, expiry, tampering, config errors, logging
+- **Password Reset:** Request, confirm, invalid/expired/reused token, weak password, non-existent email
+- **User CRUD:** Create, read, update, delete, deactivate/reactivate, anonymize, partial update, preferences
+- **Edge Cases:** Invalid/duplicate data, role assignment/checking, preferences with extra fields, logging (no sensitive data), error handling, auth toggle
+
+### Notes
+- All main flows and edge cases are covered by automated tests.
+- Coverage is high and tests are passing in CI.
+- See the above test files for implementation details and specific scenarios.
