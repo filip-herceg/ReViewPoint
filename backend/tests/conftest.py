@@ -10,7 +10,7 @@ os.environ["REVIEWPOINT_JWT_SECRET"] = (
 
 import asyncio
 import logging
-from collections.abc import AsyncGenerator, Generator, Iterator
+from collections.abc import AsyncGenerator, Generator
 
 import pytest
 import pytest_asyncio
