@@ -98,7 +98,6 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         # Prepare request details for logging
         start_time = time.time()
         # Filter sensitive fields from query params
-        SENSITIVE_FIELDS = {"password", "token", "access_token", "refresh_token"}
         filtered_query = []
         for k, v in request.query_params.multi_items():
             if k.lower() in SENSITIVE_FIELDS:
