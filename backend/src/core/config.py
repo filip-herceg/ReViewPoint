@@ -17,7 +17,6 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
 
-from loguru import logger
 from pydantic import Field, ValidationError, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -217,4 +216,4 @@ def get_settings() -> Settings:
 
 # Initialize settings and log the loaded configuration
 settings: Settings = get_settings()
-logger.debug("Settings initialized: %s", settings.to_public_dict())
+# logger.debug("Settings initialized: %s", settings.to_public_dict())

@@ -62,6 +62,18 @@ async def file_instance(async_session: AsyncSession, user_instance: User) -> Fil
     return file
 
 
+@pytest_asyncio.fixture()
+async def tx_user(async_session: AsyncSession) -> User:
+    """Create a user in a transaction using db_transaction."""
+    user = User(email="tx@b.com", hashed_password="pw", is_active=True)
+    from src.repositories.user import db_transaction
+
+    async with db_transaction(async_session):
+        async_session.add(user)
+    await async_session.commit()
+    return user
+
+
 @pytest.mark.parametrize(
     "email, password, expected_email_error, expected_password_error",
     [
@@ -551,14 +563,9 @@ async def test_get_user_with_files(async_session: AsyncSession) -> None:
 
 
 @pytest.mark.asyncio
-async def test_db_session_context_and_transaction(async_session: AsyncSession) -> None:
-    from src.repositories.user import db_transaction
-
-    # Use the provided async_session fixture instead of db_session_context()
-    user = User(email="tx@b.com", hashed_password="pw", is_active=True)
-    async with db_transaction(async_session):
-        async_session.add(user)
-    await async_session.commit()
+async def test_db_session_context_and_transaction(
+    async_session: AsyncSession, tx_user: User
+) -> None:
     found = await async_session.execute(select(User).where(User.email == "tx@b.com"))
     assert found.scalar_one_or_none() is not None
 
