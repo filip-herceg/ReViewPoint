@@ -103,7 +103,10 @@ async def reset_password(
         return MessageResponse(message="Password has been reset.")
     except Exception as e:
         logger.warning(f"Password reset failed: {e}")
-        raise HTTPException(status_code=400, detail=str(e)) from e
+        raise HTTPException(
+            status_code=400,
+            detail="An error occurred while resetting the password. Please try again later."
+        ) from e
 
 
 @router.get("/me", response_model=UserProfile)
