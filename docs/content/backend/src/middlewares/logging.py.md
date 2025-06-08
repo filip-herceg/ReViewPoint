@@ -38,11 +38,10 @@ Adds a unique request ID to each HTTP request, logs request and response details
 |-----------|----------|
 | `backend/tests/middlewares/test_logging.py` | Tests request ID generation, logging, error handling, and propagation |
 
-## 6. Open TODOs  
-- [ ] Add configuration for excluded paths via environment or settings
-- [ ] Add support for structured logging (e.g., JSON) in middleware logs
-
-> **Update this page whenever the implementation changes.**
+## 6. Security Considerations
+- Middleware filters sensitive fields (e.g., password, token, access_token, refresh_token) from query parameters in logs.
+- No sensitive data is ever logged in request/response logs.
+- Tests verify that secrets are not leaked in logs.
 
 ## 7. Migration Notes
 - All middleware logging is now handled by loguru. Use `from loguru import logger` and `logger.bind()` for structured context.
@@ -51,3 +50,6 @@ Adds a unique request ID to each HTTP request, logs request and response details
   from loguru import logger
   logger.bind(request_id="...").info("message")
   ```
+- When adding new middleware or logging, always filter sensitive fields and add/extend tests as needed.
+
+> **Update this page whenever the implementation changes.**

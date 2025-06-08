@@ -26,6 +26,9 @@ from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.types import ASGIApp
 
+# Define sensitive fields as a module-level constant for clarity and efficiency
+SENSITIVE_FIELDS = {"password", "token", "access_token", "refresh_token"}
+
 # Thread-local request ID storage
 request_id_var: ContextVar[str | None] = ContextVar("request_id", default=None)
 
@@ -97,15 +100,21 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 
         # Prepare request details for logging
         start_time = time.time()
+        # Filter sensitive fields from query params
+        filtered_query = [
+            (k, "[FILTERED]") if k.lower() in SENSITIVE_FIELDS else (k, v)
+            for k, v in request.query_params.multi_items()
+        ]
+        filtered_query_str = "&".join(f"{k}={v}" for k, v in filtered_query)
         log_extra = {
             "request_id": request_id,
             "method": request.method,
             "path": request.url.path,
-            "query": str(request.query_params),
+            "query": filtered_query_str,
         }
 
         self.logger.bind(**log_extra).info(
-            f"Request {request.method} {request.url.path}"
+            f"Request {request.method} {request.url.path} | query: {filtered_query_str}"
         )
         try:
             # Process the request
@@ -121,9 +130,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
                 status_code=response.status_code,
                 process_time_ms=process_time_ms,
             ).info(
-                f"Response {request.method} {request.url.path} "
-                f"completed with status {response.status_code} "
-                f"in {process_time_ms}ms"
+                f"Response {request.method} {request.url.path} completed with status {response.status_code} in {process_time_ms}ms | query: {filtered_query_str}"
             )
 
             # Attach request ID to response headers

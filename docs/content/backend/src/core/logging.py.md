@@ -38,11 +38,11 @@ Provides a repeat-safe logging initializer for the backend, supporting both huma
 |-----------|----------|
 | `backend/tests/middlewares/test_logging.py` | Indirectly verifies logging output via middleware tests |
 
-## 6. Open TODOs  
-- [ ] Add log rotation support for file handlers
-- [ ] Expose log level and format via environment/config
-
-> **Update this page whenever the implementation changes.**
+## 6. Security Considerations
+- All authentication events (register, login, logout, password reset, failures) are logged using loguru with structured context.
+- Sensitive data such as passwords and tokens are never logged.
+- Middleware and service logging filter sensitive fields from logs.
+- Tests verify that no secrets are leaked in logs.
 
 ## 7. Migration Notes
 - All modules should use `from loguru import logger` instead of `logging.getLogger()`.
@@ -52,3 +52,10 @@ Provides a repeat-safe logging initializer for the backend, supporting both huma
   logger.info("message")
   ```
 - Standard logging calls will still work but are routed through loguru.
+- When adding new authentication or sensitive endpoints, ensure no secrets are ever logged and add/extend tests as needed.
+
+> **Update this page whenever the implementation changes.**
+
+## 8. Open TODOs  
+- [ ] Add log rotation support for file handlers
+- [ ] Expose log level and format via environment/config

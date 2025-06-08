@@ -133,3 +133,28 @@ def test_performance_logging(client: TestClient, loguru_list_sink: list[str]) ->
     # Check that the log message includes the status code and time
     assert re.search(r"status 200", response_log)
     assert re.search(r"in \d+ms", response_log)
+
+
+def test_sensitive_query_param_filtering(
+    client: TestClient, loguru_list_sink: list[str]
+) -> None:
+    """Test that sensitive query parameters are filtered from loguru logs."""
+    response = client.get(
+        "/test?email=foo@example.com&password=supersecret&token=abc123"
+    )
+    assert response.status_code == 200
+    # Only check loguru middleware logs, not httpx/std logging
+    logs = "\n".join(
+        [
+            log_entry
+            for log_entry in loguru_list_sink
+            if "Request GET" in log_entry or "Response GET" in log_entry
+        ]
+    )
+    # Password and token should be filtered
+    assert "password=supersecret" not in logs
+    assert "token=abc123" not in logs
+    assert "password=[FILTERED]" in logs
+    assert "token=[FILTERED]" in logs
+    # Non-sensitive fields should be present
+    assert "email=foo@example.com" in logs
