@@ -4,6 +4,7 @@ Tests for JWT creation and validation utilities in backend.core.security.
 
 import pytest
 from jose import JWTError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core import security
 from src.core.config import settings
@@ -79,8 +80,8 @@ def test_verify_access_token_logs_failure(caplog: pytest.LogCaptureFixture) -> N
 
 @pytest.mark.asyncio
 async def test_protected_endpoint_accessible_when_auth_disabled(
-    monkeypatch, async_session
-):
+    monkeypatch: pytest.MonkeyPatch, async_session: AsyncSession
+) -> None:
     monkeypatch.setattr(settings, "auth_enabled", False)
     from src.api.deps import get_current_user
 
@@ -93,8 +94,8 @@ async def test_protected_endpoint_accessible_when_auth_disabled(
 
 @pytest.mark.asyncio
 async def test_get_current_user_logs_warning_when_auth_disabled(
-    monkeypatch, async_session, loguru_list_sink
-):
+    monkeypatch: pytest.MonkeyPatch, async_session: AsyncSession, loguru_list_sink: list[str]
+) -> None:
     monkeypatch.setattr(settings, "auth_enabled", False)
     from src.api.deps import get_current_user
 

@@ -291,7 +291,7 @@ def test_auth_enabled_toggle(monkeypatch: MonkeyPatch) -> None:
     assert cfg2.settings.auth_enabled is True
 
 
-def test_verify_access_token_bypass(monkeypatch):
+def test_verify_access_token_bypass(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setattr(settings, "auth_enabled", False)
     token = create_access_token({"sub": "anyuser", "role": "user"})
     payload = verify_access_token(token)
@@ -301,20 +301,17 @@ def test_verify_access_token_bypass(monkeypatch):
     monkeypatch.setattr(settings, "auth_enabled", True)
 
 
-def test_verify_access_token_invalid_token_bypass(monkeypatch):
+def test_verify_access_token_invalid_token_bypass(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setattr(settings, "auth_enabled", False)
     payload = verify_access_token("not.a.jwt.token")
     assert payload["sub"] == "dev-user"
     monkeypatch.setattr(settings, "auth_enabled", True)
 
 
-def test_verify_access_token_expired_token_bypass(monkeypatch):
+def test_verify_access_token_expired_token_bypass(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setattr(settings, "auth_enabled", False)
     import time
-
-    expired_token = create_access_token(
-        {"sub": "expired", "exp": int(time.time()) - 1000}
-    )
+    expired_token = create_access_token({"sub": "expired", "exp": int(time.time()) - 1000})
     payload = verify_access_token(expired_token)
     assert payload["sub"] == "dev-user"
     monkeypatch.setattr(settings, "auth_enabled", True)

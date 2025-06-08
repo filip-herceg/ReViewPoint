@@ -4,7 +4,7 @@ from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.config import settings
-from src.core.database import get_db_session
+from src.core.database import get_async_session
 from src.core.security import verify_access_token
 from src.models.user import User
 from src.repositories.user import get_user_by_id
@@ -13,7 +13,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme), session: AsyncSession = Depends(get_db_session)
+    token: str = Depends(oauth2_scheme),
+    session: AsyncSession = Depends(get_async_session)
 ) -> User:
     """
     Get the current user based on JWT token.
