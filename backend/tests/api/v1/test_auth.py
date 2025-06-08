@@ -2,7 +2,6 @@
 Tests for JWT creation and validation utilities in backend.core.security.
 """
 
-import asyncio
 import pytest
 from jose import JWTError
 
@@ -79,7 +78,9 @@ def test_verify_access_token_logs_failure(caplog: pytest.LogCaptureFixture) -> N
 
 
 @pytest.mark.asyncio
-async def test_protected_endpoint_accessible_when_auth_disabled(monkeypatch, async_session):
+async def test_protected_endpoint_accessible_when_auth_disabled(
+    monkeypatch, async_session
+):
     monkeypatch.setattr(settings, "auth_enabled", False)
     from src.api.deps import get_current_user
 
@@ -91,9 +92,12 @@ async def test_protected_endpoint_accessible_when_auth_disabled(monkeypatch, asy
 
 
 @pytest.mark.asyncio
-async def test_get_current_user_logs_warning_when_auth_disabled(monkeypatch, async_session, loguru_list_sink):
+async def test_get_current_user_logs_warning_when_auth_disabled(
+    monkeypatch, async_session, loguru_list_sink
+):
     monkeypatch.setattr(settings, "auth_enabled", False)
     from src.api.deps import get_current_user
+
     await get_current_user(token="irrelevant", session=async_session)
     logs = "\n".join(loguru_list_sink)
     assert "Authentication is DISABLED! Returning development admin user." in logs

@@ -59,7 +59,7 @@ def verify_access_token(token: str) -> dict[str, Any]:
         logger.warning(
             "Authentication is DISABLED! Bypassing token verification and returning default admin payload."
         )
-        from datetime import datetime, timedelta, UTC
+        from datetime import UTC, datetime, timedelta
 
         now = datetime.now(UTC)
         return {

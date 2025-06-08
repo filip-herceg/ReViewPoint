@@ -9,6 +9,8 @@ from types import ModuleType
 
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
+
+from src.core.config import settings
 from src.core.security import create_access_token, verify_access_token
 
 MODULE = "core.config"
@@ -309,7 +311,10 @@ def test_verify_access_token_invalid_token_bypass(monkeypatch):
 def test_verify_access_token_expired_token_bypass(monkeypatch):
     monkeypatch.setattr(settings, "auth_enabled", False)
     import time
-    expired_token = create_access_token({"sub": "expired", "exp": int(time.time()) - 1000})
+
+    expired_token = create_access_token(
+        {"sub": "expired", "exp": int(time.time()) - 1000}
+    )
     payload = verify_access_token(expired_token)
     assert payload["sub"] == "dev-user"
     monkeypatch.setattr(settings, "auth_enabled", True)

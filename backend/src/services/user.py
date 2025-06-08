@@ -76,7 +76,12 @@ async def authenticate_user(session: AsyncSession, email: str, password: str) ->
             "Authentication is DISABLED! Returning dev token for any credentials."
         )
         return create_access_token(
-            {"sub": "dev-user", "email": email, "role": "admin", "is_authenticated": True}
+            {
+                "sub": "dev-user",
+                "email": email,
+                "role": "admin",
+                "is_authenticated": True,
+            }
         )
     # Fetch user by email
     result = await session.execute(user_repo.select(User).where(User.email == email))
@@ -110,7 +115,9 @@ def is_authenticated(user: User) -> bool:
     if not settings.auth_enabled:
         import logging
 
-        logging.warning("Authentication is DISABLED! All users considered authenticated.")
+        logging.warning(
+            "Authentication is DISABLED! All users considered authenticated."
+        )
         return True
     return user.is_active and not user.is_deleted
 
