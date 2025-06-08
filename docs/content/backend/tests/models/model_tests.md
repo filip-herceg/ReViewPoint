@@ -84,3 +84,12 @@ The following test files cover all authentication and user management flows, inc
 - All main flows and edge cases are covered by automated tests.
 - Coverage is high and tests are passing in CI.
 - See the above test files for implementation details and specific scenarios.
+
+## 8. Additional API Test Files
+
+| Test File | Description |
+|-----------|-------------|
+| `tests/api/v1/test_deps.py` | Tests FastAPI dependency injection and security dependencies (e.g., current user, permissions). |
+| `tests/api/v1/test_uploads.py` | Tests file upload API endpoints, including upload success, validation, and error cases. |
+
+**Note:** These files complement the authentication and user management tests by ensuring that API dependencies and file upload flows are robust and secure.
