@@ -2,7 +2,6 @@
 Tests for JWT creation and validation utilities in backend.core.security.
 """
 
-
 import pytest
 from httpx import ASGITransport, AsyncClient
 from jose import JWTError, jwt  # Add this import at the top
