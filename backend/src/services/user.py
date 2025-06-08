@@ -15,6 +15,7 @@ from fastapi import UploadFile
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.core.config import settings
 from src.core.security import create_access_token, verify_access_token
 from src.models.used_password_reset_token import UsedPasswordResetToken
 from src.models.user import User
@@ -66,7 +67,17 @@ async def authenticate_user(session: AsyncSession, email: str, password: str) ->
     """
     Authenticate user credentials and return a JWT access token.
     Raises ValidationError or UserNotFoundError on error.
+    If authentication is disabled, return a default token for dev user.
     """
+    if not settings.auth_enabled:
+        import logging
+
+        logging.warning(
+            "Authentication is DISABLED! Returning dev token for any credentials."
+        )
+        return create_access_token(
+            {"sub": "dev-user", "email": email, "role": "admin", "is_authenticated": True}
+        )
     # Fetch user by email
     result = await session.execute(user_repo.select(User).where(User.email == email))
     user = result.scalar_one_or_none()
@@ -94,7 +105,13 @@ async def logout_user(session: AsyncSession, user_id: int) -> None:
 def is_authenticated(user: User) -> bool:
     """
     Check if a user is currently authenticated.
+    If authentication is disabled, always return True.
     """
+    if not settings.auth_enabled:
+        import logging
+
+        logging.warning("Authentication is DISABLED! All users considered authenticated.")
+        return True
     return user.is_active and not user.is_deleted
 
 

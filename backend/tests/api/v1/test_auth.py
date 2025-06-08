@@ -2,11 +2,13 @@
 Tests for JWT creation and validation utilities in backend.core.security.
 """
 
+import asyncio
 import pytest
 from jose import JWTError
 
 from src.core import security
 from src.core.config import settings
+from src.models.user import User
 
 
 def test_create_and_verify_access_token() -> None:
@@ -74,3 +76,25 @@ def test_verify_access_token_logs_failure(caplog: pytest.LogCaptureFixture) -> N
         "validation failed" in r.message or "Unexpected error" in r.message
         for r in caplog.records
     )
+
+
+@pytest.mark.asyncio
+async def test_protected_endpoint_accessible_when_auth_disabled(monkeypatch, async_session):
+    monkeypatch.setattr(settings, "auth_enabled", False)
+    from src.api.deps import get_current_user
+
+    user = await get_current_user(token="irrelevant", session=async_session)
+    assert isinstance(user, User)
+    assert user.email == "dev@example.com"
+    assert user.is_active
+    monkeypatch.setattr(settings, "auth_enabled", True)
+
+
+@pytest.mark.asyncio
+async def test_get_current_user_logs_warning_when_auth_disabled(monkeypatch, async_session, loguru_list_sink):
+    monkeypatch.setattr(settings, "auth_enabled", False)
+    from src.api.deps import get_current_user
+    await get_current_user(token="irrelevant", session=async_session)
+    logs = "\n".join(loguru_list_sink)
+    assert "Authentication is DISABLED! Returning development admin user." in logs
+    monkeypatch.setattr(settings, "auth_enabled", True)
