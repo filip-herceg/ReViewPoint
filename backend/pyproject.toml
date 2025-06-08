@@ -40,7 +40,7 @@ dependencies = [
   "starlette>=0.46.2",
   "autopep8>=2.3.2",
   "loguru>=0.7.3",
-  "pydantic[email]"
+  "pydantic[email]>=2.0.0,<3.0.0"
 ]
 
 [project.urls]
