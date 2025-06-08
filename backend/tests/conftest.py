@@ -135,6 +135,3 @@ def create_test_db_tables() -> None:
     #     except Exception:
     #         pass
     # asyncio.get_event_loop().run_until_complete(log_tables())
-
-
-pytest_plugins = ["pytest_loguru"]

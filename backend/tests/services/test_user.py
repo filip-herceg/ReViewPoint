@@ -900,3 +900,18 @@ async def test_check_user_role_empty_and_none() -> None:
     # None/empty role
     assert await check_user_role(55555, "") is False
     assert await check_user_role(55555, None) is False  # type: ignore
+
+
+@pytest.mark.asyncio
+async def test_authenticate_user_returns_dev_token_when_disabled(
+    monkeypatch: pytest.MonkeyPatch, async_session: AsyncSession
+) -> None:
+    original_auth_enabled = settings.auth_enabled
+    try:
+        monkeypatch.setattr(settings, "auth_enabled", False)
+        token = await user_service.authenticate_user(
+            async_session, "any@user.com", "any"
+        )
+        assert isinstance(token, str)
+    finally:
+        monkeypatch.setattr(settings, "auth_enabled", original_auth_enabled)

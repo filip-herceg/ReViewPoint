@@ -30,6 +30,7 @@ Implements JWT token creation/validation and password hashing/verification for a
       ```
 
 ## 3. Behaviour & Edge-Cases  
+- If `settings.auth_enabled` is False, all JWT validation is bypassed and a default admin payload is returned. This is for development/testing only and logs a warning.
 - Expiry, secret, and algorithm are always loaded from config (`settings`).
 - Tokens are never logged or exposed in error messages.
 - Expired or invalid tokens raise `JWTError`.

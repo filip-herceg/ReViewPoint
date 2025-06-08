@@ -53,7 +53,21 @@ def create_access_token(data: dict[str, Any]) -> str:
 def verify_access_token(token: str) -> dict[str, Any]:
     """
     Validate a JWT access token and return the decoded payload.
+    If authentication is disabled, return a default admin payload.
     """
+    if not settings.auth_enabled:
+        logger.warning(
+            "Authentication is DISABLED! Bypassing token verification and returning default admin payload."
+        )
+        from datetime import UTC, datetime, timedelta
+
+        now = datetime.now(UTC)
+        return {
+            "sub": "dev-user",
+            "role": "admin",
+            "is_authenticated": True,
+            "exp": int((now + timedelta(hours=24)).timestamp()),
+        }
     try:
         if not settings.jwt_secret_key:
             logger.error(
@@ -65,12 +79,12 @@ def verify_access_token(token: str) -> dict[str, Any]:
             settings.jwt_secret_key,
             algorithms=[settings.jwt_algorithm],
         )
+        if not isinstance(payload, dict):
+            raise TypeError("Decoded JWT payload is not a dictionary")
         logger.debug(
             "JWT access token successfully verified (claims: {})",
             {k: v for k, v in payload.items() if k != "exp"},
         )
-        if not isinstance(payload, dict):
-            raise TypeError("Decoded JWT payload is not a dictionary")
         return payload
     except JWTError as e:
         logger.warning("JWT access token validation failed: {}", str(e))

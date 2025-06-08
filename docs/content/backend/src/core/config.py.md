@@ -47,4 +47,31 @@ Centralizes all runtime configuration for the backend, loading from environment 
 - [ ] Add support for dynamic reload of settings
 - [ ] Document all config fields in detail
 
+## Authentication Toggle
+
+The system supports completely disabling authentication for development and testing purposes.
+
+### Usage
+
+Set the environment variable:
+
+```bash
+# Disable authentication
+$env:REVIEWPOINT_AUTH_ENABLED = "false"  # PowerShell
+
+# Enable authentication (default)
+$env:REVIEWPOINT_AUTH_ENABLED = "true"
+```
+
+### Behavior When Disabled
+
+- All JWT token validation is bypassed
+- Protected endpoints return a default development admin user
+- Warning logs are generated to prevent accidental use in production
+- Token creation still works but is not required for access
+
+### Security Warning
+
+**Never disable authentication in production environments.** This feature is intended for development and testing only.
+
 > **Update this page whenever the implementation changes.**

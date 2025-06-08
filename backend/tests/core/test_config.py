@@ -10,7 +10,10 @@ from types import ModuleType
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
-MODULE = "core.config"
+from src.core.config import settings
+from src.core.security import create_access_token, verify_access_token
+
+MODULE = "src.core.config"
 PFX = "REVIEWPOINT_"  # env-var prefix
 
 
@@ -286,3 +289,32 @@ def test_auth_enabled_toggle(monkeypatch: MonkeyPatch) -> None:
         AUTH_ENABLED="1",
     )
     assert cfg2.settings.auth_enabled is True
+
+
+def test_verify_access_token_bypass(monkeypatch: MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "auth_enabled", False)
+    token = create_access_token({"sub": "anyuser", "role": "user"})
+    payload = verify_access_token(token)
+    assert payload["sub"] == "dev-user"
+    assert payload["role"] == "admin"
+    assert payload["is_authenticated"] is True
+    monkeypatch.setattr(settings, "auth_enabled", True)
+
+
+def test_verify_access_token_invalid_token_bypass(monkeypatch: MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "auth_enabled", False)
+    payload = verify_access_token("not.a.jwt.token")
+    assert payload["sub"] == "dev-user"
+    monkeypatch.setattr(settings, "auth_enabled", True)
+
+
+def test_verify_access_token_expired_token_bypass(monkeypatch: MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "auth_enabled", False)
+    import time
+
+    expired_token = create_access_token(
+        {"sub": "expired", "exp": int(time.time()) - 1000}
+    )
+    payload = verify_access_token(expired_token)
+    assert payload["sub"] == "dev-user"
+    monkeypatch.setattr(settings, "auth_enabled", True)
