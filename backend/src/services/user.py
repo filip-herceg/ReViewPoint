@@ -83,19 +83,6 @@ async def authenticate_user(session: AsyncSession, email: str, password: str) ->
                 "is_authenticated": True,
             }
         )
-        import logging
-
-        logging.warning(
-            "Authentication is DISABLED! Returning dev token for any credentials."
-        )
-        return create_access_token(
-            {
-                "sub": "dev-user",
-                "email": email,
-                "role": "admin",
-                "is_authenticated": True,
-            }
-        )
     # Fetch user by email
     result = await session.execute(user_repo.select(User).where(User.email == email))
     user = result.scalar_one_or_none()
