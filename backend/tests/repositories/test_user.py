@@ -551,16 +551,16 @@ async def test_get_user_with_files(async_session: AsyncSession) -> None:
 
 
 @pytest.mark.asyncio
-async def test_db_session_context_and_transaction() -> None:
-    from src.repositories.user import db_session_context, db_transaction
+async def test_db_session_context_and_transaction(async_session: AsyncSession) -> None:
+    from src.repositories.user import db_transaction
 
-    async with db_session_context() as session:
-        user = User(email="tx@b.com", hashed_password="pw", is_active=True)
-        async with db_transaction(session):
-            session.add(user)
-        await session.commit()
-        found = await session.execute(select(User).where(User.email == "tx@b.com"))
-        assert found.scalar_one_or_none() is not None
+    # Use the provided async_session fixture instead of db_session_context()
+    user = User(email="tx@b.com", hashed_password="pw", is_active=True)
+    async with db_transaction(async_session):
+        async_session.add(user)
+    await async_session.commit()
+    found = await async_session.execute(select(User).where(User.email == "tx@b.com"))
+    assert found.scalar_one_or_none() is not None
 
 
 @pytest.mark.asyncio
