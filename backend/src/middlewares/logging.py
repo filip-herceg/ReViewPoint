@@ -26,6 +26,9 @@ from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.types import ASGIApp
 
+# Define sensitive fields as a module-level constant for clarity and efficiency
+SENSITIVE_FIELDS = {"password", "token", "access_token", "refresh_token"}
+
 # Thread-local request ID storage
 request_id_var: ContextVar[str | None] = ContextVar("request_id", default=None)
 
