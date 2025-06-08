@@ -197,10 +197,9 @@ def test_settings_debug_logged(
     _ = _reload(monkeypatch, DB_URL="postgresql+asyncpg://db", JWT_SECRET="secret")
 
     # Prüfe, dass der Debug-Log mit unserem Marker eintrifft
-    # The debug log was removed, so this test is now a no-op or should be removed.
-    # assert any(
-    #     "Settings initialized" in record.getMessage() for record in caplog.records
-    # ), "Expected a 'Settings initialized' debug log in core.config"
+    assert any(
+        "Settings initialized" in record.getMessage() for record in caplog.records
+    ), "Expected a 'Settings initialized' debug log in core.config"
 
 
 def test_optional_env_vars(monkeypatch: MonkeyPatch) -> None:

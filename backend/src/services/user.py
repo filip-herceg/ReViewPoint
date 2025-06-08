@@ -5,8 +5,6 @@ User service: registration, authentication, logout, and authentication check.
 import logging
 import os
 import secrets
-
-# Patch for test/discovery import issues in src/services/user.py
 import sys
 from enum import Enum
 from typing import Any
@@ -32,9 +30,18 @@ from src.schemas.user import (
     UserProfile,
     UserProfileUpdate,
 )
-from src.utils.errors import UserNotFoundError, ValidationError
+from src.utils.errors import (
+    InvalidDataError,
+    UserAlreadyExistsError,
+    UserNotFoundError,
+    ValidationError,
+)
 from src.utils.hashing import hash_password, verify_password
 from src.utils.validation import get_password_validation_error, validate_email
+
+# Expose exceptions for API usage
+InvalidDataError = InvalidDataError
+UserAlreadyExistsError = UserAlreadyExistsError
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 
