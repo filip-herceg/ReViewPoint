@@ -78,9 +78,7 @@ async def request_password_reset(
     except Exception as e:
         logger.warning(f"Password reset request failed for {data.email}: {e}")
         # Always return a generic success message to prevent user enumeration
-        return MessageResponse(
-            message="If the email exists, a password reset link has been sent."
-        )
+        return MessageResponse(message="Password reset link sent.")
 
 
 @router.post("/reset-password", response_model=MessageResponse)
