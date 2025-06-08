@@ -101,12 +101,10 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         # Prepare request details for logging
         start_time = time.time()
         # Filter sensitive fields from query params
-        filtered_query = []
-        for k, v in request.query_params.multi_items():
-            if k.lower() in SENSITIVE_FIELDS:
-                filtered_query.append((k, "[FILTERED]"))
-            else:
-                filtered_query.append((k, v))
+        filtered_query = [
+            (k, "[FILTERED]") if k.lower() in SENSITIVE_FIELDS else (k, v)
+            for k, v in request.query_params.multi_items()
+        ]
         filtered_query_str = "&".join(f"{k}={v}" for k, v in filtered_query)
         log_extra = {
             "request_id": request_id,
