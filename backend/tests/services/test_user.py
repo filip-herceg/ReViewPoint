@@ -202,9 +202,9 @@ async def test_get_password_reset_token_and_reset_password(
     user: User | None = await user_service.register_user(async_session, data)
     assert user is not None
     # Generate reset token
-    with caplog.at_level("INFO"):
+    with caplog.at_level("DEBUG"):
         token = user_service.get_password_reset_token(user.email)
-        assert f"Password reset link sent to {user.email}" in caplog.text
+        assert "Password reset token for development" in caplog.text
     # Reset password with valid token
     new_password = "Newpass123"
     await user_service.reset_password(async_session, token, new_password)

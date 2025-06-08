@@ -414,3 +414,76 @@ async def test_password_reset_confirm_endpoint(
         )
         assert resp.status_code == 400
         assert "already been used" in resp.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_auth_logging_and_no_sensitive_data(
+    async_session: AsyncSession, loguru_list_sink: list[str]
+) -> None:
+    """Test that auth events are logged and sensitive data is not leaked in logs."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # Register
+        loguru_list_sink.clear()
+        resp = await ac.post(
+            "/api/v1/auth/register",
+            json={
+                "email": "logcheck@example.com",
+                "password": "SuperSecret123!",
+                "name": "Log Check",
+            },
+        )
+        assert resp.status_code == 201
+        logs = "\n".join(loguru_list_sink)
+        assert "User registration attempt" in logs
+        assert "User registered successfully" in logs
+        assert "SuperSecret123" not in logs
+
+        # Login (success)
+        loguru_list_sink.clear()
+        resp = await ac.post(
+            "/api/v1/auth/login",
+            json={
+                "email": "logcheck@example.com",
+                "password": "SuperSecret123!",
+            },
+        )
+        assert resp.status_code == 200
+        logs = "\n".join(loguru_list_sink)
+        assert "User login attempt" in logs
+        assert "User authenticated successfully" in logs
+        assert "SuperSecret123" not in logs
+
+        # Login (failure)
+        loguru_list_sink.clear()
+        resp = await ac.post(
+            "/api/v1/auth/login",
+            json={
+                "email": "logcheck@example.com",
+                "password": "WrongPassword!",
+            },
+        )
+        assert resp.status_code == 401
+        logs = "\n".join(loguru_list_sink)
+        assert "Login failed" in logs
+        assert "WrongPassword" not in logs
+
+        # Password reset request
+        loguru_list_sink.clear()
+        resp = await ac.post(
+            "/api/v1/auth/request-password-reset",
+            json={"email": "logcheck@example.com"},
+        )
+        assert resp.status_code == 200
+        # Only check loguru logs from user service (not API router or print)
+        logs = "\n".join(
+            [
+                log_entry
+                for log_entry in loguru_list_sink
+                if "Password reset token" in log_entry
+                or "Password reset requested" in log_entry
+                or "Password reset successful" in log_entry
+            ]
+        )
+        assert "SuperSecret123" not in logs
+        assert "token=" not in logs and "token: " not in logs

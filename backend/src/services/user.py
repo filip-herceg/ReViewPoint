@@ -2,7 +2,6 @@
 User service: registration, authentication, logout, and authentication check.
 """
 
-import logging
 import os
 import secrets
 import sys
@@ -66,8 +65,10 @@ async def register_user(session: AsyncSession, data: dict[str, Any]) -> User:
     password = data.get("password")
     if not email or not password:
         raise ValidationError("Email and password are required.")
+    logger.info("User registration attempt", email=email)
     # Use repo helper for validation and creation
     user = await user_repo.create_user_with_validation(session, email, password)
+    logger.info("User registered successfully", user_id=user.id, email=user.email)
     return user
 
 
@@ -77,10 +78,11 @@ async def authenticate_user(session: AsyncSession, email: str, password: str) ->
     Raises ValidationError or UserNotFoundError on error.
     If authentication is disabled, return a default token for dev user.
     """
+    logger.info("User login attempt", email=email)
     if not settings.auth_enabled:
-
         logger.warning(
-            "Authentication is DISABLED! Returning dev token for any credentials."
+            "Authentication is DISABLED! Returning dev token for any credentials.",
+            email=email,
         )
         return create_access_token(
             {
@@ -94,11 +96,14 @@ async def authenticate_user(session: AsyncSession, email: str, password: str) ->
     result = await session.execute(user_repo.select(User).where(User.email == email))
     user = result.scalar_one_or_none()
     if not user or not user.is_active or user.is_deleted:
+        logger.warning("Login failed: user not found or inactive", email=email)
         raise UserNotFoundError("User not found or inactive.")
     if not verify_password(password, user.hashed_password):
+        logger.warning("Login failed: incorrect password", user_id=user.id, email=email)
         raise ValidationError("Incorrect password.")
     # Update last login
     await user_repo.update_last_login(session, user.id)
+    logger.info("User authenticated successfully", user_id=user.id, email=user.email)
     # Create JWT token
     token = create_access_token({"sub": str(user.id), "email": user.email})
     return token
@@ -108,9 +113,9 @@ async def logout_user(session: AsyncSession, user_id: int) -> None:
     """
     Invalidate the user's session or refresh token (stub: deactivate user for now).
     """
-    # For demo: deactivate user (real implementation would revoke refresh
-    # token/session)
+    logger.info("User logout attempt", user_id=user_id)
     await user_repo.deactivate_user(session, user_id)
+    logger.info("User logged out (deactivated)", user_id=user_id)
 
 
 # Make is_authenticated a synchronous function (not async)
@@ -170,7 +175,11 @@ def get_password_reset_token(email: str) -> str:
     token = create_access_token(
         {"sub": email, "purpose": "reset", "nonce": secrets.token_urlsafe(8)}
     )
-    logging.info(f"Password reset link sent to {email}: /reset?token={token}")
+    # Use correct environment check (dev/test/prod)
+    if settings.environment in ("dev", "test"):
+        logger.debug("Password reset token for development", email=email, token=token)
+    else:
+        logger.info("Password reset link sent to user", email=email)
     return token
 
 
@@ -181,12 +190,15 @@ async def reset_password(session: AsyncSession, token: str, new_password: str) -
     try:
         payload = verify_access_token(token)
         if payload.get("purpose") != "reset":
+            logger.warning("Password reset failed: invalid token purpose")
             raise ValidationError("Invalid reset token purpose.")
         email = payload.get("sub")
         nonce = payload.get("nonce")
         if not email:
+            logger.warning("Password reset failed: missing subject in token")
             raise ValidationError("Invalid reset token: missing subject.")
         if not nonce:
+            logger.warning("Password reset failed: missing nonce in token", email=email)
             raise ValidationError("Invalid reset token: missing nonce.")
         # Check if this nonce has already been used for this email
         used = await session.execute(
@@ -196,25 +208,33 @@ async def reset_password(session: AsyncSession, token: str, new_password: str) -
             )
         )
         if used.scalar_one_or_none():
+            logger.warning("Password reset failed: token already used", email=email)
             raise ValidationError("This password reset link has already been used.")
         err = get_password_validation_error(new_password)
         if err:
+            logger.warning(
+                "Password reset failed: password validation error", email=email
+            )
             raise ValidationError(err)
         result = await session.execute(
             user_repo.select(User).where(User.email == email)
         )
         user = result.scalar_one_or_none()
         if not user or not user.is_active or user.is_deleted:
+            logger.warning(
+                "Password reset failed: user not found or inactive", email=email
+            )
             raise UserNotFoundError("User not found.")
         hashed = hash_password(new_password)
         await change_user_password(session, user.id, hashed)
         # Mark this nonce as used
         session.add(UsedPasswordResetToken(email=email, nonce=nonce))
         await session.commit()
-        logging.info(f"Password reset for user {email}")
+        logger.info("Password reset successful", user_id=user.id, email=email)
     except UserNotFoundError:
         raise
     except Exception as e:
+        logger.error(f"Password reset failed: {e}")
         raise ValidationError(f"Invalid or expired reset token: {e}") from e
 
 
@@ -226,17 +246,29 @@ async def change_password(
     """
     user = await get_user_by_id(session, user_id)
     if not user or not user.is_active or user.is_deleted:
+        logger.warning(
+            "Password change failed: user not found or inactive", user_id=user_id
+        )
         raise UserNotFoundError("User not found.")
     if not verify_password(old_pw, user.hashed_password):
+        logger.warning(
+            "Password change failed: incorrect old password", user_id=user_id
+        )
         raise ValidationError("Old password is incorrect.")
     if old_pw == new_pw or verify_password(new_pw, user.hashed_password):
+        logger.warning(
+            "Password change failed: new password same as old", user_id=user_id
+        )
         raise ValidationError("New password must be different from the old password.")
     err = get_password_validation_error(new_pw)
     if err:
+        logger.warning(
+            "Password change failed: password validation error", user_id=user_id
+        )
         raise ValidationError(err)
     hashed = hash_password(new_pw)
     await change_user_password(session, user_id, hashed)
-    logging.info(f"Password changed for user {user.email}")
+    logger.info("Password changed for user", user_id=user_id)
 
 
 def validate_password_strength(password: str) -> None:
