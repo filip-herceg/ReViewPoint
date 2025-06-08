@@ -234,7 +234,7 @@ async def reset_password(session: AsyncSession, token: str, new_password: str) -
     except UserNotFoundError:
         raise
     except Exception as e:
-        logger.error(f"Password reset failed: {e}")
+        logger.error("Password reset failed", error=e)
         raise ValidationError(f"Invalid or expired reset token: {e}") from e
 
 
