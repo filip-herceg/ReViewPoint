@@ -12,6 +12,7 @@ from enum import Enum
 from typing import Any
 
 from fastapi import UploadFile
+from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -70,6 +71,18 @@ async def authenticate_user(session: AsyncSession, email: str, password: str) ->
     If authentication is disabled, return a default token for dev user.
     """
     if not settings.auth_enabled:
+
+        logger.warning(
+            "Authentication is DISABLED! Returning dev token for any credentials."
+        )
+        return create_access_token(
+            {
+                "sub": "dev-user",
+                "email": email,
+                "role": "admin",
+                "is_authenticated": True,
+            }
+        )
         import logging
 
         logging.warning(
@@ -113,9 +126,7 @@ def is_authenticated(user: User) -> bool:
     If authentication is disabled, always return True.
     """
     if not settings.auth_enabled:
-        import logging
-
-        logging.warning(
+        logger.warning(
             "Authentication is DISABLED! All users considered authenticated."
         )
         return True

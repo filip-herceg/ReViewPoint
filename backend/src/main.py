@@ -2,9 +2,9 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from loguru import logger
 
-from core.config import settings
-from core.logging import init_logging
-from middlewares.logging import RequestLoggingMiddleware
+from src.core.config import settings
+from src.core.logging import init_logging
+from src.middlewares.logging import RequestLoggingMiddleware
 
 
 def create_app() -> FastAPI:
