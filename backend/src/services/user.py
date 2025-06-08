@@ -426,6 +426,9 @@ async def check_user_role(user_id: int, required_role: str) -> bool:
 #       raise HTTPException(status_code=403, detail="Admin access required")
 
 __all__ = [
+    "InvalidDataError",
+    "UserAlreadyExistsError",
+    "ValidationError",
     "create_access_token",
     # Add other public symbols here as needed
 ]

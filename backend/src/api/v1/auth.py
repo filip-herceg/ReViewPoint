@@ -101,6 +101,12 @@ async def reset_password(
     try:
         await user_service.reset_password(session, data.token, data.new_password)
         return MessageResponse(message="Password has been reset.")
+    except user_service.ValidationError as e:
+        logger.warning(f"Password reset failed: {e}")
+        raise HTTPException(
+            status_code=400,
+            detail=str(e),
+        ) from e
     except Exception as e:
         logger.warning(f"Password reset failed: {e}")
         raise HTTPException(
