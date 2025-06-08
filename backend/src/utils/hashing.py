@@ -6,7 +6,7 @@ from loguru import logger
 from passlib.context import CryptContext
 
 # bcrypt context for password hashing
-from src.core.config import settings  # Adjust import path as needed
+from src.core.config import settings
 
 pwd_context = CryptContext(
     schemes=["bcrypt"],
