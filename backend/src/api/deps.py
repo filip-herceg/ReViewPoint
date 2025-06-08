@@ -1,5 +1,6 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -36,7 +37,13 @@ async def get_current_user(
             created_at=None,
             updated_at=None,
         )
-    payload = verify_access_token(token)
+    try:
+        payload = verify_access_token(token)
+    except JWTError as err:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+        ) from err
     user_id = payload.get("sub")
     if not user_id:
         raise HTTPException(
