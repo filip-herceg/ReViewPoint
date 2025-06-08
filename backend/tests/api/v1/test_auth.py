@@ -78,6 +78,58 @@ def test_verify_access_token_logs_failure(caplog: pytest.LogCaptureFixture) -> N
     )
 
 
+def test_create_access_token_missing_secret(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "jwt_secret_key", None)
+    with pytest.raises(ValueError):
+        security.create_access_token({"sub": "user"})
+    monkeypatch.setattr(settings, "jwt_secret_key", "testsecret")
+
+
+def test_create_access_token_jwt_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Simulate JWTError by monkeypatching jwt.encode
+    def bad_encode(*args: object, **kwargs: object) -> str:
+        from jose import JWTError
+
+        raise JWTError("fail")
+
+    monkeypatch.setattr(security.jwt, "encode", bad_encode)
+    with pytest.raises(Exception):
+        security.create_access_token({"sub": "user"})
+
+
+def test_verify_access_token_missing_secret(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(settings, "auth_enabled", True)
+    monkeypatch.setattr(settings, "jwt_secret_key", None)
+    from jose import jwt
+
+    token = jwt.encode({"sub": "user"}, "dummy", algorithm="HS256")
+    with pytest.raises(ValueError):
+        security.verify_access_token(token)
+    monkeypatch.setattr(settings, "jwt_secret_key", "testsecret")
+
+
+def test_verify_access_token_type_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Simulate jwt.decode returning a non-dict
+    def bad_decode(*args: object, **kwargs: object) -> object:
+        return "notadict"
+
+    monkeypatch.setattr(security.jwt, "decode", bad_decode)
+    token = security.create_access_token({"sub": "user"})
+    with pytest.raises(TypeError):
+        security.verify_access_token(token)
+
+
+def test_verify_access_token_unexpected_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Simulate unexpected error in jwt.decode
+    def raise_error(*args: object, **kwargs: object) -> object:
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(security.jwt, "decode", raise_error)
+    token = security.create_access_token({"sub": "user"})
+    with pytest.raises(RuntimeError):
+        security.verify_access_token(token)
+
+
 @pytest.mark.asyncio
 async def test_protected_endpoint_accessible_when_auth_disabled(
     monkeypatch: pytest.MonkeyPatch, async_session: AsyncSession
@@ -94,7 +146,9 @@ async def test_protected_endpoint_accessible_when_auth_disabled(
 
 @pytest.mark.asyncio
 async def test_get_current_user_logs_warning_when_auth_disabled(
-    monkeypatch: pytest.MonkeyPatch, async_session: AsyncSession, loguru_list_sink: list[str]
+    monkeypatch: pytest.MonkeyPatch,
+    async_session: AsyncSession,
+    loguru_list_sink: list[str],
 ) -> None:
     monkeypatch.setattr(settings, "auth_enabled", False)
     from src.api.deps import get_current_user

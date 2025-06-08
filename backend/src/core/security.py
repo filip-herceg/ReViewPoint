@@ -79,12 +79,12 @@ def verify_access_token(token: str) -> dict[str, Any]:
             settings.jwt_secret_key,
             algorithms=[settings.jwt_algorithm],
         )
+        if not isinstance(payload, dict):
+            raise TypeError("Decoded JWT payload is not a dictionary")
         logger.debug(
             "JWT access token successfully verified (claims: {})",
             {k: v for k, v in payload.items() if k != "exp"},
         )
-        if not isinstance(payload, dict):
-            raise TypeError("Decoded JWT payload is not a dictionary")
         return payload
     except JWTError as e:
         logger.warning("JWT access token validation failed: {}", str(e))

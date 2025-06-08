@@ -311,7 +311,10 @@ def test_verify_access_token_invalid_token_bypass(monkeypatch: MonkeyPatch) -> N
 def test_verify_access_token_expired_token_bypass(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setattr(settings, "auth_enabled", False)
     import time
-    expired_token = create_access_token({"sub": "expired", "exp": int(time.time()) - 1000})
+
+    expired_token = create_access_token(
+        {"sub": "expired", "exp": int(time.time()) - 1000}
+    )
     payload = verify_access_token(expired_token)
     assert payload["sub"] == "dev-user"
     monkeypatch.setattr(settings, "auth_enabled", True)
