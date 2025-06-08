@@ -3,7 +3,7 @@ Tests for JWT creation and validation utilities in backend.core.security.
 """
 
 import pytest
-from jose import JWTError
+from jose import JWTError, jwt  # Add this import at the top
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core import security
@@ -36,8 +36,6 @@ def test_verify_access_token_expired(monkeypatch: pytest.MonkeyPatch) -> None:
     token = security.create_access_token({"sub": "expired"})
     # Decode, set exp to past, re-encode
     import time
-
-    from jose import jwt
 
     payload = jwt.decode(
         token,
@@ -86,13 +84,12 @@ def test_create_access_token_missing_secret(monkeypatch: pytest.MonkeyPatch) -> 
 
 
 def test_create_access_token_jwt_error(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Simulate JWTError by monkeypatching jwt.encode
     from jose import JWTError
 
     def bad_encode(*args: object, **kwargs: object) -> str:
         raise JWTError("fail")
 
-    monkeypatch.setattr(security.jwt, "encode", bad_encode)
+    monkeypatch.setattr(jwt, "encode", bad_encode)
     with pytest.raises(JWTError):
         security.create_access_token({"sub": "user"})
 
@@ -113,7 +110,7 @@ def test_verify_access_token_type_error(monkeypatch: pytest.MonkeyPatch) -> None
     def bad_decode(*args: object, **kwargs: object) -> object:
         return "notadict"
 
-    monkeypatch.setattr(security.jwt, "decode", bad_decode)
+    monkeypatch.setattr(jwt, "decode", bad_decode)
     token = security.create_access_token({"sub": "user"})
     with pytest.raises(TypeError):
         security.verify_access_token(token)
@@ -124,7 +121,7 @@ def test_verify_access_token_unexpected_error(monkeypatch: pytest.MonkeyPatch) -
     def raise_error(*args: object, **kwargs: object) -> object:
         raise RuntimeError("boom")
 
-    monkeypatch.setattr(security.jwt, "decode", raise_error)
+    monkeypatch.setattr(jwt, "decode", raise_error)
     token = security.create_access_token({"sub": "user"})
     with pytest.raises(RuntimeError):
         security.verify_access_token(token)
