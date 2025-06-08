@@ -105,7 +105,7 @@ async def reset_password(
         logger.warning(f"Password reset failed: {e}")
         raise HTTPException(
             status_code=400,
-            detail="An error occurred while resetting the password. Please try again later."
+            detail="An error occurred while resetting the password. Please try again later.",
         ) from e
 
 
