@@ -13,7 +13,7 @@ from _pytest.monkeypatch import MonkeyPatch
 from src.core.config import settings
 from src.core.security import create_access_token, verify_access_token
 
-MODULE = "core.config"
+MODULE = "src.core.config"
 PFX = "REVIEWPOINT_"  # env-var prefix
 
 
