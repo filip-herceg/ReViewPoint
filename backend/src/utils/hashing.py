@@ -6,11 +6,13 @@ from loguru import logger
 from passlib.context import CryptContext
 
 # bcrypt context for password hashing
+from src.core.config import settings  # Adjust import path as needed
+
 pwd_context = CryptContext(
     schemes=["bcrypt"],
     deprecated="auto",
-    bcrypt__rounds=12,  # Standard security level
-    bcrypt__ident="2b",  # Use modern bcrypt variant
+    bcrypt__rounds=getattr(settings, "BCRYPT_ROUNDS", 12),  # Configurable rounds
+    bcrypt__ident=getattr(settings, "BCRYPT_IDENT", "2b"),  # Configurable identifier
 )
 
 
