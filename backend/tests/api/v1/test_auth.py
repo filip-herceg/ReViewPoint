@@ -87,13 +87,13 @@ def test_create_access_token_missing_secret(monkeypatch: pytest.MonkeyPatch) -> 
 
 def test_create_access_token_jwt_error(monkeypatch: pytest.MonkeyPatch) -> None:
     # Simulate JWTError by monkeypatching jwt.encode
-    def bad_encode(*args: object, **kwargs: object) -> str:
-        from jose import JWTError
+    from jose import JWTError
 
+    def bad_encode(*args: object, **kwargs: object) -> str:
         raise JWTError("fail")
 
     monkeypatch.setattr(security.jwt, "encode", bad_encode)
-    with pytest.raises(Exception):
+    with pytest.raises(JWTError):
         security.create_access_token({"sub": "user"})
 
 

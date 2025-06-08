@@ -3,10 +3,12 @@ Tests for src/api/deps.py (get_current_user dependency).
 Covers all code paths, including edge and error cases.
 """
 
+from unittest.mock import AsyncMock
+
 import pytest
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from unittest.mock import AsyncMock
+
 from src.api import deps
 from src.core.config import settings
 from src.models.user import User
