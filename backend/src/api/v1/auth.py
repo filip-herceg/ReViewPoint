@@ -33,9 +33,15 @@ async def register(
             {"sub": str(user.id), "email": user.email}
         )
         return AuthResponse(access_token=token)
-    except Exception as e:
+    except user_service.UserAlreadyExistsError as e:
         logger.warning(f"Registration failed for {data.email}: {e}")
-        raise HTTPException(status_code=400, detail=str(e)) from e
+        raise HTTPException(status_code=400, detail="User with this email already exists.") from e
+    except user_service.InvalidDataError as e:
+        logger.warning(f"Invalid registration data for {data.email}: {e}")
+        raise HTTPException(status_code=400, detail="Invalid registration data.") from e
+    except Exception as e:
+        logger.error(f"Unexpected error during registration for {data.email}: {e}")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred. Please try again later.") from e
 
 
 @router.post("/login", response_model=AuthResponse)
