@@ -39,7 +39,8 @@ dependencies = [
   "aiosqlite==0.20.0",
   "starlette>=0.46.2",
   "autopep8>=2.3.2",
-  "loguru>=0.7.3"
+  "loguru>=0.7.3",
+  "pydantic[email]>=2.0.0,<3.0.0"
 ]
 
 [project.urls]

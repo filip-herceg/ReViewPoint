@@ -6,7 +6,14 @@ from loguru import logger
 from passlib.context import CryptContext
 
 # bcrypt context for password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from src.core.config import settings
+
+pwd_context = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto",
+    bcrypt__rounds=getattr(settings, "BCRYPT_ROUNDS", 12),  # Configurable rounds
+    bcrypt__ident=getattr(settings, "BCRYPT_IDENT", "2b"),  # Configurable identifier
+)
 
 
 def hash_password(password: str) -> str:

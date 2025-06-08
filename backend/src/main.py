@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from loguru import logger
 
+from src.api.v1.auth import router as auth_router
 from src.core.config import settings
 from src.core.logging import init_logging
 from src.middlewares.logging import RequestLoggingMiddleware
@@ -18,6 +19,8 @@ def create_app() -> FastAPI:
     init_logging(level=settings.log_level)
     # Add request logging middleware
     app.add_middleware(RequestLoggingMiddleware)
+    # Register authentication router
+    app.include_router(auth_router, prefix="/api/v1")
 
     @app.exception_handler(Exception)
     async def global_exception_handler(

@@ -1,12 +1,20 @@
+import os
+
+# Set required env vars before any other imports
+os.environ["REVIEWPOINT_DB_URL"] = (
+    os.environ.get("REVIEWPOINT_DB_URL") or "sqlite+aiosqlite:///:memory:"
+)
+os.environ["REVIEWPOINT_JWT_SECRET"] = (
+    os.environ.get("REVIEWPOINT_JWT_SECRET") or "testsecret"
+)
+
 import asyncio
 import logging
-import os
-from collections.abc import AsyncGenerator, Iterator
+from collections.abc import AsyncGenerator, Generator, Iterator
 
 import pytest
 import pytest_asyncio
 from loguru import logger as loguru_logger
-from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -14,6 +22,8 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from src.core.database import get_async_session
+from src.main import app
 from src.models.base import Base
 
 # Use a file-based SQLite DB for all tests
@@ -118,20 +128,25 @@ def cleanup_test_db_file(request: pytest.FixtureRequest) -> None:
     request.addfinalizer(remove_db)
 
 
-@pytest.fixture(scope="session", autouse=True)
-def create_test_db_tables() -> None:
+# Ensure the test DB schema is created after DB file cleanup and before any test runs
+@pytest_asyncio.fixture(scope="session", autouse=True)
+async def create_test_db_tables(
+    cleanup_test_db_file: None, async_engine: AsyncEngine
+) -> None:
+    # Import all models to register them with Base metadata
 
-    # Use a synchronous engine to create tables
-    sync_engine = create_engine(f"sqlite:///{TEST_DB_PATH}")
-    Base.metadata.create_all(sync_engine)
-    sync_engine.dispose()
-    # Optionally, check tables in DB (can be removed if not needed)
-    # import aiosqlite
-    # async def log_tables():
-    #     try:
-    #         async with aiosqlite.connect(TEST_DB_PATH) as db:
-    #             cursor = await db.execute("SELECT name FROM sqlite_master WHERE type='table';")
-    #             tables = await cursor.fetchall()
-    #     except Exception:
-    #         pass
-    # asyncio.get_event_loop().run_until_complete(log_tables())
+    # Create tables using the async engine
+    async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+
+@pytest.fixture(autouse=True)
+def override_get_async_session(
+    async_session: AsyncSession,
+) -> Generator[None, None, None]:
+    async def _override() -> AsyncGenerator[AsyncSession, None]:
+        yield async_session
+
+    app.dependency_overrides[get_async_session] = _override
+    yield
+    app.dependency_overrides.pop(get_async_session, None)

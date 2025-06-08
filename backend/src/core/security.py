@@ -68,6 +68,13 @@ def verify_access_token(token: str) -> dict[str, Any]:
             "is_authenticated": True,
             "exp": int((now + timedelta(hours=24)).timestamp()),
         }
+
+    # Early validation of token format to catch obviously malformed tokens
+    # JWT tokens should have 3 parts separated by dots
+    if not token or not isinstance(token, str) or token.count(".") != 2:
+        logger.warning("JWT access token validation failed: Malformed token format")
+        raise JWTError("Invalid token format")
+
     try:
         if not settings.jwt_secret_key:
             logger.error(

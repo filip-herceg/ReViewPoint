@@ -18,4 +18,10 @@ class RateLimitExceededError(UserRepositoryError):
     pass
 
 
+class InvalidDataError(UserRepositoryError):
+    """Raised when user input data is invalid but not a validation error."""
+
+    pass
+
+
 # Add more as needed for standardizing error handling
