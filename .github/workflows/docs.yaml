@@ -138,9 +138,12 @@ jobs:
           pip install genbadge[coverage]
           genbadge coverage -i backend/coverage.xml -o docs/content/images/coverage.svg
 
-      - name: Commit coverage badge
-        uses: EndBug/add-and-commit@v9
+      - name: Create or update coverage badge PR
+        uses: peter-evans/create-pull-request@v6
         with:
-          add: 'docs/content/images/coverage.svg'
-          message: 'chore: update coverage badge [skip ci]'
-          default_author: github_actions
+          token: ${{ secrets.GH_TOKEN }}
+          commit-message: 'chore: update coverage badge [skip ci]'
+          title: 'chore: update coverage badge [skip ci]'
+          body: 'Automated PR to update the coverage badge.'
+          branch: 'auto/update-coverage-badge'
+          add-paths: docs/content/images/coverage.svg
