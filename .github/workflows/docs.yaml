@@ -47,11 +47,21 @@ jobs:
       - name: Debug Docs Directory
         run: ls -la docs || echo "The 'docs' directory is missing."
 
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Node.js dependencies
+        run: |
+          cd docs
+          npm ci
+
       - name: Lint Markdown (Prettier)
         run: |
-          npm install -g prettier markdownlint-cli2
-          prettier --check "docs/**/*.md"
-          markdownlint-cli2 "docs/**/*.md"
+          cd docs
+          npm run format:md -- --check
+          npm run lint:md
       - name: Lint mkdocs.yml
         run: |
           pip install mkdocs-lint
