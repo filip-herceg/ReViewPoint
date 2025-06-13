@@ -47,5 +47,6 @@ Source = "https://github.com/filip-herceg/docs"
 path = ".venv"
 dependencies = [
     "mkdocs",
-    "mkdocs-material"
+    "mkdocs-material",
+    "pymdown-extensions"
 ]
