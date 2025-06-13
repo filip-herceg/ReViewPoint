@@ -4,8 +4,8 @@
 # This file configures the Python project for the documentation module.
 #
 # - All documentation content (Markdown, images, etc.) is in `content/` and `overrides/`.
-# - Only minimal Python code (for Hatch compatibility) is in `src/docs/`.
-# - Environment management is handled by Hatch; no documentation content is packaged as Python code.
+# - No Python package or tests are present; this is a docs-only project.
+# - Environment management is handled by Hatch, using a local .venv for reproducibility.
 #
 # See README.md for details.
 # ---
@@ -43,41 +43,12 @@ Documentation = "https://github.com/filip-herceg/docs#readme"
 Issues = "https://github.com/filip-herceg/docs/issues"
 Source = "https://github.com/filip-herceg/docs"
 
-[tool.hatch.version]
-path = "src/docs/__about__.py"
-
 [tool.hatch.envs.default]
+path = ".venv"
 dependencies = [
     "mkdocs",
     "mkdocs-material",
     "mkdocs-lint",
     "markdownlint-cli2",
     "prettier",
-]
-
-[tool.hatch.envs.types]
-extra-dependencies = [
-  "mypy>=1.0.0",
-]
-
-[tool.hatch.envs.types.scripts]
-check = "mypy --install-types --non-interactive {args:src/docs tests}"
-
-[tool.coverage.run]
-source_pkgs = ["docs", "tests"]
-branch = true
-parallel = true
-omit = [
-  "src/docs/__about__.py",
-]
-
-[tool.coverage.paths]
-docs = ["src/docs", "*/docs/src/docs"]
-tests = ["tests", "*/docs/tests"]
-
-[tool.coverage.report]
-exclude_lines = [
-  "no cov",
-  "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:",
 ]
