@@ -47,6 +47,40 @@ Help us keep ReViewPoint’s documentation clear, accurate, and professional! He
 - See the `COMPONENT_TEMPLATE.md`, `PAGE_TEMPLATE.md`, etc. in the frontend docs for examples.
 - Backend templates are in the corresponding backend docs folders.
 
+## Linting and Formatting Documentation
+
+To ensure consistency and quality, always lint and format your Markdown documentation before submitting changes. This project uses [Prettier](https://prettier.io/) and [markdownlint](https://github.com/DavidAnson/markdownlint) for Markdown files.
+
+### How to Run Markdown Linting
+
+1. **Install dependencies** (if you haven't already):
+
+   ```bash
+   npm install
+   ```
+
+2. **Run Prettier to auto-format all Markdown files:**
+
+   ```bash
+   npx prettier --write "docs/**/*.md"
+   ```
+
+3. **Run markdownlint to check for lint errors:**
+
+   ```bash
+   npx markdownlint-cli2 "docs/**/*.md"
+   ```
+
+   Or use the provided npm script:
+
+   ```bash
+   npm run lint:md
+   ```
+
+- Fix any reported errors before submitting your changes.
+- The CI workflow will automatically check formatting and linting on every PR and push.
+- See `.markdownlint.json` for project-specific lint rules.
+
 ## Submitting Changes
 
 - Open a pull request with a clear description of your changes.

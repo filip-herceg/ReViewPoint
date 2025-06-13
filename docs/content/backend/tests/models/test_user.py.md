@@ -1,25 +1,25 @@
-# `test_user.py`
+# Test Documentation: backend/tests/models/test_user.py
 
-| Item               | Value                               |
-| ------------------ | ----------------------------------- |
-| **Layer**          | Model Tests                         |
-| **Responsibility** | Test CRUD operations for User model |
-| **Status**         | 🟢 Complete                         |
+## Overview
 
-## 1. Purpose
+This file documents the tests for the backend User model, ensuring:
 
-This file tests the SQLAlchemy User model, ensuring correct database operations for creating, reading, updating, and deleting user records. It verifies that the model's fields and constraints work as intended.
+- CRUD operations (create, read, update, delete)
+- Field and constraint validation
 
-## 2. Key Test Scenarios
+## Test Coverage
 
-- Create users and verify persistence
-- Test unique email constraint
-- Update user attributes and verify changes
-- Delete users and verify removal
-- Edge cases: missing/invalid fields, duplicate users
+| Test Name         | Purpose                                 | Method                  | Expected Results                                                      |
+|-------------------|-----------------------------------------|-------------------------|-----------------------------------------------------------------------|
+| test_user_crud    | Validates create, read, update, delete for User model | Async (pytest-asyncio)  | User can be created, read, updated, deleted; DB reflects all changes   |
 
-## 3. Notes
+## Best Practices
 
-- Ensures the User model is robust and reliable for authentication and user management.
-- Tests are automated and run in CI.
-- See the test file for implementation details and specific scenarios.
+- Use fixtures for test database setup/teardown
+- Test both valid and invalid scenarios
+- Ensure unique constraints and field validations are enforced
+
+## Related Docs
+
+- [User Model Source](../../../src/models/user.py.md)
+- [Backend Source Guide](../../../../backend-source-guide.md)

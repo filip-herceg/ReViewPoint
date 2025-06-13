@@ -2,6 +2,8 @@
 
 # Backend Source Guide
 
+<!-- anchor: running-backend-tests -->
+
 > **This guide provides a complete, navigable, and layered overview of the backend codebase.**
 
 ---
@@ -78,7 +80,7 @@
 
 - _Purpose_: Middleware for requests/responses
 - _Files_:
-  - [logging.py](backend/src/middlewares/logging.py.md): Logging middleware ([test](backend/tests/middlewares/test_logging.py))
+  - [logging.py](backend/src/middlewares/logging.py.md): Logging middleware ([test](backend/tests/middlewares/test_logging.py.md))
 
 ### models/
 

@@ -10,7 +10,7 @@ Defines custom error classes and error handling utilities.
 
 ## Related Files
 
-- [test_errors.py](../../../../tests/utils/test_errors.py.md)
+- [test_errors.py](../../../tests/utils/test_errors.py.md)
 
 ---
 

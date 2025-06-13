@@ -10,7 +10,7 @@ Implements rate limiting utilities for API endpoints.
 
 ## Related Files
 
-- [test_rate_limit.py](../../../../tests/utils/test_rate_limit.py.md)
+- [test_rate_limit.py](../../../tests/utils/test_rate_limit.py.md)
 
 ---
 

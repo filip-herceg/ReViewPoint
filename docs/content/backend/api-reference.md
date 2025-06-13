@@ -13,49 +13,49 @@ This page is auto-generated from the backend source code using [mkdocstrings](ht
 
 ## FastAPI Endpoints & Schemas
 
-::: backend.src.api.v1.auth
+::: api.v1.auth
 
-::: backend.src.api.v1.uploads
+::: api.v1.uploads
 
-::: backend.src.api.v1.users
+::: api.v1.users
 
 ---
 
 ## Models
 
-::: backend.src.models.user
+::: models.user
 
-::: backend.src.models.file
+::: models.file
 
-::: backend.src.models.used_password_reset_token
+::: models.used_password_reset_token
 
 ---
 
 ## Schemas
 
-::: backend.src.schemas.auth
+::: schemas.auth
 
-::: backend.src.schemas.file
+::: schemas.file
 
-::: backend.src.schemas.token
+::: schemas.token
 
-::: backend.src.schemas.user
+::: schemas.user
 
 ---
 
 ## Services
 
-::: backend.src.services.user
+::: services.user
 
-::: backend.src.services.upload
+::: services.upload
 
 ---
 
 ## Repositories
 
-::: backend.src.repositories.user
+::: repositories.user
 
-::: backend.src.repositories.file
+::: repositories.file
 
 ---
 

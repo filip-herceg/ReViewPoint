@@ -65,6 +65,8 @@ plugins:
             show_source: true
             docstring_style: google
             merge_init_into_class: true
+      paths:
+        - ../backend/src
 
 markdown_extensions:
   - admonition
@@ -87,7 +89,7 @@ markdown_extensions:
   - pymdownx.progressbar
   - pymdownx.smartsymbols
   - pymdownx.tabbed
-  - pymdownx.tags
+  # - pymdownx.tags  # removed due to missing extension, re-add if available in future
 
 extra:
   social:

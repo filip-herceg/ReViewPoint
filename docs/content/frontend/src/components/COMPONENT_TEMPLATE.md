@@ -23,7 +23,7 @@ Describe the purpose of this component.
 
 ## Related Files
 
-- [Test file](../../../../tests/src/components/[ComponentName].test.md)
+- [Test file](../../../tests/src/components/[ComponentName].test.md)
 - [Parent/child components]
 
 ---

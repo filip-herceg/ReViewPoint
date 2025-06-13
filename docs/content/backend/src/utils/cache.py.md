@@ -10,7 +10,7 @@ Implements caching utilities for backend operations.
 
 ## Related Files
 
-- [test_cache.py](../../../../tests/utils/test_cache.py.md)
+- [test_cache.py](../../../tests/utils/test_cache.py.md)
 
 ---
 

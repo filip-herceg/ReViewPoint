@@ -25,7 +25,7 @@ Describe the purpose of this page and its route.
 
 ## Related Files
 
-- [Test file](../../../../tests/src/pages/[PageName].test.md)
+- [Test file](../../../tests/src/pages/[PageName].test.md)
 
 ---
 

@@ -16,7 +16,7 @@ Describe what this utility function does.
 
 ## Related Files
 
-- [Test file](../../../../tests/src/utils/[UtilityName].test.md)
+- [Test file](../../../tests/src/utils/[UtilityName].test.md)
 
 ---
 

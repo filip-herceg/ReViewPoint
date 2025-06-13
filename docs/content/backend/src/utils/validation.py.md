@@ -10,7 +10,7 @@ Provides validation helpers for data and API inputs.
 
 ## Related Files
 
-- [test_validation.py](../../../../tests/utils/test_validation.py.md)
+- [test_validation.py](../../../tests/utils/test_validation.py.md)
 
 ---
 

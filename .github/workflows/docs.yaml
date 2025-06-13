@@ -80,6 +80,7 @@ jobs:
         run: |
           if [ -d "docs" ] && [ -f "docs/mkdocs.yml" ]; then
             cd docs
+            export PYTHONPATH="../backend/src:$PYTHONPATH"
             hatch run mkdocs build --clean
           else
             echo "The 'docs' directory or 'mkdocs.yml' file is missing."

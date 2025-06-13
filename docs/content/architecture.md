@@ -1,5 +1,7 @@
 # System Architecture
 
+<!-- anchor: file--directory-structure-frontend-example -->
+
 This page describes the overall system structure of ReViewPoint, with a clear split between Backend and Frontend, and detailed explanations of each segment and their interactions.
 
 ---
