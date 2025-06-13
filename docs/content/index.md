@@ -1,6 +1,21 @@
 # Welcome to ReViewPoint
 
+[![Docs Build](https://github.com/filip-herceg/ReViewPoint/actions/workflows/docs.yaml/badge.svg "Docs Build Status")](https://github.com/filip-herceg/ReViewPoint/actions/workflows/docs.yaml)
+[![Lint Status](https://github.com/filip-herceg/ReViewPoint/actions/workflows/docs.yaml/badge.svg?label=lint "Lint Status")](https://github.com/filip-herceg/ReViewPoint/actions/workflows/docs.yaml)
+![Test Coverage](images/coverage.svg "Test Coverage Badge")
+
 > **Modular, scalable, and LLM-powered platform for scientific paper review.**
+
+---
+
+## Quick Links
+
+- [Developer Guidelines](dev-guidelines/)
+- [Backend API Reference](backend/api-reference/)
+- [System Architecture](architecture/)
+- [Setup Guide](setup/)
+- [CI/CD](ci-cd/)
+- [FAQ](faq/)
 
 ---
 
@@ -20,6 +35,7 @@
 <ul>
   <li><a href="dev-guidelines/">Developer Guidelines</a></li>
   <li><a href="ci-cd/">CI/CD</a></li>
+  <li><a href="backend/api-reference/">Backend API Reference</a></li>
 </ul>
 </div>
 
@@ -46,7 +62,7 @@
 
 ReViewPoint streamlines the review process for scientific papers by combining modular backend services, a modern frontend, and seamless LLM integration. The platform is designed for extensibility, rapid onboarding, and robust automation.
 
-**Key Features**
+### Key Features
 
 - Modular backend (FastAPI, PostgreSQL, S3)
 - Pluggable module system for new evaluation logic
@@ -64,3 +80,7 @@ ReViewPoint streamlines the review process for scientific papers by combining mo
 - **Resources:** FAQ, troubleshooting
 
 > For backend file details and test instructions, see [Backend Source Guide](backend-source-guide.md).
+
+## ReViewPoint Documentation
+
+Welcome to the official documentation for ReViewPoint!

@@ -52,13 +52,13 @@ The initial migration (`9fc3acc47815_initial_migration_users_and_files_tables.py
    - Primary fields: email, hashed_password, is_active
    - Standard fields: id, created_at, updated_at
    - Indexes: Unique index on email
-   
 2. **Files table**: For document metadata tracking
    - Primary fields: filename, content_type, user_id
    - Relationship: Foreign key to users.id
    - Indexes: Index on user_id for filtering by user
 
 Migration commands:
+
 ```bash
 # Apply all pending migrations
 alembic upgrade head
@@ -74,28 +74,30 @@ alembic downgrade -1
 
 The database layer is tested comprehensively with over 86% coverage:
 
-1. **Connection Tests**: 
+1. **Connection Tests**:
+
    - Verify database connectivity and health checks
    - Test both successful and failed connection scenarios
    - Exercise the database engine with real queries
 
-2. **Session Tests**: 
+2. **Session Tests**:
+
    - Ensure proper session management and error handling
    - Test session lifecycle (creation, use, closure)
    - Test error scenarios and automatic rollback
    - Verify session context manager behavior
 
-3. **Model Tests**: 
+3. **Model Tests**:
    - Test CRUD operations (Create, Read, Update, Delete)
    - Verify relationships between models
    - Test constraints and indexes
-   - Test helper methods like to_dict() and __repr__()
+   - Test helper methods like to_dict() and **repr**()
 
 ### Test Fixtures Architecture
 
 Test fixtures in `tests/conftest.py` provide:
 
-- **Isolated in-memory databases**: Each test function gets a unique database 
+- **Isolated in-memory databases**: Each test function gets a unique database
 - **Multiple fixture scopes**:
   - `async_engine`: Session-scoped for shared access
   - `async_engine_function`: Function-scoped for isolation
@@ -114,14 +116,14 @@ async def test_example(async_session):
     item = Item(name="test")
     async_session.add(item)
     await async_session.commit()
-    
+
     # 2. Execute - Perform the operation being tested
     result = await async_session.execute(select(Item).where(Item.name == "test"))
     found = result.scalar_one()
-    
+
     # 3. Verify - Check the results
     assert found.name == "test"
-    
+
     # 4. Cleanup (handled automatically by fixture)
 ```
 
@@ -129,17 +131,19 @@ async def test_example(async_session):
 
 The database connection is configured through environment variables:
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `REVIEWPOINT_DB_URL` | Database connection string | `sqlite+aiosqlite:///:memory:` |
-| `REVIEWPOINT_ENVIRONMENT` | Environment (dev/test/prod) | `dev` |
-| `REVIEWPOINT_DEBUG` | Enable debug mode | `false` |
+| Variable                  | Description                 | Default                        |
+| ------------------------- | --------------------------- | ------------------------------ |
+| `REVIEWPOINT_DB_URL`      | Database connection string  | `sqlite+aiosqlite:///:memory:` |
+| `REVIEWPOINT_ENVIRONMENT` | Environment (dev/test/prod) | `dev`                          |
+| `REVIEWPOINT_DEBUG`       | Enable debug mode           | `false`                        |
 
 Connection URL formats:
+
 - SQLite: `sqlite+aiosqlite:///./backend_dev.db`
 - PostgreSQL: `postgresql+asyncpg://user:pass@localhost:5432/dbname`
 
 Environment-specific configurations:
+
 - **Production**: Larger connection pool (size=10, max_overflow=20)
 - **Development**: Smaller connection pool (size=5, max_overflow=10)
 - **Testing**: In-memory SQLite database, no pooling

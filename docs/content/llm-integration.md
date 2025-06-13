@@ -21,4 +21,4 @@
 
 ---
 
-*Contribute your integration notes and tips!*
+_Contribute your integration notes and tips!_

@@ -6,5 +6,16 @@ version = "0.1.0"
 path = ".venv"
 dependencies = [
     "mkdocs",
-    "mkdocs-material"
+    "mkdocs-material",
+    "mkdocs-lint",
+]
+
+[tool.markdownlint]
+# Example config, see https://github.com/DavidAnson/markdownlint/blob/main/schema/.markdownlint.jsonc
+config = "./.markdownlint.json"
+
+[tool.pre-commit]
+hooks = [
+  {id = "prettier", name = "Prettier", entry = "prettier --write docs/**/*.md", language = "node"},
+  {id = "markdownlint", name = "Markdownlint", entry = "markdownlint-cli2 docs/**/*.md", language = "node"}
 ]

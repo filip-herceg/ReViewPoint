@@ -18,10 +18,11 @@ See [Backend Source Guide](backend-source-guide.md#running-backend-tests).
 
 ## Troubleshooting
 
-**Common Issues**
+### Common Issues
+
 - Activate your Hatch environment before running tests.
 - Check [Developer Guidelines](dev-guidelines.md) for linting and formatting help.
 
 ---
 
-*Contribute more questions and answers to help the team!*
+_Contribute more questions and answers to help the team!_

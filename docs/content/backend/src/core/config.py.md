@@ -1,27 +1,30 @@
 # `core/config.py`
 
-| Item | Value |
-|------|-------|
-| **Layer** | Core |
+| Item               | Value                                                                                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Layer**          | Core                                                                                                                                             |
 | **Responsibility** | Provides a singleton Settings object that reads environment variables, validates types, and exposes helper properties for backend configuration. |
-| **Status** | 🟢 Done |
+| **Status**         | 🟢 Done                                                                                                                                          |
 
-## 1. Purpose  
+## 1. Purpose
+
 Centralizes all runtime configuration for the backend, loading from environment variables or `.env` files, and providing type-safe access to settings like DB URL, JWT secret, and log level.
 
-## 2. Public API  
-| Symbol | Type | Description |
-|--------|------|-------------|
-| `Settings` | class | Subclass of `pydantic_settings.BaseSettings`; holds all config fields |
-| `get_settings()` | function | `@lru_cache` factory that returns a singleton instance of `Settings` |
-| `settings` | variable | Shortcut alias: `settings = get_settings()` for easy import |
-| `auth_enabled` | bool | Enable or disable authentication features (env: REVIEWPOINT_AUTH_ENABLED) |
-| `jwt_secret_key` | str | Secret key for JWT signing (env: REVIEWPOINT_JWT_SECRET_KEY) |
-| `jwt_algorithm` | str | JWT signing algorithm (env: REVIEWPOINT_JWT_ALGORITHM) |
-| `jwt_expire_minutes` | int | JWT expiration in minutes (env: REVIEWPOINT_JWT_EXPIRE_MINUTES) |
-| `jwt_secret` | str \| None | [DEPRECATED] Use `jwt_secret_key` instead. Still supported for backward compatibility. |
+## 2. Public API
 
-## 3. Behaviour & Edge-Cases  
+| Symbol               | Type        | Description                                                                            |
+| -------------------- | ----------- | -------------------------------------------------------------------------------------- |
+| `Settings`           | class       | Subclass of `pydantic_settings.BaseSettings`; holds all config fields                  |
+| `get_settings()`     | function    | `@lru_cache` factory that returns a singleton instance of `Settings`                   |
+| `settings`           | variable    | Shortcut alias: `settings = get_settings()` for easy import                            |
+| `auth_enabled`       | bool        | Enable or disable authentication features (env: REVIEWPOINT_AUTH_ENABLED)              |
+| `jwt_secret_key`     | str         | Secret key for JWT signing (env: REVIEWPOINT_JWT_SECRET_KEY)                           |
+| `jwt_algorithm`      | str         | JWT signing algorithm (env: REVIEWPOINT_JWT_ALGORITHM)                                 |
+| `jwt_expire_minutes` | int         | JWT expiration in minutes (env: REVIEWPOINT_JWT_EXPIRE_MINUTES)                        |
+| `jwt_secret`         | str \| None | [DEPRECATED] Use `jwt_secret_key` instead. Still supported for backward compatibility. |
+
+## 3. Behaviour & Edge-Cases
+
 - Reads `.env` automatically, but real env vars take precedence.
 - Fails fast on missing or malformed critical values.
 - Provides helper properties (e.g., `async_db_url`, `upload_path`).
@@ -31,19 +34,22 @@ Centralizes all runtime configuration for the backend, loading from environment 
 - If `jwt_secret_key` is not set but `jwt_secret` is, the latter is used for backward compatibility.
 - Auth can be toggled on/off via `auth_enabled`.
 
-## 4. Dependencies  
+## 4. Dependencies
+
 - **Internal**: None
 - **External**:
   - `pydantic-settings` (for BaseSettings)
   - `functools.lru_cache`
   - `pathlib.Path`
 
-## 5. Tests  
-| Test file | Scenario |
-|-----------|----------|
+## 5. Tests
+
+| Test file                           | Scenario                                            |
+| ----------------------------------- | --------------------------------------------------- |
 | `backend/tests/core/test_config.py` | Tests config loading, overrides, and error handling |
 
-## 6. Open TODOs  
+## 6. Open TODOs
+
 - [ ] Add support for dynamic reload of settings
 - [ ] Document all config fields in detail
 
