@@ -1,20 +1,83 @@
+# ---
+# ReViewPoint Documentation Project — pyproject.toml
+#
+# This file configures the Python project for the documentation module.
+#
+# - All documentation content (Markdown, images, etc.) is in `content/` and `overrides/`.
+# - Only minimal Python code (for Hatch compatibility) is in `src/docs/`.
+# - Environment management is handled by Hatch; no documentation content is packaged as Python code.
+#
+# See README.md for details.
+# ---
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[project]
+name = "docs"
+dynamic = ["version"]
+description = "ReViewPoint documentation and developer manual."
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = ["documentation", "mkdocs", "reviewpoint"]
+authors = [
+  { name = "filip-herceg", email = "pvt.filip.herceg@gmail.com" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = []
+
+[project.urls]
+Documentation = "https://github.com/filip-herceg/docs#readme"
+Issues = "https://github.com/filip-herceg/docs/issues"
+Source = "https://github.com/filip-herceg/docs"
+
+[tool.hatch.version]
+path = "src/docs/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
     "mkdocs",
     "mkdocs-material",
     "mkdocs-lint",
+    "markdownlint-cli2",
+    "prettier",
 ]
 
-[tool.markdownlint]
-# Example config, see https://github.com/DavidAnson/markdownlint/blob/main/schema/.markdownlint.jsonc
-config = "./.markdownlint.json"
+[tool.hatch.envs.types]
+extra-dependencies = [
+  "mypy>=1.0.0",
+]
 
-[tool.pre-commit]
-hooks = [
-  {id = "prettier", name = "Prettier", entry = "prettier --write docs/**/*.md", language = "node"},
-  {id = "markdownlint", name = "Markdownlint", entry = "markdownlint-cli2 docs/**/*.md", language = "node"}
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:src/docs tests}"
+
+[tool.coverage.run]
+source_pkgs = ["docs", "tests"]
+branch = true
+parallel = true
+omit = [
+  "src/docs/__about__.py",
+]
+
+[tool.coverage.paths]
+docs = ["src/docs", "*/docs/src/docs"]
+tests = ["tests", "*/docs/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
 ]
