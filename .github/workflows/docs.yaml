@@ -2,10 +2,12 @@ name: Build and Deploy Docs
 
 on:
   push:
-    branches: [main]
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
+  pull_request:
+    paths:
+      - 'docs/**'
   workflow_dispatch:
 
 permissions:
