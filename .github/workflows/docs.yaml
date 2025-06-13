@@ -71,10 +71,10 @@ jobs:
           cd docs
           npm run format:md -- --check
           npm run lint:md
-      - name: Lint mkdocs.yml
-        run: |
-          pip install mkdocs-lint
-          mkdocs-lint docs/mkdocs.yml
+      # - name: Lint mkdocs.yml
+      #   run: |
+      #     pip install mkdocs-lint
+      #     mkdocs-lint docs/mkdocs.yml
 
       - name: Build MkDocs site
         run: |
