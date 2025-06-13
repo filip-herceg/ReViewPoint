@@ -48,7 +48,6 @@ path = ".venv"
 dependencies = [
     "mkdocs",
     "mkdocs-material",
-    "mkdocs-lint",
     "markdownlint-cli2",
     "prettier",
 ]
