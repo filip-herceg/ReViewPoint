@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Documentation and linting tools for ReViewPoint",
   "devDependencies": {
-    "markdownlint-cli2": "^0.9.0",
+    "markdownlint-cli2": "^0.18.1",
     "prettier": "^3.0.0"
   },
   "scripts": {

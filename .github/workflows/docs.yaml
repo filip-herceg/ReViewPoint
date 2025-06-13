@@ -57,6 +57,15 @@ jobs:
           cd docs
           npm ci
 
+      - name: Ensure up-to-date package-lock.json
+        run: |
+          cd docs
+          if [ ! -f package-lock.json ]; then
+            npm install
+          fi
+          # If lockfile exists but is out of sync, re-generate it
+          npm install
+
       - name: Lint Markdown (Prettier)
         run: |
           cd docs
