@@ -9,11 +9,15 @@ theme:
   name: material
   palette:
     scheme: default
+  logo: images/logo.png  # Place your logo in docs/content/images/
+  favicon: images/favicon.ico
   features:
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.top
     - navigation.sections
     - navigation.expand
+    - navigation.tracking
     - navigation.footer
     - navigation.instant
     - navigation.path
@@ -21,6 +25,7 @@ theme:
     - toc.integrate
     - search.suggest
     - search.highlight
+    - search.share
     - content.code.annotate
     - content.code.copy
     - content.code.select
@@ -38,30 +43,28 @@ theme:
     - content.cards
     - content.toc
     - content.admonition
+    - announce.dismiss
+  language: en
+  custom_dir: overrides  # For custom 404.html and other overrides
 
-nav:
-  - Homepage: index.md
-  - System Overview:
-      - Architecture: architecture.md
-      - Backend Source Guide: backend-source-guide.md
-  - Development:
-      - Setup for Developers: setup.md
-      - Developer Guidelines: dev-guidelines.md
-      - CI/CD: ci-cd.md
-  - Modules:
-      - Module Guide: module-guide.md
-      - LLM-Integration: llm-integration.md
-  - Resources:
-      - FAQ: faq.md
-
-extra:
-  social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/filip-herceg/ReViewPoint
-  favicon: images/favicon.ico
-  generator: false
-
-edit_uri: https://github.com/filip-herceg/ReViewPoint/edit/main/docs/content/
+plugins:
+  - search
+  - awesome-pages
+  - mermaid2
+  - minify:
+      minify_html: true
+  - git-revision-date-localized:
+      fallback_to_build_date: true
+  - glightbox
+  - macros
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_root_heading: true
+            show_source: true
+            docstring_style: google
+            merge_init_into_class: true
 
 markdown_extensions:
   - admonition
@@ -83,3 +86,18 @@ markdown_extensions:
   - pymdownx.magiclink
   - pymdownx.progressbar
   - pymdownx.smartsymbols
+  - pymdownx.tabbed
+  # - pymdownx.tags  # removed due to missing extension, re-add if available in future
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/filip-herceg/ReViewPoint
+  analytics:
+    provider: plausible
+    domain: yourdomain.com  # Replace with your analytics domain
+  announce:
+    type: info
+    text: "🚀 ReViewPoint Docs: Now with enhanced navigation, search, and frontend roadmap!"
+
+edit_uri: https://github.com/filip-herceg/ReViewPoint/edit/main/docs/content/

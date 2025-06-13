@@ -1,22 +1,25 @@
-# `test_file.py`
+# Test Documentation: backend/tests/models/test_file.py
 
-| Item | Value |
-|------|-------|
-| **Layer** | Model Tests |
-| **Responsibility** | Test CRUD operations and relationships for File model |
-| **Status** | 🟢 Complete |
+## Overview
 
-## 1. Purpose
-This file tests the SQLAlchemy File model, ensuring correct database operations for creating, reading, updating, and deleting file records. It also verifies the relationship between files and users.
+This file documents the tests for the backend File model, ensuring:
 
-## 2. Key Test Scenarios
-- Create files with user relationship
-- Test file attribute updates
-- Verify user-file relationship navigation
-- Delete files and check for proper cleanup
-- Edge cases: missing/invalid fields, orphaned files
+- CRUD operations (create, read, update, delete)
+- User-file relationship integrity
 
-## 3. Notes
-- Ensures the File model and its relationships are robust and reliable.
-- Tests are automated and run in CI.
-- See the test file for implementation details and specific scenarios.
+## Test Coverage
+
+| Test Name         | Purpose                                 | Method                  | Expected Results                                                      |
+|-------------------|-----------------------------------------|-------------------------|-----------------------------------------------------------------------|
+| test_file_crud    | Validates create, read, update, delete for File model and user relationship | Async (pytest-asyncio)  | File can be created, read, updated, deleted; user relationship is correct |
+
+## Best Practices
+
+- Use fixtures for test database setup/teardown
+- Test both valid and invalid scenarios
+- Ensure relationships and field validations are enforced
+
+## Related Docs
+
+- [File Model Source](../../src/models/file.py.md)
+- [Backend Source Guide](../../../backend-source-guide.md)

@@ -1,0 +1,103 @@
+site_name: ReViewPoint
+site_description: Documentation and development manual for ReViewPoint. Modular, scalable, and LLM-powered platform for scientific paper review.
+site_author: ReViewPoint Team
+site_url: https://github.com/filip-herceg/ReViewPoint
+
+docs_dir: content
+
+theme:
+  name: material
+  palette:
+    scheme: default
+  logo: images/logo.png  # Place your logo in docs/content/images/
+  favicon: images/favicon.ico
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.sections
+    - navigation.expand
+    - navigation.tracking
+    - navigation.footer
+    - navigation.instant
+    - navigation.path
+    - navigation.indexes
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.annotate
+    - content.code.copy
+    - content.code.select
+    - content.tabs.link
+    - content.tabs
+    - content.footnotes
+    - content.images.lazy
+    - content.emoji
+    - content.anchors
+    - content.action.edit
+    - content.action.view
+    - content.buttons
+    - content.badges
+    - content.grid
+    - content.cards
+    - content.toc
+    - content.admonition
+    - announce.dismiss
+  language: en
+  custom_dir: overrides  # For custom 404.html and other overrides
+
+plugins:
+  - search
+  - awesome-pages
+  - mermaid2
+  - minify:
+      minify_html: true
+  - git-revision-date-localized:
+      fallback_to_build_date: true
+  - glightbox
+  - macros
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_root_heading: true
+            show_source: true
+            docstring_style: google
+            merge_init_into_class: true
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.details
+  - pymdownx.tabbed
+  - pymdownx.emoji
+  - pymdownx.snippets
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.tasklist
+  - pymdownx.keys
+  - pymdownx.betterem
+  - pymdownx.magiclink
+  - pymdownx.progressbar
+  - pymdownx.smartsymbols
+  - pymdownx.tabbed
+  - pymdownx.tags
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/filip-herceg/ReViewPoint
+  analytics:
+    provider: plausible
+    domain: yourdomain.com  # Replace with your analytics domain
+  announce:
+    type: info
+    text: "🚀 ReViewPoint Docs: Now with enhanced navigation, search, and frontend roadmap!"
+
+edit_uri: https://github.com/filip-herceg/ReViewPoint/edit/main/docs/content/
