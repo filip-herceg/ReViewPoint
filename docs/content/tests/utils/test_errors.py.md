@@ -33,5 +33,9 @@ def test_custom_error_message():
 
 ## Related Docs
 
-- [Error Utility Source](../../../src/utils/errors.py.md)
-- [Backend Source Guide](../../../../backend-source-guide.md)
+- [errors.py](../../backend/src/utils/errors.py.md)
+- [Backend Source Guide](../../backend-source-guide.md)
+
+---
+
+*This file is auto-generated as a placeholder. Please update with actual test details as implemented.*

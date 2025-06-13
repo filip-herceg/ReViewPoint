@@ -31,5 +31,9 @@ test('renders page and child components', () => {
 
 ## Related Docs
 
-- [Page Source](../../../../frontend/src/pages/PageName.md)
-- [Frontend Overview](../../../../frontend/overview.md)
+- [[PageName]](../../../frontend/src/pages/PAGE_TEMPLATE.md)
+- [Frontend Overview](../../../frontend/overview.md)
+
+---
+
+*This file is auto-generated as a placeholder. Please update with actual test details as implemented.*

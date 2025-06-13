@@ -35,5 +35,9 @@ def test_validate_email_rejects_invalid():
 
 ## Related Docs
 
-- [Validation Utility Source](../../../src/utils/validation.py.md)
-- [Backend Source Guide](../../../../backend-source-guide.md)
+- [validation.py](../../backend/src/utils/validation.py.md)
+- [Backend Source Guide](../../backend-source-guide.md)
+
+---
+
+*This file is auto-generated as a placeholder. Please update with actual test details as implemented.*

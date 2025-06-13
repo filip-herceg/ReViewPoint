@@ -44,5 +44,5 @@ def test_logging_middleware_logs_requests_and_responses():
 
 ## Related Docs
 
-- [Logging Middleware Source](../../../src/middlewares/logging.py.md)
-- [Backend Source Guide](../../../../backend-source-guide.md)
+- [Logging Middleware Source](../../src/middlewares/logging.py.md)
+- [Backend Source Guide](../../../backend-source-guide.md)

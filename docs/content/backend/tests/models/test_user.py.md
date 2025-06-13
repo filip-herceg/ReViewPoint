@@ -21,5 +21,5 @@ This file documents the tests for the backend User model, ensuring:
 
 ## Related Docs
 
-- [User Model Source](../../../src/models/user.py.md)
-- [Backend Source Guide](../../../../backend-source-guide.md)
+- [User Model Source](../../src/models/user.py.md)
+- [Backend Source Guide](../../../backend-source-guide.md)

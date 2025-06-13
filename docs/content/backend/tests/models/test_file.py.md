@@ -21,5 +21,5 @@ This file documents the tests for the backend File model, ensuring:
 
 ## Related Docs
 
-- [File Model Source](../../../src/models/file.py.md)
-- [Backend Source Guide](../../../../backend-source-guide.md)
+- [File Model Source](../../src/models/file.py.md)
+- [Backend Source Guide](../../../backend-source-guide.md)

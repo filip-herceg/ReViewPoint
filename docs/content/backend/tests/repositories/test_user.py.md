@@ -43,5 +43,5 @@ This file documents the tests for the backend user repository and model, ensurin
 
 ## Related Docs
 
-- [User Repository Source](../../../src/repositories/user.py.md)
-- [Backend Source Guide](../../../../backend-source-guide.md)
+- [User Repository Source](../../src/repositories/user.py.md)
+- [Backend Source Guide](../../../backend-source-guide.md)

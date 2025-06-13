@@ -23,5 +23,5 @@ This file documents the tests for backend password hashing utilities, ensuring:
 
 ## Related Docs
 
-- [Hashing Utility Source](../../../src/utils/hashing.py.md)
-- [Backend Source Guide](../../../../backend-source-guide.md)
+- [Hashing Utility Source](../../src/utils/hashing.py.md)
+- [Backend Source Guide](../../../backend-source-guide.md)

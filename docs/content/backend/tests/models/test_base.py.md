@@ -21,5 +21,5 @@ This file documents the tests for the backend Base model class, ensuring:
 
 ## Related Docs
 
-- [Base Model Source](../../../src/models/base.py.md)
-- [Backend Source Guide](../../../../backend-source-guide.md)
+- [Base Model Source](../../src/models/base.py.md)
+- [Backend Source Guide](../../../backend-source-guide.md)

@@ -33,5 +33,9 @@ def test_cache_set_and_get():
 
 ## Related Docs
 
-- [Cache Utility Source](../../../src/utils/cache.py.md)
-- [Backend Source Guide](../../../../backend-source-guide.md)
+- [cache.py](../../backend/src/utils/cache.py.md)
+- [Backend Source Guide](../../backend-source-guide.md)
+
+---
+
+*This file is auto-generated as a placeholder. Please update with actual test details as implemented.*

@@ -1,6 +1,6 @@
-# [ComponentName] Component Test Documentation
+# Component1 Component Test Documentation
 
-This page documents the tests for the `[ComponentName]` frontend component.
+This page documents the tests for the `Component1` frontend component.
 
 ## Test Overview
 
@@ -39,7 +39,7 @@ This page documents the tests for the `[ComponentName]` frontend component.
 
 ## Related Documentation
 
-- [[ComponentName]](../../../frontend/src/components/COMPONENT_TEMPLATE.md)
+- [Component1](../../../frontend/src/components/Component1.md)
 - [Frontend Overview](../../../frontend/overview.md)
 - [Testing Best Practices](../../../backend/tests/README.md)
 

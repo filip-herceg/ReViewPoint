@@ -43,5 +43,5 @@ This file documents the tests for the backend user service layer, ensuring:
 
 ## Related Docs
 
-- [User Service Source](../../../src/services/user.py.md)
-- [Backend Source Guide](../../../../backend-source-guide.md)
+- [User Service Source](../../src/services/user.py.md)
+- [Backend Source Guide](../../../backend-source-guide.md)

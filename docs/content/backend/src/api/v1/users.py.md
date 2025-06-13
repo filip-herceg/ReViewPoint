@@ -1,46 +1,53 @@
-# users.py
+# API Reference: `users.py`
 
-## Purpose
+This document provides a comprehensive reference for the backend API module `users.py`.
 
-Defines user-related API endpoints (registration, login, profile, etc.).
+## Overview
 
-## API Endpoints
+The `users.py` module implements the user-related API endpoints for the backend. It is responsible for user registration, authentication, profile management, password reset, and user listing. The endpoints are designed to be secure, robust, and follow RESTful best practices.
 
-- **POST /api/v1/users/register**
+## Main Endpoints
 
-  - Registers a new user.
-  - **Request:** JSON body with user details (username, email, password, etc.)
-  - **Response:** User info, auth token
-  - **Auth:** None
-  - **Errors:** 400 (validation), 409 (duplicate)
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/users/` | GET | List all users (admin only) |
+| `/api/v1/users/` | POST | Register a new user |
+| `/api/v1/users/{user_id}` | GET | Retrieve user details by ID |
+| `/api/v1/users/{user_id}` | PUT | Update user details |
+| `/api/v1/users/{user_id}` | DELETE | Delete a user (admin only) |
+| `/api/v1/users/login` | POST | Authenticate a user and return a token |
+| `/api/v1/users/reset-password` | POST | Initiate password reset |
+| `/api/v1/users/reset-password/confirm` | POST | Confirm password reset |
 
-- **POST /api/v1/users/login**
+## Key Functions and Classes
 
-  - Authenticates a user and returns a token.
-  - **Request:** JSON body (username/email, password)
-  - **Response:** Auth token
-  - **Auth:** None
-  - **Errors:** 401 (invalid credentials)
+- **UserCreate**: Pydantic model for user registration.
+- **UserRead**: Pydantic model for user output.
+- **UserUpdate**: Pydantic model for updating user info.
+- **UserInDB**: Internal model for DB operations.
+- **get_current_user**: Dependency for extracting the current user from the request.
+- **get_user_by_id**: Retrieve a user by their unique ID.
+- **authenticate_user**: Validate user credentials and return user object if valid.
 
-- **GET /api/v1/users/me**
+## Security
 
-  - Retrieves the current user's profile.
-  - **Request:** Auth token in header
-  - **Response:** User profile data
-  - **Auth:** Required
-  - **Errors:** 401 (unauthenticated)
+- All endpoints require authentication except registration and login.
+- Admin-only endpoints are protected by role-based access control.
+- Passwords are hashed using a secure algorithm (see [hashing.py](../../utils/hashing.py.md)).
+- JWT tokens are used for authentication.
 
-- **PUT /api/v1/users/me**
-  - Updates the current user's profile.
-  - **Request:** Auth token, JSON body with updated fields
-  - **Response:** Updated user profile
-  - **Auth:** Required
-  - **Errors:** 401 (unauthenticated), 400 (validation)
+## Error Handling
 
-## Related Files
+- Returns appropriate HTTP status codes for all error conditions.
+- Uses custom error responses for validation and authentication errors.
 
-- [test_users.py](../../../../tests/api/v1/test_users.py.md)
+## Related Documentation
+
+- [User Model](../../models/user.py.md)
+- [Authentication](../../utils/hashing.py.md)
+- [API Reference](../../../api-reference.md)
+- [Backend Source Guide](../../../../backend-source-guide.md)
 
 ---
 
-_Expand this doc as endpoints evolve or are added._
+*This file is auto-generated and should be updated as the API evolves. For implementation details, see the source code and related test documentation.*

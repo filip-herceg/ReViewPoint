@@ -65,8 +65,6 @@ plugins:
             show_source: true
             docstring_style: google
             merge_init_into_class: true
-      paths:
-        - ../backend/src
 
 markdown_extensions:
   - admonition

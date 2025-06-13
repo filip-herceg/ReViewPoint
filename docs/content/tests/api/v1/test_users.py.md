@@ -35,5 +35,9 @@ def test_user_registration():
 
 ## Related Docs
 
-- [User API Source](../../../src/api/v1/users.py.md)
-- [Backend Source Guide](../../../../backend-source-guide.md)
+- [users.py](../../../backend/src/api/v1/users.py.md)
+- [Backend Source Guide](../../../backend-source-guide.md)
+
+---
+
+*This file is auto-generated as a placeholder. Please update with actual test details as implemented.*

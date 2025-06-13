@@ -1,33 +1,41 @@
-# Test: frontend/src/utils/[UtilityName].test.md
+# [UtilityName] Utility Test Documentation
 
-This file documents the tests for a frontend utility function.
+This page documents the tests for the `[UtilityName]` frontend utility.
 
-## Purpose
+## Test Overview
 
-Ensure the utility function works as intended, handles edge cases, and integrates with other code.
+| Test Name                | Purpose                                      | Method                | Expected Results                  |
+|-------------------------|----------------------------------------------|-----------------------|-----------------------------------|
+| computes correctly       | Ensure utility returns correct results       | Call with inputs      | Correct output value              |
+| handles edge cases       | Validate edge case handling                  | Call with edge inputs | No errors, correct output         |
+| throws on invalid input  | Test error handling for bad input            | Call with bad input   | Throws error, error message shown |
 
-## Example Test Structure
+## Test Details
 
-```js
-import { utilityFunction } from './[UtilityName]';
+### computes correctly
 
-test('returns expected result for valid input', () => {
-  expect(utilityFunction('input')).toBe('expected');
-});
-```
+- **Purpose:** Ensure the utility function returns correct results for valid input.
+- **Method:** Call the utility with typical/expected input values.
+- **Expected Results:** Output matches expected value.
 
-## What to Test
+### handles edge cases
 
-- Correct output for valid input
-- Error handling for invalid input
-- Edge cases and performance
+- **Purpose:** Validate that edge cases are handled gracefully.
+- **Method:** Call the utility with edge-case inputs (e.g., empty, null, max/min).
+- **Expected Results:** No errors, output is correct for edge cases.
 
-## Best Practices
+### throws on invalid input
 
-- Use Jest for assertions
-- Cover all branches and edge cases
+- **Purpose:** Ensure the utility throws or returns an error for invalid input.
+- **Method:** Call the utility with invalid/bad input.
+- **Expected Results:** Error is thrown or error message is returned as expected.
 
-## Related Docs
+## Related Documentation
 
-- [Utility Source](../../../../frontend/src/utils/[UtilityName].md)
-- [Frontend Overview](../../../../frontend/overview.md)
+- [[UtilityName]](../../../frontend/src/utils/UTIL_TEMPLATE.md)
+- [Frontend Overview](../../../frontend/overview.md)
+- [Testing Best Practices](../../../backend/tests/README.md)
+
+---
+
+*This documentation is generated based on the current test suite. Update as tests evolve.*
