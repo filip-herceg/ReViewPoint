@@ -5,12 +5,42 @@ site_url: https://github.com/filip-herceg/ReViewPoint
 
 docs_dir: content
 
+nav:
+  - Home: index.md
+  - Quickstart:
+      - Setup Guide: setup.md
+      - System Architecture: architecture.md
+      - FAQ: faq.md
+  - Development:
+      - Developer Guidelines: dev-guidelines.md
+      - CI/CD: ci-cd.md
+      - Changelog: changelog.md
+      - Contributing to Documentation: contributing-docs.md
+      - How to Use the Docs: how-to-use-docs.md
+      - Documentation Enhancements: documentation-enhancements.md
+  - Backend:
+      - Backend Source Guide: backend-source-guide.md
+      - API Reference: api-reference.md
+      - Backend API Reference: backend/api-reference.md
+      - Backend Models: backend/src/models/README.md
+      - Backend Utilities: backend/src/utils/README.md
+      - Backend Tests: backend/tests/README.md
+  - Modules:
+      - Module Guide: module-guide.md
+      - LLM Integration: llm-integration.md
+  - Frontend:
+      - Frontend Overview: frontend/overview.md
+      - Frontend Roadmap: frontend/roadmap.md
+      - Frontend Source Directory: frontend/src/README.md
+      - Frontend Tests: frontend/tests/README.md
+  - Resources:
+      - Documentation Enhancements: documentation-enhancements.md
+      - _Templates (for contributors)_: _TEMPLATE.md
+
 theme:
   name: material
   palette:
     scheme: default
-  logo: images/logo.png  # Place your logo in docs/content/images/
-  favicon: images/favicon.ico
   features:
     - navigation.tabs
     - navigation.tabs.sticky
@@ -65,12 +95,17 @@ plugins:
             show_source: true
             docstring_style: google
             merge_init_into_class: true
+          paths: ["../backend/src"]
 
 markdown_extensions:
   - admonition
   - toc:
       permalink: true
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:mermaid2.fence_mermaid_custom
   - pymdownx.highlight
   - pymdownx.inlinehilite
   - pymdownx.details
