@@ -57,3 +57,4 @@ dependencies = [
     "mkdocs-macros-plugin",
     "mkdocstrings[python]"
 ]
+# Ensure mermaid2 and pymdown-extensions are present for diagram support
