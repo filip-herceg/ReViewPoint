@@ -35,6 +35,88 @@ flowchart TD
 
 ### Backend Details (src/)
 
+### Backend `src/` Communication Overview
+
+```mermaid
+flowchart
+
+    %% Nodes
+    MAIN[main.py]
+    API[api/]
+    MIDDLEWARE[middlewares/]
+    SERVICES[services/]
+    SCHEMAS[schemas/]
+    UTILS[utils/]
+    REPOS[repositories/]
+    MODELS[models/]
+    CORE[core/]
+
+    %% Grouping (visual only)
+    subgraph Application_Entry
+        MAIN
+    end
+    subgraph Web_Layer
+        API
+        MIDDLEWARE
+    end
+    subgraph Core_Logic
+        SERVICES
+        SCHEMAS
+        UTILS
+    end
+    subgraph Data_Layer
+        REPOS
+        MODELS
+    end
+    subgraph Configuration
+        CORE
+    end
+
+    %% Relationships
+    MAIN --> API
+    MAIN --> MIDDLEWARE
+    MAIN --> SERVICES
+    MAIN --> REPOS
+    MAIN --> SCHEMAS
+    MAIN --> MODELS
+    MAIN --> CORE
+    MAIN --> UTILS
+
+    API -->|routes use| SERVICES
+    API -->|schemas for requests| SCHEMAS
+    API -->|helpers from| UTILS
+    API --> MIDDLEWARE
+
+    SERVICES -->|CRUD through| REPOS
+    SERVICES -->|validate with| SCHEMAS
+    SERVICES -->|helpers| UTILS
+
+    REPOS -->|query| MODELS
+    REPOS -->|return| SCHEMAS
+    REPOS -->|log/hash| UTILS
+
+    SCHEMAS <-->|shared structure| MODELS
+
+    MIDDLEWARE -->|reads| CORE
+    CORE --> API
+    CORE --> SERVICES
+    CORE --> MIDDLEWARE
+    CORE --> UTILS
+
+    %% Styling
+    classDef entry fill:#fff2cc,stroke:#333,stroke-width:2px;
+    classDef web fill:#d5e8d4,stroke:#333,stroke-width:2px;
+    classDef core fill:#dae8fc,stroke:#333,stroke-width:2px;
+    classDef data fill:#f8cecc,stroke:#333,stroke-width:2px;
+    classDef config fill:#e1d5e7,stroke:#333,stroke-width:2px;
+
+    class MAIN entry;
+    class API,MIDDLEWARE web;
+    class SERVICES,SCHEMAS,UTILS core;
+    class REPOS,MODELS data;
+    class CORE config;
+```
+
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable MD046 -->
 ??? info "backend/src/"
