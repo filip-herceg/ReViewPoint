@@ -56,3 +56,36 @@ async def get_current_user(
             detail="User not found or inactive",
         )
     return user
+
+
+async def optional_get_current_user(
+    token: str = Depends(oauth2_scheme),
+    session: AsyncSession = Depends(get_async_session),
+) -> User | None:
+    """
+    Like get_current_user, but returns None instead of raising if token is invalid/missing.
+    """
+    if not settings.auth_enabled:
+        return User(
+            id=0,
+            email="dev@example.com",
+            hashed_password="",
+            is_active=True,
+            is_deleted=False,
+            name="Dev Admin",
+            bio="Development admin user (auth disabled)",
+            avatar_url=None,
+            preferences=None,
+            last_login_at=None,
+            created_at=None,
+            updated_at=None,
+        )
+    try:
+        payload = verify_access_token(token, settings.jwt_secret_key, settings.jwt_algorithm)
+        user_id = int(payload.get("sub"))
+        user = await get_user_by_id(session, user_id)
+        if not user or not user.is_active or user.is_deleted:
+            return None
+        return user
+    except Exception:
+        return None
