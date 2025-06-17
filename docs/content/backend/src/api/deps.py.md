@@ -37,7 +37,7 @@ _None yet. To be implemented._
 
 > **Update this page whenever the implementation changes.**
 
-# Dependency Injection Utilities (`deps.py`)
+## Dependency Injection Utilities (`deps.py`)
 
 This module provides robust, reusable dependencies for FastAPI API endpoints in the backend. All dependencies use loguru for error and event logging, follow security best practices, and are designed for easy testing and mocking.
 
