@@ -37,7 +37,7 @@ _None yet. To be implemented._
 
 > **Update this page whenever the implementation changes.**
 
-## Dependency Injection Utilities (`deps.py`)
+## Dependency Injection Utilities (`deps.py.md`)
 
 This module provides robust, reusable dependencies for FastAPI API endpoints in the backend. All dependencies use loguru for error and event logging, follow security best practices, and are designed for easy testing and mocking.
 
@@ -184,7 +184,7 @@ Test with and without the `X-Request-ID` header. Assert correct propagation and 
 ## Security & Logging
 - All error and important events are logged with loguru.
 - No sensitive data (e.g., passwords, tokens) is ever logged.
-- Logging follows the security guidelines in [`core/logging.py`](../../core/logging.py).
+- Logging follows the security guidelines in [`core/logging.py.md`](../core/logging.py.md).
 
 ## Advanced Testing & Mocking
 - Use FastAPI's `dependency_overrides` for all dependencies.
@@ -194,4 +194,4 @@ Test with and without the `X-Request-ID` header. Assert correct propagation and 
 
 ---
 
-For more details, see the docstrings in [`deps.py`](deps.py) or related modules like [`core/logging.py`](../../core/logging.py).
+For more details, see the docstrings in [`deps.py.md`](deps.py.md) or related modules like [`core/logging.py.md`](../core/logging.py.md).
