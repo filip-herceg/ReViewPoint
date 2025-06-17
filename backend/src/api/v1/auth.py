@@ -249,7 +249,9 @@ async def reset_password(
     session: AsyncSession = Depends(get_async_session),
 ) -> MessageResponse:
     if len(data.token) < 8:
-        logger.warning("pwreset_confirm_invalid_token_length", extra={"token": data.token})
+        logger.warning(
+            "pwreset_confirm_invalid_token_length", extra={"token": data.token}
+        )
         raise HTTPException(
             status_code=400,
             detail="Invalid token. Token must be at least 8 characters long.",
