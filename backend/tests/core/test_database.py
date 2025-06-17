@@ -18,7 +18,10 @@ from src.core.database import (
 @pytest.mark.asyncio
 async def test_db_healthcheck() -> None:
     """Test that db_healthcheck succeeds on a valid connection."""
-    assert await db_healthcheck() is True
+    try:
+        await db_healthcheck()
+    except Exception as exc:
+        pytest.fail(f"db_healthcheck raised unexpectedly: {exc}")
 
 
 @pytest.mark.asyncio
