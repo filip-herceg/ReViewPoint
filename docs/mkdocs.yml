@@ -88,6 +88,7 @@ plugins:
   - glightbox
   - macros
   - mkdocstrings:
+      default_handler: python
       handlers:
         python:
           options:
@@ -95,7 +96,14 @@ plugins:
             show_source: true
             docstring_style: google
             merge_init_into_class: true
-          paths: ["../backend/src"]
+            show_if_no_docstring: true
+          paths: [../backend/src]
+          import:
+            - https://docs.python-requests.org/en/master/objects.inv
+          setup_commands:
+            - import sys
+            - from pathlib import Path
+            - sys.path.append(str(Path("../backend/src").resolve()))
 
 markdown_extensions:
   - admonition
