@@ -90,12 +90,18 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
+          paths: ["../backend/src"]
           options:
             show_root_heading: true
             show_source: true
             docstring_style: google
             merge_init_into_class: true
-          paths: ["../backend/src"]
+            show_if_no_docstring: true
+            heading_level: 2
+            members_order: source
+          import:
+            - url: https://docs.python-requests.org/en/master/objects.inv
+              domains: [py]
 
 markdown_extensions:
   - admonition

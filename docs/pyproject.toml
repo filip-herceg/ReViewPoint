@@ -46,15 +46,16 @@ Source = "https://github.com/filip-herceg/docs"
 [tool.hatch.envs.default]
 path = ".venv"
 dependencies = [
-    "mkdocs",
-    "mkdocs-material",
-    "pymdown-extensions",
-    "mkdocs-awesome-pages-plugin",
-    "mkdocs-mermaid2-plugin",
-    "mkdocs-minify-plugin",
-    "mkdocs-git-revision-date-localized-plugin",
-    "mkdocs-glightbox",
-    "mkdocs-macros-plugin",
-    "mkdocstrings[python]"
+    "mkdocs>=1.4.0",
+    "mkdocs-material>=9.0.0",
+    "pymdown-extensions>=10.0",
+    "mkdocs-awesome-pages-plugin>=2.8.0",
+    "mkdocs-mermaid2-plugin>=1.1.0",
+    "mkdocs-minify-plugin>=0.7.0",
+    "mkdocs-git-revision-date-localized-plugin>=1.2.0",
+    "mkdocs-glightbox>=0.3.0",
+    "mkdocs-macros-plugin>=1.0.0",
+    "mkdocstrings[python]>=0.22.0",
+    "mkdocs-autorefs>=0.5.0",
+    "griffe>=0.30.0"
 ]
-# Ensure mermaid2 and pymdown-extensions are present for diagram support
