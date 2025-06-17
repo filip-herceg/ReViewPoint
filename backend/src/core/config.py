@@ -106,6 +106,83 @@ class Settings(BaseSettings):
     sentry_dsn: str | None = None
     loggly_token: str | None = None
 
+    # Local file storage enhancements
+    file_permissions: int = Field(
+        0o600, description="File permissions for stored files (octal, e.g., 0o600)"
+    )
+    file_metadata_sidecar: bool = Field(
+        True, description="Store file metadata in a sidecar JSON file"
+    )
+    file_compression: str | None = Field(
+        None,
+        description="Compression algorithm for file storage (e.g., 'gzip', 'bz2', 'lzma', 'zlib')",
+    )
+    file_compression_level: int = Field(
+        6,
+        description="Compression level (1-9, default 6) for supported algorithms (gzip, zlib, bz2, lzma)",
+    )
+    file_compression_min_size: int = Field(
+        1024,
+        description="Minimum file size in bytes to apply compression (default: 1024)",
+    )
+    file_max_size_mb: int = Field(
+        50, description="Maximum allowed file size in MB for uploads"
+    )
+
+    # S3 storage options
+    s3_bucket: str | None = Field(None, description="S3 bucket name for file storage")
+    s3_prefix: str = Field(
+        "", description="S3 key prefix (folder path) for file storage"
+    )
+    s3_acl: str = Field(
+        "private",
+        description="S3 ACL for uploaded files (e.g., 'private', 'public-read')",
+    )
+    s3_server_side_encryption: str | None = Field(
+        None,
+        description="S3 server-side encryption algorithm (e.g., 'AES256', 'aws:kms')",
+    )
+    s3_region: str | None = Field(None, description="S3 region name")
+    s3_endpoint_url: str | None = Field(
+        None, description="Custom S3 endpoint URL (for S3-compatible storage)"
+    )
+    s3_access_key_id: str | None = Field(
+        None, description="S3 access key ID (optional, for explicit credentials)"
+    )
+    s3_secret_access_key: str | None = Field(
+        None, description="S3 secret access key (optional, for explicit credentials)"
+    )
+
+    # File integrity options
+    file_hash_algorithm: str = Field(
+        "sha256",
+        description="Hash algorithm for file integrity (e.g., 'sha256', 'sha512', 'blake2b')",
+    )
+    file_integrity_autovalidate: bool = Field(
+        False, description="Automatically validate file integrity on every retrieve"
+    )
+    file_integrity_quarantine_dir: str | None = Field(
+        None,
+        description="Directory to move files with failed integrity checks (optional)",
+    )
+
+    # Base URL/domain for generated file links
+    file_url_base: str | None = Field(
+        None,
+        description="Base URL/domain for generated file links (e.g., https://cdn.example.com)",
+    )
+    file_url_max_expiry: int = Field(
+        86400,
+        description="Maximum allowed expiry (in seconds) for presigned/private file URLs",
+    )
+
+    # Fernet encryption key
+    fernet_key: str | None = Field(
+        None,
+        repr=False,
+        description="Key for Fernet symmetric encryption (env: REVIEWPOINT_FERNET_KEY). Must be 32 url-safe base64-encoded bytes. Generate with: python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'",
+    )
+
     # Pydantic settings configuration
     model_config = SettingsConfigDict(
         env_prefix=ENV_PREFIX,
