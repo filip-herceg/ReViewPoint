@@ -88,22 +88,20 @@ plugins:
   - glightbox
   - macros
   - mkdocstrings:
-      default_handler: python
       handlers:
         python:
+          paths: ["../backend/src"]
           options:
             show_root_heading: true
             show_source: true
             docstring_style: google
             merge_init_into_class: true
             show_if_no_docstring: true
-          paths: [../backend/src]
+            heading_level: 2
+            members_order: source
           import:
-            - https://docs.python-requests.org/en/master/objects.inv
-          setup_commands:
-            - import sys
-            - from pathlib import Path
-            - sys.path.append(str(Path("../backend/src").resolve()))
+            - url: https://docs.python-requests.org/en/master/objects.inv
+              domains: [py]
 
 markdown_extensions:
   - admonition
