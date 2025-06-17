@@ -9,7 +9,6 @@ os.environ["REVIEWPOINT_JWT_SECRET"] = (
 )
 
 import asyncio
-import logging
 from collections.abc import AsyncGenerator, Generator, Iterator
 
 import pytest
@@ -57,18 +56,6 @@ async def async_session(
     )
     async with async_session_local() as session:
         yield session
-
-
-@pytest.fixture(autouse=True, scope="session")
-def loguru_to_standard_logging() -> Iterator[None]:
-    class PropagateHandler(logging.Handler):
-        def emit(self, record: logging.LogRecord) -> None:
-            logging.getLogger(record.name).handle(record)
-
-    loguru_logger.remove()
-    loguru_logger.add(PropagateHandler(), format="{message}")
-    yield
-    loguru_logger.remove()
 
 
 @pytest.fixture

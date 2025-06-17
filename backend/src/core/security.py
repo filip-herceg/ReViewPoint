@@ -2,6 +2,7 @@
 JWT creation and validation utilities for authentication.
 """
 
+import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -21,11 +22,14 @@ def create_access_token(data: dict[str, Any]) -> str:
     Create a JWT access token with the given data payload.
     Uses config-driven secret, expiry, and algorithm.
     Never log or expose the token.
+    Adds a unique jti for blacklisting support.
     """
     try:
         to_encode = data.copy()
         expire = datetime.now(UTC) + timedelta(minutes=settings.jwt_expire_minutes)
         to_encode["exp"] = expire
+        # Add a unique JWT ID (jti) for blacklisting
+        to_encode["jti"] = str(uuid.uuid4())
         if not settings.jwt_secret_key:
             logger.error(
                 "JWT secret key is not configured. Cannot create access token."
