@@ -132,11 +132,11 @@ flowchart
     | [schemas/](#schemas) | Pydantic schemas for API request/response validation. |
     | [services/](#services) | Business logic and service layer for users, uploads, etc. |
     | [utils/](#utils) | Utility modules for hashing, validation, caching, and more. |
-    | [CONTRIBUTING.md](backend/src/alembic_migrations/CONTRIBUTING.md.md) | Placeholder description |
-    | [README.md](backend/src/alembic_migrations/README.md.md) | Placeholder description |
-    | [\_\_about\_\_.py](backend/src/__about__.py.md) | Project version and metadata. |
-    | [\_\_init\_\_.py](backend/src/__init__.py.md) | Marks the directory as a Python package. |
-    | [main.py](backend/backend/src/main.py.md) | FastAPI application entry point and app factory. |
+    | [CONTRIBUTING.md](backend/src/alembic_migrations/CONTRIBUTING.md) | Placeholder description |
+    | [README.md](backend/src/alembic_migrations/README.md) | Placeholder description |
+    | [__about__.py](backend/src/__about__.py.md) | Project version and metadata. |
+    | [__init__.py](backend/src/__init__.py.md) | Marks the directory as a Python package. |
+    | [main.py](backend/src/main.py.md) | FastAPI application entry point and app factory. |
 
 ??? info "alembic_migrations/"
 
@@ -144,8 +144,8 @@ flowchart
     |------|-------------|
     | [versions/](backend/src/alembic_migrations/versions/initial_migration.md) | Individual migration scripts for schema evolution. |
     | [README](backend/src/alembic_migrations/README.md) | Placeholder description |
-    | [\_\_init\_\_.py](backend/src/alembic_migrations/__init__.py.md) | Marks the directory as a Python package. |
-    | [alembic.ini](backend/src/alembic_migrations/alembid.ini.md) | Placeholder description |
+    | [__init__.py](backend/src/alembic_migrations/__init__.py.md) | Marks the directory as a Python package. |
+    | [alembic.ini](backend/src/alembic_migrations/alembic.ini.md) | Placeholder description |
     | [env.py](backend/src/alembic_migrations/env.py.md) | Configures Alembic for database schema migrations. |
     | [script.py.mako](backend/src/alembic_migrations/script.py.mako.md) | Placeholder description |
 
@@ -153,22 +153,22 @@ flowchart
 
     | File | Description |
     |------|-------------|
-    | [20250605_add_used_password_reset_tokens.py](src/alembic_migrations/versions/20250605_add_used_password_reset_tokens.md) | Adds table for single-use password reset tokens. |
-    | [9fc3acc47815_initial_migration_users_and_files_tables.py](src/alembic_migrations/versions/9fc3acc47815_initial_migration_users_and_files_tables.md) | Initial migration: users & files tables. |
+    | [20250605_add_used_password_reset_tokens.py](backend/src/alembic_migrations/versions/20250605_add_used_password_reset_tokens.md) | Adds table for single-use password reset tokens. |
+    | [9fc3acc47815_initial_migration_users_and_files_tables.py](backend/src/alembic_migrations/versions/9fc3acc47815_initial_migration_users_and_files_tables.md) | Initial migration: users & files tables. |
 
 ??? info "api/"
 
     | File | Description |
     |------|-------------|
     | [v1/](#api-v1) | Placeholder description. |
-    | [\_\_init\_\_.py](backend/src/api/__init__.py.md) | Marks the directory as a Python package. |
+    | [__init__.py](backend/src/api/__init__.py.md) | Marks the directory as a Python package. |
     | [deps.py](backend/src/api/deps.py.md) | Placeholder description. |
 
 ??? info "api/v1/"
 
     | File | Description |
     |------|-------------|
-    | [\_\_init\_\_.py](backend/src/api/v1/__init__.py.md) | Marks the directory as a Python package. |
+    | [__init__.py](backend/src/api/v1/__init__.py.md) | Marks the directory as a Python package. |
     | [auth.py](backend/src/api/v1/auth.py.md) | Placeholder description. |
     | [uploads.py](backend/src/api/v1/uploads.py.md) | Placeholder description. |
     | [users.py](backend/src/api/v1/users.py.md) | Placeholder description. |
@@ -177,7 +177,7 @@ flowchart
 
     | File | Description |
     |------|-------------|
-    | [\_\_init\_\_.py](backend/src/core/__init__.py.md) | Marks the directory as a Python package. |
+    | [__init__.py](backend/src/core/__init__.py.md) | Marks the directory as a Python package. |
     | [config.py](backend/src/core/config.py.md) | Placeholder description. |
     | [database.py](backend/src/core/database.py.md) | Placeholder description. |
     | [events.py](backend/src/core/events.md) | Placeholder description. |
@@ -188,14 +188,14 @@ flowchart
 
     | File | Description |
     |------|-------------|
-    | [\_\_init\_\_.py](backend/src/middlewares/__init__.py.md) | Marks the directory as a Python package. |
+    | [__init__.py](backend/src/middlewares/__init__.py.md) | Marks the directory as a Python package. |
     | [logging.py](backend/src/middlewares/logging.py.md) | Placeholder description. |
 
 ??? info "models/"
 
     | File | Description |
     |------|-------------|
-    | [\_\_init\_\_.py](backend/src/models/__init__.py.md) | Marks the directory as a Python package. |
+    | [__init__.py](backend/src/models/__init__.py.md) | Marks the directory as a Python package. |
     | [base.py](backend/src/models/base.py.md) | Placeholder description. |
     | [file.py](backend/src/models/file.py.md) | Placeholder description. |
     | [used_password_reset_token.py](backend/src/models/used_password_reset_token.py.md) | Placeholder description. |
@@ -205,7 +205,7 @@ flowchart
 
     | File | Description |
     |------|-------------|
-    | [\_\_init\_\_.py](backend/src/repositories/__init__.py.md) | Marks the directory as a Python package. |
+    | [__init__.py](backend/src/repositories/__init__.py.md) | Marks the directory as a Python package. |
     | [file.py](backend/src/repositories/file.py.md) | Placeholder description. |
     | [user.py](backend/src/repositories/user.py.md) | Placeholder description. |
 
@@ -213,7 +213,7 @@ flowchart
 
     | File | Description |
     |------|-------------|
-    | [\_\_init\_\_.py](backend/src/schemas/__init__.py.md) | Marks the directory as a Python package. |
+    | [__init__.py](backend/src/schemas/__init__.py.md) | Marks the directory as a Python package. |
     | [auth.py](backend/src/schemas/auth.py.md) | Placeholder description. |
     | [file.py](backend/src/schemas/file.py.md) | Placeholder description. |
     | [token.py](backend/src/schemas/token.py.md) | Placeholder description. |
@@ -223,7 +223,7 @@ flowchart
 
     | File | Description |
     |------|-------------|
-    | [\_\_init\_\_.py](backend/src/services/__init__.py.md) | Marks the directory as a Python package. |
+    | [__init__.py](backend/src/services/__init__.py.md) | Marks the directory as a Python package. |
     | [upload.py](backend/src/services/upload.py.md) | Placeholder description. |
     | [user.py](backend/src/services/user.py.md) | Placeholder description. |
 
@@ -231,7 +231,7 @@ flowchart
 
     | File | Description |
     |------|-------------|
-    | [\_\_init\_\_.py](backend/src/utils/__init__.py.md) | Marks the directory as a Python package. |
+    | [__init__.py](backend/src/utils/__init__.py.md) | Marks the directory as a Python package. |
     | [cache.py](backend/src/utils/cache.py.md) | Placeholder description. |
     | [errors.py](backend/src/utils/errors.py.md) | Placeholder description. |
     | [file.py](backend/src/utils/file.py.md) | Placeholder description. |
