@@ -43,7 +43,7 @@ def log_startup_complete() -> None:
     """Log startup completion information."""
     environment = settings.environment
     db_type = settings.db_url.split("://")[0] if settings.db_url else "unknown"
-    pool_size = getattr(engine, "pool_size", "n/a")
+    pool_size = engine.pool.size() if hasattr(engine.pool, "size") else "n/a"
 
     logger.info(f"Startup complete. Environment: {environment}, DB: {db_type}")
     logger.info(f"DB pool size: {pool_size}")
