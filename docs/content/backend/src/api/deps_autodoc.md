@@ -2,7 +2,7 @@
 
 This page contains auto-generated documentation for the dependency injection utilities in the ReViewPoint backend.
 
-::: backend.src.api.deps
+::: api.deps
     handler: python
     options:
         show_root_heading: true
