@@ -7,7 +7,7 @@ from starlette.status import HTTP_200_OK, HTTP_503_SERVICE_UNAVAILABLE
 
 @pytest.mark.asyncio
 async def test_health_success(monkeypatch: Any, async_client: AsyncClient) -> None:
-    response = await async_client.get("/health")
+    response = await async_client.get("/api/v1/health")
     assert response.status_code == HTTP_200_OK
     assert response.json() == {"status": "ok"}
 
