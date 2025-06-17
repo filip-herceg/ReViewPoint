@@ -35,6 +35,14 @@ __all__ = [
     "FileNotFoundError",
     "FileIntegrityError",
     "FileAccessLevel",
+    # Expose helpers for testing
+    "_get_hash",
+    "_compress_data",
+    "_decompress_data",
+    "_should_skip_compression",
+    "_generate_file_token",
+    "_stream_compress_to_file",
+    "_stream_decompress_from_file",
 ]
 
 
@@ -205,7 +213,7 @@ def _decompress_data(data: bytes, algo: str | None) -> bytes:
             return lzma.decompress(data)
         if algo == "zlib":
             return zlib.decompress(data)
-        return data
+        raise FileStorageError(f"Unknown decompression algorithm: {algo}")
     except Exception as e:
         logger.error(f"Decompression failed (algo={algo}): {e}")
         raise FileStorageError(
@@ -363,8 +371,8 @@ class LocalFileStorage(FileStorage):
                     extra={"user_id": user_id, "file_id": unique_id, "action": "store"},
                 )
                 raise FileStorageError(f"Failed to store file: {e}") from e
-        # Compute checksum
-        checksum = _get_hash(file)
+        # Compute checksum on original (uncompressed, unencrypted) data
+        checksum = _get_hash(metadata.get("original_data", file))
         size = len(file)
         logger.info(
             f"Stored file: {file_path} (user={user_id}, size={size}, checksum={checksum}, algo={
@@ -586,12 +594,23 @@ class LocalFileStorage(FileStorage):
             raise FileNotFoundError(f"File not found: {file_id}")
         lock = self._get_lock(file_id)
         async with lock:
-            if data is None:
-                async with aiofiles.open(file_path, "rb") as f:
-                    encrypted = await f.read()
-                data = decrypt_bytes(encrypted)
+            try:
+                if data is None:
+                    async with aiofiles.open(file_path, "rb") as f:
+                        encrypted = await f.read()
+                    try:
+                        data = decrypt_bytes(encrypted)
+                    except Exception as e:
+                        from cryptography.fernet import InvalidToken
+                        if isinstance(e, InvalidToken):
+                            raise FileIntegrityError("Decryption failed: Invalid token") from e
+                        raise
                 if self.compression == "gzip":
                     data = gzip.decompress(data)
+            except FileIntegrityError:
+                raise
+            except Exception as e:
+                raise FileIntegrityError(f"Integrity validation failed: {e}") from e
             checksum = _get_hash(data)
             # Compare with sidecar if available
             if self.use_sidecar:
