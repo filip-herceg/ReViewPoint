@@ -248,6 +248,12 @@ async def reset_password(
     data: PasswordResetConfirmRequest,
     session: AsyncSession = Depends(get_async_session),
 ) -> MessageResponse:
+    if len(data.token) < 8:
+        logger.warning("pwreset_confirm_invalid_token_length", extra={"token": data.token})
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid token. Token must be at least 8 characters long.",
+        )
     limiter_key = f"pwreset-confirm:{data.token[:8]}"
     allowed = await user_action_limiter.is_allowed(limiter_key)
     if not allowed:
