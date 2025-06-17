@@ -2,9 +2,9 @@
 JWT creation and validation utilities for authentication.
 """
 
+import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Any
-import uuid
 
 from jose import JWTError, jwt
 from loguru import logger

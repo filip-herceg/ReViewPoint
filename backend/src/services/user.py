@@ -460,6 +460,7 @@ async def check_user_role(user_id: int, required_role: str) -> bool:
 __all__ = [
     "InvalidDataError",
     "UserAlreadyExistsError",
+    "UserNotFoundError",
     "ValidationError",
     "create_access_token",
     # Add other public symbols here as needed

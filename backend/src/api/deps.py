@@ -81,8 +81,13 @@ async def optional_get_current_user(
             updated_at=None,
         )
     try:
-        payload = verify_access_token(token, settings.jwt_secret_key, settings.jwt_algorithm)
-        user_id = int(payload.get("sub"))
+        payload = verify_access_token(
+            token
+        )  # Only pass token, matches function signature
+        user_id_raw = payload.get("sub")
+        if user_id_raw is None:
+            return None
+        user_id = int(user_id_raw)
         user = await get_user_by_id(session, user_id)
         if not user or not user.is_active or user.is_deleted:
             return None
