@@ -43,6 +43,8 @@ __all__ = [
     "_generate_file_token",
     "_stream_compress_to_file",
     "_stream_decompress_from_file",
+    "settings",
+    "logger",
 ]
 
 
@@ -310,7 +312,7 @@ class LocalFileStorage(FileStorage):
     async def store(
         self, file: bytes, filename: str, metadata: dict[str, Any]
     ) -> FileMetadata:
-        import aiofiles  # type: ignore
+        import aiofiles
 
         user_id = metadata.get("user_id")
         if user_id is None:
@@ -433,7 +435,7 @@ class LocalFileStorage(FileStorage):
                         compression_used = meta.extra.get(
                             "compression", self.compression
                         )
-                use_stream = compression_used and file_path.stat().st_size > 1024 * 1024
+                use_stream = file_path.stat().st_size > 1024 * 1024
                 if use_stream:
                     # Write encrypted to temp, decrypt, then decompress from
                     # temp
@@ -586,6 +588,22 @@ class LocalFileStorage(FileStorage):
         )
         return url
 
+    async def _decompress_data_with_handling(self, data: bytes, file_id: str) -> bytes:
+        try:
+            import gzip
+
+            return gzip.decompress(data)
+        except FileIntegrityError:
+            logger.debug(
+                f"FileIntegrityError caught during decompression for {file_id}"
+            )
+            raise
+        except Exception as e:
+            logger.debug(
+                f"Generic exception caught during decompression for {file_id}: {e}"
+            )
+            raise FileIntegrityError(f"Integrity validation failed: {e}") from e
+
     async def validate_integrity(self, file_id: str, data: bytes | None = None) -> bool:
         import aiofiles
 
@@ -602,35 +620,44 @@ class LocalFileStorage(FileStorage):
                         data = decrypt_bytes(encrypted)
                     except Exception as e:
                         from cryptography.fernet import InvalidToken
+
                         if isinstance(e, InvalidToken):
-                            raise FileIntegrityError("Decryption failed: Invalid token") from e
+                            raise FileIntegrityError(
+                                "Decryption failed: Invalid token"
+                            ) from e
                         raise
                 if self.compression == "gzip":
-                    data = gzip.decompress(data)
-            except FileIntegrityError:
-                raise
+                    data = await self._decompress_data_with_handling(data, file_id)
+                checksum = _get_hash(data)
+                # Compare with sidecar if available
+                if self.use_sidecar:
+                    sidecar_path = file_path.with_suffix(
+                        file_path.suffix + ".meta.json"
+                    )
+                    if sidecar_path.exists():
+                        async with aiofiles.open(sidecar_path) as f:
+                            meta = FileMetadata.model_validate_json(await f.read())
+                        if meta.checksum and meta.checksum != checksum:
+                            logger.error(
+                                f"Checksum mismatch for {file_id}: expected {meta.checksum}, got {checksum}",
+                                extra={
+                                    "file_id": file_id,
+                                    "action": "validate_integrity",
+                                },
+                            )
+                            raise FileIntegrityError(
+                                f"Checksum mismatch: expected {meta.checksum}, got {checksum}"
+                            )
+                logger.info(
+                    f"Validated integrity for file {file_id}: {checksum} (algo={settings.file_hash_algorithm})",
+                    extra={"file_id": file_id, "action": "validate_integrity"},
+                )
+                return True
             except Exception as e:
+                logger.debug(
+                    f"Generic exception caught during integrity validation for {file_id}: {e}"
+                )
                 raise FileIntegrityError(f"Integrity validation failed: {e}") from e
-            checksum = _get_hash(data)
-            # Compare with sidecar if available
-            if self.use_sidecar:
-                sidecar_path = file_path.with_suffix(file_path.suffix + ".meta.json")
-                if sidecar_path.exists():
-                    async with aiofiles.open(sidecar_path) as f:
-                        meta = FileMetadata.model_validate_json(await f.read())
-                    if meta.checksum and meta.checksum != checksum:
-                        logger.error(
-                            f"Checksum mismatch for {file_id}: expected {meta.checksum}, got {checksum}",
-                            extra={"file_id": file_id, "action": "validate_integrity"},
-                        )
-                        raise FileIntegrityError(
-                            f"Checksum mismatch: expected {meta.checksum}, got {checksum}"
-                        )
-            logger.info(
-                f"Validated integrity for file {file_id}: {checksum} (algo={settings.file_hash_algorithm})",
-                extra={"file_id": file_id, "action": "validate_integrity"},
-            )
-            return True
 
     def _find_file_path(self, file_id: str) -> Path | None:
         for dirpath, _, filenames in os.walk(self.base_dir):

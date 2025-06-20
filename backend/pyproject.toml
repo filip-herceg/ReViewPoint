@@ -67,6 +67,7 @@ dependencies = [
   "pytest-loguru>=0.2.0",
   "types-passlib>=1.7.7.20240901",
   "types-python-jose",
+  "types-aiofiles",  # Added for aiofiles type stubs
 ]
 env-vars = { PYTHONPATH = "src" }
 
