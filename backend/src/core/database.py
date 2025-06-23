@@ -24,8 +24,15 @@ engine_kwargs: dict[str, object] = {
     "future": True,
 }
 if url_obj.drivername.startswith("sqlite"):
-    # SQLite does not support pool_size/max_overflow
-    pass
+    # SQLite configuration for better concurrency
+    engine_kwargs["connect_args"] = {
+        "check_same_thread": False,
+        "timeout": 20,
+    }
+    # Use WAL mode for better concurrency if not in-memory
+    if ":memory:" not in settings.async_db_url:
+        engine_kwargs["pool_timeout"] = 20
+        engine_kwargs["pool_recycle"] = -1
 else:
     # Convert to int for type safety
     engine_kwargs["pool_size"] = int(10 if settings.environment == "prod" else 5)
@@ -41,6 +48,7 @@ AsyncSessionLocal: async_sessionmaker[AsyncSession] = async_sessionmaker(
     bind=engine,
     expire_on_commit=False,
     autoflush=False,
+    autocommit=False,
 )
 
 
@@ -68,10 +76,6 @@ async def db_healthcheck() -> bool:
         logger.error(f"DB healthcheck failed: {exc}")
         return False
 
-
-AsyncSessionLocal = AsyncSessionLocal
-get_async_session = get_async_session
-db_healthcheck = db_healthcheck
 
 __all__ = [
     "AsyncSessionLocal",

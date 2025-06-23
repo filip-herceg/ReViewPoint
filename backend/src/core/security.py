@@ -28,6 +28,7 @@ def create_access_token(data: dict[str, Any]) -> str:
         to_encode = data.copy()
         expire = datetime.now(UTC) + timedelta(minutes=settings.jwt_expire_minutes)
         to_encode["exp"] = expire
+        to_encode["iat"] = int(datetime.now(UTC).timestamp())
         # Add a unique JWT ID (jti) for blacklisting
         to_encode["jti"] = str(uuid.uuid4())
         if not settings.jwt_secret_key:

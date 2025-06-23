@@ -109,3 +109,67 @@ def test_main_module_import_and_lifecycle() -> None:
         response = client.get("/")
         # Accept 404 or 200, just to trigger the app
         assert response.status_code in (200, 404)
+
+
+def test_swagger_custom_css_served() -> None:
+    from fastapi.testclient import TestClient
+
+    from src.main import create_app
+
+    client = TestClient(create_app())
+    resp = client.get("/static/swagger-custom.css")
+    assert resp.status_code == 200
+    assert "text/css" in resp.headers["content-type"]
+    assert b"ReViewPoint Swagger UI Custom Styles" in resp.content
+
+
+def test_swagger_favicon_served() -> None:
+    from fastapi.testclient import TestClient
+
+    from src.main import create_app
+
+    client = TestClient(create_app())
+    resp = client.get("/static/favicon.ico")
+    assert resp.status_code == 200
+    assert resp.headers["content-type"].startswith("image/")
+
+
+def test_swagger_ui_branding() -> None:
+    from fastapi.testclient import TestClient
+
+    from src.main import create_app
+
+    client = TestClient(create_app())
+    resp = client.get("/docs")
+    assert resp.status_code == 200
+    assert b"ReViewPoint API Docs" in resp.content
+    assert b"swagger-custom.css" in resp.content
+    assert b"favicon.ico" in resp.content
+
+
+def test_swagger_custom_css_content() -> None:
+    from fastapi.testclient import TestClient
+
+    from src.main import create_app
+
+    client = TestClient(create_app())
+    resp = client.get("/static/swagger-custom.css")
+    assert resp.status_code == 200
+    assert "Swagger UI Custom Styles" in resp.text
+    assert "background" in resp.text
+
+
+def test_swagger_favicon_content_type() -> None:
+    from fastapi.testclient import TestClient
+
+    from src.main import create_app
+
+    client = TestClient(create_app())
+    resp = client.get("/static/favicon.ico")
+    assert resp.status_code == 200
+    assert resp.headers["content-type"] in [
+        "image/x-icon",
+        "image/vnd.microsoft.icon",
+        "image/ico",
+        "image/icon",
+    ]

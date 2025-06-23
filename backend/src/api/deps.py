@@ -12,13 +12,14 @@ All dependencies use loguru for error and event logging, follow security best pr
 """
 
 import contextvars
+import os
 import uuid
 from collections.abc import AsyncGenerator
 from functools import lru_cache
 from typing import Any
 
-from fastapi import Depends, HTTPException, Query, Request, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, Query, Request, Security, status
+from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
 from jose import JWTError
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -38,6 +39,7 @@ request_id_ctx_var: contextvars.ContextVar[str | None] = contextvars.ContextVar(
 )
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 MAX_LIMIT = 100
 
@@ -310,6 +312,66 @@ def get_user_repository() -> Any:
         app.dependency_overrides[get_user_repository] = lambda: MockUserRepository()
     """
     return user_repository
+
+
+# API key security scheme
+async def validate_api_key(
+    api_key: str = Security(api_key_header),
+) -> bool:
+    """
+    Validate the API key from the X-API-Key header.
+
+    Parameters:
+        api_key (str): API key from the X-API-Key header.
+    Returns:
+        bool: True if the API key is valid, False otherwise.
+    """
+    if not settings.api_key_enabled:
+        # API key validation is disabled, always return True
+        return True
+
+    # Get the configured API key
+    configured_api_key = os.environ.get("REVIEWPOINT_API_KEY")
+    if not configured_api_key:
+        logger.warning("API key validation is enabled but no API key is configured")
+        return False
+
+    # Check if the provided API key matches the configured one
+    return api_key == configured_api_key
+
+
+async def require_api_key(
+    api_key: str = Security(api_key_header),
+) -> None:
+    """
+    Dependency to require a valid API key.
+
+    Parameters:
+        api_key (str): API key from the X-API-Key header.
+    Raises:
+        HTTPException(401): If the API key is missing or invalid.
+    Usage:
+        _ = Depends(require_api_key)
+    """
+    if not await validate_api_key(api_key):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or missing API key",
+        )
+
+
+# Updated get_current_user that requires API key
+async def get_current_user_with_api_key(
+    token: str = Depends(oauth2_scheme),
+    session: AsyncSession = Depends(get_async_session),
+    _: None = Depends(require_api_key),
+) -> User:
+    """
+    Like get_current_user, but also requires a valid API key.
+    This function should be used for endpoints that require both
+    JWT authentication and API key validation.
+    """
+    return await get_current_user(token, session)
 
 
 get_user_repository = lru_cache()(get_user_repository)

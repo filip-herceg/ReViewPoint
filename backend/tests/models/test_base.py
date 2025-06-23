@@ -3,21 +3,15 @@ from sqlalchemy.orm import Mapped, mapped_column
 from src.models.base import Base
 
 
-# Use a real mapped column for the Dummy model
 def test_base_to_dict() -> None:
     class DummyToDict(Base):
         __tablename__ = "dummy_to_dict"
+        __table_args__ = {"extend_existing": True}
         id: Mapped[int] = mapped_column(primary_key=True)
         name: Mapped[str] = mapped_column(nullable=True)
 
         def to_dict(self) -> dict[str, object]:
-            # Simple implementation for test purposes
-            return {
-                "id": self.id,
-                "name": self.name,
-                # created_at and updated_at are not present in this dummy, so
-                # skip
-            }
+            return {"id": self.id, "name": self.name}
 
     dummy = DummyToDict()
     dummy.id = 1
@@ -30,10 +24,10 @@ def test_base_to_dict() -> None:
 def test_base_repr() -> None:
     class DummyRepr(Base):
         __tablename__ = "dummy_repr"
+        __table_args__ = {"extend_existing": True}
         id: Mapped[int] = mapped_column(primary_key=True)
         name: Mapped[str] = mapped_column(nullable=True)
 
     dummy = DummyRepr()
     dummy.id = 42
-    # For local classes, __repr__ includes the full module and function path
     assert "DummyRepr object at " in repr(dummy)

@@ -32,14 +32,14 @@ def loguru_sink(tmp_path: Any) -> Any:
 
 @pytest.mark.asyncio
 async def test_startup_valid_config(caplog: Any, loguru_sink: Any) -> None:
+    """Test that the startup process completes successfully."""
     with caplog.at_level("INFO"):
         await events.on_startup()
     logs = loguru_sink.read_text()
     assert "Starting up application..." in logs
     assert "Configuration validated." in logs
     assert "Database connection pool initialized and healthy." in logs
-    # Accept either the old or new log format for startup complete
-    assert any(line.startswith("Startup complete.") for line in logs.splitlines())
+    assert "Startup complete." in logs
 
 
 @pytest.mark.asyncio

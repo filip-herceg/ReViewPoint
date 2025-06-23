@@ -1,4 +1,4 @@
-# mypy: ignore-errors
+import os
 import uuid
 from datetime import UTC, datetime, timedelta
 
@@ -7,6 +7,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.blacklisted_token import BlacklistedToken
+
+os.environ["REVIEWPOINT_API_KEY"] = "testkey"
 
 
 @pytest.mark.asyncio

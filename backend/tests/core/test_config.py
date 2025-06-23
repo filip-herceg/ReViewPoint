@@ -58,13 +58,20 @@ def test_env_precedence(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
     assert cfg.settings.db_url == override
 
 
-def test_missing_jwt_secret(monkeypatch: MonkeyPatch) -> None:
+def test_missing_jwt_secret(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    # Change to temp directory so .env file is not found
+    monkeypatch.chdir(tmp_path)
+
     monkeypatch.delenv("REVIEWPOINT_JWT_SECRET", raising=False)
+    monkeypatch.delenv("REVIEWPOINT_JWT_SECRET_KEY", raising=False)
     with pytest.raises(RuntimeError):
         _reload(monkeypatch, DB_URL="postgresql+asyncpg://db")
 
 
-def test_missing_db_url(monkeypatch: MonkeyPatch) -> None:
+def test_missing_db_url(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    # Change to temp directory so .env file is not found
+    monkeypatch.chdir(tmp_path)
+
     monkeypatch.delenv("REVIEWPOINT_DB_URL", raising=False)
     with pytest.raises(RuntimeError):
         _reload(monkeypatch, JWT_SECRET="secret")
@@ -259,7 +266,10 @@ def test_jwt_config_defaults(monkeypatch: MonkeyPatch) -> None:
     assert s.auth_enabled is True
 
 
-def test_jwt_secret_legacy(monkeypatch: MonkeyPatch) -> None:
+def test_jwt_secret_legacy(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
+    # Change to temp directory so .env file is not found
+    monkeypatch.chdir(tmp_path)
+
     # Only set legacy JWT_SECRET, not JWT_SECRET_KEY
     cfg = _reload(
         monkeypatch,

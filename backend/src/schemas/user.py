@@ -36,3 +36,7 @@ class UserPreferencesUpdate(BaseModel):
 
 class UserAvatarResponse(BaseModel):
     avatar_url: str
+
+
+class UserRead(UserProfile):
+    pass

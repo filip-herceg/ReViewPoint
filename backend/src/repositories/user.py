@@ -7,7 +7,12 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import extract, func, select
+from sqlalchemy import (
+    extract,
+    func,
+    or_,
+    select,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -110,6 +115,44 @@ async def list_users_paginated(
     """List users with pagination support."""
     result = await session.execute(select(User).offset(offset).limit(limit))
     return result.scalars().all()
+
+
+async def list_users(
+    session: AsyncSession,
+    offset: int = 0,
+    limit: int = 20,
+    email: str | None = None,
+    name: str | None = None,
+    q: str | None = None,
+    sort: str = "created_at",
+    order: str = "desc",
+    created_after: datetime | None = None,
+    created_before: datetime | None = None,
+) -> tuple[list[User], int]:
+    stmt = select(User)
+    if email:
+        stmt = stmt.where(User.email == email)
+    if name:
+        stmt = stmt.where(User.name == name)
+    if q:
+        stmt = stmt.where(or_(User.email.ilike(f"%{q}%"), User.name.ilike(f"%{q}%")))
+    if created_after:
+        stmt = stmt.where(User.created_at >= created_after)
+    if created_before:
+        stmt = stmt.where(User.created_at <= created_before)
+    if sort in {"created_at", "name", "email"}:
+        col = getattr(User, sort)
+        if order == "desc":
+            col = col.desc()
+        else:
+            col = col.asc()
+        stmt = stmt.order_by(col)
+    count_stmt = select(func.count()).select_from(stmt.subquery())
+    total = (await session.execute(count_stmt)).scalar_one()
+    stmt = stmt.offset(offset).limit(limit)
+    result = await session.execute(stmt)
+    users = list(result.scalars().all())
+    return users, total
 
 
 async def search_users_by_name_or_email(

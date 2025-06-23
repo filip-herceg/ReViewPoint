@@ -40,6 +40,7 @@ TEST_DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "test.db"
 TEST_DB_URL = f"sqlite+aiosqlite:///{TEST_DB_PATH}"
 os.environ["REVIEWPOINT_DB_URL"] = TEST_DB_URL
 os.environ["REVIEWPOINT_JWT_SECRET"] = "testsecret"
+os.environ["REVIEWPOINT_API_KEY_ENABLED"] = "false"
 
 DATABASE_URL = TEST_DB_URL
 
@@ -48,6 +49,7 @@ DATABASE_URL = TEST_DB_URL
 def set_required_env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("REVIEWPOINT_DB_URL", TEST_DB_URL)
     monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_API_KEY_ENABLED", "false")
 
 
 @pytest_asyncio.fixture(scope="session")

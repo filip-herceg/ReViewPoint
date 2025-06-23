@@ -106,6 +106,18 @@ class Settings(BaseSettings):
     sentry_dsn: str | None = None
     loggly_token: str | None = None
 
+    # API URLs for OpenAPI servers
+    api_local_url: str = Field(
+        "http://localhost:8000", description="Local API server URL for OpenAPI schema"
+    )
+    api_prod_url: str = Field(
+        "https://api.reviewpoint.org",
+        description="Production API server URL for OpenAPI schema",
+    )
+
+    # API Key
+    api_key_enabled: bool = Field(default=True, description="Enable API key validation")
+
     # Pydantic settings configuration
     model_config = SettingsConfigDict(
         env_prefix=ENV_PREFIX,

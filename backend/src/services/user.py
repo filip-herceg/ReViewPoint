@@ -22,6 +22,7 @@ from src.repositories.user import (
     change_user_password,
     get_user_by_id,
     partial_update_user,
+    update_last_login,
 )
 from src.schemas.user import (
     UserAvatarResponse,
@@ -463,5 +464,7 @@ __all__ = [
     "UserNotFoundError",
     "ValidationError",
     "create_access_token",
+    "user_repo",
+    "update_last_login",
     # Add other public symbols here as needed
 ]
