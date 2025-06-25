@@ -307,29 +307,33 @@ app.add_event_handler("shutdown", on_shutdown)
 def print_routes(app: FastAPI) -> None:
     import logging
 
-    logging.warning("REGISTERED ROUTES:")
+    logging.info("REGISTERED ROUTES:")
     for route in app.routes:
         route_path = getattr(route, "path", None)
         if route_path is None:
             continue
-        logging.warning(f"{route_path} -> {getattr(route, 'endpoint', None)}")
+        logging.info(f"{route_path} -> {getattr(route, 'endpoint', None)}")
 
 
-print_routes(app)
+# Conditionally print routes and router info only in development environment
+if os.getenv("ENVIRONMENT", "production") == "development":
+    print_routes(app)
+    # print_all_routes(app)  # Disabled: function not defined at this point
+    print(f"USERS ROUTER: {users_router}")
+    print(f"UPLOADS ROUTER: {uploads_router}")
 
 
 def print_all_routes(app: FastAPI) -> None:
     import logging
 
-    logging.warning("REGISTERED ROUTES:")
+    logging.info("REGISTERED ROUTES:")
     for route in app.routes:
         route_path = getattr(route, "path", None)
         if route_path is None:
             continue
-        logging.warning(f"{route_path} -> {getattr(route, 'endpoint', None)}")
+        logging.info(f"{route_path} -> {getattr(route, 'endpoint', None)}")
 
 
-print_all_routes(app)
-
-print(f"USERS ROUTER: {users_router}")
-print(f"UPLOADS ROUTER: {uploads_router}")
+# Conditionally print all routes only in development environment
+if os.getenv("ENVIRONMENT", "production") == "development":
+    print_all_routes(app)
