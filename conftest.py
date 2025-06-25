@@ -11,7 +11,10 @@ def _global_teardown():
     yield
     logger.remove()
 
-pytest_plugins = ["pytest_loguru"]
+pytest_plugins = [
+    "backend.tests.pytest_plugins.mapping_checker",
+    "pytest_loguru",
+]
 
 @pytest.fixture(autouse=True, scope="session")
 def patch_loguru_remove(monkeypatch):

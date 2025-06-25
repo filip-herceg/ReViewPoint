@@ -21,16 +21,16 @@ def sanitize_filename(filename: str) -> str:
     if not filename:
         return "unnamed_file"
 
-    # Get only the basename (remove any directory components)
-    safe_name = os.path.basename(filename)
-
-    # Replace any potentially problematic characters with underscores
+    # Split into path components, remove empty and dangerous ones
+    parts = [p for p in re.split(r"[\\/]+", filename) if p and p not in ("..", ".")]
+    if not parts:
+        return "_"
+    # Join with underscores to preserve all info, but prevent traversal
+    safe_name = "_".join(parts)
+    # Replace any problematic characters
     safe_name = re.sub(r'[\\/*?:"<>|]', "_", safe_name)
-
-    # Additional check to ensure no relative path components
-    if ".." in safe_name:
-        safe_name = safe_name.replace("..", "_")
-
+    # Remove any remaining '..' just in case
+    safe_name = safe_name.replace("..", "_")
     return safe_name
 
 
@@ -44,14 +44,12 @@ def is_safe_filename(filename: str) -> bool:
     Returns:
         True if the filename is safe, False otherwise
     """
-    # Check if the normalized path still has the same basename
-
+    if not filename or not isinstance(filename, str):
+        return False
     # Path traversal detection
     if ".." in filename or "/" in filename or "\\" in filename:
         return False
-
     # Check for other potentially dangerous characters
     if re.search(r'[*?:"<>|]', filename):
         return False
-
     return True
