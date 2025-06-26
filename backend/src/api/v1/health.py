@@ -3,8 +3,9 @@ import sys
 import time
 from typing import Any
 
-from fastapi import APIRouter, Response, status
+from fastapi import APIRouter, Response, status, Depends
 
+from src.api.deps import get_request_id, require_feature
 from src.core.database import engine
 from src.core.events import db_healthcheck
 
@@ -184,10 +185,12 @@ def get_pool_stats() -> dict[str, Any]:
         ]
     },
 )
-async def health_check(response: Response) -> dict[str, Any]:
+async def health_check(response: Response, request_id: str = Depends(get_request_id), feature_flag_ok: bool = Depends(require_feature("health:read"))) -> dict[str, Any]:
     """
     Returns API and database health status.
     - **response**: FastAPI response object (for headers)
+    - **request_id**: Request ID for tracing
+    - **feature_flag_ok**: Feature flag enforcement for health endpoint
     Returns a dict with status, db, uptime, response_time, and versions.
     """
     start = time.monotonic()

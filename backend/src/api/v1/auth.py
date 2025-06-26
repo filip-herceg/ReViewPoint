@@ -8,13 +8,16 @@ from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.deps import (
-    get_async_refresh_access_token,
-    get_blacklist_token,
-    get_current_user,
-    get_password_validation_error,
-    get_user_action_limiter,
     get_user_service,
+    get_user_action_limiter,
+    get_current_user,
+    get_blacklist_token,
+    get_async_refresh_access_token,
     get_validate_email,
+    get_password_validation_error,
+    get_request_id,
+    require_feature,
+    require_api_key,
 )
 from src.core.config import settings
 from src.core.database import get_async_session
@@ -221,6 +224,9 @@ async def register(
     session: AsyncSession = Depends(get_async_session),
     user_service: Any = Depends(get_user_service),
     user_action_limiter: Any = Depends(get_user_action_limiter),
+    request_id: str = Depends(get_request_id),
+    feature_flag_ok: bool = Depends(require_feature("auth:register")),
+    api_key_ok: None = Depends(require_api_key),
 ) -> AuthResponse:
     """
     Registers a new user and returns a JWT access token.
@@ -364,6 +370,9 @@ async def login(
     session: AsyncSession = Depends(get_async_session),
     user_service: Any = Depends(get_user_service),
     user_action_limiter: Any = Depends(get_user_action_limiter),
+    request_id: str = Depends(get_request_id),
+    feature_flag_ok: bool = Depends(require_feature("auth:login")),
+    api_key_ok: None = Depends(require_api_key),
 ) -> AuthResponse:
     """
     Authenticates a user and returns a JWT access token.
@@ -488,6 +497,9 @@ async def logout(
         get_blacklist_token
     ),
     user_action_limiter: Any = Depends(get_user_action_limiter),
+    request_id: str = Depends(get_request_id),
+    feature_flag_ok: bool = Depends(require_feature("auth:logout")),
+    api_key_ok: None = Depends(require_api_key),
 ) -> MessageResponse:
     """
     Logs out the current user and blacklists the access token.
@@ -605,6 +617,9 @@ async def refresh_token(
     async_refresh_access_token: Callable[[AsyncSession, str], Awaitable[str]] = Depends(
         get_async_refresh_access_token
     ),
+    request_id: str = Depends(get_request_id),
+    feature_flag_ok: bool = Depends(require_feature("auth:refresh_token")),
+    api_key_ok: None = Depends(require_api_key),
 ) -> AuthResponse:
     """
     Refreshes the JWT access token using a valid refresh token.
@@ -696,6 +711,9 @@ async def request_password_reset(
     user_service: Any = Depends(get_user_service),
     user_action_limiter: Any = Depends(get_user_action_limiter),
     validate_email: Callable[[str], bool] = Depends(get_validate_email),
+    request_id: str = Depends(get_request_id),
+    feature_flag_ok: bool = Depends(require_feature("auth:request_password_reset")),
+    api_key_ok: None = Depends(require_api_key),
 ) -> MessageResponse:
     """
     Initiates a password reset flow. Always returns a success message for security.
@@ -785,6 +803,9 @@ async def reset_password(
     get_password_validation_error: Callable[[str], str | None] = Depends(
         get_password_validation_error
     ),
+    request_id: str = Depends(get_request_id),
+    feature_flag_ok: bool = Depends(require_feature("auth:reset_password")),
+    api_key_ok: None = Depends(require_api_key),
 ) -> MessageResponse:
     """
     Completes the password reset flow using a valid reset token.
@@ -894,7 +915,12 @@ async def reset_password(
         "security": [{"BearerAuth": []}],
     },
 )
-async def get_me(current_user: User = Depends(get_current_user)) -> UserProfile:
+async def get_me(
+    current_user: User = Depends(get_current_user),
+    request_id: str = Depends(get_request_id),
+    feature_flag_ok: bool = Depends(require_feature("auth:me")),
+    api_key_ok: None = Depends(require_api_key),
+) -> UserProfile:
     """
     Returns the profile information of the currently authenticated user.
     """

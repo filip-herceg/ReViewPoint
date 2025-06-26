@@ -5,18 +5,23 @@ This module provides robust, reusable dependencies for:
 - Database session management (get_db)
 - User authentication and active user checks (get_current_user, get_current_active_user, optional_get_current_user)
 - Pagination parameter validation (pagination_params)
-- Repository service locator for testability (get_user_repository)
+- Repository/service locator for testability (get_user_service, get_service)
 - Request ID propagation for tracing (get_request_id, get_current_request_id)
+- Feature flag checks
+- Dependency health checks and metrics
+- Dynamic config reloading
 
 All dependencies use loguru for error and event logging, follow security best practices, and are designed for easy testing and mocking.
 """
 
 import contextvars
+import importlib
 import os
+import time
 import uuid
 from collections.abc import AsyncGenerator
-from functools import lru_cache
-from typing import Any
+from functools import lru_cache, wraps
+from typing import Any, Callable, TypeVar, cast
 
 from fastapi import Depends, HTTPException, Query, Request, Security, status
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
@@ -37,6 +42,9 @@ REQUEST_ID_HEADER = "X-Request-ID"
 request_id_ctx_var: contextvars.ContextVar[str | None] = contextvars.ContextVar(
     "request_id", default=None
 )
+current_user_id_ctx_var: contextvars.ContextVar[int | None] = contextvars.ContextVar(
+    "user_id", default=None
+)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
@@ -44,6 +52,214 @@ api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 MAX_LIMIT = 100
 
 
+def _get_dev_admin_user() -> User:
+    """Return a development admin user when auth is disabled."""
+    return User(
+        id=0,
+        email="dev@example.com",
+        hashed_password="",
+        is_active=True,
+        is_deleted=False,
+        name="Dev Admin",
+        bio="Development admin user (auth disabled)",
+        avatar_url=None,
+        preferences=None,
+        last_login_at=None,
+        created_at=None,
+        updated_at=None,
+    )
+
+
+def _check_user_is_valid(user: User | None) -> bool:
+    return user is not None and user.is_active and not user.is_deleted
+
+
+# --- Dependency Registry ---
+class DependencyRegistry:
+    _instances = {}
+
+    @classmethod
+    def register(cls, key, factory, singleton=True, cache_ttl=None):
+        cls._instances[key] = {
+            "factory": factory,
+            "singleton": singleton,
+            "cache_ttl": cache_ttl,
+            "instance": None,
+            "last_access": None,
+        }
+
+    @classmethod
+    def get(cls, key):
+        if key not in cls._instances:
+            raise KeyError(f"Dependency {key} not registered")
+        entry = cls._instances[key]
+        if not entry["singleton"] or entry["instance"] is None:
+            entry["instance"] = entry["factory"]()
+        if entry["cache_ttl"] and entry["last_access"]:
+            now = time.time()
+            if now - entry["last_access"] > entry["cache_ttl"]:
+                entry["instance"] = entry["factory"]()
+        entry["last_access"] = time.time()
+        return entry["instance"]
+
+
+registry = DependencyRegistry()
+registry.register("user_service", lambda: importlib.import_module("src.services.user"))
+registry.register("user_repository", lambda: user_repository)
+registry.register("blacklist_token", lambda: importlib.import_module("src.repositories.blacklisted_token").blacklist_token)
+registry.register("user_action_limiter", lambda: importlib.import_module("src.repositories.user").user_action_limiter)
+registry.register("validate_email", lambda: importlib.import_module("src.utils.validation").validate_email)
+registry.register("password_validation_error", lambda: importlib.import_module("src.utils.validation").get_password_validation_error)
+registry.register("async_refresh_access_token", lambda: importlib.import_module("src.services.user").async_refresh_access_token)
+
+
+def get_user_service():
+    return registry.get("user_service")
+
+
+def get_user_repository() -> Any:
+    return registry.get("user_repository")
+
+
+def get_blacklist_token() -> Any:
+    return registry.get("blacklist_token")
+
+
+def get_user_action_limiter() -> Any:
+    return registry.get("user_action_limiter")
+
+
+def get_validate_email() -> Any:
+    return registry.get("validate_email")
+
+
+def get_password_validation_error() -> Any:
+    return registry.get("password_validation_error")
+
+
+def get_async_refresh_access_token() -> Any:
+    from src.core.config import settings
+    async_refresh_access_token = registry.get("async_refresh_access_token")
+    async def wrapper(session, token):
+        return await async_refresh_access_token(
+            session,
+            token,
+            settings.jwt_secret_key,
+            settings.jwt_algorithm,
+        )
+    return wrapper
+
+
+# --- Generic Service Provider ---
+def get_service(module_path: str) -> Any:
+    return importlib.import_module(module_path)
+
+
+# --- Feature Flags ---
+def get_feature_flags():
+    from src.core.feature_flags import FeatureFlags
+
+    return FeatureFlags()
+
+
+def require_feature(feature_name: str):
+    async def dependency(flags=Depends(get_feature_flags)):
+        if not flags.is_enabled(feature_name):
+            raise HTTPException(status_code=404, detail="This feature is not available")
+        return True
+
+    return Depends(dependency)
+
+
+# --- Health Check System ---
+class HealthCheck:
+    _checks = {}
+
+    @classmethod
+    def register(cls, name, check_func):
+        cls._checks[name] = check_func
+
+    @classmethod
+    async def check_all(cls):
+        results = {}
+        for name, check_func in cls._checks.items():
+            try:
+                is_healthy = (
+                    await check_func()
+                    if callable(getattr(check_func, "__await__", None))
+                    else check_func()
+                )
+                results[name] = {"status": "healthy" if is_healthy else "unhealthy"}
+            except Exception as e:
+                results[name] = {"status": "error", "message": str(e)}
+        return results
+
+
+# Example health check registration (add more as needed)
+HealthCheck.register("database", lambda: True)  # Replace with real DB check
+
+
+# --- Dependency Metrics ---
+dependency_metrics = {}
+
+
+def measure_dependency(func):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        start = time.time()
+        try:
+            result = (
+                await func(*args, **kwargs)
+                if callable(getattr(func, "__await__", None))
+                else func(*args, **kwargs)
+            )
+            status = "success"
+        except Exception as e:
+            status = "error"
+            raise
+        finally:
+            duration = time.time() - start
+            name = func.__name__
+            if name not in dependency_metrics:
+                dependency_metrics[name] = {"count": 0, "errors": 0, "total_time": 0}
+            dependency_metrics[name]["count"] += 1
+            dependency_metrics[name]["total_time"] += duration
+            if status == "error":
+                dependency_metrics[name]["errors"] += 1
+        return result
+
+    return wrapper
+
+
+# --- Dynamic Config Reloader ---
+def get_refreshable_settings():
+    class RefreshableSettings:
+        def __init__(self):
+            self._last_refresh = 0
+            self._refresh_interval = 60
+            self._settings = None
+
+        def _reload_if_needed(self):
+            now = time.time()
+            if (
+                now - self._last_refresh > self._refresh_interval
+                or self._settings is None
+            ):
+                import importlib
+                import src.core.config
+
+                importlib.reload(src.core.config)
+                self._settings = src.core.config.settings
+                self._last_refresh = now
+
+        def __getattr__(self, name):
+            self._reload_if_needed()
+            return getattr(self._settings, name)
+
+    return RefreshableSettings()
+
+
+# --- Pagination ---
 class PaginationParams:
     """
     Standardized pagination parameters for API endpoints.
@@ -60,9 +276,6 @@ class PaginationParams:
     def __init__(self, offset: int = 0, limit: int = 20):
         self.offset = offset
         self.limit = limit
-
-
-# --- Enhanced logging for all dependencies ---
 
 
 # PaginationParams and pagination_params already log errors for invalid input (no sensitive data).
@@ -102,6 +315,7 @@ def pagination_params(
     return PaginationParams(offset=offset, limit=limit)
 
 
+# --- Auth Dependencies ---
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_async_session),
@@ -121,20 +335,7 @@ async def get_current_user(
     """
     if not settings.auth_enabled:
         logger.warning("Authentication is DISABLED! Returning development admin user.")
-        return User(
-            id=0,
-            email="dev@example.com",
-            hashed_password="",
-            is_active=True,
-            is_deleted=False,
-            name="Dev Admin",
-            bio="Development admin user (auth disabled)",
-            avatar_url=None,
-            preferences=None,
-            last_login_at=None,
-            created_at=None,
-            updated_at=None,
-        )  # Validate token and extract user_id
+        return _get_dev_admin_user()  # Validate token and extract user_id
     try:
         payload = verify_access_token(token)
         if not payload:
@@ -179,20 +380,7 @@ async def optional_get_current_user(
         user = Depends(optional_get_current_user)
     """
     if not settings.auth_enabled:
-        return User(
-            id=0,
-            email="dev@example.com",
-            hashed_password="",
-            is_active=True,
-            is_deleted=False,
-            name="Dev Admin",
-            bio="Development admin user (auth disabled)",
-            avatar_url=None,
-            preferences=None,
-            last_login_at=None,
-            created_at=None,
-            updated_at=None,
-        )
+        return _get_dev_admin_user()
     try:
         payload = verify_access_token(
             token
@@ -299,96 +487,7 @@ def get_current_request_id() -> str | None:
     return request_id_ctx_var.get()
 
 
-def get_user_repository() -> Any:
-    """
-    Service locator for the user repository dependency.
-
-    Returns:
-        Any: The user repository module/class (type: Any, since module is not a valid type).
-    Usage in endpoint or service:
-        repo = Depends(get_user_repository)
-    In tests:
-        app.dependency_overrides[get_user_repository] = lambda: MockUserRepository()
-    """
-    return user_repository
-
-
-def get_user_service() -> Any:
-    """
-    Dependency provider for the user service module.
-    Returns:
-        user_service: The user service module.
-    """
-    from src.services import user as user_service
-
-    return user_service
-
-
-def get_blacklist_token() -> Any:
-    """
-    Dependency provider for the blacklist_token function.
-    Returns:
-        blacklist_token: The function to blacklist JWT tokens.
-    """
-    from src.repositories.blacklisted_token import blacklist_token
-
-    return blacklist_token
-
-
-def get_user_action_limiter() -> Any:
-    """
-    Dependency provider for the user_action_limiter utility.
-    Returns:
-        user_action_limiter: The rate limiter for user actions.
-    """
-    from src.repositories.user import user_action_limiter
-
-    return user_action_limiter
-
-
-def get_validate_email() -> Any:
-    """
-    Dependency provider for the validate_email utility.
-    Returns:
-        validate_email: The email validation function.
-    """
-    from src.utils.validation import validate_email
-
-    return validate_email
-
-
-def get_password_validation_error() -> Any:
-    """
-    Dependency provider for the get_password_validation_error utility.
-    Returns:
-        get_password_validation_error: The password validation function.
-    """
-    from src.utils.validation import get_password_validation_error
-
-    return get_password_validation_error
-
-
-def get_async_refresh_access_token() -> Any:
-    """
-    Dependency provider for the async_refresh_access_token function.
-    Returns:
-        async_refresh_access_token: The async function to refresh JWT access tokens.
-    """
-    from src.core.config import settings
-    from src.services.user import async_refresh_access_token
-
-    async def wrapper(session, token):
-        return await async_refresh_access_token(
-            session,
-            token,
-            settings.jwt_secret_key,
-            settings.jwt_algorithm,
-        )
-
-    return wrapper
-
-
-# API key security scheme
+# --- API key security scheme
 async def validate_api_key(
     api_key: str = Security(api_key_header),
 ) -> bool:

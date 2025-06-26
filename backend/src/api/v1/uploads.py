@@ -21,9 +21,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.deps import (
     get_current_user_with_api_key as get_current_user,
-)
-from src.api.deps import (
     pagination_params,
+    require_api_key,
+    require_feature,
+    get_request_id,
 )
 from src.core.database import get_async_session
 from src.models.file import File as DBFile  # Renamed to avoid conflict
@@ -383,9 +384,12 @@ async def export_files_csv(
     ),
     created_after: str | None = Query(
         None,
-        description="Filter files created after this datetime (ISO 8601, e.g. 2024-01-01T00:00:00Z)",
+        description="Filter files created after this datetime (ISO 8601, e.g. 2024-01-01T00:00:00Z)" ,
         examples=["2024-01-01T00:00:00Z", "2025-06-20T00:11:21.676185+00:00"],
     ),
+    request_id: str = Depends(get_request_id),
+    feature_flag_ok: bool = Depends(require_feature("uploads:export")),
+    api_key_ok: None = Depends(require_api_key),
 ) -> Response:
     logging.warning(
         f"UPLOADS EXPORT CALLED with user_id={current_user.id if current_user else 'None'}"
@@ -578,6 +582,9 @@ async def upload_file(
     ),
     session: AsyncSession = Depends(get_async_session),
     current_user: Any = Depends(get_current_user),
+    request_id: str = Depends(get_request_id),
+    feature_flag_ok: bool = Depends(require_feature("uploads:upload")),
+    api_key_ok: None = Depends(require_api_key),
 ) -> FileUploadResponse:
     if not file.filename:
         raise HTTPException(status_code=400, detail="Invalid file.")
@@ -809,6 +816,9 @@ async def delete_file_by_filename(
     filename: str = Path(..., description="The name of the file to delete."),
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(get_current_user),
+    request_id: str = Depends(get_request_id),
+    feature_flag_ok: bool = Depends(require_feature("uploads:delete")),
+    api_key_ok: None = Depends(require_api_key),
 ) -> Response:  # Change return type to match actual returned value
     db_file = await delete_file(session, filename)
     if not db_file:
@@ -887,8 +897,12 @@ async def catch_all_uploads(path: str, request: Request) -> Response:
     },
 )
 async def list_files(
-    limit: int = Query(10, description="Maximum number of items to return", le=100),
-    offset: int = Query(0, description="Number of items to skip for pagination"),
+    params: Any = Depends(pagination_params),
+    session: AsyncSession = Depends(get_async_session),
+    current_user: Any = Depends(get_current_user),
+    request_id: str = Depends(get_request_id),
+    feature_flag_ok: bool = Depends(require_feature("uploads:list")),
+    api_key_ok: None = Depends(require_api_key),
     q: str | None = Query(None, description="Search term across all fields"),
     fields: str | None = Query(
         None, description="Comma-separated list of fields to include"
@@ -901,8 +915,6 @@ async def list_files(
     created_before: str | None = Query(
         None, description="Filter by creation date (ISO format)"
     ),
-    session: AsyncSession = Depends(get_async_session),
-    current_user: Any = Depends(get_current_user),
 ) -> FileListResponse:
     """
     List all uploaded files with pagination and filtering options.
@@ -918,8 +930,8 @@ async def list_files(
     files, total = await repo_list_files(
         session,
         current_user.id,
-        offset=offset,
-        limit=limit,
+        offset=params.offset,
+        limit=params.limit,
         q=q,
         sort=sort,
         order=order,
