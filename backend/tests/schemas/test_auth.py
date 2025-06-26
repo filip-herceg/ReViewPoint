@@ -16,7 +16,7 @@ from src.schemas.auth import (
 )
 
 
-def test_user_register_request_valid():
+def test_user_register_request_valid() -> None:
     req = UserRegisterRequest(
         email="user@example.com", password="password123", name="Test User"
     )
@@ -25,56 +25,56 @@ def test_user_register_request_valid():
     assert req.name == "Test User"
 
 
-def test_user_register_request_invalid_email():
+def test_user_register_request_invalid_email() -> None:
     with pytest.raises(ValidationError):
         UserRegisterRequest(
             email="not-an-email", password="password123", name="Test User"
         )
 
 
-def test_user_register_request_short_password():
+def test_user_register_request_short_password() -> None:
     with pytest.raises(ValidationError):
         UserRegisterRequest(
             email="user@example.com", password="short", name="Test User"
         )
 
 
-def test_user_login_request_valid():
+def test_user_login_request_valid() -> None:
     req = UserLoginRequest(email="user@example.com", password="password123")
     assert req.email == "user@example.com"
     assert req.password == "password123"
 
 
-def test_password_reset_request_valid():
+def test_password_reset_request_valid() -> None:
     req = PasswordResetRequest(email="user@example.com")
     assert req.email == "user@example.com"
 
 
-def test_password_reset_confirm_request_valid():
+def test_password_reset_confirm_request_valid() -> None:
     req = PasswordResetConfirmRequest(token="sometoken", new_password="newpassword123")
     assert req.token == "sometoken"
     assert req.new_password == "newpassword123"
 
 
-def test_password_reset_confirm_request_short_password():
+def test_password_reset_confirm_request_short_password() -> None:
     with pytest.raises(ValidationError):
         PasswordResetConfirmRequest(token="sometoken", new_password="short")
 
 
-def test_auth_response():
+def test_auth_response() -> None:
     resp = AuthResponse(access_token="abc123", refresh_token="def456")
     assert resp.access_token == "abc123"
     assert resp.refresh_token == "def456"
     assert resp.token_type == "bearer"
 
 
-def test_message_response():
+def test_message_response() -> None:
     resp = MessageResponse(message="ok")
     assert resp.message == "ok"
 
 
 @pytest.mark.asyncio
-async def test_register_success_branch(async_session):
+async def test_register_success_branch(async_session) -> None:
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         resp = await ac.post(
@@ -95,7 +95,7 @@ async def test_register_success_branch(async_session):
 
 
 @pytest.mark.asyncio
-async def test_login_success_branch(async_session):
+async def test_login_success_branch(async_session) -> None:
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         email = f"login_success_{uuid.uuid4()}@example.com"
@@ -121,7 +121,7 @@ async def test_login_success_branch(async_session):
 
 
 @pytest.mark.asyncio
-async def test_logout_success_branch(async_session):
+async def test_logout_success_branch(async_session) -> None:
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         email = f"logout_success_{uuid.uuid4()}@example.com"
@@ -150,7 +150,7 @@ async def test_logout_success_branch(async_session):
 @pytest.mark.asyncio
 async def test_refresh_token_success_branch(
     async_session, monkeypatch: pytest.MonkeyPatch
-):
+) -> None:
     monkeypatch.setenv("REVIEWPOINT_JWT_SECRET_KEY", "testsecret")
     monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "testsecret")
     monkeypatch.setenv("REVIEWPOINT_DB_URL", "sqlite+aiosqlite:///:memory:")
@@ -181,6 +181,7 @@ async def test_refresh_token_success_branch(
                 "name": "Refresh Success User",
             },
         )
+        _ = resp  # noqa: F841
         login_resp = await ac.post(
             "/api/v1/auth/login",
             json={"email": email, "password": "SecurePass123!"},
@@ -198,7 +199,7 @@ async def test_refresh_token_success_branch(
 
 
 @pytest.mark.asyncio
-async def test_password_reset_request_success_branch(async_session):
+async def test_password_reset_request_success_branch(async_session) -> None:
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         email = f"reset_request_{uuid.uuid4()}@example.com"
@@ -218,7 +219,7 @@ async def test_password_reset_request_success_branch(async_session):
         assert "message" in resp.json()
 
 
-def test_user_register_request_invalid_password_letter():
+def test_user_register_request_invalid_password_letter(exc_info: object = None) -> None:
     # No letter
     with pytest.raises(ValidationError) as exc_info:
         UserRegisterRequest(
@@ -227,7 +228,7 @@ def test_user_register_request_invalid_password_letter():
     assert "Password must contain at least one letter" in str(exc_info.value)
 
 
-def test_user_register_request_invalid_password_digit():
+def test_user_register_request_invalid_password_digit(exc_info: object = None) -> None:
     # No digit
     with pytest.raises(ValidationError) as exc_info:
         UserRegisterRequest(
@@ -236,7 +237,7 @@ def test_user_register_request_invalid_password_digit():
     assert "Password must contain at least one digit" in str(exc_info.value)
 
 
-def test_password_reset_request_invalid_email():
+def test_password_reset_request_invalid_email(exc_info: object = None) -> None:
     with pytest.raises(ValidationError) as exc_info:
         PasswordResetRequest(email="not-an-email")
     # Accept Pydantic's built-in error message
@@ -245,14 +246,14 @@ def test_password_reset_request_invalid_email():
     )
 
 
-def test_password_reset_confirm_request_invalid_password_letter():
+def test_password_reset_confirm_request_invalid_password_letter(exc_info: object = None) -> None:
     # No letter
     with pytest.raises(ValidationError) as exc_info:
         PasswordResetConfirmRequest(token="sometoken", new_password="12345678")
     assert "Password must contain at least one letter" in str(exc_info.value)
 
 
-def test_password_reset_confirm_request_invalid_password_digit():
+def test_password_reset_confirm_request_invalid_password_digit(exc_info: object = None) -> None:
     # No digit
     with pytest.raises(ValidationError) as exc_info:
         PasswordResetConfirmRequest(token="sometoken", new_password="abcdefgh")
@@ -260,7 +261,7 @@ def test_password_reset_confirm_request_invalid_password_digit():
 
 
 @pytest.mark.asyncio
-async def test_logout_with_invalid_token(async_session):
+async def test_logout_with_invalid_token(async_session) -> None:
     """Test logout endpoint with an invalid/malformed token in the Authorization header."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -283,7 +284,7 @@ async def test_logout_with_invalid_token(async_session):
 
 
 @pytest.mark.asyncio
-async def test_logout_without_authorization_header(async_session):
+async def test_logout_without_authorization_header(async_session) -> None:
     """Test logout endpoint with no Authorization header present."""
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -304,7 +305,7 @@ async def test_logout_without_authorization_header(async_session):
 
 
 @pytest.mark.asyncio
-async def test_refresh_token_blacklisted(async_session):
+async def test_refresh_token_blacklisted(async_session) -> None:
     """Test refresh token endpoint with a blacklisted token (should return 401)."""
     from src.api.deps import get_async_refresh_access_token
     from src.services.user import RefreshTokenBlacklistedError
@@ -336,7 +337,7 @@ async def test_refresh_token_blacklisted(async_session):
 
 
 @pytest.mark.asyncio
-async def test_refresh_token_rate_limited(async_session):
+async def test_refresh_token_rate_limited(async_session) -> None:
     """Test refresh token endpoint with a rate-limited token (should return 429)."""
     from src.api.deps import get_async_refresh_access_token
     from src.services.user import RefreshTokenRateLimitError
@@ -368,7 +369,7 @@ async def test_refresh_token_rate_limited(async_session):
 
 
 @pytest.mark.asyncio
-async def test_refresh_token_decode_error(async_session):
+async def test_refresh_token_decode_error(async_session) -> None:
     """Test refresh token endpoint with a malformed/invalid token (should return 401)."""
     from src.api.deps import get_async_refresh_access_token
     from src.services.user import RefreshTokenError
@@ -401,7 +402,7 @@ async def test_refresh_token_decode_error(async_session):
 
 
 @pytest.mark.asyncio
-async def test_refresh_token_unexpected_error(async_session):
+async def test_refresh_token_unexpected_error(async_session) -> None:
     """Test refresh token endpoint with a generic exception (should return 500)."""
     from src.api.deps import get_async_refresh_access_token
 
@@ -433,7 +434,7 @@ async def test_refresh_token_unexpected_error(async_session):
 
 
 @pytest.mark.asyncio
-async def test_password_reset_confirm_success_branch(async_session):
+async def test_password_reset_confirm_success_branch(async_session) -> None:
     """Test password reset confirm endpoint with valid token and password (success path)."""
 
     transport = ASGITransport(app=app)

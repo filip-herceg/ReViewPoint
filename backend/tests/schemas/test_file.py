@@ -1,4 +1,4 @@
-def test_file_schema_placeholder():
+def test_file_schema_placeholder() -> None:
     # The file schema is currently empty, so just check import and instantiation
     from src.schemas import file
 
