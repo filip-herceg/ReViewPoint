@@ -5,7 +5,7 @@ import pytest
 from src.models.used_password_reset_token import UsedPasswordResetToken
 
 
-def test_token_creation_and_repr():
+def test_token_creation_and_repr() -> None:
     token = UsedPasswordResetToken(
         email="test@example.com", nonce="abc123", used_at=datetime.now(UTC)
     )
@@ -16,7 +16,7 @@ def test_token_creation_and_repr():
     assert "abc123" in repr(token)
 
 
-def test_token_used_at_timezone():
+def test_token_used_at_timezone() -> None:
     now = datetime.now(UTC)
     token = UsedPasswordResetToken(
         email="user2@example.com", nonce="nonce2", used_at=now
@@ -24,12 +24,12 @@ def test_token_used_at_timezone():
     assert token.used_at.tzinfo is UTC
 
 
-def test_token_edge_cases():
+def test_token_edge_cases() -> None:
     # Edge: empty email
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         UsedPasswordResetToken(email="", nonce="n", used_at=datetime.now(UTC))
     # Edge: empty nonce
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         UsedPasswordResetToken(email="a@b.com", nonce="", used_at=datetime.now(UTC))
     # Edge: used_at in the past
     past = datetime(2000, 1, 1, tzinfo=UTC)

@@ -404,8 +404,8 @@ async def test_set_user_preferences_not_found(monkeypatch: pytest.MonkeyPatch) -
     ],
 )
 async def test_async_refresh_access_token_errors(
-    error_case, patches, expected_exception, expected_msg
-):
+    error_case: object, patches: list[object], expected_exception: type[Exception], expected_msg: str
+) -> None:
     session = AsyncMock()
     token = "sometoken"
     jwt_secret = "secret"
@@ -459,7 +459,7 @@ async def test_async_refresh_access_token_errors(
 
 
 @pytest.mark.asyncio
-async def test_async_refresh_access_token_success(monkeypatch):
+async def test_async_refresh_access_token_success(monkeypatch: pytest.MonkeyPatch) -> None:
     session = AsyncMock()
     token = "sometoken"
     jwt_secret = "secret"
@@ -477,7 +477,7 @@ async def test_async_refresh_access_token_success(monkeypatch):
         avatar_url=None,
         preferences=None,
     )
-    monkeypatch.setattr(user_service.jwt, "decode", lambda *a, **kw: payload)
+    monkeypatch.setattr(user_service.jwt, "decode", lambda *a, **kw: payload)  # type: ignore[attr-defined]
     monkeypatch.setattr(
         user_service, "user_action_limiter", AsyncMock(return_value=True)
     )

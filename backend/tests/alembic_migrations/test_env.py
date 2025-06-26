@@ -1,7 +1,7 @@
 import importlib
 import sys
 import types
-from typing import Any
+from typing import Any, Generator
 from unittest import mock
 
 import pytest
@@ -11,7 +11,7 @@ from tests.conftest import TEST_DB_PATH
 
 
 @pytest.fixture(autouse=True)
-def reset_logger_handlers():
+def reset_logger_handlers() -> Generator[None, None, None]:
     # Reset logger handlers before each test
     env.logger.handlers.clear()
     yield
@@ -29,7 +29,7 @@ def patch_alembic_context(monkeypatch: pytest.MonkeyPatch, context_mod: Any) -> 
     )
 
 
-def test_run_migrations_offline_success(monkeypatch):
+def test_run_migrations_offline_success(monkeypatch: pytest.MonkeyPatch) -> None:
     # Patch alembic.context and fileConfig
     fake_context = types.SimpleNamespace()
     fake_config = types.SimpleNamespace()
@@ -49,7 +49,7 @@ def test_run_migrations_offline_success(monkeypatch):
     fake_context.run_migrations.assert_called_once()
 
 
-def test_run_migrations_offline_no_url(monkeypatch):
+def test_run_migrations_offline_no_url(monkeypatch: pytest.MonkeyPatch) -> None:
     fake_context = types.SimpleNamespace()
     fake_config = types.SimpleNamespace()
     fake_config.config_file_name = "fake.ini"
@@ -61,7 +61,7 @@ def test_run_migrations_offline_no_url(monkeypatch):
         env.run_migrations_offline()
 
 
-def test_run_migrations_online_success(monkeypatch):
+def test_run_migrations_online_success(monkeypatch: pytest.MonkeyPatch) -> None:
     fake_context = types.SimpleNamespace()
     fake_config = types.SimpleNamespace()
     fake_config.config_file_name = "fake.ini"
@@ -97,7 +97,7 @@ def test_run_migrations_online_success(monkeypatch):
     fake_context.run_migrations.assert_called_once()
 
 
-def test_run_migrations_online_no_url(monkeypatch):
+def test_run_migrations_online_no_url(monkeypatch: pytest.MonkeyPatch) -> None:
     fake_context = types.SimpleNamespace()
     fake_config = types.SimpleNamespace()
     fake_config.config_file_name = "fake.ini"
@@ -120,7 +120,7 @@ def test_run_migrations_online_no_url(monkeypatch):
 
 
 # --- Begin migrated tests from test_alembic_env.py ---
-def test_run_migrations_offline_configure_raises(monkeypatch: pytest.MonkeyPatch):
+def test_run_migrations_offline_configure_raises(monkeypatch: pytest.MonkeyPatch) -> None:
     context_mod = types.SimpleNamespace()
 
     def get_main_option(key: str) -> str:

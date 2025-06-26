@@ -1,4 +1,4 @@
-def test_token_schema_placeholder():
+def test_token_schema_placeholder() -> None:
     # The token schema is currently empty, so just check import and instantiation
     from src.schemas import token
 

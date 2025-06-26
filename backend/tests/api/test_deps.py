@@ -59,30 +59,30 @@ async def test_get_current_user_user_not_found(
     assert "User not found" in str(exc.value.detail)
 
 
-def test_get_user_service_returns_user_module():
+def test_get_user_service_returns_user_module() -> None:
     user_service = deps.get_user_service()
     assert hasattr(user_service, "register_user")
     assert hasattr(user_service, "authenticate_user")
 
 
-def test_get_blacklist_token_returns_callable():
+def test_get_blacklist_token_returns_callable() -> None:
     blacklist_token = deps.get_blacklist_token()
     assert callable(blacklist_token)
 
 
-def test_get_user_action_limiter_returns_limiter():
+def test_get_user_action_limiter_returns_limiter() -> None:
     limiter = deps.get_user_action_limiter()
     assert hasattr(limiter, "is_allowed")
     assert callable(limiter.is_allowed)
 
 
-def test_get_validate_email_returns_callable():
+def test_get_validate_email_returns_callable() -> None:
     validate_email = deps.get_validate_email()
     assert callable(validate_email)
     assert validate_email("user@example.com") is True or False
 
 
-def test_get_password_validation_error_returns_callable():
+def test_get_password_validation_error_returns_callable() -> None:
     get_password_validation_error = deps.get_password_validation_error()
     assert callable(get_password_validation_error)
     # Should return None or str for a password
@@ -90,6 +90,6 @@ def test_get_password_validation_error_returns_callable():
     assert result is None or isinstance(result, str)
 
 
-def test_get_async_refresh_access_token_returns_callable():
+def test_get_async_refresh_access_token_returns_callable() -> None:
     async_refresh_access_token = deps.get_async_refresh_access_token()
     assert callable(async_refresh_access_token)

@@ -616,36 +616,24 @@ async def refresh_token(
         logger.info("refresh_success", extra={"token": token})
         return AuthResponse(access_token=new_token, refresh_token=token)
     except RefreshTokenRateLimitError as e:
-        http_error(
-            429,
-            "Too many token refresh attempts. Please try again later.",
-            logger.warning,
-            {"token": token, "error": str(e)},
-            e,
+        raise HTTPException(
+            status_code=429,
+            detail="Too many token refresh attempts. Please try again later."
         )
     except RefreshTokenBlacklistedError as e:
-        http_error(
-            401,
-            "Invalid or expired refresh token.",
-            logger.warning,
-            {"token": token, "error": str(e)},
-            e,
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or expired refresh token."
         )
     except RefreshTokenError as e:
-        http_error(
-            401,
-            "Invalid or expired refresh token.",
-            logger.warning,
-            {"token": token, "error": str(e)},
-            e,
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or expired refresh token."
         )
     except Exception as e:
-        http_error(
-            500,
-            "An unexpected error occurred. Please try again later.",
-            logger.error,
-            {"token": token, "error": str(e)},
-            e,
+        raise HTTPException(
+            status_code=500,
+            detail="An unexpected error occurred. Please try again later."
         )
 
 

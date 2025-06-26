@@ -160,6 +160,16 @@ def create_app() -> FastAPI:
             },
         )
 
+    # Add handler for custom ValidationError to return 400
+    from src.utils.errors import ValidationError
+
+    @app.exception_handler(ValidationError)
+    async def validation_exception_handler(request: Request, exc: ValidationError) -> JSONResponse:
+        return JSONResponse(
+            status_code=400,
+            content={"detail": str(exc)},
+        )
+
     return app
 
 

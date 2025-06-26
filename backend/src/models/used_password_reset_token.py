@@ -17,7 +17,7 @@ class UsedPasswordResetToken(Base):
     )
 
     @validates("email", "nonce")
-    def validate_not_empty(self, key, value):
+    def validate_not_empty(self, key: str, value: str) -> str:
         if not isinstance(value, str) or not value.strip():
             raise ValueError(f"{key} must be a non-empty string")
         return value

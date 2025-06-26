@@ -11,7 +11,7 @@ from enum import Enum
 from typing import Any
 
 from fastapi import UploadFile
-from jose import jwt
+from jose import JWTError, jwt
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -544,17 +544,15 @@ async def async_refresh_access_token(
         # Issue new access token
         new_token = refresh_access_token(user_id, token)
         return new_token
-    except jwt.JWTError as e:
+    except JWTError as e:
         raise RefreshTokenError(f"JWT decode failed: {e}") from e
     except Exception as e:
         # Only raise as RefreshTokenError if not a known custom error
         if isinstance(
             e,
-            (
-                RefreshTokenRateLimitError,
-                RefreshTokenBlacklistedError,
-                RefreshTokenError,
-            ),
+            RefreshTokenRateLimitError
+            | RefreshTokenBlacklistedError
+            | RefreshTokenError,
         ):
             raise
         raise RefreshTokenError(f"Unexpected error: {e}") from e

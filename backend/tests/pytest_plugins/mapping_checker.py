@@ -65,7 +65,7 @@ def collect_py_files(root: pathlib.Path, ignored: set[str]) -> set[pathlib.Path]
 
 
 class MappingCheckResult:
-    def __init__(self):
+    def __init__(self) -> None:
         self.missing_tests: list[tuple[pathlib.Path, pathlib.Path]] = []
         self.missing_sources: list[tuple[pathlib.Path, pathlib.Path]] = []
         self.multiply_mapped: list[pathlib.Path] = []
@@ -87,20 +87,18 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     # Check src -> test
     for src in src_files:
         test = src_to_test_path(src)
-        if test is None:
-            continue
-        src_to_test[src] = test
-        if not test.exists():
-            result.missing_tests.append((src, test))
+        if test is not None:
+            src_to_test[src] = test
+            if not test.exists():
+                result.missing_tests.append((src, test))
 
     # Check test -> src
     for test in test_files:
         src = test_to_src_path(test)
-        if src is None:
-            continue
-        test_to_src[test] = src
-        if not src.exists():
-            result.missing_sources.append((test, src))
+        if src is not None:
+            test_to_src[test] = src
+            if not src.exists():
+                result.missing_sources.append((test, src))
 
     # Check for multiply-mapped (should not happen with strict naming)
     test_targets = list(src_to_test.values())
@@ -113,17 +111,17 @@ def pytest_sessionstart(session: pytest.Session) -> None:
                 result.multiply_mapped.append(t)
 
     result.checked = True
-    session.config._mapping_check_result = result
+    setattr(session.config, "_mapping_check_result", result)
     # Do not print or exit here; summary will be shown at the end.
 
 
-def pytest_terminal_summary(terminalreporter, exitstatus, config):
+def pytest_terminal_summary(terminalreporter: "pytest.TerminalReporter", exitstatus: int, config: object) -> None:
     result = getattr(config, "_mapping_check_result", None)
     if not result or not result.checked:
         return
     term = terminalreporter
 
-    def color(text, color):
+    def color(text: str, color: str) -> str:
         return (
             "\x1b["
             + {
@@ -139,7 +137,7 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
             + "\x1b[0m"
         )
 
-    def is_excluded(src, test):
+    def is_excluded(src: pathlib.Path, test: pathlib.Path) -> bool:
         return (src.name, test.name) in EXCLUDED_MAPPINGS
 
     missing_tests = [
@@ -166,7 +164,7 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
         missing_sources, key=lambda pair: str(pair[0].relative_to(TESTS_ROOT))
     )
 
-    def paint_path(path, root):
+    def paint_path(path: pathlib.Path, root: pathlib.Path) -> str:
         rel = path.relative_to(root)
         parts = rel.parts
         if len(parts) > 1:
@@ -185,8 +183,8 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
                     "yellow",
                 )
             )
-            for src, test in missing_tests:
-                term.write_line(f"  {paint_path(src, SRC_ROOT)}")
+            for _src, _test in missing_tests:
+                term.write_line(f"  {paint_path(_src, SRC_ROOT)}")
         if missing_sources:
             term.write_line("")
             term.write_line(
@@ -195,7 +193,7 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
                     "yellow",
                 )
             )
-            for test, src in missing_sources:
+            for test, _src in missing_sources:
                 term.write_line(f"  {paint_path(test, TESTS_ROOT)}")
         if result.multiply_mapped:
             term.write_line("")
