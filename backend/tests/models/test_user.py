@@ -1,16 +1,15 @@
-import os
-
 import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.user import User
 
-os.environ["REVIEWPOINT_API_KEY"] = "testkey"
-
 
 @pytest.mark.asyncio
-async def test_user_crud(async_session: AsyncSession) -> None:
+async def test_user_crud(
+    async_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("REVIEWPOINT_API_KEY", "testkey")
     # Create
     user = User(email="test@example.com", hashed_password="hashed", is_active=True)
     async_session.add(user)

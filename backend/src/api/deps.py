@@ -284,7 +284,6 @@ def get_request_id(request: Request) -> str:
     except (ValueError, TypeError):
         req_id = str(uuid.uuid4())
     request_id_ctx_var.set(req_id)
-    logger.debug(f"Request ID set: {req_id}")
     return req_id
 
 
@@ -312,6 +311,81 @@ def get_user_repository() -> Any:
         app.dependency_overrides[get_user_repository] = lambda: MockUserRepository()
     """
     return user_repository
+
+
+def get_user_service() -> Any:
+    """
+    Dependency provider for the user service module.
+    Returns:
+        user_service: The user service module.
+    """
+    from src.services import user as user_service
+
+    return user_service
+
+
+def get_blacklist_token() -> Any:
+    """
+    Dependency provider for the blacklist_token function.
+    Returns:
+        blacklist_token: The function to blacklist JWT tokens.
+    """
+    from src.repositories.blacklisted_token import blacklist_token
+
+    return blacklist_token
+
+
+def get_user_action_limiter() -> Any:
+    """
+    Dependency provider for the user_action_limiter utility.
+    Returns:
+        user_action_limiter: The rate limiter for user actions.
+    """
+    from src.repositories.user import user_action_limiter
+
+    return user_action_limiter
+
+
+def get_validate_email() -> Any:
+    """
+    Dependency provider for the validate_email utility.
+    Returns:
+        validate_email: The email validation function.
+    """
+    from src.utils.validation import validate_email
+
+    return validate_email
+
+
+def get_password_validation_error() -> Any:
+    """
+    Dependency provider for the get_password_validation_error utility.
+    Returns:
+        get_password_validation_error: The password validation function.
+    """
+    from src.utils.validation import get_password_validation_error
+
+    return get_password_validation_error
+
+
+def get_async_refresh_access_token() -> Any:
+    """
+    Dependency provider for the async_refresh_access_token function.
+    Returns:
+        async_refresh_access_token: The async function to refresh JWT access tokens.
+    """
+    from src.core.config import settings
+    from src.services.user import async_refresh_access_token
+
+    async def wrapper(session, token):
+        return await async_refresh_access_token(
+            session,
+            token,
+            settings.jwt_secret_key,
+            settings.jwt_algorithm,
+        )
+
+    return wrapper
 
 
 # API key security scheme

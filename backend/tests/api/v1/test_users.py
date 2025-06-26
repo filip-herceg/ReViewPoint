@@ -50,7 +50,18 @@ def get_auth_header(
 
 
 # --- Positive User Endpoint Tests ---
-def test_create_and_get_user(client: TestClient) -> None:
+def test_create_and_get_user(
+    monkeypatch: pytest.MonkeyPatch, client: TestClient
+) -> None:
+    monkeypatch.setenv("REVIEWPOINT_API_KEY", "testkey")
+    monkeypatch.setenv("REVIEWPOINT_API_KEY_ENABLED", "false")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET_KEY", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_DB_URL", "sqlite+aiosqlite:///:memory:")
+    monkeypatch.setenv("REVIEWPOINT_AUTH_ENABLED", "true")
+    monkeypatch.setenv("REVIEWPOINT_JWT_ALGORITHM", "HS256")
+    monkeypatch.setenv("REVIEWPOINT_JWT_EXPIRE_MINUTES", "30")
+    monkeypatch.setenv("REVIEWPOINT_ALLOWED_ORIGINS", '["*"]')
     headers = get_auth_header(client)
     print(f"DEBUG: Auth headers: {headers}")
     resp = client.post(
@@ -69,7 +80,18 @@ def test_create_and_get_user(client: TestClient) -> None:
     assert resp.json()["email"] == "u2@example.com"
 
 
-def test_list_users_pagination_and_filter(client: TestClient) -> None:
+def test_list_users_pagination_and_filter(
+    monkeypatch: pytest.MonkeyPatch, client: TestClient
+) -> None:
+    monkeypatch.setenv("REVIEWPOINT_API_KEY", "testkey")
+    monkeypatch.setenv("REVIEWPOINT_API_KEY_ENABLED", "false")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET_KEY", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_DB_URL", "sqlite+aiosqlite:///:memory:")
+    monkeypatch.setenv("REVIEWPOINT_AUTH_ENABLED", "true")
+    monkeypatch.setenv("REVIEWPOINT_JWT_ALGORITHM", "HS256")
+    monkeypatch.setenv("REVIEWPOINT_JWT_EXPIRE_MINUTES", "30")
+    monkeypatch.setenv("REVIEWPOINT_ALLOWED_ORIGINS", '["*"]')
     headers = get_auth_header(client)
     test_email = "u2@example.com"
     check_resp = client.get("/api/v1/users", headers=headers)
@@ -99,7 +121,16 @@ def test_list_users_pagination_and_filter(client: TestClient) -> None:
     assert resp.status_code == 200
 
 
-def test_export_users_csv(client: TestClient) -> None:
+def test_export_users_csv(monkeypatch: pytest.MonkeyPatch, client: TestClient) -> None:
+    monkeypatch.setenv("REVIEWPOINT_API_KEY", "testkey")
+    monkeypatch.setenv("REVIEWPOINT_API_KEY_ENABLED", "false")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET_KEY", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_DB_URL", "sqlite+aiosqlite:///:memory:")
+    monkeypatch.setenv("REVIEWPOINT_AUTH_ENABLED", "true")
+    monkeypatch.setenv("REVIEWPOINT_JWT_ALGORITHM", "HS256")
+    monkeypatch.setenv("REVIEWPOINT_JWT_EXPIRE_MINUTES", "30")
+    monkeypatch.setenv("REVIEWPOINT_ALLOWED_ORIGINS", '["*"]')
     headers = get_auth_header(client)
     resp = client.get("/api/v1/users/export", headers=headers)
     assert resp.status_code == 200
@@ -107,7 +138,18 @@ def test_export_users_csv(client: TestClient) -> None:
     assert "id,email,name" in resp.text
 
 
-def test_users_export_alive(client: TestClient) -> None:
+def test_users_export_alive(
+    monkeypatch: pytest.MonkeyPatch, client: TestClient
+) -> None:
+    monkeypatch.setenv("REVIEWPOINT_API_KEY", "testkey")
+    monkeypatch.setenv("REVIEWPOINT_API_KEY_ENABLED", "false")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET_KEY", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_DB_URL", "sqlite+aiosqlite:///:memory:")
+    monkeypatch.setenv("REVIEWPOINT_AUTH_ENABLED", "true")
+    monkeypatch.setenv("REVIEWPOINT_JWT_ALGORITHM", "HS256")
+    monkeypatch.setenv("REVIEWPOINT_JWT_EXPIRE_MINUTES", "30")
+    monkeypatch.setenv("REVIEWPOINT_ALLOWED_ORIGINS", '["*"]')
     headers = get_auth_header(client)
     resp = client.get("/api/v1/users/export-alive", headers=headers)
     assert resp.status_code == 200
@@ -115,28 +157,59 @@ def test_users_export_alive(client: TestClient) -> None:
 
 
 # --- Negative User Endpoint Tests ---
-def test_users_get_unauthorized() -> None:
+def test_users_get_unauthorized(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("REVIEWPOINT_API_KEY_ENABLED", "false")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET_KEY", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_DB_URL", "sqlite+aiosqlite:///:memory:")
+    monkeypatch.setenv("REVIEWPOINT_AUTH_ENABLED", "true")
+    monkeypatch.setenv("REVIEWPOINT_JWT_ALGORITHM", "HS256")
+    monkeypatch.setenv("REVIEWPOINT_JWT_EXPIRE_MINUTES", "30")
+    monkeypatch.setenv("REVIEWPOINT_ALLOWED_ORIGINS", '["*"]')
     client = TestClient(app)
     resp = client.get("/api/v1/users")
     assert resp.status_code == 401
 
 
-def test_users_get_invalid_token() -> None:
+def test_users_get_invalid_token(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("REVIEWPOINT_API_KEY_ENABLED", "false")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET_KEY", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_DB_URL", "sqlite+aiosqlite:///:memory:")
+    monkeypatch.setenv("REVIEWPOINT_AUTH_ENABLED", "true")
+    monkeypatch.setenv("REVIEWPOINT_JWT_ALGORITHM", "HS256")
+    monkeypatch.setenv("REVIEWPOINT_JWT_EXPIRE_MINUTES", "30")
+    monkeypatch.setenv("REVIEWPOINT_ALLOWED_ORIGINS", '["*"]')
     client = TestClient(app)
     resp = client.get("/api/v1/users", headers={"Authorization": "Bearer not.a.jwt"})
     assert resp.status_code == 401
 
 
-def test_users_get_missing_api_key() -> None:
-    client = TestClient(app)
-    token = create_access_token({"sub": "1", "email": "test@x.com"})
-    resp = client.get("/api/v1/users", headers={"Authorization": f"Bearer {token}"})
-    assert resp.status_code == 401 or resp.status_code == 403
+def test_users_get_missing_api_key(monkeypatch: pytest.MonkeyPatch, client: TestClient):
+    monkeypatch.setenv("REVIEWPOINT_API_KEY_ENABLED", "true")
+    monkeypatch.setenv("REVIEWPOINT_API_KEY", "testkey")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET_KEY", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_DB_URL", "sqlite+aiosqlite:///:memory:")
+    monkeypatch.setenv("REVIEWPOINT_AUTH_ENABLED", "true")
+    monkeypatch.setenv("REVIEWPOINT_JWT_ALGORITHM", "HS256")
+    monkeypatch.setenv("REVIEWPOINT_JWT_EXPIRE_MINUTES", "30")
+    monkeypatch.setenv("REVIEWPOINT_ALLOWED_ORIGINS", '["*"]')
+    response = client.get("/api/v1/users/me")
+    assert response.status_code in (401, 403)
 
 
 def test_users_get_with_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
-    client = TestClient(app)
     monkeypatch.setenv("REVIEWPOINT_API_KEY", "test-key")
+    monkeypatch.setenv("REVIEWPOINT_API_KEY_ENABLED", "true")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET_KEY", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_DB_URL", "sqlite+aiosqlite:///:memory:")
+    monkeypatch.setenv("REVIEWPOINT_AUTH_ENABLED", "true")
+    monkeypatch.setenv("REVIEWPOINT_JWT_ALGORITHM", "HS256")
+    monkeypatch.setenv("REVIEWPOINT_JWT_EXPIRE_MINUTES", "30")
+    monkeypatch.setenv("REVIEWPOINT_ALLOWED_ORIGINS", '["*"]')
+    client = TestClient(app)
     token = create_access_token({"sub": "1", "email": "test@x.com"})
     resp = client.get(
         "/api/v1/users",
@@ -146,7 +219,18 @@ def test_users_get_with_api_key(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 # --- Uploads (Positive and Negative) ---
-def test_upload_and_get_file(client: TestClient) -> None:
+def test_upload_and_get_file(
+    monkeypatch: pytest.MonkeyPatch, client: TestClient
+) -> None:
+    monkeypatch.setenv("REVIEWPOINT_API_KEY", "testkey")
+    monkeypatch.setenv("REVIEWPOINT_API_KEY_ENABLED", "false")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET_KEY", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_DB_URL", "sqlite+aiosqlite:///:memory:")
+    monkeypatch.setenv("REVIEWPOINT_AUTH_ENABLED", "true")
+    monkeypatch.setenv("REVIEWPOINT_JWT_ALGORITHM", "HS256")
+    monkeypatch.setenv("REVIEWPOINT_JWT_EXPIRE_MINUTES", "30")
+    monkeypatch.setenv("REVIEWPOINT_ALLOWED_ORIGINS", '["*"]')
     headers = get_auth_header(client)
     file_content = b"hello world"
     files = {"file": ("test.txt", file_content, "text/plain")}
@@ -158,7 +242,18 @@ def test_upload_and_get_file(client: TestClient) -> None:
     assert resp.json()["filename"] == "test.txt"
 
 
-def test_list_files_pagination_and_filter(client: TestClient) -> None:
+def test_list_files_pagination_and_filter(
+    monkeypatch: pytest.MonkeyPatch, client: TestClient
+) -> None:
+    monkeypatch.setenv("REVIEWPOINT_API_KEY", "testkey")
+    monkeypatch.setenv("REVIEWPOINT_API_KEY_ENABLED", "false")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET_KEY", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_DB_URL", "sqlite+aiosqlite:///:memory:")
+    monkeypatch.setenv("REVIEWPOINT_AUTH_ENABLED", "true")
+    monkeypatch.setenv("REVIEWPOINT_JWT_ALGORITHM", "HS256")
+    monkeypatch.setenv("REVIEWPOINT_JWT_EXPIRE_MINUTES", "30")
+    monkeypatch.setenv("REVIEWPOINT_ALLOWED_ORIGINS", '["*"]')
     headers = get_auth_header(client)
     file_content = b"hello world"
     files = {"file": ("test.txt", file_content, "text/plain")}

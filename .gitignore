@@ -146,6 +146,7 @@ celerybeat.pid
 # Python environments
 .env
 .env.*
+!.env.template
 .venv
 .venv*/
 venv/

@@ -2,6 +2,7 @@ from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from jose import jwt as jose_jwt
 
 from src.models.user import User
 from src.services import user as user_service
@@ -38,10 +39,13 @@ async def test_authenticate_user_success(monkeypatch: pytest.MonkeyPatch) -> Non
     session.execute = AsyncMock(return_value=DummyResult(dummy))
     monkeypatch.setattr(user_service, "verify_password", lambda pw, hpw: True)
     monkeypatch.setattr(user_service, "create_access_token", lambda payload: "token")
+    monkeypatch.setattr(user_service, "create_refresh_token", lambda payload: "refresh")
     monkeypatch.setattr(user_service, "settings", MagicMock(auth_enabled=True))
     with patch("src.repositories.user.update_last_login", new_callable=AsyncMock):
-        token = await user_service.authenticate_user(session, dummy.email, "pw")
-    assert token == "token"
+        tokens = await user_service.authenticate_user(session, dummy.email, "pw")
+    access_token, refresh_token = tokens
+    assert access_token == "token"
+    assert refresh_token == "refresh"
 
 
 @pytest.mark.asyncio
@@ -73,8 +77,11 @@ async def test_authenticate_user_auth_disabled(monkeypatch: pytest.MonkeyPatch) 
     session: Any = AsyncMock()
     monkeypatch.setattr(user_service, "settings", MagicMock(auth_enabled=False))
     monkeypatch.setattr(user_service, "create_access_token", lambda payload: "devtoken")
-    token = await user_service.authenticate_user(session, "any@example.com", "pw")
-    assert token == "devtoken"
+    monkeypatch.setattr(user_service, "create_refresh_token", lambda payload: "refresh")
+    tokens = await user_service.authenticate_user(session, "any@example.com", "pw")
+    access_token, refresh_token = tokens
+    assert access_token == "devtoken"
+    assert refresh_token == "refresh"
 
 
 def make_real_user(is_active: bool, is_deleted: bool) -> User:
@@ -119,6 +126,9 @@ def test_refresh_access_token_valid(monkeypatch: pytest.MonkeyPatch) -> None:
         user_service, "verify_access_token", lambda t: {"sub": "1", "email": "e"}
     )
     monkeypatch.setattr(user_service, "create_access_token", lambda payload: "newtoken")
+    monkeypatch.setattr(
+        user_service, "verify_refresh_token", lambda t: {"sub": "1", "email": "e"}
+    )
     assert user_service.refresh_access_token(1, "sometoken") == "newtoken"
 
 
@@ -315,3 +325,175 @@ async def test_set_user_preferences_not_found(monkeypatch: pytest.MonkeyPatch) -
     monkeypatch.setattr(user_service, "get_user_by_id", AsyncMock(return_value=None))
     with pytest.raises(user_service.UserNotFoundError):
         await user_service.set_user_preferences(session, 1, {})
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "error_case,patches,expected_exception,expected_msg",
+    [
+        (
+            "jwt_decode_error",
+            [
+                patch(
+                    "src.services.user.jwt.decode",
+                    side_effect=jose_jwt.JWTError("fail"),
+                )
+            ],
+            user_service.RefreshTokenError,
+            "JWT decode failed: fail",
+        ),
+        (
+            "missing_user_id",
+            [patch("src.services.user.jwt.decode", return_value={})],
+            user_service.RefreshTokenError,
+            "Invalid token format: missing user_id.",
+        ),
+        (
+            "rate_limited",
+            [
+                patch("src.services.user.jwt.decode", return_value={"user_id": 1}),
+                patch(
+                    "src.services.user.user_action_limiter",
+                    new_callable=AsyncMock,
+                    return_value=False,
+                ),
+            ],
+            user_service.RefreshTokenRateLimitError,
+            "Too many token refresh attempts.",
+        ),
+        (
+            "blacklisted",
+            [
+                patch("src.services.user.jwt.decode", return_value={"user_id": 1}),
+                patch(
+                    "src.services.user.user_action_limiter",
+                    new_callable=AsyncMock,
+                    return_value=True,
+                ),
+                patch(
+                    "src.services.user.is_token_blacklisted",
+                    new_callable=AsyncMock,
+                    return_value=True,
+                ),
+            ],
+            user_service.RefreshTokenBlacklistedError,
+            "Refresh token is blacklisted.",
+        ),
+        (
+            "unexpected_error",
+            [
+                patch("src.services.user.jwt.decode", return_value={"user_id": 1}),
+                patch(
+                    "src.services.user.user_action_limiter",
+                    new_callable=AsyncMock,
+                    return_value=True,
+                ),
+                patch(
+                    "src.services.user.is_token_blacklisted",
+                    new_callable=AsyncMock,
+                    return_value=False,
+                ),
+                patch(
+                    "src.services.user.refresh_access_token",
+                    side_effect=Exception("fail"),
+                ),
+            ],
+            user_service.RefreshTokenError,
+            "Unexpected error: fail",
+        ),
+    ],
+)
+async def test_async_refresh_access_token_errors(
+    error_case, patches, expected_exception, expected_msg
+):
+    session = AsyncMock()
+    token = "sometoken"
+    jwt_secret = "secret"
+    jwt_algorithm = "HS256"
+    from src.models.user import User
+
+    real_user = User(
+        email="real@example.com",
+        hashed_password="hashed",
+        is_active=True,
+        is_deleted=False,
+        name=None,
+        bio=None,
+        avatar_url=None,
+        preferences=None,
+    )
+    with patch(
+        "src.services.user.get_user_by_id", new=AsyncMock(return_value=real_user)
+    ):
+        # Apply all patches
+        with patches[0]:
+            if len(patches) > 1:
+                with patches[1]:
+                    if len(patches) > 2:
+                        with patches[2]:
+                            if len(patches) > 3:
+                                with patches[3]:
+                                    with pytest.raises(expected_exception) as exc:
+                                        await user_service.async_refresh_access_token(
+                                            session, token, jwt_secret, jwt_algorithm
+                                        )
+                                    assert expected_msg in str(exc.value)
+                            else:
+                                with pytest.raises(expected_exception) as exc:
+                                    await user_service.async_refresh_access_token(
+                                        session, token, jwt_secret, jwt_algorithm
+                                    )
+                                assert expected_msg in str(exc.value)
+                    else:
+                        with pytest.raises(expected_exception) as exc:
+                            await user_service.async_refresh_access_token(
+                                session, token, jwt_secret, jwt_algorithm
+                            )
+                        assert expected_msg in str(exc.value)
+            else:
+                with pytest.raises(expected_exception) as exc:
+                    await user_service.async_refresh_access_token(
+                        session, token, jwt_secret, jwt_algorithm
+                    )
+                assert expected_msg in str(exc.value)
+
+
+@pytest.mark.asyncio
+async def test_async_refresh_access_token_success(monkeypatch):
+    session = AsyncMock()
+    token = "sometoken"
+    jwt_secret = "secret"
+    jwt_algorithm = "HS256"
+    payload = {"user_id": 1, "jti": "jti123"}
+    from src.models.user import User
+
+    real_user = User(
+        email="real@example.com",
+        hashed_password="hashed",
+        is_active=True,
+        is_deleted=False,
+        name=None,
+        bio=None,
+        avatar_url=None,
+        preferences=None,
+    )
+    monkeypatch.setattr(user_service.jwt, "decode", lambda *a, **kw: payload)
+    monkeypatch.setattr(
+        user_service, "user_action_limiter", AsyncMock(return_value=True)
+    )
+    monkeypatch.setattr(
+        user_service, "is_token_blacklisted", AsyncMock(return_value=False)
+    )
+    monkeypatch.setattr(
+        user_service, "refresh_access_token", lambda user_id, token: "newtoken"
+    )
+    monkeypatch.setattr(
+        "src.core.security.verify_refresh_token", lambda t: {"sub": "1", "email": "e"}
+    )
+    with patch(
+        "src.services.user.get_user_by_id", new=AsyncMock(return_value=real_user)
+    ):
+        result = await user_service.async_refresh_access_token(
+            session, token, jwt_secret, jwt_algorithm
+        )
+    assert result == "newtoken"

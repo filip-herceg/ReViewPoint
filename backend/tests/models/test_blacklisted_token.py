@@ -1,4 +1,3 @@
-import os
 import uuid
 from datetime import UTC, datetime, timedelta
 
@@ -8,11 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.blacklisted_token import BlacklistedToken
 
-os.environ["REVIEWPOINT_API_KEY"] = "testkey"
-
 
 @pytest.mark.asyncio
-async def test_blacklisted_token_model_fields(async_session: AsyncSession) -> None:
+async def test_blacklisted_token_model_fields(
+    async_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("REVIEWPOINT_API_KEY", "testkey")
     now = datetime.now(UTC)
     token = BlacklistedToken(jti=f"testjti-{uuid.uuid4()}", expires_at=now)
     async_session.add(token)
@@ -24,7 +24,10 @@ async def test_blacklisted_token_model_fields(async_session: AsyncSession) -> No
 
 
 @pytest.mark.asyncio
-async def test_blacklisted_token_unique_jti(async_session: AsyncSession) -> None:
+async def test_blacklisted_token_unique_jti(
+    async_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("REVIEWPOINT_API_KEY", "testkey")
     now = datetime.now(UTC) + timedelta(hours=1)
     jti = f"uniquejti-{uuid.uuid4()}"
     token1 = BlacklistedToken(jti=jti, expires_at=now)

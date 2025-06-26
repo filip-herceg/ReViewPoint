@@ -1,16 +1,24 @@
+from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
+from typing import Any
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Request, status
 from jose import jwt
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.deps import get_current_user
+from src.api.deps import (
+    get_async_refresh_access_token,
+    get_blacklist_token,
+    get_current_user,
+    get_password_validation_error,
+    get_user_action_limiter,
+    get_user_service,
+    get_validate_email,
+)
 from src.core.config import settings
 from src.core.database import get_async_session
 from src.models.user import User
-from src.repositories.blacklisted_token import blacklist_token, is_token_blacklisted
-from src.repositories.user import user_action_limiter
 from src.schemas.auth import (
     AuthResponse,
     MessageResponse,
@@ -20,7 +28,11 @@ from src.schemas.auth import (
     UserRegisterRequest,
 )
 from src.schemas.user import UserProfile
-from src.services import user as user_service
+from src.services.user import (
+    RefreshTokenBlacklistedError,
+    RefreshTokenError,
+    RefreshTokenRateLimitError,
+)
 
 
 # Define JWTError class
@@ -31,6 +43,25 @@ class JWTError(Exception):
 
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
+
+
+# Utility for raising and logging HTTP errors
+def http_error(
+    status_code: int,
+    detail: str,
+    logger_func: Callable[[str], None] = logger.error,
+    extra: dict[str, Any] | None = None,
+    exc: Exception | None = None,
+) -> None:
+    # Only pass 'extra' if logger supports it
+    if extra:
+        try:
+            logger_func(f"{detail} | {extra}")
+        except TypeError:
+            logger_func(detail)
+    else:
+        logger_func(detail)
+    raise HTTPException(status_code=status_code, detail=detail) from exc
 
 
 @router.post(
@@ -188,58 +219,55 @@ async def register(
         ],
     ),
     session: AsyncSession = Depends(get_async_session),
+    user_service: Any = Depends(get_user_service),
+    user_action_limiter: Any = Depends(get_user_action_limiter),
 ) -> AuthResponse:
     """
-    Registers a new user.
-    - **data**: User registration data (email, password, name)
-    - **session**: Database session
-    Returns a JWT access token on success.
+    Registers a new user and returns a JWT access token.
+    Raises HTTP 429 if rate limited, 400 if duplicate or invalid data, 500 on server error.
     """
     limiter_key = f"register:{data.email}"
     allowed = await user_action_limiter.is_allowed(limiter_key)
     if not allowed:
-        logger.warning("registration_rate_limited", extra={"email": data.email})
-        raise HTTPException(
-            status_code=429,
-            detail="Too many registration attempts. Please try again later.",
+        http_error(
+            429,
+            "Too many registration attempts. Please try again later.",
+            logger.warning,
+            {"email": data.email},
         )
-    # Enhanced validation
-    from src.utils.validation import get_password_validation_error, validate_email
-
-    if not validate_email(data.email):
-        logger.warning("registration_invalid_email", extra={"email": data.email})
-        raise HTTPException(status_code=400, detail="Invalid email format.")
-    pw_error = get_password_validation_error(data.password)
-    if pw_error:
-        logger.warning("registration_invalid_password", extra={"email": data.email})
-        raise HTTPException(status_code=400, detail=pw_error)
     logger.info("registration_attempt", extra={"email": data.email})
     try:
         user = await user_service.register_user(session, data.model_dump())
-        token = user_service.create_access_token(
-            {"sub": str(user.id), "email": user.email}
+        access_token, refresh_token = await user_service.authenticate_user(
+            session, data.email, data.password
         )
         logger.info(
             "registration_success", extra={"user_id": user.id, "email": user.email}
         )
-        return AuthResponse(access_token=token)
+        return AuthResponse(access_token=access_token, refresh_token=refresh_token)
     except user_service.UserAlreadyExistsError as e:
-        logger.warning("registration_duplicate_email", extra={"email": data.email})
-        raise HTTPException(
-            status_code=400, detail="User with this email already exists."
-        ) from e
-    except user_service.InvalidDataError as e:
-        logger.warning("registration_invalid_data", extra={"email": data.email})
-        raise HTTPException(status_code=400, detail="Invalid registration data.") from e
-    except Exception as e:
-        logger.error(
-            "registration_unexpected_error",
-            extra={"email": data.email, "error": str(e)},
+        http_error(
+            400,
+            "User with this email already exists.",
+            logger.warning,
+            {"email": data.email},
+            e,
         )
-        raise HTTPException(
-            status_code=500,
-            detail="An unexpected error occurred. Please try again later.",
-        ) from e
+        raise
+    except user_service.InvalidDataError as e:
+        http_error(
+            400, "Invalid registration data.", logger.warning, {"email": data.email}, e
+        )
+        raise
+    except Exception as e:
+        http_error(
+            500,
+            "An unexpected error occurred. Please try again later.",
+            logger.error,
+            {"email": data.email, "error": str(e)},
+            e,
+        )
+        raise
 
 
 @router.post(
@@ -262,7 +290,12 @@ async def register(
         200: {
             "description": "Login successful",
             "content": {
-                "application/json": {"example": {"access_token": "<jwt_token>"}}
+                "application/json": {
+                    "example": {
+                        "access_token": "<jwt_token>",
+                        "refresh_token": "<refresh_token>",
+                    }
+                }
             },
         },
         400: {
@@ -327,46 +360,47 @@ async def register(
     tags=["Auth"],
 )
 async def login(
-    request: Request,
-    data: UserLoginRequest = Body(
-        ...,
-        description="User login credentials.",
-        examples=[{"summary": "User login", "value": {"email": "user@example.com"}}],
-    ),
+    data: UserLoginRequest,
     session: AsyncSession = Depends(get_async_session),
+    user_service: Any = Depends(get_user_service),
+    user_action_limiter: Any = Depends(get_user_action_limiter),
 ) -> AuthResponse:
+    """
+    Authenticates a user and returns a JWT access token.
+    Raises HTTP 429 if rate limited, 401 if invalid credentials, 500 on server error.
+    """
     limiter_key = f"login:{data.email}"
     allowed = await user_action_limiter.is_allowed(limiter_key)
     if not allowed:
-        logger.warning("login_rate_limited", extra={"email": data.email})
-        raise HTTPException(
-            status_code=429, detail="Too many login attempts. Please try again later."
+        http_error(
+            429,
+            "Too many login attempts. Please try again later.",
+            logger.warning,
+            {"email": data.email},
         )
-    # Enhanced validation
-    from src.utils.validation import validate_email
-
-    if not validate_email(data.email):
-        logger.warning("login_invalid_email", extra={"email": data.email})
-        raise HTTPException(status_code=400, detail="Invalid email format.")
     logger.info("login_attempt", extra={"email": data.email})
     try:
-        token = await user_service.authenticate_user(session, data.email, data.password)
-        logger.info("login_success", extra={"email": data.email})
-        return AuthResponse(access_token=token)
-    except user_service.UserNotFoundError as e:
-        logger.warning("login_user_not_found", extra={"email": data.email})
-        raise HTTPException(status_code=401, detail="Invalid credentials") from e
-    except user_service.ValidationError as e:
-        logger.warning("login_validation_error", extra={"email": data.email})
-        raise HTTPException(status_code=401, detail="Invalid credentials") from e
-    except Exception as e:
-        logger.error(
-            "login_unexpected_error", extra={"email": data.email, "error": str(e)}
+        access_token, refresh_token = await user_service.authenticate_user(
+            session, data.email, data.password
         )
-        raise HTTPException(
-            status_code=500,
-            detail="An unexpected error occurred. Please try again later.",
-        ) from e
+        logger.info("login_success", extra={"email": data.email})
+        logger.debug(f"[DEBUG] login endpoint returning refresh_token: {refresh_token}")
+        return AuthResponse(access_token=access_token, refresh_token=refresh_token)
+    except user_service.UserNotFoundError as e:
+        http_error(401, "Invalid credentials", logger.warning, {"email": data.email}, e)
+        raise
+    except user_service.ValidationError as e:
+        http_error(401, "Invalid credentials", logger.warning, {"email": data.email}, e)
+        raise
+    except Exception as e:
+        http_error(
+            500,
+            "An unexpected error occurred. Please try again later.",
+            logger.error,
+            {"email": data.email, "error": str(e)},
+            e,
+        )
+        raise
 
 
 @router.post(
@@ -449,16 +483,26 @@ async def logout(
     request: Request,
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_async_session),
+    user_service: Any = Depends(get_user_service),
+    blacklist_token: Callable[[AsyncSession, str, datetime], Awaitable[None]] = Depends(
+        get_blacklist_token
+    ),
+    user_action_limiter: Any = Depends(get_user_action_limiter),
 ) -> MessageResponse:
+    """
+    Logs out the current user and blacklists the access token.
+    Raises HTTP 429 if rate limited, 500 on server error.
+    """
     limiter_key = f"logout:{current_user.id}"
     allowed = await user_action_limiter.is_allowed(limiter_key)
     if not allowed:
-        logger.warning("logout_rate_limited", extra={"user_id": current_user.id})
-        raise HTTPException(
-            status_code=429, detail="Too many logout attempts. Please try again later."
+        http_error(
+            429,
+            "Too many logout attempts. Please try again later.",
+            logger.warning,
+            {"user_id": current_user.id},
         )
     logger.info("logout_attempt", extra={"user_id": current_user.id})
-    # Blacklist the current access token if present
     auth_header = request.headers.get("authorization") if request else None
     if auth_header and auth_header.lower().startswith("bearer "):
         token = auth_header.split(" ", 1)[1]
@@ -468,7 +512,7 @@ async def logout(
             payload = jwt.decode(
                 token, str(settings.jwt_secret_key), algorithms=[settings.jwt_algorithm]
             )
-            jti = payload.get("jti") or token  # fallback to token string if no jti
+            jti = payload.get("jti") or token
             exp = payload.get("exp")
             if exp:
                 expires_at = datetime.fromtimestamp(exp, tz=UTC)
@@ -485,6 +529,7 @@ async def logout(
 
 @router.post(
     "/refresh-token",
+    response_model=AuthResponse,
     summary="Refresh JWT access token",
     description="""
     Refreshes the JWT access token using a valid refresh token.
@@ -555,89 +600,53 @@ async def logout(
     tags=["Auth"],
 )
 async def refresh_token(
-    refresh_token: str = Body(
-        None,
-        description="The refresh token to use for obtaining a new access token.",
-        examples=[{"summary": "A refresh token", "value": "<refresh_token>"}],
-    ),
-    refresh_token_query: str = Query(
-        None, description="The refresh token (alternative, via query param)."
-    ),
+    token: str = Body(..., embed=True),
     session: AsyncSession = Depends(get_async_session),
+    async_refresh_access_token: Callable[[AsyncSession, str], Awaitable[str]] = Depends(
+        get_async_refresh_access_token
+    ),
 ) -> AuthResponse:
-    token = refresh_token or refresh_token_query
-    if not token:
-        raise HTTPException(status_code=401, detail="Invalid or expired refresh token.")
-
-    # Decode token to get user_id for rate limiting
+    """
+    Refreshes the JWT access token using a valid refresh token.
+    Raises HTTP 429 if rate limited, 401 if token is invalid/blacklisted, 500 on server error.
+    """
+    logger.debug(f"[DEBUG] refresh_token endpoint received token: {token}")
     try:
-        # Decode the refresh token
-        payload = jwt.decode(
-            token,
-            str(settings.jwt_secret_key),
-            algorithms=[settings.jwt_algorithm],
+        new_token = await async_refresh_access_token(session, token)
+        logger.info("refresh_success", extra={"token": token})
+        return AuthResponse(access_token=new_token, refresh_token=token)
+    except RefreshTokenRateLimitError as e:
+        http_error(
+            429,
+            "Too many token refresh attempts. Please try again later.",
+            logger.warning,
+            {"token": token, "error": str(e)},
+            e,
         )
-
-        user_id = payload.get("user_id")
-        if not user_id:
-            raise HTTPException(status_code=401, detail="Invalid token format.")
-
-        # Apply rate limiting
-        limiter_key = f"refresh:{user_id}"
-        # Check if rate limiting is enabled and function is callable
-        if callable(user_action_limiter):
-            is_allowed = await user_action_limiter(
-                limiter_key, max_attempts=15, window_seconds=3600
-            )
-            if not is_allowed:
-                logger.warning("refresh_rate_limited", extra={"user_id": user_id})
-                raise HTTPException(
-                    status_code=429,
-                    detail="Too many token refresh attempts. Please try again later.",
-                )
-        # Check if refresh token is blacklisted
-        jti = payload.get("jti") or token
-        if await is_token_blacklisted(session, jti):
-            logger.warning("refresh_token_blacklisted", extra={"user_id": user_id})
-            raise HTTPException(
-                status_code=401, detail="Invalid or expired refresh token."
-            )  # Get new token
-        new_token = user_service.refresh_access_token(user_id, token)
-        logger.info("refresh_success", extra={"user_id": user_id})
-        return AuthResponse(access_token=new_token)
-
-    except JWTError as e:
-        # Handle JWT decoding errors
-        user_id = None if "payload" not in locals() else payload.get("user_id")
-        logger.warning(
-            "refresh_token_decode_failed",
-            extra={
-                "user_id": user_id,
-                "error": str(e),
-            },
+    except RefreshTokenBlacklistedError as e:
+        http_error(
+            401,
+            "Invalid or expired refresh token.",
+            logger.warning,
+            {"token": token, "error": str(e)},
+            e,
         )
-        raise HTTPException(
-            status_code=401, detail="Invalid or expired refresh token."
-        ) from e
+    except RefreshTokenError as e:
+        http_error(
+            401,
+            "Invalid or expired refresh token.",
+            logger.warning,
+            {"token": token, "error": str(e)},
+            e,
+        )
     except Exception as e:
-        # Only handle exceptions that are not JWTError
-        if isinstance(e, JWTError):
-            # This should never happen as JWTError is caught above
-            raise
-
-        # Handle all other unexpected errors
-        user_id = None if "payload" not in locals() else payload.get("user_id")
-        logger.error(
-            "refresh_unexpected_error",
-            extra={
-                "user_id": user_id,
-                "error": str(e),
-            },
+        http_error(
+            500,
+            "An unexpected error occurred. Please try again later.",
+            logger.error,
+            {"token": token, "error": str(e)},
+            e,
         )
-        raise HTTPException(
-            status_code=500,
-            detail="An unexpected error occurred. Please try again later.",
-        ) from e
 
 
 @router.post(
@@ -682,21 +691,21 @@ async def refresh_token(
     },
 )
 async def request_password_reset(
-    data: PasswordResetRequest = Body(
-        ...,
-        description="The email address to send the password reset link to.",
-        examples=[{"summary": "User email", "value": "user@example.com"}],
-    ),
+    data: PasswordResetRequest,
     session: AsyncSession = Depends(get_async_session),
+    user_service: Any = Depends(get_user_service),
+    user_action_limiter: Any = Depends(get_user_action_limiter),
+    validate_email: Callable[[str], bool] = Depends(get_validate_email),
 ) -> MessageResponse:
+    """
+    Initiates a password reset flow. Always returns a success message for security.
+    Raises HTTP 429 if rate limited.
+    """
     limiter_key = f"pwreset:{data.email}"
     allowed = await user_action_limiter.is_allowed(limiter_key)
     if not allowed:
         logger.warning("pwreset_rate_limited", extra={"email": data.email})
         return MessageResponse(message="Password reset link sent.")
-    # Enhanced validation
-    from src.utils.validation import validate_email
-
     if not validate_email(data.email):
         logger.warning("pwreset_invalid_email", extra={"email": data.email})
         return MessageResponse(message="Password reset link sent.")
@@ -772,53 +781,39 @@ async def reset_password(
         ],
     ),
     session: AsyncSession = Depends(get_async_session),
+    user_service: Any = Depends(get_user_service),
+    get_password_validation_error: Callable[[str], str | None] = Depends(
+        get_password_validation_error
+    ),
 ) -> MessageResponse:
-    if len(data.token) < 8:
-        logger.warning(
-            "pwreset_confirm_invalid_token_length", extra={"token": data.token}
-        )
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid token. Token must be at least 8 characters long.",
-        )
-    limiter_key = f"pwreset-confirm:{data.token[:8]}"
-    allowed = await user_action_limiter.is_allowed(limiter_key)
-    if not allowed:
-        logger.warning(
-            "pwreset_confirm_rate_limited", extra={"token_prefix": data.token[:8]}
-        )
-        raise HTTPException(
-            status_code=429,
-            detail="Too many password reset attempts. Please try again later.",
-        )
-    # Enhanced validation
-    from src.utils.validation import get_password_validation_error
-
+    """
+    Completes the password reset flow using a valid reset token.
+    Raises HTTP 400 if password is invalid or token is bad, 429 if rate limited.
+    """
     pw_error = get_password_validation_error(data.new_password)
     if pw_error:
-        logger.warning(
-            "pwreset_confirm_invalid_password", extra={"token_prefix": data.token[:8]}
-        )
-        raise HTTPException(status_code=400, detail=pw_error)
+        http_error(400, pw_error, logger.warning, {"token_prefix": data.token[:8]})
     logger.info("pwreset_confirm_attempt", extra={"token_prefix": data.token[:8]})
     try:
         await user_service.reset_password(session, data.token, data.new_password)
         logger.info("pwreset_confirm_success", extra={"token_prefix": data.token[:8]})
         return MessageResponse(message="Password has been reset.")
     except user_service.ValidationError as e:
-        logger.warning(
-            "pwreset_confirm_validation_error", extra={"token_prefix": data.token[:8]}
+        http_error(
+            400,
+            str(e),
+            logger.warning,
+            {"token_prefix": data.token[:8], "error": str(e)},
+            e,
         )
-        raise HTTPException(status_code=400, detail=str(e)) from e
     except Exception as e:
-        logger.warning(
-            "pwreset_confirm_failed",
-            extra={"token_prefix": data.token[:8], "error": str(e)},
+        http_error(
+            400,
+            "An error occurred while resetting the password. Please try again later.",
+            logger.error,
+            {"token_prefix": data.token[:8], "error": str(e)},
+            e,
         )
-        raise HTTPException(
-            status_code=400,
-            detail="An error occurred while resetting the password. Please try again later.",
-        ) from e
 
 
 @router.get(
@@ -900,6 +895,9 @@ async def reset_password(
     },
 )
 async def get_me(current_user: User = Depends(get_current_user)) -> UserProfile:
+    """
+    Returns the profile information of the currently authenticated user.
+    """
     logger.info("Get current user info", user_id=current_user.id)
     user_dict = {
         "id": current_user.id,

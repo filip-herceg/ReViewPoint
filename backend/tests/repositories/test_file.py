@@ -1,8 +1,8 @@
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from src.models.file import File
-from src.repositories.file import create_file, get_file_by_filename, delete_file
+
+from src.repositories.file import create_file, delete_file, get_file_by_filename
+
 
 @pytest.mark.asyncio
 async def test_create_file_success(async_session: AsyncSession):
@@ -11,10 +11,12 @@ async def test_create_file_success(async_session: AsyncSession):
     assert file.content_type == "text/plain"
     assert file.user_id == 1
 
+
 @pytest.mark.asyncio
 async def test_create_file_missing_filename(async_session: AsyncSession):
     with pytest.raises(Exception):
         await create_file(async_session, "", "text/plain", user_id=1)
+
 
 @pytest.mark.asyncio
 async def test_get_file_by_filename(async_session: AsyncSession):
@@ -23,10 +25,12 @@ async def test_get_file_by_filename(async_session: AsyncSession):
     assert file is not None
     assert file.filename == "findme.txt"
 
+
 @pytest.mark.asyncio
 async def test_get_file_by_filename_not_found(async_session: AsyncSession):
     file = await get_file_by_filename(async_session, "doesnotexist.txt")
     assert file is None
+
 
 @pytest.mark.asyncio
 async def test_delete_file(async_session: AsyncSession):
@@ -35,6 +39,7 @@ async def test_delete_file(async_session: AsyncSession):
     assert deleted is True
     file = await get_file_by_filename(async_session, "todelete.txt")
     assert file is None
+
 
 @pytest.mark.asyncio
 async def test_delete_file_not_found(async_session: AsyncSession):

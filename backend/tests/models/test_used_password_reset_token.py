@@ -1,13 +1,13 @@
+from datetime import UTC, datetime
+
 import pytest
-from datetime import datetime, timedelta, UTC
+
 from src.models.used_password_reset_token import UsedPasswordResetToken
 
 
 def test_token_creation_and_repr():
     token = UsedPasswordResetToken(
-        email="test@example.com",
-        nonce="abc123",
-        used_at=datetime.now(UTC)
+        email="test@example.com", nonce="abc123", used_at=datetime.now(UTC)
     )
     assert token.email == "test@example.com"
     assert token.nonce == "abc123"
@@ -19,9 +19,7 @@ def test_token_creation_and_repr():
 def test_token_used_at_timezone():
     now = datetime.now(UTC)
     token = UsedPasswordResetToken(
-        email="user2@example.com",
-        nonce="nonce2",
-        used_at=now
+        email="user2@example.com", nonce="nonce2", used_at=now
     )
     assert token.used_at.tzinfo is UTC
 

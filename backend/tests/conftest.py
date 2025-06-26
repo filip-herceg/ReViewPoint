@@ -1,8 +1,8 @@
 import os
 
-# Set environment variables at the very top to avoid Pydantic config errors
-os.environ["ENVIRONMENT"] = "test"
-os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///:memory:"
+# Remove or minimize global environment variable settings to avoid conflicts.
+# os.environ["ENVIRONMENT"] = "test"
+# os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///:memory:"
 
 # Set required env vars before any other imports
 os.environ["REVIEWPOINT_DB_URL"] = (
@@ -10,6 +10,9 @@ os.environ["REVIEWPOINT_DB_URL"] = (
 )
 os.environ["REVIEWPOINT_JWT_SECRET"] = (
     os.environ.get("REVIEWPOINT_JWT_SECRET") or "testsecret"
+)
+os.environ["REVIEWPOINT_JWT_SECRET_KEY"] = (
+    os.environ.get("REVIEWPOINT_JWT_SECRET_KEY") or "testsecret"
 )
 
 import asyncio
@@ -49,6 +52,7 @@ DATABASE_URL = TEST_DB_URL
 def set_required_env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("REVIEWPOINT_DB_URL", TEST_DB_URL)
     monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "testsecret")
+    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET_KEY", "testsecret")
     monkeypatch.setenv("REVIEWPOINT_API_KEY_ENABLED", "false")
 
 

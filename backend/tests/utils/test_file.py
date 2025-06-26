@@ -1,16 +1,19 @@
-import os
-import pytest
 from src.utils import file as file_utils
+
 
 def test_sanitize_filename_basic():
     assert file_utils.sanitize_filename("file.txt") == "file.txt"
     assert file_utils.sanitize_filename("../etc/passwd") == "etc_passwd"
-    assert file_utils.sanitize_filename("..\\windows\\system32.dll") == "windows_system32.dll"
+    assert (
+        file_utils.sanitize_filename("..\\windows\\system32.dll")
+        == "windows_system32.dll"
+    )
     assert file_utils.sanitize_filename("folder/file.txt") == "folder_file.txt"
     assert file_utils.sanitize_filename("folder\\file.txt") == "folder_file.txt"
     assert file_utils.sanitize_filename("file:name.txt") == "file_name.txt"
     assert file_utils.sanitize_filename("") == "unnamed_file"
     assert file_utils.sanitize_filename(None) == "unnamed_file"
+
 
 def test_sanitize_filename_edge_cases():
     # Only dangerous chars
@@ -24,6 +27,7 @@ def test_sanitize_filename_edge_cases():
     # Unicode and spaces
     assert file_utils.sanitize_filename("fílè nâmé.txt") == "fílè nâmé.txt"
 
+
 def test_is_safe_filename_basic():
     assert file_utils.is_safe_filename("file.txt")
     assert file_utils.is_safe_filename("file_name.txt")
@@ -36,6 +40,7 @@ def test_is_safe_filename_basic():
     assert not file_utils.is_safe_filename("file*?<>|.txt")
     assert not file_utils.is_safe_filename("..")
     assert not file_utils.is_safe_filename("")
+
 
 def test_is_safe_filename_edge_cases():
     # Only dangerous chars

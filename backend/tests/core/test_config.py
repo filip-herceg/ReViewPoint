@@ -271,6 +271,7 @@ def test_jwt_secret_legacy(monkeypatch: MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.chdir(tmp_path)
 
     # Only set legacy JWT_SECRET, not JWT_SECRET_KEY
+    monkeypatch.delenv("REVIEWPOINT_JWT_SECRET_KEY", raising=False)
     cfg = _reload(
         monkeypatch,
         DB_URL="postgresql+asyncpg://db",
