@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   postgres_test:
-    image: postgres:15-alpine
+    image: postgres:17-alpine
     container_name: reviewpoint_postgres_test_ci
     environment:
       POSTGRES_DB: reviewpoint_test
