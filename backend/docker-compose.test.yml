@@ -21,6 +21,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.dev
+    container_name: ReViewPoint-Backend-Test
     environment:
       - REVIEWPOINT_TEST_DB_URL=postgresql+asyncpg://postgres:postgres@postgres_test:5432/reviewpoint_test
     depends_on:

@@ -41,7 +41,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile.dev
-    container_name: reviewpoint_backend
+    container_name: ReViewPoint-Backend
     ports:
       - "8000:8000"
     volumes:

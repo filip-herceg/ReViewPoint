@@ -434,50 +434,101 @@ import pytest
 import time
 import asyncio
 import asyncpg
-
+import os
 
 @pytest.fixture(scope="session", autouse=True)
 def ensure_test_db_container():
-    """
-    Ensure the test database Docker container is running before tests start,
-    and remove it (with volumes) after tests for a clean state.
-    Instantly aborts the test session if the DB connection cannot be made.
-    """
+    print("[DEBUG] ensure_test_db_container fixture running...")
     compose_file = "docker-compose.test.yml"
-    service_name = "db"  # Change if your service is named differently
+    service_name = "postgres_test"
+    container_name = "reviewpoint_postgres_test_ci"
     db_url = "postgresql://postgres:postgres@localhost:5432/reviewpoint_test"
+    print(f"[DEBUG] Current working directory: {os.getcwd()}")
+    print(f"[DEBUG] Compose file exists: {os.path.exists(compose_file)}")
+    print(f"[DEBUG] Compose file path: {os.path.abspath(compose_file)}")
+    print(f"[DEBUG] Service name: {service_name}")
+    print(f"[DEBUG] Container name: {container_name}")
+    print(f"[DEBUG] DB URL: {db_url}")
+    # List docker compose version
+    try:
+        version_result = subprocess.run(["docker", "compose", "version"], capture_output=True, text=True)
+        print(f"[DEBUG] Docker Compose version: {version_result.stdout.strip()} {version_result.stderr.strip()}")
+    except Exception as e:
+        print(f"[DEBUG] Could not get Docker Compose version: {e}")
+    # List all docker containers before
+    try:
+        ps_result = subprocess.run(["docker", "ps", "-a"], capture_output=True, text=True)
+        print(f"[DEBUG] Docker containers before:\n{ps_result.stdout}")
+    except Exception as e:
+        print(f"[DEBUG] Could not list docker containers: {e}")
     # Start the container, force recreate for a clean state
     try:
-        subprocess.run(
+        print(f"[DEBUG] Running: docker compose -f {compose_file} up --force-recreate -d {service_name}")
+        result = subprocess.run(
             ["docker", "compose", "-f", compose_file, "up", "--force-recreate", "-d", service_name],
             check=True,
             capture_output=True,
+            text=True,
         )
+        print(f"[DEBUG] Docker Compose up stdout:\n{result.stdout}")
+        print(f"[DEBUG] Docker Compose up stderr:\n{result.stderr}")
         print(f"Test database container '{service_name}' started or already running.")
     except Exception as e:
         print(f"Failed to start test database container: {e}")
         raise
+    # List all docker containers after
+    try:
+        ps_result = subprocess.run(["docker", "ps", "-a"], capture_output=True, text=True)
+        print(f"[DEBUG] Docker containers after up:\n{ps_result.stdout}")
+    except Exception as e:
+        print(f"[DEBUG] Could not list docker containers: {e}")
+    # Wait for container health status to be healthy
+    print("[DEBUG] Waiting for container health status to be 'healthy'...")
+    healthy = False
+    for i in range(30):  # up to 30 seconds
+        inspect = subprocess.run([
+            "docker", "inspect", "-f", "{{.State.Health.Status}}", container_name
+        ], capture_output=True, text=True)
+        status = inspect.stdout.strip()
+        print(f"[DEBUG] Container health status: {status}")
+        if status == "healthy":
+            healthy = True
+            break
+        time.sleep(1)
+    if not healthy:
+        raise RuntimeError(f"Container {container_name} did not become healthy in time!")
     # Try to connect to the DB, fail fast if not available
     async def try_connect():
-        for _ in range(10):
+        for i in range(10):
             try:
+                print(f"[DEBUG] Attempting DB connection try {i+1}/10...")
                 conn = await asyncpg.connect(db_url)
                 await conn.close()
                 print("Successfully connected to test database.")
                 return
             except Exception as e:
-                print("Waiting for test database to become available...")
+                print(f"Waiting for test database to become available... ({e})")
                 time.sleep(1)
         raise RuntimeError("Could not connect to test database after multiple attempts.")
     asyncio.get_event_loop().run_until_complete(try_connect())
     yield
     # Remove the container and its volumes for a clean state
     try:
-        subprocess.run(
+        print(f"[DEBUG] Running: docker compose -f {compose_file} down -v")
+        result = subprocess.run(
             ["docker", "compose", "-f", compose_file, "down", "-v"],
             check=True,
             capture_output=True,
+            text=True,
         )
+        print(f"[DEBUG] Docker Compose down stdout:\n{result.stdout}")
+        print(f"[DEBUG] Docker Compose down stderr:\n{result.stderr}")
         print(f"Test database container '{service_name}' and volumes removed after tests.")
     except Exception as e:
         print(f"Failed to remove test database container: {e}")
+    # List all docker containers after down
+    try:
+        ps_result = subprocess.run(["docker", "ps", "-a"], capture_output=True, text=True)
+        print(f"[DEBUG] Docker containers after down:\n{ps_result.stdout}")
+    except Exception as e:
+        print(f"[DEBUG] Could not list docker containers: {e}")
