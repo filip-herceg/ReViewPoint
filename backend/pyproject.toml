@@ -40,7 +40,13 @@ dependencies = [
   "starlette>=0.46.2",
   "autopep8>=2.3.2",
   "loguru>=0.7.3",
-  "pydantic[email]>=2.0.0,<3.0.0"
+  "pydantic[email]>=2.0.0,<3.0.0",
+  "pytest>=8.3.4",
+  "pytest-asyncio>=0.24.0",
+  "pytest-cov>=6.0.0",
+  "pytest-mock>=3.14.0",
+  "httpx>=0.28.1",
+  "pytest-loguru>=0.2.0"
 ]
 
 [project.urls]
@@ -58,6 +64,7 @@ dependencies = [
   "pytest>=8.3.4",
   "pytest-asyncio>=0.24.0",
   "pytest-cov>=6.0.0",
+  "pytest-mock>=3.14.0",
   "httpx>=0.28.1",
   "black>=24.10.0",
   "ruff>=0.8.4",
@@ -158,6 +165,9 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 norecursedirs = "/tests"
 pythonpath = ["src"]
+markers = [
+    "jwt: mark tests that require JWT handling",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src"]

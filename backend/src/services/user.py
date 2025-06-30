@@ -5,23 +5,34 @@ User service: registration, authentication, logout, and authentication check.
 import os
 import secrets
 import sys
+import uuid
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 from typing import Any
 
 from fastapi import UploadFile
+from jose import JWTError, jwt
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.config import settings
-from src.core.security import create_access_token, verify_access_token
+from src.core.security import (
+    create_access_token,
+    create_refresh_token,
+    verify_access_token,
+    verify_refresh_token,
+)
 from src.models.used_password_reset_token import UsedPasswordResetToken
 from src.models.user import User
 from src.repositories import user as user_repo
+from src.repositories.blacklisted_token import is_token_blacklisted
 from src.repositories.user import (
     change_user_password,
     get_user_by_id,
     partial_update_user,
+    update_last_login,
+    user_action_limiter,
 )
 from src.schemas.user import (
     UserAvatarResponse,
@@ -72,11 +83,13 @@ async def register_user(session: AsyncSession, data: dict[str, Any]) -> User:
     return user
 
 
-async def authenticate_user(session: AsyncSession, email: str, password: str) -> str:
+async def authenticate_user(
+    session: AsyncSession, email: str, password: str
+) -> tuple[str, str]:
     """
-    Authenticate user credentials and return a JWT access token.
+    Authenticate user credentials and return a tuple of (access_token, refresh_token).
     Raises ValidationError or UserNotFoundError on error.
-    If authentication is disabled, return a default token for dev user.
+    If authentication is disabled, return default tokens for dev user.
     """
     logger.info("User login attempt", email=email)
     if not settings.auth_enabled:
@@ -84,14 +97,32 @@ async def authenticate_user(session: AsyncSession, email: str, password: str) ->
             "Authentication is DISABLED! Returning dev token for any credentials.",
             email=email,
         )
-        return create_access_token(
+        access_token = create_access_token(
             {
                 "sub": "dev-user",
+                "user_id": "dev-user",
                 "email": email,
                 "role": "admin",
                 "is_authenticated": True,
             }
         )
+        jti = str(uuid.uuid4())
+        exp = int((datetime.now(UTC) + timedelta(days=7)).timestamp())
+        refresh_token = create_refresh_token(
+            {
+                "sub": "dev-user",
+                "user_id": "dev-user",
+                "email": email,
+                "role": "admin",
+                "is_authenticated": True,
+                "jti": jti,
+                "exp": exp,
+            }
+        )
+        logger.debug(
+            f"Refresh token payload at creation: {{'sub': 'dev-user', 'user_id': 'dev-user', 'email': '{email}', 'role': 'admin', 'is_authenticated': True, 'jti': '{jti}', 'exp': {exp}}}"
+        )
+        return access_token, refresh_token
     # Fetch user by email
     result = await session.execute(user_repo.select(User).where(User.email == email))
     user = result.scalar_one_or_none()
@@ -104,9 +135,31 @@ async def authenticate_user(session: AsyncSession, email: str, password: str) ->
     # Update last login
     await user_repo.update_last_login(session, user.id)
     logger.info("User authenticated successfully", user_id=user.id, email=user.email)
-    # Create JWT token
-    token = create_access_token({"sub": str(user.id), "email": user.email})
-    return token
+    # Create JWT tokens
+    access_token = create_access_token(
+        {
+            "sub": str(user.id),
+            "user_id": str(user.id),
+            "email": user.email,
+            "role": "admin" if getattr(user, "is_admin", False) else "user",
+        }
+    )
+    jti = str(uuid.uuid4())
+    exp = int((datetime.now(UTC) + timedelta(days=7)).timestamp())
+    refresh_token = create_refresh_token(
+        {
+            "sub": str(user.id),
+            "user_id": str(user.id),
+            "email": user.email,
+            "role": "admin" if getattr(user, "is_admin", False) else "user",
+            "jti": jti,
+            "exp": exp,
+        }
+    )
+    logger.debug(
+        f"Refresh token payload at creation: {{'sub': str(user.id), 'user_id': str(user.id), 'email': user.email, 'jti': '{jti}', 'exp': {exp}}}"
+    )
+    return access_token, refresh_token
 
 
 async def logout_user(session: AsyncSession, user_id: int) -> None:
@@ -132,18 +185,25 @@ def is_authenticated(user: User) -> bool:
     return user.is_active and not user.is_deleted
 
 
-def refresh_access_token(user_id: int, refresh_token: str) -> str:
+def refresh_access_token(user_id: int | str, refresh_token: str) -> str:
     """
     Validate the refresh token and issue a new access token.
     Stub: No persistent token storage yet.
     """
     try:
-        payload = verify_access_token(refresh_token)
+        payload = verify_refresh_token(refresh_token)
+        # Enforce type consistency: always compare as strings
         if str(payload.get("sub")) != str(user_id):
             raise ValidationError("Refresh token subject mismatch.")
         # Optionally check audience, issuer, exp, etc.
         # Issue new access token
-        return create_access_token({"sub": str(user_id), "email": payload.get("email")})
+        return create_access_token(
+            {
+                "sub": str(user_id),
+                "user_id": str(user_id),
+                "email": payload.get("email"),
+            }
+        )
     except Exception as e:
         raise ValidationError(f"Invalid refresh token: {e}") from e
 
@@ -234,7 +294,7 @@ async def reset_password(session: AsyncSession, token: str, new_password: str) -
     except UserNotFoundError:
         raise
     except Exception as e:
-        logger.error("Password reset failed", error=str(e))
+        logger.error("Password reset failed: {}", str(e))
         raise ValidationError(f"Invalid or expired reset token: {e}") from e
 
 
@@ -404,7 +464,11 @@ async def get_user_by_username(session: AsyncSession, username: str) -> User | N
 
 
 async def get_users_paginated(
-    session: AsyncSession, page: int = 1, limit: int = 20
+    session: AsyncSession,
+    page: int = 1,
+    limit: int = 20,
+    email: str | None = None,
+    name: str | None = None,
 ) -> dict[str, Any]:
     """
     Return paginated users and total count. Validates input and returns structured response.
@@ -412,8 +476,9 @@ async def get_users_paginated(
     if page < 1 or limit < 1 or limit > 100:
         raise ValidationError("Invalid pagination parameters.")
     offset = (page - 1) * limit
-    users = await user_repo.list_users_paginated(session, offset=offset, limit=limit)
-    total = await user_repo.count_users(session)
+    users, total = await user_repo.list_users(
+        session, offset=offset, limit=limit, email=email, name=name
+    )
     return {"users": users, "total": total, "page": page, "limit": limit}
 
 
@@ -452,6 +517,152 @@ async def check_user_role(user_id: int, required_role: str) -> bool:
     return required_role in roles
 
 
+async def async_refresh_access_token(
+    session: AsyncSession,
+    token: str,
+    jwt_secret: str,
+    jwt_algorithm: str,
+    max_attempts: int = 15,
+    window_seconds: int = 3600,
+) -> str:
+    """
+    Validate the refresh token, apply rate limiting, check blacklist, and issue a new access token.
+    Maximized robustness: strict type checks, user existence check, clear error messages, and no debug logs in production.
+    Raises custom exceptions for all error/edge branches.
+    """
+
+    try:
+        payload = jwt.decode(token, jwt_secret, algorithms=[jwt_algorithm])
+        user_id = payload.get("user_id")
+        if not user_id:
+            raise RefreshTokenError("Invalid token format: missing user_id.")
+        # Ensure user exists and is active
+        user = await get_user_by_id(session, int(user_id))
+        if not user or not user.is_active or user.is_deleted:
+            raise RefreshTokenError("User not found or inactive.")
+        # Rate limiting
+        limiter_key = f"refresh:{user_id}"
+        if callable(user_action_limiter):
+            is_allowed = await user_action_limiter(
+                limiter_key, max_attempts=max_attempts, window_seconds=window_seconds
+            )
+            if not is_allowed:
+                raise RefreshTokenRateLimitError("Too many token refresh attempts.")
+        # Blacklist check
+        jti = payload.get("jti") or token
+        if await is_token_blacklisted(session, jti):
+            raise RefreshTokenBlacklistedError("Refresh token is blacklisted.")
+        # Issue new access token
+        new_token = refresh_access_token(user_id, token)
+        return new_token
+    except JWTError as e:
+        raise RefreshTokenError(f"JWT decode failed: {e}") from e
+    except Exception as e:
+        # Only raise as RefreshTokenError if not a known custom error
+        if isinstance(
+            e,
+            RefreshTokenRateLimitError
+            | RefreshTokenBlacklistedError
+            | RefreshTokenError,
+        ):
+            raise
+        raise RefreshTokenError(f"Unexpected error: {e}") from e
+
+
+class RefreshTokenError(Exception):
+    pass
+
+
+class RefreshTokenRateLimitError(Exception):
+    pass
+
+
+class RefreshTokenBlacklistedError(Exception):
+    pass
+
+
+class UserService:
+    """
+    Service class for user registration, authentication, profile, and password management.
+    Wraps the module-level functions for better type safety and DI.
+    """
+
+    async def register_user(self, session: AsyncSession, data: dict[str, Any]) -> User:
+        return await register_user(session, data)
+
+    async def authenticate_user(
+        self, session: AsyncSession, email: str, password: str
+    ) -> tuple[str, str]:
+        return await authenticate_user(session, email, password)
+
+    async def logout_user(self, session: AsyncSession, user_id: int) -> None:
+        return await logout_user(session, user_id)
+
+    async def reset_password(
+        self, session: AsyncSession, token: str, new_password: str
+    ) -> None:
+        return await reset_password(session, token, new_password)
+
+    def get_password_reset_token(self, email: str) -> str:
+        return get_password_reset_token(email)
+
+    async def get_users_paginated(
+        self, session: AsyncSession, page: int = 1, limit: int = 20
+    ) -> dict[str, Any]:
+        return await get_users_paginated(session, page, limit)
+
+    async def get_user_profile(
+        self, session: AsyncSession, user_id: int
+    ) -> UserProfile:
+        return await get_user_profile(session, user_id)
+
+    async def update_user(
+        self, session: AsyncSession, user_id: int, data: dict[str, Any]
+    ) -> User:
+        # Implement update logic or call the appropriate repository/service function
+        user = await get_user_by_id(session, user_id)
+        if not user:
+            raise UserNotFoundError("User not found.")
+        if "email" in data:
+            user.email = data["email"]
+        if "name" in data:
+            user.name = data["name"]
+        if "password" in data:
+            from src.utils.hashing import hash_password
+
+            user.hashed_password = hash_password(data["password"])
+        await session.commit()
+        await session.refresh(user)
+        return user
+
+    async def delete_user(self, session: AsyncSession, user_id: int) -> None:
+        user = await get_user_by_id(session, user_id)
+        if not user:
+            raise UserNotFoundError("User not found.")
+        await session.delete(user)
+        await session.commit()
+
+    async def list_users(self, session, offset=0, limit=20, email=None, name=None):
+        from src.repositories.user import list_users
+
+        return await list_users(
+            session, offset=offset, limit=limit, email=email, name=name
+        )
+
+    async def get_user_by_id(self, session, user_id):
+        from src.repositories.user import get_user_by_id
+
+        return await get_user_by_id(session, user_id)
+
+
+# Dependency provider for FastAPI
+user_service_instance = UserService()
+
+
+def get_user_service() -> UserService:
+    return user_service_instance
+
+
 # For future: integrate with route-based access control (RBAC)
 # Example usage in FastAPI route:
 #   if not await check_user_role(current_user.id, UserRole.ADMIN):
@@ -463,5 +674,10 @@ __all__ = [
     "UserNotFoundError",
     "ValidationError",
     "create_access_token",
+    "user_repo",
+    "update_last_login",
+    "RefreshTokenError",
+    "RefreshTokenRateLimitError",
+    "RefreshTokenBlacklistedError",
     # Add other public symbols here as needed
 ]

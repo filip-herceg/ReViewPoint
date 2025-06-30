@@ -20,3 +20,8 @@ packages = ["backend/src"]
 [tool.hatch.envs.project]
 path = ".venv"
 dependencies = []
+
+[tool.pytest.ini_options]
+norecursedirs = [
+    "alembic_migrations/versions",
+]
