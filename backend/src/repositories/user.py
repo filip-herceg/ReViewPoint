@@ -52,25 +52,40 @@ async def get_user_by_id(
 
 
 async def create_user_with_validation(
-    session: AsyncSession, email: str, password: str
+    session: AsyncSession, email: str, password: str, name: str | None = None
 ) -> User:
     """Create a user with validation and error handling."""
+    import traceback
+
+    logging.debug(
+        f"create_user_with_validation called with email={email}, name={name}"
+    )
     if not validate_email(email):
+        logging.warning(f"Invalid email format: {email}")
         raise ValidationError("Invalid email format.")
     err = get_password_validation_error(password)
     if err:
+        logging.warning(f"Password validation error for {email}: {err}")
         raise ValidationError(err)
     if not await is_email_unique(session, email):
+        logging.warning(f"Email already exists: {email}")
         raise UserAlreadyExistsError("Email already exists.")
     from src.utils.hashing import hash_password
 
     hashed = hash_password(password)
     user = User(email=email, hashed_password=hashed, is_active=True)
+    if name is not None:
+        user.name = name
     session.add(user)
     try:
         await session.commit()
         await session.refresh(user)
-    except Exception:
+        logging.info(f"User created successfully: {user.email}, id={user.id}")
+    except Exception as e:
+        tb = traceback.format_exc()
+        logging.error(
+            f"Exception during user creation for {email}: {e}\nTraceback: {tb}"
+        )
         await session.rollback()
         raise
     return user
@@ -278,7 +293,8 @@ async def soft_delete_user(session: AsyncSession, user_id: int) -> bool:
     user.is_deleted = True
     try:
         await session.commit()
-    except Exception:
+    except Exception as e:
+        logging.error(f"Failed to commit soft delete for user {user_id}: {e}")
         await session.rollback()
         raise
     return True
@@ -292,7 +308,8 @@ async def restore_user(session: AsyncSession, user_id: int) -> bool:
     user.is_deleted = False
     try:
         await session.commit()
-    except Exception:
+    except Exception as e:
+        logging.error(f"Failed to commit restore for user {user_id}: {e}")
         await session.rollback()
         raise
     return True
@@ -316,7 +333,8 @@ async def upsert_user(
     try:
         await session.commit()
         await session.refresh(user)
-    except Exception:
+    except Exception as e:
+        logging.error(f"Failed to commit upsert for user {email}: {e}")
         await session.rollback()
         raise
     return user
@@ -335,7 +353,8 @@ async def partial_update_user(
     try:
         await session.commit()
         await session.refresh(user)
-    except Exception:
+    except Exception as e:
+        logging.error(f"Failed to commit partial update for user {user_id}: {e}")
         await session.rollback()
         raise
     return user
@@ -368,7 +387,8 @@ async def change_user_password(
     user.hashed_password = new_hashed_password
     try:
         await session.commit()
-    except Exception:
+    except Exception as e:
+        logging.error(f"Failed to commit password change for user {user_id}: {e}")
         await session.rollback()
         raise
     return True
@@ -380,9 +400,9 @@ logger: logging.Logger = logging.getLogger("user_audit")
 async def audit_log_user_change(
     session: AsyncSession, user_id: int, action: str, details: str = ""
 ) -> None:
-    """Log an audit event for a user change."""
+    """Log an audit event for a user change. In production, consider integrating with Azure Monitor or Application Insights."""
     logger.info(f"User {user_id}: {action}. {details}")
-    # Optionally, persist audit logs to DB here
+    # Optionally, persist audit logs to DB or send to Azure Monitor here
 
 
 async def assign_role_to_user(session: AsyncSession, user_id: int, role: str) -> bool:
@@ -500,7 +520,8 @@ async def deactivate_user(session: AsyncSession, user_id: int) -> bool:
     user.is_active = False
     try:
         await session.commit()
-    except Exception:
+    except Exception as e:
+        logging.error(f"Failed to commit deactivate for user {user_id}: {e}")
         await session.rollback()
         raise
     return True
@@ -514,7 +535,8 @@ async def reactivate_user(session: AsyncSession, user_id: int) -> bool:
     user.is_active = True
     try:
         await session.commit()
-    except Exception:
+    except Exception as e:
+        logging.error(f"Failed to commit reactivate for user {user_id}: {e}")
         await session.rollback()
         raise
     return True
@@ -527,10 +549,14 @@ async def update_last_login(
     user = await get_user_by_id(session, user_id)
     if user is None:
         return False
-    user.last_login_at = login_time or datetime.now(UTC)
+    dt = login_time or datetime.now(UTC)
+    if dt.tzinfo is not None:
+        dt = dt.replace(tzinfo=None)
+    user.last_login_at = dt
     try:
         await session.commit()
-    except Exception:
+    except Exception as e:
+        logging.error(f"Failed to commit last login update for user {user_id}: {e}")
         await session.rollback()
         raise
     return True
@@ -546,7 +572,12 @@ async def anonymize_user(session: AsyncSession, user_id: int) -> bool:
     user.is_active = False
     user.is_deleted = True
     user.last_login_at = None
-    await session.commit()
+    try:
+        await session.commit()
+    except Exception as e:
+        logging.error(f"Failed to commit anonymize for user {user_id}: {e}")
+        await session.rollback()
+        raise
     return True
 
 

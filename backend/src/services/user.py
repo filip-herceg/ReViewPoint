@@ -74,11 +74,12 @@ async def register_user(session: AsyncSession, data: dict[str, Any]) -> User:
     """
     email = data.get("email")
     password = data.get("password")
+    name = data.get("name")
     if not email or not password:
         raise ValidationError("Email and password are required.")
     logger.info("User registration attempt", email=email)
     # Use repo helper for validation and creation
-    user = await user_repo.create_user_with_validation(session, email, password)
+    user = await user_repo.create_user_with_validation(session, email, password, name)
     logger.info("User registered successfully", user_id=user.id, email=user.email)
     return user
 
@@ -141,7 +142,7 @@ async def authenticate_user(
             "sub": str(user.id),
             "user_id": str(user.id),
             "email": user.email,
-            "role": "admin" if getattr(user, "is_admin", False) else "user",
+            "role": user.role if hasattr(user, "role") else ("admin" if getattr(user, "is_admin", False) else "user"),
         }
     )
     jti = str(uuid.uuid4())
@@ -151,7 +152,7 @@ async def authenticate_user(
             "sub": str(user.id),
             "user_id": str(user.id),
             "email": user.email,
-            "role": "admin" if getattr(user, "is_admin", False) else "user",
+            "role": user.role if hasattr(user, "role") else ("admin" if getattr(user, "is_admin", False) else "user"),
             "jti": jti,
             "exp": exp,
         }
@@ -288,7 +289,13 @@ async def reset_password(session: AsyncSession, token: str, new_password: str) -
         hashed = hash_password(new_password)
         await change_user_password(session, user.id, hashed)
         # Mark this nonce as used
-        session.add(UsedPasswordResetToken(email=email, nonce=nonce))
+        from datetime import datetime
+
+        session.add(
+            UsedPasswordResetToken(
+                email=email, nonce=nonce, used_at=datetime.now().replace(tzinfo=None)
+            )
+        )
         await session.commit()
         logger.info("Password reset successful", user_id=user.id, email=email)
     except UserNotFoundError:
