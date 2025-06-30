@@ -1001,6 +1001,4 @@ class AlembicEnvTestTemplate:
         else:
             with pytest.raises(exc_type):
                 func(*args, **kwargs)
-
-
 # pytest: disable=pytest_plugin_missing_source_or_test
