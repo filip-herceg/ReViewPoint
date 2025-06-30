@@ -789,6 +789,11 @@ class ModelUnitTestTemplate:
     Centralizes model test patterns for DRYness and maintainability.
     """
 
+    def assert_model_attrs(self, model, attrs: dict, msg=None):
+        for k, v in attrs.items():
+            actual = getattr(model, k, None)
+            assert actual == v, msg or f"Expected {k}={v!r}, got {actual!r}"
+
     def assert_equal(self, a, b, msg=None):
         assert a == b, msg or f"Expected {a!r} == {b!r}"
 

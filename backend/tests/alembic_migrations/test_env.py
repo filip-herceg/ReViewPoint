@@ -1,4 +1,5 @@
 import importlib
+import os
 import sys
 import types
 from typing import Any
@@ -8,6 +9,9 @@ import pytest
 
 from src.alembic_migrations import env
 from tests.test_templates import AlembicEnvTestTemplate
+
+# TEST_DB_URL for legacy tests (use the test_db_url fixture)
+TEST_DB_URL = os.environ.get("REVIEWPOINT_DB_URL", "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint")
 
 
 class TestAlembicEnv(AlembicEnvTestTemplate):
@@ -399,7 +403,7 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
         )
 
     # --- End migrated tests ---
-    def test_env_py_configures_context_with_postgres_url(self):
+    def test_env_py_configures_context_with_postgres_url(self, monkeypatch):
         context_mod = self._make_context(
             url="postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint_test"
         )
@@ -418,6 +422,14 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
         importlib.invalidate_caches()
         import src.alembic_migrations.env as env_mod
 
-        env_mod.run_migrations_online()
+        def fake_engine_from_config(*a, **k):
+            class FakeConnection:
+                def __enter__(self): return self
+                def __exit__(self, exc_type, exc_val, exc_tb): return False
+            class FakeEngine:
+                def connect(self): return FakeConnection()
+            return FakeEngine()
+
+        env_mod.run_migrations_online(fake_engine_from_config)
         self.assert_called_once(context_mod.configure)
         self.assert_called_once(context_mod.run_migrations)

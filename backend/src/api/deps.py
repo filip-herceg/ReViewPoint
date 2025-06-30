@@ -393,13 +393,11 @@ async def get_current_user(
     # Support both int and str (email) user_id
     user = None
     if user_id is not None:
-        try:
+        from sqlalchemy import select
+        from src.models.user import User
+        if isinstance(user_id, int) or (isinstance(user_id, str) and user_id.isdigit()):
             user = await get_user_by_id(session, int(user_id))
-        except (ValueError, TypeError):
-            from sqlalchemy import select
-
-            from src.models.user import User
-
+        else:
             result = await session.execute(
                 select(User).where(User.email == str(user_id))
             )

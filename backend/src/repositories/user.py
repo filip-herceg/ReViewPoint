@@ -113,6 +113,8 @@ async def list_users_paginated(
     session: AsyncSession, offset: int = 0, limit: int = 20
 ) -> Sequence[User]:
     """List users with pagination support."""
+    if limit is None or limit <= 0:
+        return []
     result = await session.execute(select(User).offset(offset).limit(limit))
     return result.scalars().all()
 

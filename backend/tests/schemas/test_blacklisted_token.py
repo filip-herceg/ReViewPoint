@@ -45,7 +45,7 @@ class TestBlacklistedTokenSchema(ModelUnitTestTemplate):
             )
             self.assert_equal(schema.jti, jti)
             self.assert_equal(schema.expires_at, expires_at)
-            self.assert_true(
+            self.assert_is_true(
                 schema.created_at == created_at or schema.created_at is None
             )
 
@@ -77,8 +77,8 @@ class TestBlacklistedTokenSchema(ModelUnitTestTemplate):
         schema_past = BlacklistedTokenSchema(
             jti="past", expires_at=past, created_at=now
         )
-        self.assert_true(schema_future.expires_at > now)
-        self.assert_true(schema_past.expires_at < now)
+        self.assert_is_true(schema_future.expires_at > now)
+        self.assert_is_true(schema_past.expires_at < now)
 
     def test_schema_repr_and_to_dict(self):
         now = datetime.now(UTC)

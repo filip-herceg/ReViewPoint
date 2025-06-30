@@ -195,6 +195,9 @@ class TestVerifyEmailToken(AuthUnitTestTemplate):
 
     @pytest.mark.asyncio
     async def test_invalid(self):
+        def bad_verify(token: str):
+            raise Exception("bad token")
+
         with pytest.raises(user_service.ValidationError):
             self.patch_dep("src.services.user.verify_access_token", bad_verify)
             user_service.verify_email_token("badtok")

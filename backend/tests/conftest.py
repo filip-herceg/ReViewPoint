@@ -150,7 +150,7 @@ def set_required_env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 # 2. Event loop (for async tests)
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
     """
     Create a new asyncio event loop for the test session.
@@ -163,7 +163,7 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
 
 
 # 3. Database/session fixtures
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="function")
 async def async_engine(postgres_container) -> AsyncGenerator[AsyncEngine, None]:
     """
     Provide a SQLAlchemy async engine for the test session, using the testcontainers DB URL.
@@ -175,12 +175,12 @@ async def async_engine(postgres_container) -> AsyncGenerator[AsyncEngine, None]:
     await engine.dispose()
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture(scope="function")
 async def async_session(
     async_engine: AsyncEngine,
 ) -> AsyncGenerator[AsyncSession, None]:
     """
-    Provide an async SQLAlchemy session for the test session.
+    Provide an async SQLAlchemy session for each test function.
     Depends on async_engine, which depends on postgres_container.
     """
     async_session_local = async_sessionmaker(
@@ -455,3 +455,11 @@ async def create_and_drop_tables(postgres_container):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
+
+
+@pytest.fixture(scope="session")
+def test_db_url() -> str:
+    """
+    Returns the test database URL used for all tests (from env var REVIEWPOINT_DB_URL).
+    """
+    return os.environ["REVIEWPOINT_DB_URL"]
