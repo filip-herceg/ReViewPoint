@@ -7,7 +7,7 @@ from unittest import mock
 import pytest
 
 from src.alembic_migrations import env
-from tests.conftest import TEST_DB_PATH
+from tests.conftest import TEST_DB_URL
 from tests.test_templates import AlembicEnvTestTemplate
 
 
@@ -97,7 +97,7 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
 
     # --- Begin migrated tests from test_alembic_env.py ---
     def test_run_migrations_offline_configure_raises(self, monkeypatch):
-        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_PATH}")
+        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_URL}")
         context_mod.configure = mock.MagicMock(
             side_effect=RuntimeError("configure failed")
         )
@@ -146,7 +146,7 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
         )
 
     def test_run_migrations_online_happy_path(self, monkeypatch):
-        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_PATH}")
+        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_URL}")
         self.patch_alembic_context(monkeypatch, context_mod)
         monkeypatch.setitem(
             sys.modules,
@@ -196,7 +196,7 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
         )
 
     def test_run_migrations_online_engine_connect_raises(self, monkeypatch):
-        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_PATH}")
+        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_URL}")
         self.patch_alembic_context(monkeypatch, context_mod)
         monkeypatch.setitem(
             sys.modules,
@@ -222,7 +222,7 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
         )
 
     def test_run_migrations_offline_configures_logging(self, monkeypatch):
-        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_PATH}")
+        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_URL}")
         context_mod.config.config_file_name = "dummy.ini"
         self.patch_alembic_context(monkeypatch, context_mod)
         file_config_mock = mock.MagicMock()
@@ -244,7 +244,7 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
         self.assert_true(file_config_mock.called)
 
     def test_run_migrations_online_configures_logging(self, monkeypatch):
-        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_PATH}")
+        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_URL}")
         context_mod.config.config_file_name = "dummy.ini"
         self.patch_alembic_context(monkeypatch, context_mod)
         file_config_mock = mock.MagicMock()
@@ -271,7 +271,7 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
     def test_run_migrations_offline_fileConfig_not_called_when_no_config_file(
         self, monkeypatch
     ):
-        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_PATH}")
+        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_URL}")
         context_mod.config.config_file_name = None
         self.patch_alembic_context(monkeypatch, context_mod)
         fileConfig_mock = mock.MagicMock()
@@ -293,7 +293,7 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
         self.assert_not_called(fileConfig_mock)
 
     def test_run_migrations_offline_fileConfig_raises(self, monkeypatch):
-        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_PATH}")
+        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_URL}")
         context_mod.config.config_file_name = "dummy.ini"
         self.patch_alembic_context(monkeypatch, context_mod)
         fileConfig_mock = mock.MagicMock(side_effect=RuntimeError("fileConfig failed"))
@@ -316,7 +316,7 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
         )
 
     def test_run_migrations_offline_begin_transaction_raises(self, monkeypatch):
-        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_PATH}")
+        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_URL}")
         begin_transaction_mock = mock.MagicMock(
             side_effect=RuntimeError("begin_transaction failed")
         )
@@ -343,7 +343,7 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
         )
 
     def test_run_migrations_offline_run_migrations_raises(self, monkeypatch):
-        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_PATH}")
+        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_URL}")
         run_migrations_mock = mock.MagicMock(
             side_effect=RuntimeError("run_migrations failed")
         )
@@ -368,7 +368,7 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
         )
 
     def test_run_migrations_online_engine_from_config_raises(self, monkeypatch):
-        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_PATH}")
+        context_mod = self._make_context(url=f"sqlite:///{TEST_DB_URL}")
         self.patch_alembic_context(monkeypatch, context_mod)
         monkeypatch.setitem(
             sys.modules,

@@ -197,7 +197,6 @@ class Settings(BaseSettings):
 
     def __init__(self, **values: Any):
         super().__init__(**values)
-        print(f"[DEBUG] Settings initialized: db_url={self.db_url}")
 
     @property
     def async_db_url(self) -> str:

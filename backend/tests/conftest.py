@@ -4,11 +4,6 @@ import sys
 # Force override REVIEWPOINT_DB_URL to ensure the test suite always uses the correct database URL
 os.environ["REVIEWPOINT_DB_URL"] = "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint"
 
-# Print all environment variables for debugging
-print("[DEBUG] Environment variables at test startup:")
-for k, v in os.environ.items():
-    print(f"{k}={v}")
-
 # Remove any db_url or DB_URL to avoid accidental pickup
 os.environ.pop("db_url", None)
 os.environ.pop("DB_URL", None)
@@ -432,3 +427,57 @@ async def create_and_drop_tables():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
+
+
+import subprocess
+import pytest
+import time
+import asyncio
+import asyncpg
+
+
+@pytest.fixture(scope="session", autouse=True)
+def ensure_test_db_container():
+    """
+    Ensure the test database Docker container is running before tests start,
+    and remove it (with volumes) after tests for a clean state.
+    Instantly aborts the test session if the DB connection cannot be made.
+    """
+    compose_file = "docker-compose.test.yml"
+    service_name = "db"  # Change if your service is named differently
+    db_url = "postgresql://postgres:postgres@localhost:5432/reviewpoint_test"
+    # Start the container, force recreate for a clean state
+    try:
+        subprocess.run(
+            ["docker", "compose", "-f", compose_file, "up", "--force-recreate", "-d", service_name],
+            check=True,
+            capture_output=True,
+        )
+        print(f"Test database container '{service_name}' started or already running.")
+    except Exception as e:
+        print(f"Failed to start test database container: {e}")
+        raise
+    # Try to connect to the DB, fail fast if not available
+    async def try_connect():
+        for _ in range(10):
+            try:
+                conn = await asyncpg.connect(db_url)
+                await conn.close()
+                print("Successfully connected to test database.")
+                return
+            except Exception as e:
+                print("Waiting for test database to become available...")
+                time.sleep(1)
+        raise RuntimeError("Could not connect to test database after multiple attempts.")
+    asyncio.get_event_loop().run_until_complete(try_connect())
+    yield
+    # Remove the container and its volumes for a clean state
+    try:
+        subprocess.run(
+            ["docker", "compose", "-f", compose_file, "down", "-v"],
+            check=True,
+            capture_output=True,
+        )
+        print(f"Test database container '{service_name}' and volumes removed after tests.")
+    except Exception as e:
+        print(f"Failed to remove test database container: {e}")
