@@ -16,6 +16,7 @@ import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
+import sys
 
 from loguru import logger
 from pydantic import Field, field_validator
@@ -25,10 +26,12 @@ __all__ = ["Settings", "get_settings", "settings"]
 
 ENV_PREFIX = "REVIEWPOINT_"
 
-# Determine .env file path at import time
+# Determine .env file path at import time, but skip if running under pytest (test suite)
 _env_path = os.getenv("ENV_FILE")
 if _env_path:
     _env_file: Path | None = Path(_env_path)
+elif "pytest" in sys.modules or any("PYTEST_CURRENT_TEST" in k for k in os.environ):
+    _env_file = None  # Do not load .env during tests
 elif Path(".env").exists():
     _env_file = Path(".env")
 else:
