@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import pytest
-from backend.tests.test_templates import AsyncModelTestTemplate
+from tests.test_templates import AsyncModelTestTemplate
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 

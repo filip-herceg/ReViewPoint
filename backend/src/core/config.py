@@ -13,10 +13,10 @@ for CI systems that inject extra environment variables.
 from __future__ import annotations
 
 import os
+import sys
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Literal
-import sys
 
 from loguru import logger
 from pydantic import Field, field_validator
@@ -27,7 +27,9 @@ __all__ = ["Settings", "get_settings", "settings"]
 ENV_PREFIX = "REVIEWPOINT_"
 
 # Determine .env file path at import time, but skip if running under pytest (test suite)
-IS_PYTEST = "pytest" in sys.modules or any("PYTEST_CURRENT_TEST" in k for k in os.environ)
+IS_PYTEST = "pytest" in sys.modules or any(
+    "PYTEST_CURRENT_TEST" in k for k in os.environ
+)
 _env_path = os.getenv("ENV_FILE")
 if IS_PYTEST:
     _env_file = None  # Always ignore .env during tests

@@ -13,21 +13,6 @@ services:
       - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
+      interval: 2s
       timeout: 3s
-      retries: 10
-
-  test_runner:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.dev
-    container_name: ReViewPoint-Backend-Test
-    environment:
-      - REVIEWPOINT_TEST_DB_URL=postgresql+asyncpg://postgres:postgres@postgres_test:5432/reviewpoint_test
-    depends_on:
-      postgres_test:
-        condition: service_healthy
-    command: ["./scripts/run-tests.sh"]
-    volumes:
-      - .:/app
-      - /app/.venv
+      retries: 30

@@ -2,7 +2,7 @@ import statistics
 import time
 
 import pytest
-from backend.tests.test_templates import DatabaseTestTemplate
+from tests.test_templates import DatabaseTestTemplate
 from sqlalchemy import select
 
 from src.models.user import User

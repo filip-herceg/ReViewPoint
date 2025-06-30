@@ -6,7 +6,7 @@ Covers all code paths, including edge and error cases.
 from unittest.mock import AsyncMock
 
 import pytest
-from backend.tests.test_templates import AuthUnitTestTemplate
+from tests.test_templates import AuthUnitTestTemplate
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 

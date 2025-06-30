@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 from typing import cast
 
 import pytest
-from backend.tests.test_templates import SecurityUnitTestTemplate
+from tests.test_templates import SecurityUnitTestTemplate
 from jose import jwt
 
 from src.core.config import settings

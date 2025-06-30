@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from backend.tests.test_templates import ModelUnitTestTemplate
+from tests.test_templates import ModelUnitTestTemplate
 from pydantic import ValidationError
 
 from src.schemas.blacklisted_token import BlacklistedTokenSchema

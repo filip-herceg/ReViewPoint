@@ -1,17 +1,74 @@
+"""
+Centralized test database and environment management for all tests in the backend.
+
+Test DB Policy:
+- All tests use a single PostgreSQL container, managed by the session-scoped fixture below.
+- The container is started before any tests run and stopped after all tests complete.
+- The test DB connection URL is set via the REVIEWPOINT_DB_URL environment variable for all tests.
+- No test or fixture should start its own DB container or set DB URLs directly (except for explicit config/env error tests).
+- The Postgres image/tag can be overridden via the REVIEWPOINT_TEST_POSTGRES_IMAGE environment variable.
+- Container connection details are logged at startup for debugging.
+- If Docker is not running or the container fails to start, a clear error is raised and logged.
+
+This policy ensures robust, maintainable, and explicit test DB management for all developers.
+"""
+
 import os
 import sys
+from collections.abc import AsyncGenerator, Callable, Generator, Iterator
+from pathlib import Path
+from typing import Any
 
-# Force override REVIEWPOINT_DB_URL to ensure the test suite always uses the correct database URL
-os.environ["REVIEWPOINT_DB_URL"] = "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint"
+import pytest
+import pytest_asyncio
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+from loguru import logger
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
+from testcontainers.postgres import PostgresContainer
 
-# Remove any db_url or DB_URL to avoid accidental pickup
-os.environ.pop("db_url", None)
-os.environ.pop("DB_URL", None)
+from src.core.database import get_async_session
+from src.core.security import create_access_token
+from src.main import create_app
+from src.models.base import Base
 
-# Ensure the project root is in sys.path for test imports
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
+
+# --- Centralized PostgreSQL test container management ---
+@pytest.fixture(scope="session", autouse=True)
+def postgres_container():
+    """
+    Start a PostgreSQL container for the test session and set DB URL env var for all tests.
+    Logs the connection URL at startup. Raises a clear error if Docker is not running.
+    The Postgres image can be overridden with the REVIEWPOINT_TEST_POSTGRES_IMAGE env var.
+    """
+    image = os.environ.get("REVIEWPOINT_TEST_POSTGRES_IMAGE", "postgres:15-alpine")
+    try:
+        with PostgresContainer(image) as postgres:
+            db_url = postgres.get_connection_url()
+            # Convert sync driver to asyncpg for SQLAlchemy async engine
+            if db_url.startswith("postgresql://"):
+                async_db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+            elif db_url.startswith("postgresql+psycopg2://"):
+                async_db_url = db_url.replace("postgresql+psycopg2://", "postgresql+asyncpg://", 1)
+            else:
+                async_db_url = db_url
+            logger.info(f"[testcontainers] Started PostgreSQL container: {async_db_url}")
+            os.environ["REVIEWPOINT_DB_URL"] = async_db_url
+            yield async_db_url
+            os.environ.pop("REVIEWPOINT_DB_URL", None)
+            logger.info("[testcontainers] PostgreSQL container stopped and env cleaned up.")
+    except Exception as e:
+        logger.error(f"[testcontainers] Failed to start PostgreSQL container: {e}")
+        raise RuntimeError(
+            "Could not start PostgreSQL test container. Is Docker running? "
+            "See the error above for details."
+        ) from e
+
 
 #
 # ENFORCED TEST ENVIRONMENT/DB SETUP POLICY
@@ -22,15 +79,10 @@ if project_root not in sys.path:
 # This is enforced by an automated check below. If you need to add a new exception, update the list in the check.
 #
 
-import os
-from collections.abc import (
-    Callable,
-    Generator,  # Explicit import for type annotation
-)
-
 # Set required env vars before any other imports
 os.environ["REVIEWPOINT_DB_URL"] = (
-    os.environ.get("REVIEWPOINT_DB_URL") or "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint"
+    os.environ.get("REVIEWPOINT_DB_URL")
+    or "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint"
 )
 os.environ["REVIEWPOINT_JWT_SECRET"] = (
     os.environ.get("REVIEWPOINT_JWT_SECRET") or "testsecret"
@@ -41,34 +93,8 @@ os.environ["REVIEWPOINT_JWT_SECRET_KEY"] = (
 
 import asyncio
 import uuid
-from collections.abc import AsyncGenerator, Iterator
-from pathlib import Path
-from typing import Any
 
 import pytest
-import pytest_asyncio
-from fastapi import FastAPI  # Add this import for type annotations
-from fastapi.testclient import TestClient
-from loguru import logger
-from loguru import logger as _loguru_logger
-from sqlalchemy.ext.asyncio import (
-    AsyncEngine,
-    AsyncSession,
-    async_sessionmaker,
-    create_async_engine,
-)
-
-from src.core.database import get_async_session
-from src.core.security import create_access_token
-from src.main import create_app  # Use factory, not global app
-from src.models.base import Base
-
-# Use a PostgreSQL DB for all tests
-TEST_DB_URL = (
-    os.environ.get("REVIEWPOINT_TEST_DB_URL")
-    or "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint_test"
-)
-DATABASE_URL = TEST_DB_URL
 
 
 # 1. Environment setup (env vars, DB cleanup, DB/table creation)
@@ -81,10 +107,6 @@ def set_required_env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv(
         "REVIEWPOINT_DB_URL",
         "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint",
-    )
-    monkeypatch.setenv(
-        "REVIEWPOINT_TEST_DB_URL",
-        "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint_test",
     )
     monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "testsecret")
     monkeypatch.setenv("REVIEWPOINT_JWT_SECRET_KEY", "testsecret")
@@ -142,12 +164,13 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
 
 # 3. Database/session fixtures
 @pytest_asyncio.fixture(scope="session")
-async def async_engine() -> AsyncGenerator[AsyncEngine, None]:
+async def async_engine(postgres_container) -> AsyncGenerator[AsyncEngine, None]:
     """
-    Provide a SQLAlchemy async engine for the test session.
-    Used for database connections in async tests.
+    Provide a SQLAlchemy async engine for the test session, using the testcontainers DB URL.
+    Depends on the postgres_container fixture to ensure the container is running.
     """
-    engine = create_async_engine(DATABASE_URL, future=True)
+    db_url = os.environ["REVIEWPOINT_DB_URL"]
+    engine = create_async_engine(db_url, future=True)
     yield engine
     await engine.dispose()
 
@@ -158,7 +181,7 @@ async def async_session(
 ) -> AsyncGenerator[AsyncSession, None]:
     """
     Provide an async SQLAlchemy session for the test session.
-    Used for database operations in async tests.
+    Depends on async_engine, which depends on postgres_container.
     """
     async_session_local = async_sessionmaker(
         bind=async_engine, class_=AsyncSession, expire_on_commit=False
@@ -292,7 +315,7 @@ def patch_loguru_remove(monkeypatch: Any) -> Generator[None, None, None]:
     Patch loguru's logger.remove to suppress ValueError during pytest-loguru teardown.
     Prevents test failures due to loguru teardown issues.
     """
-    original_remove = _loguru_logger.remove
+    original_remove = logger.remove
 
     def safe_remove(*args: Any, **kwargs: Any) -> None:
         try:
@@ -300,9 +323,9 @@ def patch_loguru_remove(monkeypatch: Any) -> Generator[None, None, None]:
         except ValueError:
             pass
 
-    monkeypatch.setattr(_loguru_logger, "remove", safe_remove)
+    monkeypatch.setattr(logger, "remove", safe_remove)
     yield
-    monkeypatch.setattr(_loguru_logger, "remove", original_remove)
+    monkeypatch.setattr(logger, "remove", original_remove)
 
 
 @pytest.fixture
@@ -415,120 +438,20 @@ import pytest_asyncio
 
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
-async def create_and_drop_tables():
+async def create_and_drop_tables(postgres_container):
     """
     Automatically create all tables before the test session and drop them after.
     Ensures a clean PostgreSQL test database for every test run.
+    Depends on postgres_container to guarantee DB is up before setup.
     """
-    engine = create_async_engine(DATABASE_URL, future=True)
+    from sqlalchemy.ext.asyncio import create_async_engine
+
+    db_url = os.environ["REVIEWPOINT_DB_URL"]
+    engine = create_async_engine(db_url, future=True)
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
-
-
-import subprocess
-import pytest
-import time
-import asyncio
-import asyncpg
-import os
-
-@pytest.fixture(scope="session", autouse=True)
-def ensure_test_db_container():
-    print("[DEBUG] ensure_test_db_container fixture running...")
-    compose_file = "docker-compose.test.yml"
-    service_name = "postgres_test"
-    container_name = "reviewpoint_postgres_test_ci"
-    db_url = "postgresql://postgres:postgres@localhost:5432/reviewpoint_test"
-    print(f"[DEBUG] Current working directory: {os.getcwd()}")
-    print(f"[DEBUG] Compose file exists: {os.path.exists(compose_file)}")
-    print(f"[DEBUG] Compose file path: {os.path.abspath(compose_file)}")
-    print(f"[DEBUG] Service name: {service_name}")
-    print(f"[DEBUG] Container name: {container_name}")
-    print(f"[DEBUG] DB URL: {db_url}")
-    # List docker compose version
-    try:
-        version_result = subprocess.run(["docker", "compose", "version"], capture_output=True, text=True)
-        print(f"[DEBUG] Docker Compose version: {version_result.stdout.strip()} {version_result.stderr.strip()}")
-    except Exception as e:
-        print(f"[DEBUG] Could not get Docker Compose version: {e}")
-    # List all docker containers before
-    try:
-        ps_result = subprocess.run(["docker", "ps", "-a"], capture_output=True, text=True)
-        print(f"[DEBUG] Docker containers before:\n{ps_result.stdout}")
-    except Exception as e:
-        print(f"[DEBUG] Could not list docker containers: {e}")
-    # Start the container, force recreate for a clean state
-    try:
-        print(f"[DEBUG] Running: docker compose -f {compose_file} up --force-recreate -d {service_name}")
-        result = subprocess.run(
-            ["docker", "compose", "-f", compose_file, "up", "--force-recreate", "-d", service_name],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-        print(f"[DEBUG] Docker Compose up stdout:\n{result.stdout}")
-        print(f"[DEBUG] Docker Compose up stderr:\n{result.stderr}")
-        print(f"Test database container '{service_name}' started or already running.")
-    except Exception as e:
-        print(f"Failed to start test database container: {e}")
-        raise
-    # List all docker containers after
-    try:
-        ps_result = subprocess.run(["docker", "ps", "-a"], capture_output=True, text=True)
-        print(f"[DEBUG] Docker containers after up:\n{ps_result.stdout}")
-    except Exception as e:
-        print(f"[DEBUG] Could not list docker containers: {e}")
-    # Wait for container health status to be healthy
-    print("[DEBUG] Waiting for container health status to be 'healthy'...")
-    healthy = False
-    for i in range(30):  # up to 30 seconds
-        inspect = subprocess.run([
-            "docker", "inspect", "-f", "{{.State.Health.Status}}", container_name
-        ], capture_output=True, text=True)
-        status = inspect.stdout.strip()
-        print(f"[DEBUG] Container health status: {status}")
-        if status == "healthy":
-            healthy = True
-            break
-        time.sleep(1)
-    if not healthy:
-        raise RuntimeError(f"Container {container_name} did not become healthy in time!")
-    # Try to connect to the DB, fail fast if not available
-    async def try_connect():
-        for i in range(10):
-            try:
-                print(f"[DEBUG] Attempting DB connection try {i+1}/10...")
-                conn = await asyncpg.connect(db_url)
-                await conn.close()
-                print("Successfully connected to test database.")
-                return
-            except Exception as e:
-                print(f"Waiting for test database to become available... ({e})")
-                time.sleep(1)
-        raise RuntimeError("Could not connect to test database after multiple attempts.")
-    asyncio.get_event_loop().run_until_complete(try_connect())
-    yield
-    # Remove the container and its volumes for a clean state
-    try:
-        print(f"[DEBUG] Running: docker compose -f {compose_file} down -v")
-        result = subprocess.run(
-            ["docker", "compose", "-f", compose_file, "down", "-v"],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-        print(f"[DEBUG] Docker Compose down stdout:\n{result.stdout}")
-        print(f"[DEBUG] Docker Compose down stderr:\n{result.stderr}")
-        print(f"Test database container '{service_name}' and volumes removed after tests.")
-    except Exception as e:
-        print(f"Failed to remove test database container: {e}")
-    # List all docker containers after down
-    try:
-        ps_result = subprocess.run(["docker", "ps", "-a"], capture_output=True, text=True)
-        print(f"[DEBUG] Docker containers after down:\n{ps_result.stdout}")
-    except Exception as e:
-        print(f"[DEBUG] Could not list docker containers: {e}")

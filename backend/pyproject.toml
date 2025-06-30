@@ -73,6 +73,7 @@ dependencies = [
   "pytest-loguru>=0.2.0",
   "types-passlib>=1.7.7.20240901",
   "types-python-jose",
+  "testcontainers",
 ]
 env-vars = { PYTHONPATH = "src" }
 
@@ -164,7 +165,6 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-norecursedirs = "/tests"
 pythonpath = ["src"]
 markers = [
     "jwt: mark tests that require JWT handling",

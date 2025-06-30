@@ -2,7 +2,7 @@ import uuid
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from backend.tests.test_templates import AsyncModelTestTemplate
+from tests.test_templates import AsyncModelTestTemplate
 
 from src.models.blacklisted_token import BlacklistedToken
 

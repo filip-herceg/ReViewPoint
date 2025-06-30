@@ -4,7 +4,7 @@ Uses DRY test templates for all test logic and fixture management.
 """
 
 import pytest
-from backend.tests.test_templates import AuthEndpointTestTemplate, AuthUnitTestTemplate
+from tests.test_templates import AuthEndpointTestTemplate, AuthUnitTestTemplate
 from httpx import ASGITransport, AsyncClient, Response
 from jose import JWTError
 

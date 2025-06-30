@@ -1,5 +1,5 @@
 import pytest
-from backend.tests.test_templates import DatabaseTestTemplate
+from tests.test_templates import DatabaseTestTemplate
 from sqlalchemy import text
 
 

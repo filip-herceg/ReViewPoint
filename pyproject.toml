@@ -22,6 +22,20 @@ path = ".venv"
 dependencies = []
 
 [tool.pytest.ini_options]
-norecursedirs = [
-    "alembic_migrations/versions",
+minversion = "6.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["backend/tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+pythonpath = ["backend/src"]
+markers = [
+    "jwt: mark tests that require JWT handling",
+    "performance: marks tests as performance (deselect with '-m \"not performance\"')"
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-asyncio",
 ]

@@ -1,5 +1,5 @@
 import pytest
-from backend.tests.test_templates import AsyncModelTestTemplate, ModelUnitTestTemplate
+from tests.test_templates import AsyncModelTestTemplate, ModelUnitTestTemplate
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 

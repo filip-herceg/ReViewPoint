@@ -3,7 +3,7 @@ from __future__ import annotations
 import importlib
 import logging
 
-from backend.tests.test_templates import LogCaptureTestTemplate
+from tests.test_templates import LogCaptureTestTemplate
 
 MODULE = "src.core.logging"
 

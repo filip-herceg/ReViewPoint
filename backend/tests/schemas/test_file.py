@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
 import pytest
-from backend.tests.test_templates import ModelUnitTestTemplate
+from tests.test_templates import ModelUnitTestTemplate
 from pydantic import ValidationError
 
 from src.schemas.file import FileSchema

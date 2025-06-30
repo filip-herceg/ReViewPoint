@@ -2,7 +2,7 @@ import uuid
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from backend.tests.test_templates import AsyncModelTestTemplate
+from tests.test_templates import AsyncModelTestTemplate
 from sqlalchemy.exc import IntegrityError
 
 from src.repositories.blacklisted_token import blacklist_token, is_token_blacklisted

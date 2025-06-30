@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from backend.tests.test_templates import AsyncModelTestTemplate, ModelUnitTestTemplate
+from tests.test_templates import AsyncModelTestTemplate, ModelUnitTestTemplate
 from sqlalchemy.exc import IntegrityError
 
 from src.models.used_password_reset_token import UsedPasswordResetToken

@@ -1,5 +1,5 @@
 import pytest
-from backend.tests.test_templates import OpenAPITestTemplate
+from tests.test_templates import OpenAPITestTemplate
 
 
 class TestOpenAPI(OpenAPITestTemplate):

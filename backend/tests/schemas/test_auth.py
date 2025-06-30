@@ -1,5 +1,5 @@
 import pytest
-from backend.tests.test_templates import AuthEndpointTestTemplate
+from tests.test_templates import AuthEndpointTestTemplate
 from httpx import ASGITransport, AsyncClient
 from pydantic import ValidationError
 
