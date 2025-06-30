@@ -25,7 +25,6 @@ class TestUserCRUD(UserCoreEndpointTestTemplate):
         )
         self.assert_status(resp, 200)
         assert resp.json()["email"] == self.create_payload["email"]
-        return resp.json()
 
     def test_create_user_duplicate_email(self, client: TestClient):
         data = {"email": "dupe@example.com", "password": "pw123456", "name": "Dupe"}
@@ -67,20 +66,27 @@ class TestUserCRUD(UserCoreEndpointTestTemplate):
         self.assert_status(resp, (422, 400, 401))
 
     def test_update_user(self, client: TestClient):
-        # Create user
+        # Create user with unique email
+        import uuid
+
+        unique_email = f"update_{uuid.uuid4().hex[:8]}@example.com"
+        create_payload = {"email": unique_email, "password": "pw123456", "name": "U2"}
         resp = client.post(
             self.endpoint,
-            json=self.create_payload,
+            json=create_payload,
             headers=self.get_auth_header(client),
         )
+        self.assert_status(resp, 201)
         user_id = resp.json()["id"]
-        # Update user name
-        update = {"name": "Updated Name"}
+        # Update user name (send all required fields)
+        update = {"email": unique_email, "password": "pw123456", "name": "Updated Name"}
         resp = client.put(
             f"{self.endpoint}/{user_id}",
             json=update,
             headers=self.get_auth_header(client),
         )
+        if resp.status_code not in (200, 204):
+            print("Update user failed:", resp.status_code, resp.json())
         self.assert_status(resp, (200, 204))
         # Update with invalid field
         resp = client.put(
@@ -96,18 +102,28 @@ class TestUserCRUD(UserCoreEndpointTestTemplate):
         self.assert_status(resp, (400, 422))
 
     def test_delete_user(self, client: TestClient):
-        # Create user
+        # Create user with unique email
+        import uuid
+
+        unique_email = f"delete_{uuid.uuid4().hex[:8]}@example.com"
+        create_payload = {"email": unique_email, "password": "pw123456", "name": "U2"}
         resp = client.post(
             self.endpoint,
-            json=self.create_payload,
+            json=create_payload,
             headers=self.get_auth_header(client),
         )
+        self.assert_status(resp, 201)
         user_id = resp.json()["id"]
         # Delete user
         resp = client.delete(
             f"{self.endpoint}/{user_id}", headers=self.get_auth_header(client)
         )
         self.assert_status(resp, (200, 204))
+        # Try to get deleted user
+        resp = client.get(
+            f"{self.endpoint}/{user_id}", headers=self.get_auth_header(client)
+        )
+        self.assert_status(resp, (404, 400))
         # Delete again (should fail)
         resp = client.delete(
             f"{self.endpoint}/{user_id}", headers=self.get_auth_header(client)
@@ -131,9 +147,10 @@ class TestUserCRUD(UserCoreEndpointTestTemplate):
         h = self.get_auth_header(client)
         id1 = client.post(self.endpoint, json=data1, headers=h).json()["id"]
         id2 = client.post(self.endpoint, json=data2, headers=h).json()["id"]
-        # Try to update user2's email to user1's email
+        # Try to update user2's email to user1's email (send all required fields)
+        update_payload = {"email": data1["email"], "password": data2["password"], "name": data2["name"]}
         resp = client.put(
-            f"{self.endpoint}/{id2}", json={"email": data1["email"]}, headers=h
+            f"{self.endpoint}/{id2}", json=update_payload, headers=h
         )
         self.assert_status(resp, (400, 409))
 
@@ -143,14 +160,17 @@ class TestUserList(UserCoreEndpointTestTemplate):
     create_payload = {"email": "u2@example.com", "password": "pw123456", "name": "U2"}
 
     def test_list_users_pagination_and_filter(self, client: TestClient):
+        import uuid
         headers = get_auth_header(client)
-        test_email = self.create_payload["email"]
+        unique_email = f"list_{uuid.uuid4().hex[:8]}@example.com"
+        create_payload = {"email": unique_email, "password": "pw123456", "name": "UList"}
+        test_email = create_payload["email"]
         check_resp = client.get(self.endpoint, headers=headers)
         user_exists = any(
             u["email"] == test_email for u in check_resp.json().get("users", [])
         )
         if not user_exists:
-            resp = client.post(self.endpoint, json=self.create_payload, headers=headers)
+            resp = client.post(self.endpoint, json=create_payload, headers=headers)
             self.assert_status(resp, 201)
         resp = client.get(f"{self.endpoint}?limit=1", headers=headers)
         self.assert_status(resp, 200)
@@ -170,16 +190,21 @@ class TestUserList(UserCoreEndpointTestTemplate):
         self.assert_status(resp, 200)
 
     def test_list_users_name_filter(self, client: TestClient):
+        import uuid
         headers = self.get_auth_header(client)
+        unique_name = f"FilterName_{uuid.uuid4().hex[:8]}"
+        unique_email = f"filtername_{uuid.uuid4().hex[:8]}@example.com"
         data = {
-            "email": "filtername@example.com",
+            "email": unique_email,
             "password": "pw123456",
-            "name": "FilterName",
+            "name": unique_name,
         }
-        client.post(self.endpoint, json=data, headers=headers)
-        resp = client.get(f"{self.endpoint}?name=FilterName", headers=headers)
+        resp = client.post(self.endpoint, json=data, headers=headers)
+        # Accept both 201 (created) and 409 (already exists)
+        assert resp.status_code in (201, 409)
+        resp = client.get(f"{self.endpoint}?name={unique_name}", headers=headers)
         self.assert_status(resp, 200)
-        assert any(u["name"] == "FilterName" for u in resp.json()["users"])
+        assert any(u["name"] == unique_name for u in resp.json()["users"])
 
     def test_list_users_partial_email(self, client: TestClient):
         headers = self.get_auth_header(client)

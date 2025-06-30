@@ -620,10 +620,16 @@ class UserService:
         self, session: AsyncSession, user_id: int, data: dict[str, Any]
     ) -> User:
         # Implement update logic or call the appropriate repository/service function
+        from src.repositories.user import is_email_unique
+
         user = await get_user_by_id(session, user_id)
         if not user:
             raise UserNotFoundError("User not found.")
         if "email" in data:
+            # Check for unique email, excluding current user
+            is_unique = await is_email_unique(session, data["email"], exclude_user_id=user_id)
+            if not is_unique:
+                raise UserAlreadyExistsError("Email already exists.")
             user.email = data["email"]
         if "name" in data:
             user.name = data["name"]

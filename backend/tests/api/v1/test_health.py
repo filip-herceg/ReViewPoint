@@ -92,4 +92,4 @@ class TestHealthFeatureFlags(HealthEndpointTestTemplate):
         headers = self.get_auth_header(client)
         headers["X-API-Key"] = "wrongkey"
         resp = client.get("/api/v1/health", headers=headers)
-        assert resp.status_code in (401, 403)
+        self.assert_api_key_required(resp)

@@ -38,22 +38,19 @@ class TestUserProfileSchema(ModelUnitTestTemplate):
     def test_edge_cases(self):
         import pydantic
 
-        with self.assert_raises(
+        self.assert_raises(
             pydantic.ValidationError, UserProfile, id=None, email=None
-        ):
-            pass
-        with self.assert_raises(
+        )
+        self.assert_raises(
             pydantic.ValidationError, UserProfile, id=1, email=None
-        ):
-            pass
-        with self.assert_raises(
+        )
+        self.assert_raises(
             pydantic.ValidationError,
             UserProfile,
             id=1,
             email="a@b.com",
             extra_field="ignored",
-        ):
-            pass
+        )
 
     def test_boundary_values(self):
         name = "n" * 128
@@ -61,14 +58,12 @@ class TestUserProfileSchema(ModelUnitTestTemplate):
         profile = UserProfile(id=10, email="b@b.com", name=name, bio=bio)
         self.assert_equal(profile.name, name)
         self.assert_equal(profile.bio, bio)
-        with self.assert_raises(
+        self.assert_raises(
             ValueError, UserProfileUpdate, name="n" * 129, bio=None
-        ):
-            pass
-        with self.assert_raises(
+        )
+        self.assert_raises(
             ValueError, UserProfileUpdate, name=None, bio="b" * 513
-        ):
-            pass
+        )
 
     def test_unicode_and_special_characters(self):
         profile = UserProfile(
@@ -112,26 +107,23 @@ class TestUserProfileSchema(ModelUnitTestTemplate):
     def test_invalid_types(self):
         import pydantic
 
-        with self.assert_raises(
+        self.assert_raises(
             pydantic.ValidationError,
             UserProfile,
             id=14,
             email="badtype@example.com",
             name=123,
-        ):
-            pass
-        with self.assert_raises(
+        )
+        self.assert_raises(
             pydantic.ValidationError,
             UserProfile,
             id=15,
             email="badtype@example.com",
             bio=object(),
-        ):
-            pass
-        with self.assert_raises(
+        )
+        self.assert_raises(
             pydantic.ValidationError, UserProfile, id=16, email=123
-        ):
-            pass
+        )
 
     def test_extreme_id(self):
         profile = UserProfile(id=2**31 - 1, email="bigid@example.com")
@@ -210,14 +202,12 @@ class TestUserProfileUpdateSchema(ModelUnitTestTemplate):
         update = UserProfileUpdate(name=name, bio=bio)
         self.assert_equal(update.name, name)
         self.assert_equal(update.bio, bio)
-        with self.assert_raises(
+        self.assert_raises(
             ValueError, UserProfileUpdate, name="x" * 129, bio=None
-        ):
-            pass
-        with self.assert_raises(
+        )
+        self.assert_raises(
             ValueError, UserProfileUpdate, name=None, bio="y" * 513
-        ):
-            pass
+        )
 
     def test_whitespace(self):
         update = UserProfileUpdate(name="   ", bio="\n\t")
@@ -242,20 +232,29 @@ class TestUserPreferencesSchema(ModelUnitTestTemplate):
     def test_edge_cases(self):
         import pydantic
 
-        with self.assert_raises(
+        self.assert_raises(
             pydantic.ValidationError,
             UserPreferences,
             **{"theme": "dark", "locale": "en", "unknown": "ignored"},
-        ):
-            pass
-        with self.assert_raises(
+        )
+        self.assert_raises(
             pydantic.ValidationError, UserPreferences, theme=123, locale=None
-        ):
-            pass
-        with self.assert_raises(
+        )
+        self.assert_raises(
             pydantic.ValidationError, UserPreferences, theme=None, locale=object()
-        ):
-            pass
+        )
+        self.assert_raises(
+            pydantic.ValidationError, UserPreferences, preferences=None
+        )
+        self.assert_raises(
+            pydantic.ValidationError, UserPreferences, preferences={"": ""}
+        )
+        self.assert_raises(
+            pydantic.ValidationError, UserPreferences, preferences={"key": None}
+        )
+        self.assert_raises(
+            pydantic.ValidationError, UserPreferences, preferences={None: "value"}
+        )
 
 
 class TestUserPreferencesUpdateSchema(ModelUnitTestTemplate):
@@ -298,7 +297,6 @@ class TestUserAvatarResponseSchema(ModelUnitTestTemplate):
     def test_invalid(self):
         import pydantic
 
-        with self.assert_raises(
+        self.assert_raises(
             pydantic.ValidationError, UserAvatarResponse, avatar_url=None
-        ):
-            pass
+        )

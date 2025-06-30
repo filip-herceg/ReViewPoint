@@ -1,3 +1,11 @@
+import sys
+import os
+
+# Ensure the project root is in sys.path for test imports
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 #
 # ENFORCED TEST ENVIRONMENT/DB SETUP POLICY
 #
@@ -48,9 +56,8 @@ from src.core.security import create_access_token
 from src.main import create_app  # Use factory, not global app
 from src.models.base import Base
 
-# Use a file-based SQLite DB for all tests
-TEST_DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "test.db"))
-TEST_DB_URL = f"sqlite+aiosqlite:///{TEST_DB_PATH}"
+# Use a PostgreSQL DB for all tests
+TEST_DB_URL = os.environ.get("REVIEWPOINT_TEST_DB_URL") or "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint_test"
 DATABASE_URL = TEST_DB_URL
 
 
@@ -101,72 +108,6 @@ def set_required_env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("REVIEWPOINT_FEATURE_HEALTH_READ", "true")
     # Any other likely features (add more as needed)
     monkeypatch.setenv("REVIEWPOINT_FEATURE_API_KEY", "true")
-
-
-@pytest.fixture(scope="session", autouse=True)
-def cleanup_test_db_file(request: pytest.FixtureRequest) -> None:
-    """
-    Clean up the test database file before and after all tests in the session.
-    Ensures a fresh database for every test run and removes it after tests complete.
-    """
-    import time
-
-    # Remove before tests
-    for _ in range(5):
-        try:
-            if os.path.exists(TEST_DB_PATH):
-                os.remove(TEST_DB_PATH)
-            break
-        except PermissionError:
-            time.sleep(0.2)
-
-    # Remove after tests
-    def remove_db() -> None:
-        import aiosqlite
-
-        try:
-
-            async def close_connections() -> None:
-                try:
-                    async with aiosqlite.connect(TEST_DB_PATH) as db:
-                        await db.close()
-                except Exception:
-                    pass
-
-            asyncio.get_event_loop().run_until_complete(close_connections())
-        except Exception:
-            pass
-        try:
-            from sqlalchemy.ext.asyncio import create_async_engine
-
-            engine = create_async_engine(TEST_DB_URL, future=True)
-            asyncio.get_event_loop().run_until_complete(engine.dispose())
-        except Exception:
-            pass
-        for _ in range(5):
-            try:
-                if os.path.exists(TEST_DB_PATH):
-                    os.remove(TEST_DB_PATH)
-                break
-            except PermissionError:
-                time.sleep(0.2)
-
-    request.addfinalizer(remove_db)
-
-
-@pytest_asyncio.fixture(scope="session", autouse=True)
-async def create_test_db_tables(
-    cleanup_test_db_file: None, async_engine: AsyncEngine
-) -> None:
-    """
-    Create all database tables for the test session using the async engine.
-    Ensures the schema is ready before any tests run.
-    """
-    # Import all models to register them with Base metadata
-
-    # Create tables using the async engine
-    async with async_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
 
 
 # 2. Event loop (for async tests)
@@ -230,16 +171,21 @@ def client(test_app: FastAPI) -> TestClient:
 
 # 5. Dependency overrides
 @pytest.fixture(autouse=True)
-def override_get_async_session(
-    async_session: AsyncSession, test_app: FastAPI  # Add type annotation
-) -> Generator[None, None, None]:
+def override_get_async_session(test_app: FastAPI, async_engine: AsyncEngine):
     """
-    Override the get_async_session dependency in FastAPI with the test async session.
-    Ensures all DB operations in the app use the test session.
+    Override the get_async_session dependency in FastAPI with a new session per request.
+    Ensures all DB operations in the app use a fresh test session for each request.
     """
 
+    from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+
+    async_session_local = async_sessionmaker(
+        bind=async_engine, class_=AsyncSession, expire_on_commit=False
+    )
+
     async def _override() -> AsyncGenerator[AsyncSession, None]:
-        yield async_session
+        async with async_session_local() as session:
+            yield session
 
     test_app.dependency_overrides[get_async_session] = _override
     yield
@@ -446,3 +392,22 @@ def pytest_collection_finish(session):
         except Exception:
             # Don't block collection for unreadable files
             pass
+
+
+import pytest_asyncio
+from src.models.base import Base
+from sqlalchemy.ext.asyncio import create_async_engine
+
+@pytest_asyncio.fixture(scope="session", autouse=True)
+async def create_and_drop_tables():
+    """
+    Automatically create all tables before the test session and drop them after.
+    Ensures a clean PostgreSQL test database for every test run.
+    """
+    engine = create_async_engine(DATABASE_URL, future=True)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    await engine.dispose()

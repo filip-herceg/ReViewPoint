@@ -5,7 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, Response, status
 
-from src.api.deps import get_request_id, require_feature
+from src.api.deps import get_request_id, require_feature, require_api_key
 from src.core.database import engine
 from src.core.events import db_healthcheck
 
@@ -58,20 +58,13 @@ def get_pool_stats() -> dict[str, Any]:
                         "db": {
                             "ok": True,
                             "error": None,
-                            "pool": {
-                                "size": 5,
-                                "checkedin": 5,
-                                "checkedout": 0,
-                                "overflow": 0,
-                                "awaiting": 0,
-                            },
                         },
-                        "uptime": 12345.67,
-                        "response_time": 0.0023,
+                        "uptime": 123.45,
+                        "response_time": "0.0012s",
                         "versions": {
-                            "python": "3.11.8",
-                            "fastapi": "0.110.0",
-                            "sqlalchemy": "2.0.29",
+                            "python": "3.11.0",
+                            "fastapi": "0.95.0",
+                            "sqlalchemy": "2.0.0",
                         },
                     }
                 }
@@ -189,6 +182,7 @@ async def health_check(
     response: Response,
     request_id: str = Depends(get_request_id),
     feature_flag_ok: bool = Depends(require_feature("health:read")),
+    _api_key: None = Depends(require_api_key),
 ) -> dict[str, Any]:
     """
     Returns API and database health status.

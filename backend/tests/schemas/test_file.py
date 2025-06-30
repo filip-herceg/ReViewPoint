@@ -180,7 +180,7 @@ class TestFileSchema(ModelUnitTestTemplate):
                 self.created_at = created_at
 
         dummy = Dummy(10, "orm.txt", "text/plain", 2, now)
-        schema = FileSchema.model_validate(dummy)
+        schema = FileSchema.model_validate(dummy, from_attributes=True)
         self.assert_equal(schema.id, 10)
         self.assert_equal(schema.filename, "orm.txt")
         self.assert_equal(schema.content_type, "text/plain")

@@ -162,47 +162,47 @@ class TestRefreshAccessToken(AuthUnitTestTemplate):
 
 
 class TestPasswordStrength(AuthUnitTestTemplate):
-    def test_ascii(self):
+    @pytest.mark.asyncio
+    async def test_ascii(self):
         user_service.validate_password_strength("GoodPass123!")
 
-    def test_whitespace(self):
-        self.assert_http_exception(
-            lambda: user_service.validate_password_strength("bad pass"), 422
-        )
+    @pytest.mark.asyncio
+    async def test_whitespace(self):
+        with pytest.raises(user_service.ValidationError):
+            user_service.validate_password_strength("bad pass")
 
-    def test_non_ascii(self):
-        self.assert_http_exception(
-            lambda: user_service.validate_password_strength("pässword"), 422
-        )
+    @pytest.mark.asyncio
+    async def test_non_ascii(self):
+        with pytest.raises(user_service.ValidationError):
+            user_service.validate_password_strength("pässword")
 
-    def test_error(self):
-        self.patch_dep(
-            "src.services.user.get_password_validation_error", lambda pw: "fail"
-        )
-        self.assert_http_exception(
-            lambda: user_service.validate_password_strength("bad"), 422
-        )
+    @pytest.mark.asyncio
+    async def test_error(self):
+        with pytest.raises(user_service.ValidationError):
+            self.patch_dep(
+                "src.services.user.get_password_validation_error", lambda pw: "fail"
+            )
+            user_service.validate_password_strength("bad")
 
 
 class TestVerifyEmailToken(AuthUnitTestTemplate):
-    def test_valid(self):
+    @pytest.mark.asyncio
+    async def test_valid(self):
         self.patch_dep(
             "src.services.user.verify_access_token", lambda t: {"email": "e"}
         )
         assert user_service.verify_email_token("tok") == {"email": "e"}
 
-    def test_invalid(self):
-        def bad_verify(token: str):
-            raise Exception("bad token")
-
-        self.patch_dep("src.services.user.verify_access_token", bad_verify)
-        self.assert_http_exception(
-            lambda: user_service.verify_email_token("badtok"), 422
-        )
+    @pytest.mark.asyncio
+    async def test_invalid(self):
+        with pytest.raises(user_service.ValidationError):
+            self.patch_dep("src.services.user.verify_access_token", bad_verify)
+            user_service.verify_email_token("badtok")
 
 
 class TestPasswordResetToken(AuthUnitTestTemplate):
-    def test_get_token(self):
+    @pytest.mark.asyncio
+    async def test_get_token(self):
         self.patch_dep(
             "src.services.user.create_access_token", lambda payload: "resettoken"
         )
@@ -224,9 +224,8 @@ class TestGetUserByUsername(AuthUnitTestTemplate):
     async def test_invalid_email(self):
         session = AsyncMock()
         self.patch_dep("src.services.user.validate_email", lambda e: False)
-        await self.assert_async_http_exception(
-            lambda: user_service.get_user_by_username(session, "bademail"), 422
-        )
+        with pytest.raises(user_service.ValidationError):
+            await user_service.get_user_by_username(session, "bademail")
 
     @pytest.mark.asyncio
     async def test_not_found(self):
@@ -243,7 +242,7 @@ class TestUserExists(AuthUnitTestTemplate):
         session = AsyncMock()
         self.patch_dep("src.services.user.validate_email", lambda e: True)
         self.patch_async_dep(
-            "src.services.user.user_repo.is_email_unique", AsyncMock(return_value=False)
+            "src.repositories.user.is_email_unique", AsyncMock(return_value=False)
         )
         assert await user_service.user_exists(session, "e@x.com") is True
 
@@ -252,7 +251,7 @@ class TestUserExists(AuthUnitTestTemplate):
         session = AsyncMock()
         self.patch_dep("src.services.user.validate_email", lambda e: True)
         self.patch_async_dep(
-            "src.services.user.user_repo.is_email_unique", AsyncMock(return_value=True)
+            "src.repositories.user.is_email_unique", AsyncMock(return_value=True)
         )
         assert await user_service.user_exists(session, "e@x.com") is False
 
@@ -285,10 +284,10 @@ class TestDeleteAndReactivateUser(AuthUnitTestTemplate):
     async def test_delete_soft(self):
         session = AsyncMock()
         self.patch_async_dep(
-            "src.services.user.user_repo.soft_delete_user", AsyncMock(return_value=True)
+            "src.repositories.user.soft_delete_user", AsyncMock(return_value=True)
         )
         self.patch_async_dep(
-            "src.services.user.user_repo.audit_log_user_change", AsyncMock()
+            "src.repositories.user.audit_log_user_change", AsyncMock()
         )
         result = await user_service.delete_user_account(session, 1, anonymize=False)
         assert result is True
@@ -297,10 +296,10 @@ class TestDeleteAndReactivateUser(AuthUnitTestTemplate):
     async def test_delete_anonymize(self):
         session = AsyncMock()
         self.patch_async_dep(
-            "src.services.user.user_repo.anonymize_user", AsyncMock(return_value=True)
+            "src.repositories.user.anonymize_user", AsyncMock(return_value=True)
         )
         self.patch_async_dep(
-            "src.services.user.user_repo.audit_log_user_change", AsyncMock()
+            "src.repositories.user.audit_log_user_change", AsyncMock()
         )
         result = await user_service.delete_user_account(session, 1, anonymize=True)
         assert result is True
@@ -309,10 +308,10 @@ class TestDeleteAndReactivateUser(AuthUnitTestTemplate):
     async def test_deactivate(self):
         session = AsyncMock()
         self.patch_async_dep(
-            "src.services.user.user_repo.deactivate_user", AsyncMock(return_value=True)
+            "src.repositories.user.deactivate_user", AsyncMock(return_value=True)
         )
         self.patch_async_dep(
-            "src.services.user.user_repo.audit_log_user_change", AsyncMock()
+            "src.repositories.user.audit_log_user_change", AsyncMock()
         )
         result = await user_service.deactivate_user(session, 1)
         assert result is True
@@ -321,10 +320,10 @@ class TestDeleteAndReactivateUser(AuthUnitTestTemplate):
     async def test_reactivate(self):
         session = AsyncMock()
         self.patch_async_dep(
-            "src.services.user.user_repo.reactivate_user", AsyncMock(return_value=True)
+            "src.repositories.user.reactivate_user", AsyncMock(return_value=True)
         )
         self.patch_async_dep(
-            "src.services.user.user_repo.audit_log_user_change", AsyncMock()
+            "src.repositories.user.audit_log_user_change", AsyncMock()
         )
         result = await user_service.reactivate_user(session, 1)
         assert result is True
@@ -351,9 +350,8 @@ class TestSetUserPreferences(AuthUnitTestTemplate):
         self.patch_async_dep(
             "src.services.user.get_user_by_id", AsyncMock(return_value=None)
         )
-        await self.assert_async_http_exception(
-            lambda: user_service.set_user_preferences(session, 1, {}), 404
-        )
+        with pytest.raises(user_service.UserNotFoundError):
+            await user_service.set_user_preferences(session, 1, {})
 
 
 class TestAsyncRefreshAccessToken(AuthUnitTestTemplate):

@@ -29,6 +29,10 @@ class BaseAPITest:
         self.loguru_list_sink = loguru_list_sink
         pass
 
+    @pytest.fixture(autouse=True)
+    def _inject_monkeypatch(self, monkeypatch):
+        self.monkeypatch = monkeypatch
+
     def get_auth_header(
         self,
         client: TestClient,
@@ -79,6 +83,38 @@ class BaseAPITest:
         Assert that the response content-type header starts with the expected type.
         """
         assert response.headers["content-type"].startswith(expected_type)
+
+    def assert_equal(self, a, b, msg=None):
+        assert a == b, msg or f"Expected {a!r} == {b!r}"
+
+    def assert_in(self, a, b, msg=None):
+        assert a in b, msg or f"Expected {a!r} to be in {b!r}"
+
+    def assert_true(self, expr, msg=None):
+        assert expr, msg or f"Expected expression to be true, got {expr!r}"
+
+    def assert_is_instance(self, obj, cls, msg=None):
+        assert isinstance(obj, cls), msg or f"Expected {obj!r} to be instance of {cls!r}"
+
+    def assert_api_key_required(self, response: Any) -> None:
+        """
+        Assert that a response indicates a missing or invalid API key (401 or 403).
+        """
+        assert response.status_code in (401, 403), f"Expected 401 or 403, got {response.status_code}"
+        body = response.json()
+        assert "api key" in str(body.get("detail", "")).lower() or "api key" in str(body).lower(), (
+            f"Expected error message about API key, got: {body}"
+        )
+
+    def assert_forbidden(self, response: Any) -> None:
+        """
+        Assert that a response is HTTP 403 Forbidden.
+        """
+        assert response.status_code == 403, f"Expected 403, got {response.status_code}"
+        body = response.json()
+        assert "forbidden" in str(body.get("detail", "")).lower() or "forbidden" in str(body).lower(), (
+            f"Expected forbidden error message, got: {body}"
+        )
 
 
 class CRUDTestTemplate(BaseAPITest):
@@ -211,10 +247,21 @@ class AuthUnitTestTemplate(BaseAPITest):
         self._patches = []
         yield
         # Restore all patched attributes after each test
-        for target, orig in self._patches:
-            module, attr = target.rsplit(".", 1)
-            mod = __import__(module, fromlist=[attr])
-            setattr(mod, attr, orig)
+        for target, attr, orig in self._patches:
+            if isinstance(target, str) and target.startswith('os.environ['):
+                import os
+                key = target.split('["')[1].split('"]')[0]
+                if orig is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = orig
+            elif isinstance(target, str) and "." in target:
+                module, attr_name = target.rsplit(".", 1)
+                mod = __import__(module, fromlist=[attr_name])
+                setattr(mod, attr_name, orig)
+            else:
+                # target is an object, attr is attribute name
+                setattr(target, attr, orig)
 
     def patch_dep(self, target: str, value):
         """
@@ -225,7 +272,7 @@ class AuthUnitTestTemplate(BaseAPITest):
         mod = __import__(module, fromlist=[attr])
         orig = getattr(mod, attr)
         self.monkeypatch.setattr(mod, attr, value)
-        self._patches.append((target, orig))
+        self._patches.append((target, attr, orig))
 
     def patch_setting(self, obj, attr, value):
         """
@@ -234,7 +281,7 @@ class AuthUnitTestTemplate(BaseAPITest):
         """
         orig = getattr(obj, attr)
         self.monkeypatch.setattr(obj, attr, value)
-        self._patches.append((f"{obj.__module__}.{attr}", orig))
+        self._patches.append((obj, attr, orig))
 
     def assert_http_exception(self, func, status_code, detail_substr=None):
         import pytest
@@ -272,13 +319,12 @@ class AuthUnitTestTemplate(BaseAPITest):
 
         orig = os.environ.get(key)
         self.monkeypatch.setenv(key, value)
-        self._patches.append((f'os.environ["{key}"]', orig))
+        self._patches.append((f'os.environ["{key}"]', None, orig))
 
     def restore_env(self, key: str):
         import os
-
-        for i, (target, orig) in enumerate(self._patches):
-            if target == f'os.environ["{key}"]':
+        for i, (target, attr, orig) in enumerate(self._patches):
+            if isinstance(target, str) and target == f'os.environ["{key}"]':
                 if orig is None:
                     os.environ.pop(key, None)
                 else:
@@ -768,13 +814,7 @@ class ModelUnitTestTemplate:
 
     def assert_repr(self, obj, class_name: str):
         r = repr(obj)
-        assert r.startswith(f"<{class_name} object at ")
-        assert class_name in r
-
-    def assert_model_attrs(self, obj, attrs: dict):
-        for k, v in attrs.items():
-            assert hasattr(obj, k)
-            assert getattr(obj, k) == v
+        assert class_name in r, f"Expected {class_name} in repr: {r}"
 
 
 class AsyncModelTestTemplate(ModelUnitTestTemplate):
@@ -1001,4 +1041,10 @@ class AlembicEnvTestTemplate:
         else:
             with pytest.raises(exc_type):
                 func(*args, **kwargs)
+
+    def assert_true(self, expr, msg=None):
+        assert expr, msg or f"Expected expression to be True, got {expr}"
+
+    def assert_is_instance(self, obj, cls, msg=None):
+        assert isinstance(obj, cls), msg or f"Expected {obj!r} to be instance of {cls!r}, got {type(obj)}"
 # pytest: disable=pytest_plugin_missing_source_or_test

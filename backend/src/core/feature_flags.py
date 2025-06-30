@@ -8,14 +8,21 @@ class FeatureFlags:
     def is_enabled(feature_name: str) -> bool:
         features = os.getenv("REVIEWPOINT_FEATURES", "")
         enabled = {f.strip() for f in features.split(",") if f.strip()}
-        # Option 2: Also check individual env vars
-        env_var = "REVIEWPOINT_FEATURE_" + feature_name.upper().replace(":", "_")
-        env_val = os.getenv(env_var)
-        result = feature_name in enabled or (
-            env_val is not None and env_val.lower() == "true"
+        # Check both the generic and specific env vars
+        base = feature_name.split(":")[0].upper()
+        env_var_specific = "REVIEWPOINT_FEATURE_" + feature_name.upper().replace(":", "_")
+        env_var_base = f"REVIEWPOINT_FEATURE_{base}"
+        env_val_specific = os.getenv(env_var_specific)
+        env_val_base = os.getenv(env_var_base)
+        # If either is explicitly set to false, feature is disabled
+        if (env_val_specific is not None and env_val_specific.lower() == "false") or (
+            env_val_base is not None and env_val_base.lower() == "false"
+        ):
+            return False
+        # If either is true, or feature_name is in enabled set, feature is enabled
+        result = (
+            feature_name in enabled
+            or (env_val_specific is not None and env_val_specific.lower() == "true")
+            or (env_val_base is not None and env_val_base.lower() == "true")
         )
-        # print(
-        #     f"[FeatureFlags] Checking '{feature_name}' against enabled: {enabled} and {env_var}={env_val} -> {result}",
-        #     file=sys.stderr,
-        # )
         return result
