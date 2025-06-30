@@ -137,7 +137,12 @@ async def authenticate_user(
     logger.info("User authenticated successfully", user_id=user.id, email=user.email)
     # Create JWT tokens
     access_token = create_access_token(
-        {"sub": str(user.id), "user_id": str(user.id), "email": user.email}
+        {
+            "sub": str(user.id),
+            "user_id": str(user.id),
+            "email": user.email,
+            "role": "admin" if getattr(user, "is_admin", False) else "user",
+        }
     )
     jti = str(uuid.uuid4())
     exp = int((datetime.now(UTC) + timedelta(days=7)).timestamp())
@@ -146,6 +151,7 @@ async def authenticate_user(
             "sub": str(user.id),
             "user_id": str(user.id),
             "email": user.email,
+            "role": "admin" if getattr(user, "is_admin", False) else "user",
             "jti": jti,
             "exp": exp,
         }
@@ -458,7 +464,11 @@ async def get_user_by_username(session: AsyncSession, username: str) -> User | N
 
 
 async def get_users_paginated(
-    session: AsyncSession, page: int = 1, limit: int = 20
+    session: AsyncSession,
+    page: int = 1,
+    limit: int = 20,
+    email: str | None = None,
+    name: str | None = None,
 ) -> dict[str, Any]:
     """
     Return paginated users and total count. Validates input and returns structured response.
@@ -466,8 +476,9 @@ async def get_users_paginated(
     if page < 1 or limit < 1 or limit > 100:
         raise ValidationError("Invalid pagination parameters.")
     offset = (page - 1) * limit
-    users = await user_repo.list_users_paginated(session, offset=offset, limit=limit)
-    total = await user_repo.count_users(session)
+    users, total = await user_repo.list_users(
+        session, offset=offset, limit=limit, email=email, name=name
+    )
     return {"users": users, "total": total, "page": page, "limit": limit}
 
 
@@ -568,6 +579,88 @@ class RefreshTokenRateLimitError(Exception):
 
 class RefreshTokenBlacklistedError(Exception):
     pass
+
+
+class UserService:
+    """
+    Service class for user registration, authentication, profile, and password management.
+    Wraps the module-level functions for better type safety and DI.
+    """
+
+    async def register_user(self, session: AsyncSession, data: dict[str, Any]) -> User:
+        return await register_user(session, data)
+
+    async def authenticate_user(
+        self, session: AsyncSession, email: str, password: str
+    ) -> tuple[str, str]:
+        return await authenticate_user(session, email, password)
+
+    async def logout_user(self, session: AsyncSession, user_id: int) -> None:
+        return await logout_user(session, user_id)
+
+    async def reset_password(
+        self, session: AsyncSession, token: str, new_password: str
+    ) -> None:
+        return await reset_password(session, token, new_password)
+
+    def get_password_reset_token(self, email: str) -> str:
+        return get_password_reset_token(email)
+
+    async def get_users_paginated(
+        self, session: AsyncSession, page: int = 1, limit: int = 20
+    ) -> dict[str, Any]:
+        return await get_users_paginated(session, page, limit)
+
+    async def get_user_profile(
+        self, session: AsyncSession, user_id: int
+    ) -> UserProfile:
+        return await get_user_profile(session, user_id)
+
+    async def update_user(
+        self, session: AsyncSession, user_id: int, data: dict[str, Any]
+    ) -> User:
+        # Implement update logic or call the appropriate repository/service function
+        user = await get_user_by_id(session, user_id)
+        if not user:
+            raise UserNotFoundError("User not found.")
+        if "email" in data:
+            user.email = data["email"]
+        if "name" in data:
+            user.name = data["name"]
+        if "password" in data:
+            from src.utils.hashing import hash_password
+
+            user.hashed_password = hash_password(data["password"])
+        await session.commit()
+        await session.refresh(user)
+        return user
+
+    async def delete_user(self, session: AsyncSession, user_id: int) -> None:
+        user = await get_user_by_id(session, user_id)
+        if not user:
+            raise UserNotFoundError("User not found.")
+        await session.delete(user)
+        await session.commit()
+
+    async def list_users(self, session, offset=0, limit=20, email=None, name=None):
+        from src.repositories.user import list_users
+
+        return await list_users(
+            session, offset=offset, limit=limit, email=email, name=name
+        )
+
+    async def get_user_by_id(self, session, user_id):
+        from src.repositories.user import get_user_by_id
+
+        return await get_user_by_id(session, user_id)
+
+
+# Dependency provider for FastAPI
+user_service_instance = UserService()
+
+
+def get_user_service() -> UserService:
+    return user_service_instance
 
 
 # For future: integrate with route-based access control (RBAC)

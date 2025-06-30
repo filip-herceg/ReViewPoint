@@ -21,7 +21,7 @@ import time
 import uuid
 from collections.abc import AsyncGenerator
 from functools import lru_cache, wraps
-from typing import Any, Callable, TypeVar, cast
+from typing import Any
 
 from fastapi import Depends, HTTPException, Query, Request, Security, status
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
@@ -35,6 +35,8 @@ from src.core.security import verify_access_token
 from src.models.user import User
 from src.repositories import user as user_repository
 from src.repositories.user import get_user_by_id
+from src.services.user import UserService
+from src.utils.http_error import http_error
 
 REQUEST_ID_HEADER = "X-Request-ID"
 
@@ -106,15 +108,34 @@ class DependencyRegistry:
 registry = DependencyRegistry()
 registry.register("user_service", lambda: importlib.import_module("src.services.user"))
 registry.register("user_repository", lambda: user_repository)
-registry.register("blacklist_token", lambda: importlib.import_module("src.repositories.blacklisted_token").blacklist_token)
-registry.register("user_action_limiter", lambda: importlib.import_module("src.repositories.user").user_action_limiter)
-registry.register("validate_email", lambda: importlib.import_module("src.utils.validation").validate_email)
-registry.register("password_validation_error", lambda: importlib.import_module("src.utils.validation").get_password_validation_error)
-registry.register("async_refresh_access_token", lambda: importlib.import_module("src.services.user").async_refresh_access_token)
+registry.register(
+    "blacklist_token",
+    lambda: importlib.import_module(
+        "src.repositories.blacklisted_token"
+    ).blacklist_token,
+)
+registry.register(
+    "user_action_limiter",
+    lambda: importlib.import_module("src.repositories.user").user_action_limiter,
+)
+registry.register(
+    "validate_email",
+    lambda: importlib.import_module("src.utils.validation").validate_email,
+)
+registry.register(
+    "password_validation_error",
+    lambda: importlib.import_module(
+        "src.utils.validation"
+    ).get_password_validation_error,
+)
+registry.register(
+    "async_refresh_access_token",
+    lambda: importlib.import_module("src.services.user").async_refresh_access_token,
+)
 
 
 def get_user_service():
-    return registry.get("user_service")
+    return UserService()
 
 
 def get_user_repository() -> Any:
@@ -139,7 +160,9 @@ def get_password_validation_error() -> Any:
 
 def get_async_refresh_access_token() -> Any:
     from src.core.config import settings
+
     async_refresh_access_token = registry.get("async_refresh_access_token")
+
     async def wrapper(session, token):
         return await async_refresh_access_token(
             session,
@@ -147,6 +170,7 @@ def get_async_refresh_access_token() -> Any:
             settings.jwt_secret_key,
             settings.jwt_algorithm,
         )
+
     return wrapper
 
 
@@ -165,10 +189,15 @@ def get_feature_flags():
 def require_feature(feature_name: str):
     async def dependency(flags=Depends(get_feature_flags)):
         if not flags.is_enabled(feature_name):
-            raise HTTPException(status_code=404, detail="This feature is not available")
+            http_error(
+                404,
+                "This feature is not available",
+                logger.warning,
+                {"feature": feature_name},
+            )
         return True
 
-    return Depends(dependency)
+    return dependency
 
 
 # --- Health Check System ---
@@ -214,7 +243,7 @@ def measure_dependency(func):
                 else func(*args, **kwargs)
             )
             status = "success"
-        except Exception as e:
+        except Exception:
             status = "error"
             raise
         finally:
@@ -246,6 +275,7 @@ def get_refreshable_settings():
                 or self._settings is None
             ):
                 import importlib
+
                 import src.core.config
 
                 importlib.reload(src.core.config)
@@ -305,11 +335,14 @@ def pagination_params(
     """
     if offset < 0:
         logger.error(f"Invalid offset: {offset}")
-        raise HTTPException(status_code=400, detail="Offset must be >= 0")
+        http_error(400, "Offset must be >= 0", logger.error, {"offset": offset})
     if limit < 1 or limit > MAX_LIMIT:
         logger.error(f"Invalid limit: {limit}")
-        raise HTTPException(
-            status_code=400, detail=f"Limit must be between 1 and {MAX_LIMIT}"
+        http_error(
+            400,
+            f"Limit must be between 1 and {MAX_LIMIT}",
+            logger.error,
+            {"limit": limit},
         )
     logger.info(f"Pagination params accepted: offset={offset}, limit={limit}")
     return PaginationParams(offset=offset, limit=limit)
@@ -335,32 +368,55 @@ async def get_current_user(
     """
     if not settings.auth_enabled:
         logger.warning("Authentication is DISABLED! Returning development admin user.")
-        return _get_dev_admin_user()  # Validate token and extract user_id
+        return _get_dev_admin_user()
+    user_id = None
+    role = None
     try:
         payload = verify_access_token(token)
         if not payload:
             logger.error("Token verification returned empty payload")
             raise ValueError("Empty payload")
-
         user_id = payload.get("sub")
+        role = payload.get("role")
         if not user_id:
             logger.error("Token payload missing 'sub' (user id)")
             raise ValueError("Missing user id")
-
     except (JWTError, ValueError, TypeError) as err:
         logger.error(f"Token validation failed: {err}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
-        ) from err
-    user = await get_user_by_id(session, int(user_id))
+        http_error(
+            status.HTTP_401_UNAUTHORIZED,
+            "Invalid token",
+            logger.error,
+            {"error": str(err)},
+            err,
+        )
+    # Support both int and str (email) user_id
+    user = None
+    if user_id is not None:
+        try:
+            user = await get_user_by_id(session, int(user_id))
+        except (ValueError, TypeError):
+            from sqlalchemy import select
+
+            from src.models.user import User
+
+            result = await session.execute(
+                select(User).where(User.email == str(user_id))
+            )
+            user = result.scalar_one_or_none()
     if not user or not user.is_active or user.is_deleted:
         logger.error(f"User not found or inactive/deleted: user_id={user_id}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found or inactive",
+        http_error(
+            status.HTTP_401_UNAUTHORIZED,
+            "User not found or inactive",
+            logger.warning,
+            {"user_id": user_id},
         )
-    logger.info(f"User authenticated: user_id={user_id}")
+        raise ValueError("User not found or inactive")
+    # Attach role from JWT if present
+    if role:
+        user.role = role
+    logger.info(f"User authenticated: user_id={user_id}, role={role}")
     return user
 
 
@@ -418,10 +474,13 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     except Exception as exc:
         logger.error(f"Database session error: {exc}")
         await session.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Database error. Please try again later.",
-        ) from exc
+        http_error(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "Database error. Please try again later.",
+            logger.error,
+            {"error": str(exc)},
+            exc,
+        )
     finally:
         await session.close()
         logger.info("Database session closed.")
@@ -444,8 +503,11 @@ async def get_current_active_user(
     """
     if not user.is_active or user.is_deleted:
         logger.error(f"Inactive or deleted user tried to access: user_id={user.id}")
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Inactive or deleted user."
+        http_error(
+            status.HTTP_403_FORBIDDEN,
+            "Inactive or deleted user.",
+            logger.warning,
+            {"user_id": user.id},
         )
     logger.info(f"Active user check passed: user_id={user.id}")
     return user
@@ -527,9 +589,11 @@ async def require_api_key(
         _ = Depends(require_api_key)
     """
     if not await validate_api_key(api_key):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or missing API key",
+        http_error(
+            status.HTTP_401_UNAUTHORIZED,
+            "Invalid or missing API key",
+            logger.warning,
+            {"api_key": api_key},
         )
 
 
@@ -545,6 +609,18 @@ async def get_current_user_with_api_key(
     JWT authentication and API key validation.
     """
     return await get_current_user(token, session)
+
+
+def require_admin(current_user: User = Depends(get_current_active_user)) -> User:
+    """
+    Dependency that ensures the current user is an admin.
+    Raises 403 if not.
+    """
+    if not current_user or not getattr(current_user, "is_admin", False):
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN, detail="Admin privileges required."
+        )
+    return current_user
 
 
 get_user_repository = lru_cache()(get_user_repository)

@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from loguru import logger
-from pydantic import Field, ValidationError, field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 __all__ = ["Settings", "get_settings", "settings"]
@@ -51,7 +51,10 @@ class Settings(BaseSettings):
     log_level: Literal["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"] = "INFO"
 
     # Database settings
-    db_url: str = Field(..., description="Async SQLAlchemy database URL")
+    db_url: str = Field(
+        default="sqlite+aiosqlite:///test.db",  # Default for dev/test
+        description="Async SQLAlchemy database URL",
+    )
 
     # Authentication settings
     auth_enabled: bool = Field(
@@ -218,15 +221,17 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    """
-    Return a cached singleton of Settings, raising RuntimeError on validation errors.
-    """
-    try:
-        return Settings()  # type: ignore[call-arg]
-    except ValidationError as exc:
-        raise RuntimeError(f"Configuration error: {exc}") from exc
+    s = Settings()
+    print(
+        f"[CONFIG DEBUG] api_key_enabled: {s.api_key_enabled} (type: {type(s.api_key_enabled)})"
+    )
+    logger.info(
+        f"[CONFIG DEBUG] api_key_enabled: {s.api_key_enabled} (type: {type(s.api_key_enabled)})"
+    )
+    return s
 
+
+settings = get_settings()
 
 # Initialize settings and log the loaded configuration
-settings: Settings = get_settings()
 logger.debug("Settings initialized: %s", settings.to_public_dict())

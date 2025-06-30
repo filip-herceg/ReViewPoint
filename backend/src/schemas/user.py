@@ -40,3 +40,36 @@ class UserAvatarResponse(BaseModel):
 
 class UserRead(UserProfile):
     pass
+
+
+# --- User Creation Request Schema ---
+class UserCreateRequest(BaseModel):
+    email: str
+    password: str
+    name: str
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "email": "user@example.com",
+                    "password": "strongpassword123",
+                    "name": "Jane Doe",
+                }
+            ]
+        }
+    )
+
+
+# --- User List Response Schema ---
+class UserListResponse(BaseModel):
+    users: list[UserProfile]  # Use direct reference for Pydantic v2
+    total: int
+
+
+# NOTE: UserResponse is typically UserProfile or UserRead, already defined above.
+# If needed, update the reference accordingly.
+
+# --- Fix for Pydantic forward references ---
+UserResponse = UserProfile  # or UserRead if needed
+UserListResponse.model_rebuild()

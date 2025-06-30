@@ -11,7 +11,7 @@ from loguru import logger
 from src.api.v1.auth import router as auth_router
 from src.api.v1.health import router as health_router
 from src.api.v1.uploads import router as uploads_router
-from src.api.v1.users import router as users_router
+from src.api.v1.users import all_routers
 from src.core.config import settings
 from src.core.events import on_shutdown, on_startup
 from src.core.logging import init_logging
@@ -63,21 +63,11 @@ def create_app() -> FastAPI:
         name="static",
     )
 
-    # Force reload to override routers without caching/module reuse
-    # Import directly inline to ensure reload when app is created
-    from importlib import reload
-
-    import src.api.v1.uploads
-    import src.api.v1.users
-
-    reload(src.api.v1.users)
-    reload(src.api.v1.uploads)
-    from src.api.v1.uploads import router as uploads_router_reloaded
-    from src.api.v1.users import router as users_router_reloaded
-
-    # Use the reloaded routers
-    app.include_router(users_router_reloaded, prefix="/api/v1")
-    app.include_router(uploads_router_reloaded, prefix="/api/v1")
+    # Register user routers (modularized)
+    for router in all_routers:
+        app.include_router(router, prefix="/api/v1/users")
+    # Register uploads router
+    app.include_router(uploads_router, prefix="/api/v1")
 
     # Print registered routes for debugging with more details
     import logging
@@ -122,12 +112,11 @@ def create_app() -> FastAPI:
         logging.warning(f"{route_path}{methods_str} -> {endpoint_str}")
 
     # Check routers
-    logging.warning(f"USERS ROUTER: {users_router_reloaded}")
-    logging.warning(f"UPLOADS ROUTER: {uploads_router_reloaded}")
+    logging.warning(f"UPLOADS ROUTER: {uploads_router}")
 
     # Print uploads router routes specifically with path parameters highlighted
     logging.warning("UPLOADS ROUTER ROUTES (with path params highlighted):")
-    for route in uploads_router_reloaded.routes:
+    for route in uploads_router.routes:
         route_path = getattr(route, "path", None)
         if route_path is None:
             continue
@@ -164,7 +153,9 @@ def create_app() -> FastAPI:
     from src.utils.errors import ValidationError
 
     @app.exception_handler(ValidationError)
-    async def validation_exception_handler(request: Request, exc: ValidationError) -> JSONResponse:
+    async def validation_exception_handler(
+        request: Request, exc: ValidationError
+    ) -> JSONResponse:
         return JSONResponse(
             status_code=400,
             content={"detail": str(exc)},
@@ -329,7 +320,6 @@ def print_routes(app: FastAPI) -> None:
 if os.getenv("ENVIRONMENT", "production") == "development":
     print_routes(app)
     # print_all_routes(app)  # Disabled: function not defined at this point
-    print(f"USERS ROUTER: {users_router}")
     print(f"UPLOADS ROUTER: {uploads_router}")
 
 

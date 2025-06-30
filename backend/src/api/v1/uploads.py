@@ -5,7 +5,6 @@ from typing import Any
 from fastapi import (
     APIRouter,
     Depends,
-    HTTPException,
     Path,
     Query,
     Request,
@@ -16,15 +15,18 @@ from fastapi import (
 from fastapi import (
     File as FastAPIFile,  # Renamed to avoid conflict
 )
+from loguru import logger
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.deps import (
     get_current_user_with_api_key as get_current_user,
+)
+from src.api.deps import (
+    get_request_id,
     pagination_params,
     require_api_key,
     require_feature,
-    get_request_id,
 )
 from src.core.database import get_async_session
 from src.models.file import File as DBFile  # Renamed to avoid conflict
@@ -38,6 +40,7 @@ from src.repositories.file import (
     list_files as repo_list_files,
 )
 from src.utils.datetime import parse_flexible_datetime
+from src.utils.http_error import http_error
 
 # Type alias for the File DB model to be used as a return type
 FileInDB = DBFile
@@ -106,7 +109,7 @@ class FileResponse(BaseModel):
 
 def ensure_nonempty_filename(file: UploadFile = FastAPIFile(...)) -> UploadFile:
     if not file.filename:
-        raise HTTPException(status_code=400, detail="Invalid file.")
+        http_error(400, "Invalid file.", logger.warning, {"filename": file.filename})
     return file
 
 
@@ -384,7 +387,7 @@ async def export_files_csv(
     ),
     created_after: str | None = Query(
         None,
-        description="Filter files created after this datetime (ISO 8601, e.g. 2024-01-01T00:00:00Z)" ,
+        description="Filter files created after this datetime (ISO 8601, e.g. 2024-01-01T00:00:00Z)",
         examples=["2024-01-01T00:00:00Z", "2025-06-20T00:11:21.676185+00:00"],
     ),
     request_id: str = Depends(get_request_id),
@@ -402,15 +405,15 @@ async def export_files_csv(
             parse_flexible_datetime(created_after) if created_after else None
         )
     except ValueError as e:
-        logging.error(f"Invalid created_after: {e}")
-        raise HTTPException(status_code=422, detail=str(e)) from e
+        logger.error(f"Invalid created_after: {e}")
+        http_error(422, str(e), logger.error, {"created_after": created_after}, e)
     try:
         created_before_dt = (
             parse_flexible_datetime(created_before) if created_before else None
         )
     except ValueError as e:
-        logging.error(f"Invalid created_before: {e}")
-        raise HTTPException(status_code=422, detail=str(e)) from e
+        logger.error(f"Invalid created_before: {e}")
+        http_error(422, str(e), logger.error, {"created_before": created_before}, e)
     files, _ = await repo_list_files(
         session,
         user_id=current_user.id,
@@ -587,15 +590,17 @@ async def upload_file(
     api_key_ok: None = Depends(require_api_key),
 ) -> FileUploadResponse:
     if not file.filename:
-        raise HTTPException(status_code=400, detail="Invalid file.")
+        http_error(400, "Invalid file.", logger.warning, {"filename": file.filename})
 
     # Check for path traversal attempts
     from src.utils.file import is_safe_filename, sanitize_filename
 
     if not is_safe_filename(file.filename):
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid filename. Path traversal attempts are not allowed.",
+        http_error(
+            400,
+            "Invalid filename. Path traversal attempts are not allowed.",
+            logger.warning,
+            {"filename": file.filename},
         )
 
     # Sanitize the filename to ensure safety
@@ -652,10 +657,13 @@ async def upload_file(
 
             # If it's a unique constraint error on the final attempt
             if "unique constraint failed" in error_str:
-                raise HTTPException(
-                    status_code=409,
-                    detail="File with same name already exists or concurrent upload conflict",
-                ) from e
+                http_error(
+                    409,
+                    "File with same name already exists or concurrent upload conflict",
+                    logger.warning,
+                    {"filename": file.filename},
+                    e,
+                )
 
             # Log the error
             logging.error(f"Failed to upload file on attempt {attempt+1}: {str(e)}")
@@ -663,19 +671,25 @@ async def upload_file(
     # If we exhausted all retries, raise an error with the last exception
     if last_exception:
         if "illegal state change" in str(last_exception).lower():
-            raise HTTPException(
-                status_code=500,
-                detail="Database concurrency conflict. Please try again.",
-            ) from last_exception
-
-        # Generic error for other issues
-        raise HTTPException(
-            status_code=500, detail=f"Failed to upload file: {str(last_exception)}"
-        ) from last_exception
-
-    # Should not reach here
-    raise HTTPException(
-        status_code=500, detail="Failed to upload file after multiple retries"
+            http_error(
+                500,
+                "Database concurrency conflict. Please try again.",
+                logger.error,
+                {"filename": file.filename},
+                last_exception,
+            )
+        http_error(
+            500,
+            f"Failed to upload file: {str(last_exception)}",
+            logger.error,
+            {"filename": file.filename},
+            last_exception,
+        )
+    http_error(
+        500,
+        "Failed to upload file after multiple retries",
+        logger.error,
+        {"filename": file.filename},
     )
 
 
@@ -753,7 +767,7 @@ async def get_file(
     logging.warning(f"GET FILE BY FILENAME CALLED: {filename}")
     db_file = await get_file_by_filename(session, filename)
     if not db_file:
-        raise HTTPException(status_code=404, detail="File not found.")
+        http_error(404, "File not found.", logger.warning, {"filename": filename})
     return FileUploadResponse(
         filename=db_file.filename, url=f"/uploads/{db_file.filename}"
     )
@@ -822,7 +836,7 @@ async def delete_file_by_filename(
 ) -> Response:  # Change return type to match actual returned value
     db_file = await delete_file(session, filename)
     if not db_file:
-        raise HTTPException(status_code=404, detail="File not found.")
+        http_error(404, "File not found.", logger.warning, {"filename": filename})
     await session.commit()  # Explicitly commit the transaction
     return Response(status_code=204)
 

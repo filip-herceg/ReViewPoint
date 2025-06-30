@@ -111,11 +111,13 @@ def pytest_sessionstart(session: pytest.Session) -> None:
                 result.multiply_mapped.append(t)
 
     result.checked = True
-    setattr(session.config, "_mapping_check_result", result)
+    session.config._mapping_check_result = result
     # Do not print or exit here; summary will be shown at the end.
 
 
-def pytest_terminal_summary(terminalreporter: "pytest.TerminalReporter", exitstatus: int, config: object) -> None:
+def pytest_terminal_summary(
+    terminalreporter: "pytest.TerminalReporter", exitstatus: int, config: object
+) -> None:
     result = getattr(config, "_mapping_check_result", None)
     if not result or not result.checked:
         return
