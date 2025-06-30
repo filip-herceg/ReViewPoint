@@ -168,6 +168,7 @@ norecursedirs = "/tests"
 pythonpath = ["src"]
 markers = [
     "jwt: mark tests that require JWT handling",
+    "performance: marks tests as performance (deselect with '-m \"not performance\"')"
 ]
 
 [tool.hatch.build.targets.wheel]
