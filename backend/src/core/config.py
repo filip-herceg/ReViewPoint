@@ -52,7 +52,7 @@ class Settings(BaseSettings):
 
     # Database settings
     db_url: str = Field(
-        default="sqlite+aiosqlite:///test.db",  # Default for dev/test
+        default="postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint",  # Default for all environments
         description="Async SQLAlchemy database URL",
     )
 
@@ -137,14 +137,11 @@ class Settings(BaseSettings):
         """
         Ensure the database URL uses a supported scheme.
 
-        Accepted schemes:
+        Accepted scheme:
         - postgresql+asyncpg://
-        - sqlite+aiosqlite://
         """
-        if not v.startswith(("postgresql+asyncpg://", "sqlite+aiosqlite://")):
-            raise ValueError(
-                "db_url must use postgresql+asyncpg or sqlite+aiosqlite scheme"
-            )
+        if not v.startswith("postgresql+asyncpg://"):
+            raise ValueError("db_url must use postgresql+asyncpg scheme")
         return v
 
     @field_validator("upload_dir", mode="after")
@@ -182,14 +179,9 @@ class Settings(BaseSettings):
     def model_post_init(self, __context: Any) -> None:
         """
         Post-initialization adjustments for specific environments.
-
-        - In 'test' environment, use in-memory SQLite and set log level to WARNING.
         - If jwt_secret_key is not set but jwt_secret is, use it (for backward compatibility)
         - Raise error if neither is set
         """
-        if self.environment == "test":
-            object.__setattr__(self, "db_url", "sqlite+aiosqlite:///:memory:")
-            object.__setattr__(self, "log_level", "WARNING")
         if not getattr(self, "jwt_secret_key", None) and getattr(
             self, "jwt_secret", None
         ):

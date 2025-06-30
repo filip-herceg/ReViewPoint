@@ -23,20 +23,9 @@ engine_kwargs: dict[str, object] = {
     "pool_pre_ping": True,
     "future": True,
 }
-if url_obj.drivername.startswith("sqlite"):
-    # SQLite configuration for better concurrency
-    engine_kwargs["connect_args"] = {
-        "check_same_thread": False,
-        "timeout": 20,
-    }
-    # Use WAL mode for better concurrency if not in-memory
-    if ":memory:" not in settings.async_db_url:
-        engine_kwargs["pool_timeout"] = 20
-        engine_kwargs["pool_recycle"] = -1
-else:
-    # Convert to int for type safety
-    engine_kwargs["pool_size"] = int(10 if settings.environment == "prod" else 5)
-    engine_kwargs["max_overflow"] = int(20 if settings.environment == "prod" else 10)
+# Only PostgreSQL supported
+engine_kwargs["pool_size"] = int(10 if settings.environment == "prod" else 5)
+engine_kwargs["max_overflow"] = int(20 if settings.environment == "prod" else 10)
 
 engine: AsyncEngine = create_async_engine(
     settings.async_db_url,

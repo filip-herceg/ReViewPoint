@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  postgres_test:
+    image: postgres:15-alpine
+    container_name: reviewpoint_postgres_test_ci
+    environment:
+      POSTGRES_DB: reviewpoint_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  test_runner:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    environment:
+      - REVIEWPOINT_TEST_DB_URL=postgresql+asyncpg://postgres:postgres@postgres_test:5432/reviewpoint_test
+    depends_on:
+      postgres_test:
+        condition: service_healthy
+    command: ["./scripts/run-tests.sh"]
+    volumes:
+      - .:/app
+      - /app/.venv

@@ -286,9 +286,7 @@ class TestDeleteAndReactivateUser(AuthUnitTestTemplate):
         self.patch_async_dep(
             "src.repositories.user.soft_delete_user", AsyncMock(return_value=True)
         )
-        self.patch_async_dep(
-            "src.repositories.user.audit_log_user_change", AsyncMock()
-        )
+        self.patch_async_dep("src.repositories.user.audit_log_user_change", AsyncMock())
         result = await user_service.delete_user_account(session, 1, anonymize=False)
         assert result is True
 
@@ -298,9 +296,7 @@ class TestDeleteAndReactivateUser(AuthUnitTestTemplate):
         self.patch_async_dep(
             "src.repositories.user.anonymize_user", AsyncMock(return_value=True)
         )
-        self.patch_async_dep(
-            "src.repositories.user.audit_log_user_change", AsyncMock()
-        )
+        self.patch_async_dep("src.repositories.user.audit_log_user_change", AsyncMock())
         result = await user_service.delete_user_account(session, 1, anonymize=True)
         assert result is True
 
@@ -310,9 +306,7 @@ class TestDeleteAndReactivateUser(AuthUnitTestTemplate):
         self.patch_async_dep(
             "src.repositories.user.deactivate_user", AsyncMock(return_value=True)
         )
-        self.patch_async_dep(
-            "src.repositories.user.audit_log_user_change", AsyncMock()
-        )
+        self.patch_async_dep("src.repositories.user.audit_log_user_change", AsyncMock())
         result = await user_service.deactivate_user(session, 1)
         assert result is True
 
@@ -322,9 +316,7 @@ class TestDeleteAndReactivateUser(AuthUnitTestTemplate):
         self.patch_async_dep(
             "src.repositories.user.reactivate_user", AsyncMock(return_value=True)
         )
-        self.patch_async_dep(
-            "src.repositories.user.audit_log_user_change", AsyncMock()
-        )
+        self.patch_async_dep("src.repositories.user.audit_log_user_change", AsyncMock())
         result = await user_service.reactivate_user(session, 1)
         assert result is True
 

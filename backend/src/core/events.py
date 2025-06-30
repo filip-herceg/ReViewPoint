@@ -20,9 +20,6 @@ async def validate_config() -> None:
         raise RuntimeError(
             f"Missing required environment variables: {', '.join(missing)}"
         )
-    # Example: prod mode must not use SQLite
-    if settings.environment == "prod" and settings.db_url.startswith("sqlite"):
-        raise RuntimeError("Production environment cannot use SQLite database.")
 
 
 async def db_healthcheck() -> None:

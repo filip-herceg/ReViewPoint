@@ -38,12 +38,8 @@ class TestUserProfileSchema(ModelUnitTestTemplate):
     def test_edge_cases(self):
         import pydantic
 
-        self.assert_raises(
-            pydantic.ValidationError, UserProfile, id=None, email=None
-        )
-        self.assert_raises(
-            pydantic.ValidationError, UserProfile, id=1, email=None
-        )
+        self.assert_raises(pydantic.ValidationError, UserProfile, id=None, email=None)
+        self.assert_raises(pydantic.ValidationError, UserProfile, id=1, email=None)
         self.assert_raises(
             pydantic.ValidationError,
             UserProfile,
@@ -58,12 +54,8 @@ class TestUserProfileSchema(ModelUnitTestTemplate):
         profile = UserProfile(id=10, email="b@b.com", name=name, bio=bio)
         self.assert_equal(profile.name, name)
         self.assert_equal(profile.bio, bio)
-        self.assert_raises(
-            ValueError, UserProfileUpdate, name="n" * 129, bio=None
-        )
-        self.assert_raises(
-            ValueError, UserProfileUpdate, name=None, bio="b" * 513
-        )
+        self.assert_raises(ValueError, UserProfileUpdate, name="n" * 129, bio=None)
+        self.assert_raises(ValueError, UserProfileUpdate, name=None, bio="b" * 513)
 
     def test_unicode_and_special_characters(self):
         profile = UserProfile(
@@ -121,9 +113,7 @@ class TestUserProfileSchema(ModelUnitTestTemplate):
             email="badtype@example.com",
             bio=object(),
         )
-        self.assert_raises(
-            pydantic.ValidationError, UserProfile, id=16, email=123
-        )
+        self.assert_raises(pydantic.ValidationError, UserProfile, id=16, email=123)
 
     def test_extreme_id(self):
         profile = UserProfile(id=2**31 - 1, email="bigid@example.com")
@@ -202,12 +192,8 @@ class TestUserProfileUpdateSchema(ModelUnitTestTemplate):
         update = UserProfileUpdate(name=name, bio=bio)
         self.assert_equal(update.name, name)
         self.assert_equal(update.bio, bio)
-        self.assert_raises(
-            ValueError, UserProfileUpdate, name="x" * 129, bio=None
-        )
-        self.assert_raises(
-            ValueError, UserProfileUpdate, name=None, bio="y" * 513
-        )
+        self.assert_raises(ValueError, UserProfileUpdate, name="x" * 129, bio=None)
+        self.assert_raises(ValueError, UserProfileUpdate, name=None, bio="y" * 513)
 
     def test_whitespace(self):
         update = UserProfileUpdate(name="   ", bio="\n\t")
@@ -243,9 +229,7 @@ class TestUserPreferencesSchema(ModelUnitTestTemplate):
         self.assert_raises(
             pydantic.ValidationError, UserPreferences, theme=None, locale=object()
         )
-        self.assert_raises(
-            pydantic.ValidationError, UserPreferences, preferences=None
-        )
+        self.assert_raises(pydantic.ValidationError, UserPreferences, preferences=None)
         self.assert_raises(
             pydantic.ValidationError, UserPreferences, preferences={"": ""}
         )

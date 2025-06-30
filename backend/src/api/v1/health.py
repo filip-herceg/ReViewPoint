@@ -5,7 +5,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, Response, status
 
-from src.api.deps import get_request_id, require_feature, require_api_key
+from src.api.deps import get_request_id, require_api_key, require_feature
 from src.core.database import engine
 from src.core.events import db_healthcheck
 

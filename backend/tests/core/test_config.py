@@ -151,7 +151,7 @@ class TestConfig(ConfigTestTemplate):
             }
         )
         assert cfg.settings.environment == "test"
-        assert cfg.settings.db_url.startswith("sqlite+aiosqlite:///")
+        assert cfg.settings.db_url.startswith("postgresql://")
         assert cfg.settings.log_level == "WARNING"
 
     # --------------------------------------------------------------------------- #

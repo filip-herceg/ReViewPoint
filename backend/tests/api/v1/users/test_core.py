@@ -148,10 +148,12 @@ class TestUserCRUD(UserCoreEndpointTestTemplate):
         id1 = client.post(self.endpoint, json=data1, headers=h).json()["id"]
         id2 = client.post(self.endpoint, json=data2, headers=h).json()["id"]
         # Try to update user2's email to user1's email (send all required fields)
-        update_payload = {"email": data1["email"], "password": data2["password"], "name": data2["name"]}
-        resp = client.put(
-            f"{self.endpoint}/{id2}", json=update_payload, headers=h
-        )
+        update_payload = {
+            "email": data1["email"],
+            "password": data2["password"],
+            "name": data2["name"],
+        }
+        resp = client.put(f"{self.endpoint}/{id2}", json=update_payload, headers=h)
         self.assert_status(resp, (400, 409))
 
 
@@ -161,9 +163,14 @@ class TestUserList(UserCoreEndpointTestTemplate):
 
     def test_list_users_pagination_and_filter(self, client: TestClient):
         import uuid
+
         headers = get_auth_header(client)
         unique_email = f"list_{uuid.uuid4().hex[:8]}@example.com"
-        create_payload = {"email": unique_email, "password": "pw123456", "name": "UList"}
+        create_payload = {
+            "email": unique_email,
+            "password": "pw123456",
+            "name": "UList",
+        }
         test_email = create_payload["email"]
         check_resp = client.get(self.endpoint, headers=headers)
         user_exists = any(
@@ -191,6 +198,7 @@ class TestUserList(UserCoreEndpointTestTemplate):
 
     def test_list_users_name_filter(self, client: TestClient):
         import uuid
+
         headers = self.get_auth_header(client)
         unique_name = f"FilterName_{uuid.uuid4().hex[:8]}"
         unique_email = f"filtername_{uuid.uuid4().hex[:8]}@example.com"

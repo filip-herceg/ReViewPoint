@@ -10,7 +10,9 @@ class FeatureFlags:
         enabled = {f.strip() for f in features.split(",") if f.strip()}
         # Check both the generic and specific env vars
         base = feature_name.split(":")[0].upper()
-        env_var_specific = "REVIEWPOINT_FEATURE_" + feature_name.upper().replace(":", "_")
+        env_var_specific = "REVIEWPOINT_FEATURE_" + feature_name.upper().replace(
+            ":", "_"
+        )
         env_var_base = f"REVIEWPOINT_FEATURE_{base}"
         env_val_specific = os.getenv(env_var_specific)
         env_val_base = os.getenv(env_var_base)

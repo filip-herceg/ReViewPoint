@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 # Ensure the project root is in sys.path for test imports
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -57,7 +57,10 @@ from src.main import create_app  # Use factory, not global app
 from src.models.base import Base
 
 # Use a PostgreSQL DB for all tests
-TEST_DB_URL = os.environ.get("REVIEWPOINT_TEST_DB_URL") or "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint_test"
+TEST_DB_URL = (
+    os.environ.get("REVIEWPOINT_TEST_DB_URL")
+    or "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint_test"
+)
 DATABASE_URL = TEST_DB_URL
 
 
@@ -68,7 +71,14 @@ def set_required_env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
     Automatically set all required environment variables and feature flags for tests.
     Ensures a consistent environment for every test function.
     """
-    monkeypatch.setenv("REVIEWPOINT_DB_URL", TEST_DB_URL)
+    monkeypatch.setenv(
+        "REVIEWPOINT_DB_URL",
+        "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint",
+    )
+    monkeypatch.setenv(
+        "REVIEWPOINT_TEST_DB_URL",
+        "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint_test",
+    )
     monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "testsecret")
     monkeypatch.setenv("REVIEWPOINT_JWT_SECRET_KEY", "testsecret")
     monkeypatch.setenv("REVIEWPOINT_API_KEY_ENABLED", "true")
@@ -177,7 +187,7 @@ def override_get_async_session(test_app: FastAPI, async_engine: AsyncEngine):
     Ensures all DB operations in the app use a fresh test session for each request.
     """
 
-    from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
     async_session_local = async_sessionmaker(
         bind=async_engine, class_=AsyncSession, expire_on_commit=False
@@ -395,8 +405,7 @@ def pytest_collection_finish(session):
 
 
 import pytest_asyncio
-from src.models.base import Base
-from sqlalchemy.ext.asyncio import create_async_engine
+
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def create_and_drop_tables():

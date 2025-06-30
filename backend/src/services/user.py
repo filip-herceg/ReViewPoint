@@ -627,7 +627,9 @@ class UserService:
             raise UserNotFoundError("User not found.")
         if "email" in data:
             # Check for unique email, excluding current user
-            is_unique = await is_email_unique(session, data["email"], exclude_user_id=user_id)
+            is_unique = await is_email_unique(
+                session, data["email"], exclude_user_id=user_id
+            )
             if not is_unique:
                 raise UserAlreadyExistsError("Email already exists.")
             user.email = data["email"]

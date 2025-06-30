@@ -94,17 +94,23 @@ class BaseAPITest:
         assert expr, msg or f"Expected expression to be true, got {expr!r}"
 
     def assert_is_instance(self, obj, cls, msg=None):
-        assert isinstance(obj, cls), msg or f"Expected {obj!r} to be instance of {cls!r}"
+        assert isinstance(obj, cls), (
+            msg or f"Expected {obj!r} to be instance of {cls!r}"
+        )
 
     def assert_api_key_required(self, response: Any) -> None:
         """
         Assert that a response indicates a missing or invalid API key (401 or 403).
         """
-        assert response.status_code in (401, 403), f"Expected 401 or 403, got {response.status_code}"
+        assert response.status_code in (
+            401,
+            403,
+        ), f"Expected 401 or 403, got {response.status_code}"
         body = response.json()
-        assert "api key" in str(body.get("detail", "")).lower() or "api key" in str(body).lower(), (
-            f"Expected error message about API key, got: {body}"
-        )
+        assert (
+            "api key" in str(body.get("detail", "")).lower()
+            or "api key" in str(body).lower()
+        ), f"Expected error message about API key, got: {body}"
 
     def assert_forbidden(self, response: Any) -> None:
         """
@@ -112,9 +118,10 @@ class BaseAPITest:
         """
         assert response.status_code == 403, f"Expected 403, got {response.status_code}"
         body = response.json()
-        assert "forbidden" in str(body.get("detail", "")).lower() or "forbidden" in str(body).lower(), (
-            f"Expected forbidden error message, got: {body}"
-        )
+        assert (
+            "forbidden" in str(body.get("detail", "")).lower()
+            or "forbidden" in str(body).lower()
+        ), f"Expected forbidden error message, got: {body}"
 
 
 class CRUDTestTemplate(BaseAPITest):
@@ -248,8 +255,9 @@ class AuthUnitTestTemplate(BaseAPITest):
         yield
         # Restore all patched attributes after each test
         for target, attr, orig in self._patches:
-            if isinstance(target, str) and target.startswith('os.environ['):
+            if isinstance(target, str) and target.startswith("os.environ["):
                 import os
+
                 key = target.split('["')[1].split('"]')[0]
                 if orig is None:
                     os.environ.pop(key, None)
@@ -323,6 +331,7 @@ class AuthUnitTestTemplate(BaseAPITest):
 
     def restore_env(self, key: str):
         import os
+
         for i, (target, attr, orig) in enumerate(self._patches):
             if isinstance(target, str) and target == f'os.environ["{key}"]':
                 if orig is None:
@@ -840,7 +849,7 @@ class AsyncModelTestTemplate(ModelUnitTestTemplate):
         await self.async_session.commit()
 
     async def truncate_table(self, table):
-        """Truncate a table and reset identity (Postgres/SQLite)."""
+        """Truncate a table and reset identity (Postgres only)."""
         from sqlalchemy import text
 
         await self.async_session.execute(text(f"DELETE FROM {table}"))
@@ -1046,5 +1055,9 @@ class AlembicEnvTestTemplate:
         assert expr, msg or f"Expected expression to be True, got {expr}"
 
     def assert_is_instance(self, obj, cls, msg=None):
-        assert isinstance(obj, cls), msg or f"Expected {obj!r} to be instance of {cls!r}, got {type(obj)}"
+        assert isinstance(obj, cls), (
+            msg or f"Expected {obj!r} to be instance of {cls!r}, got {type(obj)}"
+        )
+
+
 # pytest: disable=pytest_plugin_missing_source_or_test

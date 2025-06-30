@@ -7,7 +7,7 @@ from tests.test_templates import EventTestTemplate
 
 
 class DummySettings:
-    db_url = "sqlite+aiosqlite:///test.db"  # Use file-based test DB, not in-memory
+    db_url = "postgresql+asyncpg://user:password@localhost/testdb"
     environment = "dev"
     log_level = "INFO"
     # Add other required fields as needed
@@ -51,20 +51,6 @@ class TestEvents(EventTestTemplate):
         assert "Shutting down application..." in logs
         assert "Database connections closed." in logs
         assert "Shutdown complete." in logs
-
-    @pytest.mark.asyncio
-    async def test_startup_prod_sqlite_fails(self):
-        class ProdSqliteSettings:
-            db_url = "sqlite+aiosqlite:///test.db"  # Use file-based test DB
-            environment = "prod"
-            log_level = "INFO"
-
-        self.patch_settings(events, ProdSqliteSettings())
-        with self.caplog.at_level("ERROR"):
-            with pytest.raises(RuntimeError) as excinfo:
-                await events.on_startup()
-        assert "Production environment cannot use SQLite" in str(excinfo.value)
-        self.assert_caplog_contains("Startup failed", level="ERROR")
 
     @pytest.mark.asyncio
     async def test_startup_db_healthcheck_error(self, monkeypatch):
