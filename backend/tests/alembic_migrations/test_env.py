@@ -37,7 +37,7 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
     def test_run_migrations_offline_success(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        fake_context = self._make_context(url="sqlite:///:memory:")
+        fake_context = self._make_context(url="postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint_test")
         self.patch_alembic_context(monkeypatch, fake_context)
         monkeypatch.setattr("logging.config.fileConfig", lambda *a, **k: None)
         env.run_migrations_offline()
@@ -55,7 +55,7 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
     def test_run_migrations_online_success(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        fake_context = self._make_context(url="sqlite:///:memory:")
+        fake_context = self._make_context(url="postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint_test")
         self.patch_alembic_context(monkeypatch, fake_context)
         monkeypatch.setattr("logging.config.fileConfig", lambda *a, **k: None)
 
@@ -396,3 +396,23 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
         )
 
     # --- End migrated tests ---
+    def test_env_py_configures_context_with_postgres_url(self):
+        context_mod = self._make_context(url="postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint_test")
+        self.patch_alembic_context(monkeypatch, context_mod)
+        monkeypatch.setitem(
+            sys.modules,
+            "logging.config",
+            types.SimpleNamespace(fileConfig=mock.MagicMock()),
+        )
+        monkeypatch.setitem(
+            sys.modules,
+            "backend.core.logging",
+            types.SimpleNamespace(init_logging=mock.MagicMock()),
+        )
+        sys.modules.pop("backend.alembic_migrations.env", None)
+        importlib.invalidate_caches()
+        import src.alembic_migrations.env as env_mod
+
+        env_mod.run_migrations_online()
+        self.assert_called_once(context_mod.configure)
+        self.assert_called_once(context_mod.run_migrations)

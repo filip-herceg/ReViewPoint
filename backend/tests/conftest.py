@@ -1,6 +1,18 @@
 import os
 import sys
 
+# Force override REVIEWPOINT_DB_URL to ensure the test suite always uses the correct database URL
+os.environ["REVIEWPOINT_DB_URL"] = "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint"
+
+# Print all environment variables for debugging
+print("[DEBUG] Environment variables at test startup:")
+for k, v in os.environ.items():
+    print(f"{k}={v}")
+
+# Remove any db_url or DB_URL to avoid accidental pickup
+os.environ.pop("db_url", None)
+os.environ.pop("DB_URL", None)
+
 # Ensure the project root is in sys.path for test imports
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if project_root not in sys.path:
@@ -23,7 +35,7 @@ from collections.abc import (
 
 # Set required env vars before any other imports
 os.environ["REVIEWPOINT_DB_URL"] = (
-    os.environ.get("REVIEWPOINT_DB_URL") or "sqlite+aiosqlite:///:memory:"
+    os.environ.get("REVIEWPOINT_DB_URL") or "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint"
 )
 os.environ["REVIEWPOINT_JWT_SECRET"] = (
     os.environ.get("REVIEWPOINT_JWT_SECRET") or "testsecret"

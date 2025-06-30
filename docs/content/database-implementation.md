@@ -133,7 +133,7 @@ The database connection is configured through environment variables:
 
 | Variable                  | Description                 | Default                        |
 | ------------------------- | --------------------------- | ------------------------------ |
-| `REVIEWPOINT_DB_URL`      | Database connection string  | `sqlite+aiosqlite:///:memory:` |
+| `REVIEWPOINT_DB_URL`      | Database connection string  | `postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint` |
 | `REVIEWPOINT_ENVIRONMENT` | Environment (dev/test/prod) | `dev`                          |
 | `REVIEWPOINT_DEBUG`       | Enable debug mode           | `false`                        |
 

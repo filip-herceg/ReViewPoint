@@ -27,11 +27,12 @@ __all__ = ["Settings", "get_settings", "settings"]
 ENV_PREFIX = "REVIEWPOINT_"
 
 # Determine .env file path at import time, but skip if running under pytest (test suite)
+IS_PYTEST = "pytest" in sys.modules or any("PYTEST_CURRENT_TEST" in k for k in os.environ)
 _env_path = os.getenv("ENV_FILE")
-if _env_path:
-    _env_file: Path | None = Path(_env_path)
-elif "pytest" in sys.modules or any("PYTEST_CURRENT_TEST" in k for k in os.environ):
-    _env_file = None  # Do not load .env during tests
+if IS_PYTEST:
+    _env_file = None  # Always ignore .env during tests
+elif _env_path:
+    _env_file = Path(_env_path)
 elif Path(".env").exists():
     _env_file = Path(".env")
 else:
@@ -128,7 +129,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix=ENV_PREFIX,
         case_sensitive=False,
-        env_file=str(_env_file) if _env_file else None,
+        env_file=None if IS_PYTEST else (str(_env_file) if _env_file else None),
         extra="ignore",
         # env_map removed; use Field(..., alias=...) for env var mapping if
         # needed
@@ -193,6 +194,10 @@ class Settings(BaseSettings):
             raise RuntimeError(
                 "Missing JWT secret: set REVIEWPOINT_JWT_SECRET_KEY or legacy REVIEWPOINT_JWT_SECRET."
             )
+
+    def __init__(self, **values: Any):
+        super().__init__(**values)
+        print(f"[DEBUG] Settings initialized: db_url={self.db_url}")
 
     @property
     def async_db_url(self) -> str:
