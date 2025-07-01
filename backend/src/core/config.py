@@ -39,14 +39,13 @@ if IS_PYTEST:
     _env_file = None  # Always ignore .env during tests
     if _env_path or Path("backend/.env").exists():
         # Defensive: log if any .env file would have been loaded during tests
-        devlog_msg = (
-            f"[DEVLOG] Prevented .env loading during tests. ENV_FILE={_env_path}, ".ljust(80) +
-            f"backend/.env exists={Path('backend/.env').exists()}"
-        )
-        print(devlog_msg)
+        # Only warn, do not print or log debug/devlog
         try:
             from loguru import logger
-            logger.warning(devlog_msg)
+            logger.warning(
+                f"Prevented .env loading during tests. ENV_FILE={_env_path}, "
+                f"backend/.env exists={Path('backend/.env').exists()}"
+            )
         except Exception:
             pass
 elif _env_path:

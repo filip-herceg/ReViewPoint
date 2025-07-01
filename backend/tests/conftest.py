@@ -92,16 +92,12 @@ def set_required_env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
     Automatically set all required environment variables and feature flags for tests.
     Ensures a consistent environment for every test function.
     """
-    logger.debug(f"[conftest.py][fixture] (before) REVIEWPOINT_JWT_SECRET={{os.environ.get('REVIEWPOINT_JWT_SECRET')}}")
-    logger.debug(f"[conftest.py][fixture] (before) REVIEWPOINT_JWT_SECRET_KEY={{os.environ.get('REVIEWPOINT_JWT_SECRET_KEY')}}")
     monkeypatch.setenv(
         "REVIEWPOINT_DB_URL",
         "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint",
     )
     monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "testsecret")
     monkeypatch.setenv("REVIEWPOINT_JWT_SECRET_KEY", "testsecret")
-    logger.debug(f"[conftest.py][fixture] (after) REVIEWPOINT_JWT_SECRET={{os.environ.get('REVIEWPOINT_JWT_SECRET')}}")
-    logger.debug(f"[conftest.py][fixture] (after) REVIEWPOINT_JWT_SECRET_KEY={{os.environ.get('REVIEWPOINT_JWT_SECRET_KEY')}}")
     monkeypatch.setenv("REVIEWPOINT_API_KEY_ENABLED", "true")
     monkeypatch.setenv("REVIEWPOINT_API_KEY", "testkey")
     # Enable all known feature flags for all endpoints

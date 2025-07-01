@@ -21,7 +21,6 @@ def get_engine_and_sessionmaker():
     settings = get_settings()
     url_obj = make_url(settings.async_db_url)
     engine_kwargs: dict[str, object] = {
-        "echo": settings.debug,
         "pool_pre_ping": True,
         "future": True,
     }
