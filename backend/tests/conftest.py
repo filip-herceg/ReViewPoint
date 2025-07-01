@@ -1,3 +1,17 @@
+
+# Fast test mode: use in-memory SQLite for fast tests
+import sys
+import pytest
+
+@pytest.fixture(scope="session")
+def use_fast_db():
+    """Enable fast testing mode with shared in-memory SQLite if FAST_TESTS env var is set."""
+    return os.environ.get("FAST_TESTS", "0") == "1"
+
+def pytest_configure(config):
+    """Register test markers for slow and fast tests."""
+    config.addinivalue_line("markers", "slow: marks tests that access real database or are slow")
+    config.addinivalue_line("markers", "fast: marks tests that use mocks or in-memory DB")
 """
 Centralized test database and environment management for all tests in the backend.
 
@@ -150,33 +164,79 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
 # 3. Database/session fixtures
 
 
-@pytest_asyncio.fixture(scope="function")
-async def async_engine(postgres_container):
+
+
+# Session-scoped engine for backward compatibility
+@pytest_asyncio.fixture(scope="session")
+async def async_engine(use_fast_db, postgres_container):
     """
-    Provide a SQLAlchemy async engine for the test session, using the testcontainers DB URL.
-    Depends on the postgres_container fixture to ensure the container is running.
+    Provide a SQLAlchemy async engine for the test session.
+    Uses in-memory SQLite if FAST_TESTS=1, otherwise uses PostgreSQL.
     """
     from sqlalchemy.ext.asyncio import create_async_engine
+    from sqlalchemy.orm import declarative_base
 
-    db_url = os.environ["REVIEWPOINT_DB_URL"]
-    engine = create_async_engine(db_url, future=True)
+    if use_fast_db:
+        db_url = "sqlite+aiosqlite:///:memory:?cache=shared"
+        engine = create_async_engine(db_url, future=True, connect_args={"check_same_thread": False})
+    else:
+        db_url = os.environ["REVIEWPOINT_DB_URL"]
+        engine = create_async_engine(db_url, future=True)
+
+    # Import Base only after DB URL is set
+    sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+    from src.models import Base
+
+    # Create tables once per session
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    yield engine
+    await engine.dispose()
+
+# Function-scoped engine for parallel/isolated tests
+@pytest_asyncio.fixture(scope="function")
+async def async_engine_isolated(use_fast_db, postgres_container):
+    """
+    Provide a SQLAlchemy async engine for each test function (parallel safe).
+    Uses in-memory SQLite if FAST_TESTS=1, otherwise uses PostgreSQL.
+    """
+    from sqlalchemy.ext.asyncio import create_async_engine
+    import uuid
+    sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+    from src.models import Base
+
+    if use_fast_db:
+        db_url = f"sqlite+aiosqlite:///:memory:?cache=shared&test_id={uuid.uuid4()}"
+        engine = create_async_engine(db_url, future=True, connect_args={"check_same_thread": False})
+    else:
+        # Use the same DB URL, but pool_size=1 for isolation
+        db_url = os.environ["REVIEWPOINT_DB_URL"]
+        engine = create_async_engine(db_url, future=True, pool_size=1, max_overflow=0)
+
+    # Create tables for this test
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
     yield engine
     await engine.dispose()
 
 
-@pytest_asyncio.fixture(scope="function")
-async def async_session(async_engine):
-    """
-    Provide an async SQLAlchemy session for each test function.
-    Depends on async_engine, which depends on postgres_container.
-    """
-    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-    async_session_local = async_sessionmaker(
-        bind=async_engine, class_=AsyncSession, expire_on_commit=False
-    )
-    async with async_session_local() as session:
-        yield session
+@pytest_asyncio.fixture(scope="function")
+async def async_session(async_engine_isolated):
+    """
+    Provide an async SQLAlchemy session for each test function, using a function-scoped engine for parallel safety.
+    Each test gets its own engine and connection pool.
+    """
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    async with async_engine_isolated.connect() as connection:
+        session = AsyncSession(bind=connection, expire_on_commit=False)
+        try:
+            yield session
+        finally:
+            await session.close()
 
 
 # 4. App and client fixtures

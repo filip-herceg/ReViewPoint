@@ -13,6 +13,23 @@ USER_DATA = {"email": USER_EMAIL, "hashed_password": "pw"}
 
 
 class TestDatabase(DatabaseTestTemplate):
+    @pytest.mark.asyncio
+    async def test_true_concurrent_inserts(self):
+        """Test true concurrent inserts using run_concurrent_operations helper."""
+        import uuid
+        User = self.User
+
+        async def insert_user(session):
+            email = f"concurrent_{uuid.uuid4().hex[:8]}@ex.com"
+            user = User(email=email, hashed_password="pw")
+            session.add(user)
+            await session.commit()
+            return email
+
+        # Run 5 concurrent inserts, each with its own session
+        results = await self.run_concurrent_operations([insert_user] * 5)
+        # Check that all emails are unique and present
+        assert len(set(results)) == 5
     def setup_method(self):
         db_mod = __import__(
             "src.core.database",

@@ -48,7 +48,9 @@ dependencies = [
   "pytest-mock>=3.14.0",
   "httpx>=0.28.1",
   "pytest-loguru>=0.2.0",
-  "asyncpg>=0.29.0"
+  "factory_boy>=3.3.0",
+  "asyncpg>=0.29.0",
+  "pytest-xdist>=3.6.1"
 ]
 
 [project.urls]
@@ -161,7 +163,7 @@ exclude_lines = [
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-ra -q --strict-markers --strict-config"
+addopts = "-ra -q --strict-markers --strict-config -n auto"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
@@ -170,6 +172,8 @@ pythonpath = ["src"]
 markers = [
     "jwt: mark tests that require JWT handling",
     "performance: marks tests as performance (deselect with '-m \"not performance\"')"
+    ,"slow: marks tests that access real database or are slow",
+    "fast: marks tests that use mocks or in-memory DB"
 ]
 
 [tool.hatch.build.targets.wheel]

@@ -406,15 +406,43 @@ class DatabaseTestTemplate(BaseAPITest):
     Inherit from this for all DB-related tests.
     """
 
-    @pytest.fixture(autouse=True)
-    def _setup_db_env(
-        self, monkeypatch, set_required_env_vars, override_env_vars, loguru_list_sink
+
+    @pytest.fixture(autouse=True, scope="function")
+    def _setup_db_env_function(
+        self, monkeypatch, set_required_env_vars, override_env_vars, loguru_list_sink, async_engine_isolated
     ):
+        """
+        Set up DB env, monkeypatch, and log sink per test function for parallel safety.
+        Injects function-scoped engine for parallel DB tests.
+        """
         self.override_env_vars = override_env_vars
         self.monkeypatch = monkeypatch
         self.set_required_env_vars = set_required_env_vars
         self.loguru_list_sink = loguru_list_sink
+        self.engine = async_engine_isolated
         pass
+
+    def get_independent_session(self):
+        """
+        Get a new independent session for concurrent operations.
+        Each call returns a session with its own connection.
+        """
+        from sqlalchemy.ext.asyncio import AsyncSession
+        return AsyncSession(self.engine, expire_on_commit=False)
+
+    async def run_concurrent_operations(self, operations):
+        """
+        Run multiple database operations concurrently with separate sessions.
+        Args:
+            operations: List of async callables that take a session parameter
+        """
+        import asyncio
+
+        async def run_with_session(operation):
+            async with self.get_independent_session() as session:
+                return await operation(session)
+
+        return await asyncio.gather(*[run_with_session(op) for op in operations])
 
     async def assert_healthcheck_ok(self, healthcheck_func):
         try:
