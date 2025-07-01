@@ -19,7 +19,6 @@ from src.api.deps import (
     require_api_key,
     require_feature,
 )
-from src.core.config import get_settings
 from src.core.database import get_async_session
 from src.models.user import User
 from src.schemas.auth import (

@@ -1,4 +1,5 @@
 import pytest
+
 from tests.test_templates import AuthEndpointTestTemplate
 
 
@@ -23,6 +24,7 @@ class TestAuthSchemas(AuthEndpointTestTemplate):
     )
     def test_user_register_request_invalid(self, email, password, name):
         from pydantic import ValidationError
+
         from src.schemas.auth import UserRegisterRequest
 
         with pytest.raises(ValidationError):
@@ -52,6 +54,7 @@ class TestAuthSchemas(AuthEndpointTestTemplate):
 
     def test_password_reset_confirm_request_short_password(self):
         from pydantic import ValidationError
+
         from src.schemas.auth import PasswordResetConfirmRequest
 
         with pytest.raises(ValidationError):
@@ -300,6 +303,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
     @pytest.mark.asyncio
     async def test_refresh_token_blacklisted(self):
         from httpx import ASGITransport, AsyncClient
+
         from src.api.deps import get_async_refresh_access_token
         from src.services.user import RefreshTokenBlacklistedError
 
@@ -347,6 +351,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
     @pytest.mark.asyncio
     async def test_refresh_token_rate_limited(self):
         from httpx import ASGITransport, AsyncClient
+
         from src.api.deps import get_async_refresh_access_token
         from src.services.user import RefreshTokenRateLimitError
 
@@ -394,6 +399,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
     @pytest.mark.asyncio
     async def test_refresh_token_decode_error(self):
         from httpx import ASGITransport, AsyncClient
+
         from src.api.deps import get_async_refresh_access_token
         from src.services.user import RefreshTokenError
 
@@ -442,6 +448,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
     @pytest.mark.asyncio
     async def test_refresh_token_unexpected_error(self):
         from httpx import ASGITransport, AsyncClient
+
         from src.api.deps import get_async_refresh_access_token
 
         self.override_env_vars(
@@ -500,10 +507,10 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             }
         )
         # All config-dependent imports must be inside the test method
-        from httpx import AsyncClient
-        from httpx import ASGITransport
         import uuid
         from unittest.mock import AsyncMock, patch
+
+        from httpx import ASGITransport, AsyncClient
 
         transport = ASGITransport(app=self.test_app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:

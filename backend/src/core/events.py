@@ -2,7 +2,6 @@ from loguru import logger
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
-
 # Delay config and engine import to runtime to avoid top-level config loading
 
 
@@ -10,6 +9,7 @@ async def validate_config() -> None:
     """Validate required environment variables and config logic."""
     missing = []
     from src.core.config import get_settings
+
     settings = get_settings()
     if not getattr(settings, "db_url", None):
         missing.append("REVIEWPOINT_DB_URL")
@@ -27,6 +27,7 @@ async def validate_config() -> None:
 async def db_healthcheck() -> None:
     """Run a simple DB health check query. Raises on DB error."""
     from src.core.database import engine
+
     try:
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
@@ -43,6 +44,7 @@ def log_startup_complete() -> None:
     """Log startup completion information."""
     from src.core.config import get_settings
     from src.core.database import engine
+
     settings = get_settings()
     environment = settings.environment
     db_type = settings.db_url.split("://")[0] if settings.db_url else "unknown"
@@ -79,6 +81,7 @@ async def on_shutdown() -> None:
         # await close_cache()
         # logger.info("Cache closed.")
         from src.core.database import engine
+
         await engine.dispose()
         logger.info("Database connections closed.")
     except Exception as e:

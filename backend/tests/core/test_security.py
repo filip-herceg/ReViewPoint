@@ -4,7 +4,6 @@ from typing import cast
 import pytest
 from jose import jwt
 
-from src.core.config import get_settings
 from src.core.security import create_access_token
 from tests.test_templates import SecurityUnitTestTemplate
 

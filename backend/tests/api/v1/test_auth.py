@@ -60,6 +60,7 @@ class TestJWTUtils(AuthUnitTestTemplate):
         token = security.create_access_token({"sub": "user789"})
         with pytest.raises(JWTError):
             from jose import jwt
+
             jwt.decode(token, str(settings.jwt_secret_key), algorithms=["HS512"])
 
     def test_jwt_empty_token(self):

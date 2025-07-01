@@ -5,7 +5,6 @@ from __future__ import annotations
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
 # Import config-dependent modules inside test class to ensure env vars are set by fixtures first
 from tests.test_templates import DatabaseTestTemplate
 
@@ -15,14 +14,23 @@ USER_DATA = {"email": USER_EMAIL, "hashed_password": "pw"}
 
 class TestDatabase(DatabaseTestTemplate):
     def setup_method(self):
-        db_mod = __import__('src.core.database', fromlist=['AsyncSessionLocal', 'db_healthcheck', 'engine', 'get_async_session'])
+        db_mod = __import__(
+            "src.core.database",
+            fromlist=[
+                "AsyncSessionLocal",
+                "db_healthcheck",
+                "engine",
+                "get_async_session",
+            ],
+        )
         self.AsyncSessionLocal = db_mod.AsyncSessionLocal
         self.db_healthcheck = db_mod.db_healthcheck
         self.engine = db_mod.engine
         self.get_async_session = db_mod.get_async_session
-        models_mod = __import__('src.models', fromlist=['File', 'User'])
+        models_mod = __import__("src.models", fromlist=["File", "User"])
         self.File = models_mod.File
         self.User = models_mod.User
+
     @pytest.mark.asyncio
     async def test_db_healthcheck(self) -> None:
         """Test that db_healthcheck succeeds on a valid connection."""
@@ -31,7 +39,7 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_db_session_context(self) -> None:
         """Test that session context manager works properly."""
-        from sqlalchemy.ext.asyncio import AsyncSession
+
         await self.assert_session_context_ok(self.get_async_session, AsyncSession)
 
     @pytest.mark.asyncio
@@ -54,13 +62,17 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_transaction_isolation(self) -> None:
         """Test transaction isolation for concurrent sessions."""
-        await self.assert_transaction_isolation(self.AsyncSessionLocal, self.User, USER_DATA)
+        await self.assert_transaction_isolation(
+            self.AsyncSessionLocal, self.User, USER_DATA
+        )
 
     @pytest.mark.asyncio
     async def test_integrity_error_on_duplicate_email(self) -> None:
         """Test that inserting a user with a duplicate email raises an integrity error."""
         await self.bulk_insert(self.AsyncSessionLocal, self.User, [USER_DATA])
-        await self.assert_db_integrity_error(self.AsyncSessionLocal, self.User, USER_DATA)
+        await self.assert_db_integrity_error(
+            self.AsyncSessionLocal, self.User, USER_DATA
+        )
 
     @pytest.mark.asyncio
     async def test_bulk_insert_and_query(self) -> None:
@@ -94,6 +106,7 @@ class TestDatabase(DatabaseTestTemplate):
         self.simulate_db_disconnect(self.AsyncSessionLocal)
         with pytest.raises(Exception):
             import asyncio
+
             asyncio.run(self.assert_healthcheck_ok(self.db_healthcheck))
 
     def test_simulate_db_latency(self) -> None:

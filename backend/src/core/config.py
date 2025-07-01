@@ -42,6 +42,7 @@ if IS_PYTEST:
         # Only warn, do not print or log debug/devlog
         try:
             from loguru import logger
+
             logger.warning(
                 f"Prevented .env loading during tests. ENV_FILE={_env_path}, "
                 f"backend/.env exists={Path('backend/.env').exists()}"
@@ -245,7 +246,6 @@ def get_settings() -> Settings:
         f"[CONFIG DEBUG] api_key_enabled: {s.api_key_enabled} (type: {type(s.api_key_enabled)})"
     )
     return s
-
 
 
 # Remove eager settings initialization! Use get_settings() everywhere.

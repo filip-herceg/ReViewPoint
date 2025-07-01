@@ -159,7 +159,6 @@ def get_password_validation_error() -> Any:
 
 
 def get_async_refresh_access_token() -> Any:
-    from src.core.config import get_settings
 
     async_refresh_access_token = registry.get("async_refresh_access_token")
 

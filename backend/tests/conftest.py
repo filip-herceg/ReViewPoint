@@ -13,13 +13,10 @@ Test DB Policy:
 This policy ensures robust, maintainable, and explicit test DB management for all developers.
 """
 
-
-
 # --- DO NOT set env vars at the top level. All config-dependent imports must be inside fixtures. ---
 import os
-
 import uuid
-from collections.abc import AsyncGenerator, Callable, Generator, Iterator
+from collections.abc import Callable, Generator, Iterator
 from pathlib import Path
 from typing import Any
 
@@ -36,6 +33,7 @@ def postgres_container():
     The Postgres image can be overridden with the REVIEWPOINT_TEST_POSTGRES_IMAGE env var.
     """
     from testcontainers.postgres import PostgresContainer
+
     image = os.environ.get("REVIEWPOINT_TEST_POSTGRES_IMAGE", "postgres:15-alpine")
     try:
         with PostgresContainer(image) as postgres:
@@ -76,7 +74,6 @@ def postgres_container():
 # Valid exceptions: tests that explicitly test config/env/DB error handling (e.g., test_config.py).
 # This is enforced by an automated check below. If you need to add a new exception, update the list in the check.
 #
-
 
 
 # ENFORCEMENT: Never import or create a global settings = Settings() at import time in any code or test.
@@ -152,6 +149,7 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
 
 # 3. Database/session fixtures
 
+
 @pytest_asyncio.fixture(scope="function")
 async def async_engine(postgres_container):
     """
@@ -159,11 +157,11 @@ async def async_engine(postgres_container):
     Depends on the postgres_container fixture to ensure the container is running.
     """
     from sqlalchemy.ext.asyncio import create_async_engine
+
     db_url = os.environ["REVIEWPOINT_DB_URL"]
     engine = create_async_engine(db_url, future=True)
     yield engine
     await engine.dispose()
-
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -173,6 +171,7 @@ async def async_session(async_engine):
     Depends on async_engine, which depends on postgres_container.
     """
     from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
     async_session_local = async_sessionmaker(
         bind=async_engine, class_=AsyncSession, expire_on_commit=False
     )
@@ -180,14 +179,12 @@ async def async_session(async_engine):
         yield session
 
 
-
-
 # 4. App and client fixtures
 
 
+from collections.abc import Generator
 
 import pytest
-from typing import Generator
 from fastapi.testclient import TestClient
 
 
@@ -197,12 +194,15 @@ def test_app(async_session) -> Generator:
     Provides a new FastAPI app instance for each test function.
     Overrides get_async_session dependency to use the test async_session fixture.
     """
-    from src.main import create_app
     from src.core.database import get_async_session
+    from src.main import create_app
+
     app = create_app()
+
     # Override get_async_session to yield the test session
     async def _override_get_async_session():
         yield async_session
+
     app.dependency_overrides[get_async_session] = _override_get_async_session
     yield app
 
@@ -216,8 +216,8 @@ def client(test_app) -> Generator:
     with TestClient(test_app) as c:
         yield c
 
-# 5. Dependency overrides
 
+# 5. Dependency overrides
 
 
 # 6. Logging fixtures
@@ -415,7 +415,6 @@ def pytest_collection_finish(session: pytest.Session):
             pass
 
 
-
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def create_and_drop_tables(postgres_container):
     """
@@ -424,7 +423,9 @@ async def create_and_drop_tables(postgres_container):
     Depends on postgres_container to guarantee DB is up before setup.
     """
     from sqlalchemy.ext.asyncio import create_async_engine
+
     from src.models.base import Base
+
     db_url = os.environ["REVIEWPOINT_DB_URL"]
     engine = create_async_engine(db_url, future=True)
     async with engine.begin() as conn:
@@ -443,8 +444,6 @@ def test_db_url() -> str:
     return os.environ["REVIEWPOINT_DB_URL"]
 
 
-
-
 def get_auth_header(client, email=None, password="TestPassword123!"):
     """
     Register a new user (or login if already exists) and return an auth header for API requests.
@@ -454,6 +453,7 @@ def get_auth_header(client, email=None, password="TestPassword123!"):
     Raises RuntimeError if admin promotion fails unexpectedly.
     """
     from src.core.security import create_access_token
+
     if email is None:
         email = f"testuser_{uuid.uuid4().hex[:8]}@example.com"
     register_data = {"email": email, "password": password, "name": "Test User"}
