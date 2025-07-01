@@ -317,20 +317,15 @@ def patch_loguru_remove(monkeypatch: Any) -> Generator[None, None, None]:
 
 
 @pytest.fixture
-def override_env_vars(
-    monkeypatch: pytest.MonkeyPatch, set_required_env_vars: None
-) -> Callable[[dict[str, str]], None]:
+def override_env_vars(monkeypatch: pytest.MonkeyPatch, set_required_env_vars: None):
     """
-    Helper fixture to override environment variables for a single test.
+    Fixture to override environment variables for a single test.
     Usage: override_env_vars({"VAR1": "value1", "VAR2": "value2"})
     Ensures required defaults are set first, then applies overrides.
     """
-
-    # set_required_env_vars fixture is applied automatically by pytest
     def _override(vars: dict[str, str]) -> None:
         for k, v in vars.items():
             monkeypatch.setenv(k, v)
-
     return _override
 
 
