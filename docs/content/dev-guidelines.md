@@ -78,6 +78,24 @@
 
 ---
 
+## Environment Variables Setup
+
+- Before running the backend, you must create your own environment file:
+  1. Copy the template: `backend/.env.template` to `backend/.env`.
+  2. Fill in all required secrets and configuration values in `backend/.env`.
+  3. **Never commit your `.env` file** to version control. It is ignored by `.gitignore`.
+  4. For CI/CD, set environment variables as secrets in your pipeline or deployment platform. Do not use real secrets in `.env.template`.
+
+Example (PowerShell):
+```powershell
+Copy-Item backend/.env.template backend/.env
+# Then edit backend/.env to set your secrets and config
+```
+
+See comments in `backend/.env.template` for descriptions of each variable.
+
+---
+
 ## More Resources
 
 - [Setup Guide](setup.md)

@@ -35,8 +35,8 @@ if IS_PYTEST:
     _env_file = None  # Always ignore .env during tests
 elif _env_path:
     _env_file = Path(_env_path)
-elif Path(".env").exists():
-    _env_file = Path(".env")
+elif Path("backend/.env").exists():
+    _env_file = Path("backend/.env")
 else:
     _env_file = None
 
