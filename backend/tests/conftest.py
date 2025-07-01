@@ -155,7 +155,7 @@ def set_required_env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 # 2. Event loop (for async tests)
-@pytest.fixture(scope="function")
+@pytest.fixture(scope="session")
 def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
     """
     Create a new asyncio event loop for the test session.
@@ -209,11 +209,13 @@ def test_app() -> Generator[FastAPI, None, None]:
 
 
 @pytest.fixture
-def client(test_app: FastAPI) -> TestClient:
+def client(test_app: FastAPI):
     """
     Provide a FastAPI TestClient for making HTTP requests in tests.
+    Uses a context manager to ensure proper event loop/resource management.
     """
-    return TestClient(test_app)
+    with TestClient(test_app) as c:
+        yield c
 
 
 # 5. Dependency overrides
@@ -337,7 +339,7 @@ def patch_loguru_remove(monkeypatch: Any) -> Generator[None, None, None]:
 
 @pytest.fixture
 def override_env_vars(
-    monkeypatch: pytest.MonkeyPatch, set_required_env_vars: Callable[[], None]
+    monkeypatch: pytest.MonkeyPatch, set_required_env_vars: None
 ) -> Callable[[dict[str, str]], None]:
     """
     Helper fixture to override environment variables for a single test.
@@ -345,8 +347,8 @@ def override_env_vars(
     Ensures required defaults are set first, then applies overrides.
     """
 
+    # set_required_env_vars fixture is applied automatically by pytest
     def _override(vars: dict[str, str]) -> None:
-        set_required_env_vars()  # Ensure defaults are set first
         for k, v in vars.items():
             monkeypatch.setenv(k, v)
 
