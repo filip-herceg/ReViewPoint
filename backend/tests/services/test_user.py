@@ -3,8 +3,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.models.user import User
-from src.services import user as user_service
+"""
+All config-dependent imports must be inside test methods or class bodies.
+"""
 from tests.test_templates import AuthUnitTestTemplate
 
 
@@ -35,6 +36,8 @@ class DummyResult:
 class TestAuthenticateUser(AuthUnitTestTemplate):
     @pytest.mark.asyncio
     async def test_success(self):
+        from unittest.mock import AsyncMock, MagicMock, patch
+        import src.services.user as user_service
         session = AsyncMock()
         dummy = DummyUser()
         session.execute = AsyncMock(return_value=DummyResult(dummy))
@@ -52,6 +55,8 @@ class TestAuthenticateUser(AuthUnitTestTemplate):
 
     @pytest.mark.asyncio
     async def test_wrong_password(self):
+        from unittest.mock import AsyncMock, MagicMock, patch
+        import src.services.user as user_service
         session = AsyncMock()
         dummy = DummyUser()
         session.execute = AsyncMock(return_value=DummyResult(dummy))
@@ -63,6 +68,8 @@ class TestAuthenticateUser(AuthUnitTestTemplate):
 
     @pytest.mark.asyncio
     async def test_user_not_found(self):
+        from unittest.mock import AsyncMock, MagicMock, patch
+        import src.services.user as user_service
         session = AsyncMock()
         session.execute = AsyncMock(return_value=DummyResult(None))
         self.patch_setting(user_service, "settings", MagicMock(auth_enabled=True))
@@ -74,6 +81,8 @@ class TestAuthenticateUser(AuthUnitTestTemplate):
 
     @pytest.mark.asyncio
     async def test_inactive_or_deleted_user(self):
+        from unittest.mock import AsyncMock, MagicMock, patch
+        import src.services.user as user_service
         session = AsyncMock()
         dummy = DummyUser(is_active=False)
         session.execute = AsyncMock(return_value=DummyResult(dummy))
@@ -89,6 +98,8 @@ class TestAuthenticateUser(AuthUnitTestTemplate):
 
     @pytest.mark.asyncio
     async def test_auth_disabled(self):
+        from unittest.mock import AsyncMock, MagicMock
+        import src.services.user as user_service
         session = AsyncMock()
         self.patch_setting(user_service, "settings", MagicMock(auth_enabled=False))
         self.patch_dep("src.services.user.create_access_token", lambda payload: "token")
@@ -101,7 +112,8 @@ class TestAuthenticateUser(AuthUnitTestTemplate):
         assert refresh_token == "refresh"
 
 
-def make_real_user(is_active: bool, is_deleted: bool) -> User:
+def make_real_user(is_active: bool, is_deleted: bool):
+    from src.models.user import User
     return User(
         email="real@example.com",
         hashed_password="hashed",
@@ -116,21 +128,29 @@ def make_real_user(is_active: bool, is_deleted: bool) -> User:
 
 class TestIsAuthenticated(AuthUnitTestTemplate):
     def test_active(self):
+        from unittest.mock import MagicMock
+        import src.services.user as user_service
         self.patch_setting(user_service, "settings", MagicMock(auth_enabled=True))
         user = make_real_user(is_active=True, is_deleted=False)
         assert user_service.is_authenticated(user)
 
     def test_inactive(self):
+        from unittest.mock import MagicMock
+        import src.services.user as user_service
         self.patch_setting(user_service, "settings", MagicMock(auth_enabled=True))
         user = make_real_user(is_active=False, is_deleted=False)
         assert not user_service.is_authenticated(user)
 
     def test_deleted(self):
+        from unittest.mock import MagicMock
+        import src.services.user as user_service
         self.patch_setting(user_service, "settings", MagicMock(auth_enabled=True))
         user = make_real_user(is_active=True, is_deleted=True)
         assert not user_service.is_authenticated(user)
 
     def test_auth_disabled(self):
+        from unittest.mock import MagicMock
+        import src.services.user as user_service
         self.patch_setting(user_service, "settings", MagicMock(auth_enabled=False))
         user = make_real_user(is_active=False, is_deleted=True)
         assert user_service.is_authenticated(user)
@@ -138,6 +158,7 @@ class TestIsAuthenticated(AuthUnitTestTemplate):
 
 class TestRefreshAccessToken(AuthUnitTestTemplate):
     def test_valid(self):
+        import src.services.user as user_service
         self.patch_dep(
             "src.services.user.verify_access_token",
             lambda t: {"sub": "1", "email": "e"},
@@ -152,6 +173,7 @@ class TestRefreshAccessToken(AuthUnitTestTemplate):
         assert user_service.refresh_access_token(1, "sometoken") == "newtoken"
 
     def test_invalid(self):
+        import src.services.user as user_service
         def bad_verify(token: str):
             raise Exception("bad token")
 
@@ -164,20 +186,24 @@ class TestRefreshAccessToken(AuthUnitTestTemplate):
 class TestPasswordStrength(AuthUnitTestTemplate):
     @pytest.mark.asyncio
     async def test_ascii(self):
+        import src.services.user as user_service
         user_service.validate_password_strength("GoodPass123!")
 
     @pytest.mark.asyncio
     async def test_whitespace(self):
+        import src.services.user as user_service
         with pytest.raises(user_service.ValidationError):
             user_service.validate_password_strength("bad pass")
 
     @pytest.mark.asyncio
     async def test_non_ascii(self):
+        import src.services.user as user_service
         with pytest.raises(user_service.ValidationError):
             user_service.validate_password_strength("pässword")
 
     @pytest.mark.asyncio
     async def test_error(self):
+        import src.services.user as user_service
         with pytest.raises(user_service.ValidationError):
             self.patch_dep(
                 "src.services.user.get_password_validation_error", lambda pw: "fail"
@@ -188,6 +214,7 @@ class TestPasswordStrength(AuthUnitTestTemplate):
 class TestVerifyEmailToken(AuthUnitTestTemplate):
     @pytest.mark.asyncio
     async def test_valid(self):
+        import src.services.user as user_service
         self.patch_dep(
             "src.services.user.verify_access_token", lambda t: {"email": "e"}
         )
@@ -195,6 +222,7 @@ class TestVerifyEmailToken(AuthUnitTestTemplate):
 
     @pytest.mark.asyncio
     async def test_invalid(self):
+        import src.services.user as user_service
         def bad_verify(token: str):
             raise Exception("bad token")
 
@@ -206,6 +234,8 @@ class TestVerifyEmailToken(AuthUnitTestTemplate):
 class TestPasswordResetToken(AuthUnitTestTemplate):
     @pytest.mark.asyncio
     async def test_get_token(self):
+        from unittest.mock import MagicMock
+        import src.services.user as user_service
         self.patch_dep(
             "src.services.user.create_access_token", lambda payload: "resettoken"
         )
@@ -216,6 +246,8 @@ class TestPasswordResetToken(AuthUnitTestTemplate):
 class TestGetUserByUsername(AuthUnitTestTemplate):
     @pytest.mark.asyncio
     async def test_valid(self):
+        from unittest.mock import AsyncMock
+        import src.services.user as user_service
         session = AsyncMock()
         dummy = DummyUser()
         session.execute = AsyncMock(return_value=DummyResult(dummy))
@@ -225,6 +257,8 @@ class TestGetUserByUsername(AuthUnitTestTemplate):
 
     @pytest.mark.asyncio
     async def test_invalid_email(self):
+        from unittest.mock import AsyncMock
+        import src.services.user as user_service
         session = AsyncMock()
         self.patch_dep("src.services.user.validate_email", lambda e: False)
         with pytest.raises(user_service.ValidationError):
@@ -232,6 +266,8 @@ class TestGetUserByUsername(AuthUnitTestTemplate):
 
     @pytest.mark.asyncio
     async def test_not_found(self):
+        from unittest.mock import AsyncMock
+        import src.services.user as user_service
         session = AsyncMock()
         session.execute = AsyncMock(return_value=DummyResult(None))
         self.patch_dep("src.services.user.validate_email", lambda e: True)
@@ -242,6 +278,8 @@ class TestGetUserByUsername(AuthUnitTestTemplate):
 class TestUserExists(AuthUnitTestTemplate):
     @pytest.mark.asyncio
     async def test_true(self):
+        from unittest.mock import AsyncMock
+        import src.services.user as user_service
         session = AsyncMock()
         self.patch_dep("src.services.user.validate_email", lambda e: True)
         self.patch_async_dep(
@@ -251,6 +289,8 @@ class TestUserExists(AuthUnitTestTemplate):
 
     @pytest.mark.asyncio
     async def test_false(self):
+        from unittest.mock import AsyncMock
+        import src.services.user as user_service
         session = AsyncMock()
         self.patch_dep("src.services.user.validate_email", lambda e: True)
         self.patch_async_dep(
@@ -260,6 +300,8 @@ class TestUserExists(AuthUnitTestTemplate):
 
     @pytest.mark.asyncio
     async def test_invalid(self):
+        from unittest.mock import AsyncMock
+        import src.services.user as user_service
         session = AsyncMock()
         self.patch_dep("src.services.user.validate_email", lambda e: False)
         await self.assert_async_http_exception(
@@ -270,6 +312,7 @@ class TestUserExists(AuthUnitTestTemplate):
 class TestAssignRoleAndCheck(AuthUnitTestTemplate):
     @pytest.mark.asyncio
     async def test_assign_and_check(self):
+        import src.services.user as user_service
         user_id = 1
         role = "admin"
         assert await user_service.assign_role(user_id, role) is True
@@ -278,6 +321,7 @@ class TestAssignRoleAndCheck(AuthUnitTestTemplate):
 
     @pytest.mark.asyncio
     async def test_assign_invalid(self):
+        import src.services.user as user_service
         with pytest.raises(user_service.ValidationError):
             await user_service.assign_role(1, "notarole")
 
@@ -285,6 +329,8 @@ class TestAssignRoleAndCheck(AuthUnitTestTemplate):
 class TestDeleteAndReactivateUser(AuthUnitTestTemplate):
     @pytest.mark.asyncio
     async def test_delete_soft(self):
+        from unittest.mock import AsyncMock
+        import src.services.user as user_service
         session = AsyncMock()
         self.patch_async_dep(
             "src.repositories.user.soft_delete_user", AsyncMock(return_value=True)
@@ -295,6 +341,8 @@ class TestDeleteAndReactivateUser(AuthUnitTestTemplate):
 
     @pytest.mark.asyncio
     async def test_delete_anonymize(self):
+        from unittest.mock import AsyncMock
+        import src.services.user as user_service
         session = AsyncMock()
         self.patch_async_dep(
             "src.repositories.user.anonymize_user", AsyncMock(return_value=True)
@@ -305,6 +353,8 @@ class TestDeleteAndReactivateUser(AuthUnitTestTemplate):
 
     @pytest.mark.asyncio
     async def test_deactivate(self):
+        from unittest.mock import AsyncMock
+        import src.services.user as user_service
         session = AsyncMock()
         self.patch_async_dep(
             "src.repositories.user.deactivate_user", AsyncMock(return_value=True)
@@ -315,6 +365,8 @@ class TestDeleteAndReactivateUser(AuthUnitTestTemplate):
 
     @pytest.mark.asyncio
     async def test_reactivate(self):
+        from unittest.mock import AsyncMock
+        import src.services.user as user_service
         session = AsyncMock()
         self.patch_async_dep(
             "src.repositories.user.reactivate_user", AsyncMock(return_value=True)
@@ -327,6 +379,8 @@ class TestDeleteAndReactivateUser(AuthUnitTestTemplate):
 class TestSetUserPreferences(AuthUnitTestTemplate):
     @pytest.mark.asyncio
     async def test_set(self):
+        from unittest.mock import AsyncMock
+        import src.services.user as user_service
         session = AsyncMock()
         dummy = DummyUser()
         session.commit = AsyncMock()
@@ -340,6 +394,8 @@ class TestSetUserPreferences(AuthUnitTestTemplate):
 
     @pytest.mark.asyncio
     async def test_not_found(self):
+        from unittest.mock import AsyncMock
+        import src.services.user as user_service
         session = AsyncMock()
         session.commit = AsyncMock()
         self.patch_async_dep(
@@ -354,85 +410,22 @@ class TestAsyncRefreshAccessToken(AuthUnitTestTemplate):
     @pytest.mark.parametrize(
         "error_case,patches,expected_exception,expected_msg",
         [
-            (
-                "jwt_decode_error",
-                [
-                    patch(
-                        "src.services.user.jwt.decode",
-                        side_effect=Exception("fail"),
-                    )
-                ],
-                user_service.RefreshTokenError,
-                "JWT decode failed: fail",
-            ),
-            (
-                "missing_user_id",
-                [patch("src.services.user.jwt.decode", return_value={})],
-                user_service.RefreshTokenError,
-                "Invalid token format: missing user_id.",
-            ),
-            (
-                "rate_limited",
-                [
-                    patch("src.services.user.jwt.decode", return_value={"user_id": 1}),
-                    patch(
-                        "src.services.user.user_action_limiter",
-                        new_callable=AsyncMock,
-                        return_value=False,
-                    ),
-                ],
-                user_service.RefreshTokenRateLimitError,
-                "Too many token refresh attempts.",
-            ),
-            (
-                "blacklisted",
-                [
-                    patch("src.services.user.jwt.decode", return_value={"user_id": 1}),
-                    patch(
-                        "src.services.user.user_action_limiter",
-                        new_callable=AsyncMock,
-                        return_value=True,
-                    ),
-                    patch(
-                        "src.services.user.is_token_blacklisted",
-                        new_callable=AsyncMock,
-                        return_value=True,
-                    ),
-                ],
-                user_service.RefreshTokenBlacklistedError,
-                "Refresh token is blacklisted.",
-            ),
-            (
-                "unexpected_error",
-                [
-                    patch("src.services.user.jwt.decode", return_value={"user_id": 1}),
-                    patch(
-                        "src.services.user.user_action_limiter",
-                        new_callable=AsyncMock,
-                        return_value=True,
-                    ),
-                    patch(
-                        "src.services.user.is_token_blacklisted",
-                        new_callable=AsyncMock,
-                        return_value=False,
-                    ),
-                    patch(
-                        "src.services.user.refresh_access_token",
-                        side_effect=Exception("fail"),
-                    ),
-                ],
-                user_service.RefreshTokenError,
-                "Unexpected error: fail",
-            ),
+            # The patch objects are created in the test body to avoid top-level imports
+            ("jwt_decode_error", None, None, "JWT decode failed: fail"),
+            ("missing_user_id", None, None, "Invalid token format: missing user_id."),
+            ("rate_limited", None, None, "Too many token refresh attempts."),
+            ("blacklisted", None, None, "Refresh token is blacklisted."),
+            ("unexpected_error", None, None, "Unexpected error: fail"),
         ],
     )
     async def test_errors(self, error_case, patches, expected_exception, expected_msg):
+        from unittest.mock import AsyncMock, patch
+        import src.services.user as user_service
+        from src.models.user import User
         session = AsyncMock()
         token = "sometoken"
         jwt_secret = "secret"
         jwt_algorithm = "HS256"
-        from src.models.user import User
-
         real_user = User(
             email="real@example.com",
             hashed_password="hashed",
@@ -443,23 +436,51 @@ class TestAsyncRefreshAccessToken(AuthUnitTestTemplate):
             avatar_url=None,
             preferences=None,
         )
-        with patch(
-            "src.services.user.get_user_by_id", new=AsyncMock(return_value=real_user)
-        ):
-            # Apply all patches
-            with patches[0]:
-                if len(patches) > 1:
-                    with patches[1]:
-                        if len(patches) > 2:
-                            with patches[2]:
-                                if len(patches) > 3:
-                                    with patches[3]:
+        # Patch logic per error_case
+        if error_case == "jwt_decode_error":
+            patchers = [patch("src.services.user.jwt.decode", side_effect=Exception("fail"))]
+            expected_exception = user_service.RefreshTokenError
+        elif error_case == "missing_user_id":
+            patchers = [patch("src.services.user.jwt.decode", return_value={})]
+            expected_exception = user_service.RefreshTokenError
+        elif error_case == "rate_limited":
+            patchers = [
+                patch("src.services.user.jwt.decode", return_value={"user_id": 1}),
+                patch("src.services.user.user_action_limiter", new_callable=AsyncMock, return_value=False),
+            ]
+            expected_exception = user_service.RefreshTokenRateLimitError
+        elif error_case == "blacklisted":
+            patchers = [
+                patch("src.services.user.jwt.decode", return_value={"user_id": 1}),
+                patch("src.services.user.user_action_limiter", new_callable=AsyncMock, return_value=True),
+                patch("src.services.user.is_token_blacklisted", new_callable=AsyncMock, return_value=True),
+            ]
+            expected_exception = user_service.RefreshTokenBlacklistedError
+        elif error_case == "unexpected_error":
+            patchers = [
+                patch("src.services.user.jwt.decode", return_value={"user_id": 1}),
+                patch("src.services.user.user_action_limiter", new_callable=AsyncMock, return_value=True),
+                patch("src.services.user.is_token_blacklisted", new_callable=AsyncMock, return_value=False),
+                patch("src.services.user.refresh_access_token", side_effect=Exception("fail")),
+            ]
+            expected_exception = user_service.RefreshTokenError
+        else:
+            patchers = []
+        with patch("src.services.user.get_user_by_id", new=AsyncMock(return_value=real_user)):
+            ctx = patchers[0]
+            with ctx:
+                if len(patchers) > 1:
+                    ctx2 = patchers[1]
+                    with ctx2:
+                        if len(patchers) > 2:
+                            ctx3 = patchers[2]
+                            with ctx3:
+                                if len(patchers) > 3:
+                                    ctx4 = patchers[3]
+                                    with ctx4:
                                         with pytest.raises(expected_exception) as exc:
                                             await user_service.async_refresh_access_token(
-                                                session,
-                                                token,
-                                                jwt_secret,
-                                                jwt_algorithm,
+                                                session, token, jwt_secret, jwt_algorithm
                                             )
                                         assert expected_msg in str(exc.value)
                                 else:
@@ -483,13 +504,14 @@ class TestAsyncRefreshAccessToken(AuthUnitTestTemplate):
 
     @pytest.mark.asyncio
     async def test_success(self):
+        from unittest.mock import AsyncMock, patch
+        import src.services.user as user_service
+        from src.models.user import User
         session = AsyncMock()
         token = "sometoken"
         jwt_secret = "secret"
         jwt_algorithm = "HS256"
         payload = {"user_id": 1, "jti": "jti123"}
-        from src.models.user import User
-
         real_user = User(
             email="real@example.com",
             hashed_password="hashed",

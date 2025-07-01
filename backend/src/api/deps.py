@@ -29,7 +29,7 @@ from jose import JWTError
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.config import settings
+from src.core.config import get_settings
 from src.core.database import get_async_session
 from src.core.security import verify_access_token
 from src.models.user import User
@@ -159,7 +159,7 @@ def get_password_validation_error() -> Any:
 
 
 def get_async_refresh_access_token() -> Any:
-    from src.core.config import settings
+    from src.core.config import get_settings
 
     async_refresh_access_token = registry.get("async_refresh_access_token")
 

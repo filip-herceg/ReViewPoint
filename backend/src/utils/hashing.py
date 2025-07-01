@@ -6,8 +6,9 @@ from loguru import logger
 from passlib.context import CryptContext
 
 # bcrypt context for password hashing
-from src.core.config import settings
+from src.core.config import get_settings
 
+settings = get_settings()
 pwd_context = CryptContext(
     schemes=["bcrypt"],
     deprecated="auto",

@@ -1,26 +1,11 @@
 import pytest
-from httpx import ASGITransport, AsyncClient
-from pydantic import ValidationError
-
-from src.api.deps import get_async_refresh_access_token
-from src.schemas.auth import (
-    AuthResponse,
-    MessageResponse,
-    PasswordResetConfirmRequest,
-    PasswordResetRequest,
-    UserLoginRequest,
-    UserRegisterRequest,
-)
-from src.services.user import (
-    RefreshTokenBlacklistedError,
-    RefreshTokenError,
-    RefreshTokenRateLimitError,
-)
 from tests.test_templates import AuthEndpointTestTemplate
 
 
-class TestAuthSchemas:
+class TestAuthSchemas(AuthEndpointTestTemplate):
     def test_user_register_request_valid(self):
+        from src.schemas.auth import UserRegisterRequest
+
         req = UserRegisterRequest(
             email="user@example.com", password="password123", name="Test User"
         )
@@ -37,19 +22,28 @@ class TestAuthSchemas:
         ],
     )
     def test_user_register_request_invalid(self, email, password, name):
+        from pydantic import ValidationError
+        from src.schemas.auth import UserRegisterRequest
+
         with pytest.raises(ValidationError):
             UserRegisterRequest(email=email, password=password, name=name)
 
     def test_user_login_request_valid(self):
+        from src.schemas.auth import UserLoginRequest
+
         req = UserLoginRequest(email="user@example.com", password="password123")
         assert req.email == "user@example.com"
         assert req.password == "password123"
 
     def test_password_reset_request_valid(self):
+        from src.schemas.auth import PasswordResetRequest
+
         req = PasswordResetRequest(email="user@example.com")
         assert req.email == "user@example.com"
 
     def test_password_reset_confirm_request_valid(self):
+        from src.schemas.auth import PasswordResetConfirmRequest
+
         req = PasswordResetConfirmRequest(
             token="sometoken", new_password="newpassword123"
         )
@@ -57,16 +51,23 @@ class TestAuthSchemas:
         assert req.new_password == "newpassword123"
 
     def test_password_reset_confirm_request_short_password(self):
+        from pydantic import ValidationError
+        from src.schemas.auth import PasswordResetConfirmRequest
+
         with pytest.raises(ValidationError):
-            PasswordResetConfirmRequest(token="sometoken", new_password="short")
+            PasswordResetConfirmRequest(token="t", new_password="short")
 
     def test_auth_response(self):
+        from src.schemas.auth import AuthResponse
+
         resp = AuthResponse(access_token="abc123", refresh_token="def456")
         assert resp.access_token == "abc123"
         assert resp.refresh_token == "def456"
         assert resp.token_type == "bearer"
 
     def test_message_response(self):
+        from src.schemas.auth import MessageResponse
+
         resp = MessageResponse(message="ok")
         assert resp.message == "ok"
 
@@ -74,6 +75,8 @@ class TestAuthSchemas:
 class TestAuthEndpoints(AuthEndpointTestTemplate):
     @pytest.mark.asyncio
     async def test_register_success(self):
+        from httpx import ASGITransport, AsyncClient
+
         self.override_env_vars(
             {
                 "REVIEWPOINT_API_KEY_ENABLED": "false",
@@ -101,6 +104,8 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
 
     @pytest.mark.asyncio
     async def test_login_success(self):
+        from httpx import ASGITransport, AsyncClient
+
         self.override_env_vars(
             {
                 "REVIEWPOINT_API_KEY_ENABLED": "false",
@@ -134,6 +139,8 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
 
     @pytest.mark.asyncio
     async def test_logout_success(self):
+        from httpx import ASGITransport, AsyncClient
+
         self.override_env_vars(
             {
                 "REVIEWPOINT_API_KEY_ENABLED": "false",
@@ -164,6 +171,8 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
 
     @pytest.mark.asyncio
     async def test_refresh_token_success(self):
+        from httpx import ASGITransport, AsyncClient
+
         self.override_env_vars(
             {
                 "REVIEWPOINT_API_KEY_ENABLED": "false",
@@ -199,6 +208,8 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
 
     @pytest.mark.asyncio
     async def test_password_reset_request_success(self):
+        from httpx import ASGITransport, AsyncClient
+
         self.override_env_vars(
             {
                 "REVIEWPOINT_API_KEY_ENABLED": "false",
@@ -229,6 +240,8 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
 
     @pytest.mark.asyncio
     async def test_logout_with_invalid_token(self):
+        from httpx import ASGITransport, AsyncClient
+
         self.override_env_vars(
             {
                 "REVIEWPOINT_API_KEY_ENABLED": "false",
@@ -258,6 +271,8 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
 
     @pytest.mark.asyncio
     async def test_logout_without_authorization_header(self):
+        from httpx import ASGITransport, AsyncClient
+
         self.override_env_vars(
             {
                 "REVIEWPOINT_API_KEY_ENABLED": "false",
@@ -284,7 +299,10 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
 
     @pytest.mark.asyncio
     async def test_refresh_token_blacklisted(self):
-        # Best practice: Disable API key enforcement for this test
+        from httpx import ASGITransport, AsyncClient
+        from src.api.deps import get_async_refresh_access_token
+        from src.services.user import RefreshTokenBlacklistedError
+
         self.override_env_vars(
             {
                 "REVIEWPOINT_API_KEY_ENABLED": "false",
@@ -328,7 +346,10 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
 
     @pytest.mark.asyncio
     async def test_refresh_token_rate_limited(self):
-        # Best practice: Disable API key enforcement and enable refresh token feature
+        from httpx import ASGITransport, AsyncClient
+        from src.api.deps import get_async_refresh_access_token
+        from src.services.user import RefreshTokenRateLimitError
+
         self.override_env_vars(
             {
                 "REVIEWPOINT_API_KEY_ENABLED": "false",
@@ -372,7 +393,10 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
 
     @pytest.mark.asyncio
     async def test_refresh_token_decode_error(self):
-        # Best practice: Disable API key enforcement and enable refresh token feature
+        from httpx import ASGITransport, AsyncClient
+        from src.api.deps import get_async_refresh_access_token
+        from src.services.user import RefreshTokenError
+
         self.override_env_vars(
             {
                 "REVIEWPOINT_API_KEY_ENABLED": "false",
@@ -417,7 +441,9 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
 
     @pytest.mark.asyncio
     async def test_refresh_token_unexpected_error(self):
-        # Best practice: Disable API key enforcement and enable refresh token feature
+        from httpx import ASGITransport, AsyncClient
+        from src.api.deps import get_async_refresh_access_token
+
         self.override_env_vars(
             {
                 "REVIEWPOINT_API_KEY_ENABLED": "false",
@@ -461,9 +487,10 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
         self.test_app.dependency_overrides = {}
 
     @pytest.mark.asyncio
-    async def test_password_reset_confirm_success_branch(
-        self,
-    ):
+    async def test_password_reset_confirm_success_branch(self):
+        """
+        Test the password reset confirm endpoint (success branch) using only in-method imports and the test template.
+        """
         self.override_env_vars(
             {
                 "REVIEWPOINT_API_KEY_ENABLED": "false",
@@ -472,10 +499,14 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:reset_password",
             }
         )
+        # All config-dependent imports must be inside the test method
+        from httpx import AsyncClient
+        from httpx import ASGITransport
+        import uuid
+        from unittest.mock import AsyncMock, patch
+
         transport = ASGITransport(app=self.test_app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
-            import uuid
-
             email = f"pwreset_success_{uuid.uuid4()}@example.com"
             password = "SecurePass123!"
             new_password = "NewSecurePass123!"
@@ -485,8 +516,6 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 json={"email": email, "password": password, "name": "PW Reset Success"},
             )
             # Request password reset to get a token
-            from unittest.mock import AsyncMock, patch
-
             with patch(
                 "src.services.user.get_password_reset_token",
                 return_value="testtoken123",

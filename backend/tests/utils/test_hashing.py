@@ -1,9 +1,10 @@
-from src.utils.hashing import hash_password, verify_password
+
 from tests.test_templates import UtilityUnitTestTemplate
 
 
 class TestHashingUtils(UtilityUnitTestTemplate):
     def test_hash_password_and_verify(self):
+        from src.utils.hashing import hash_password, verify_password
         password = "s3cr3t!"
         hashed = hash_password(password)
         self.assert_not_equal(hashed, password)
@@ -14,6 +15,7 @@ class TestHashingUtils(UtilityUnitTestTemplate):
         self.assert_predicate_false(verify_password, "wrong", hashed)
 
     def test_hash_uniqueness(self):
+        from src.utils.hashing import hash_password, verify_password
         password = "repeatable"
         hash1 = hash_password(password)
         hash2 = hash_password(password)

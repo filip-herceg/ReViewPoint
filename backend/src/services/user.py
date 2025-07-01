@@ -16,7 +16,7 @@ from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.config import settings
+from src.core.config import get_settings
 from src.core.security import (
     create_access_token,
     create_refresh_token,
@@ -93,6 +93,7 @@ async def authenticate_user(
     If authentication is disabled, return default tokens for dev user.
     """
     logger.info("User login attempt", email=email)
+    settings = get_settings()
     if not settings.auth_enabled:
         logger.warning(
             "Authentication is DISABLED! Returning dev token for any credentials.",
@@ -186,6 +187,7 @@ def is_authenticated(user: User) -> bool:
     Check if a user is currently authenticated.
     If authentication is disabled, always return True.
     """
+    settings = get_settings()
     if not settings.auth_enabled:
         logger.warning(
             "Authentication is DISABLED! All users considered authenticated."
@@ -245,6 +247,7 @@ def get_password_reset_token(email: str) -> str:
         {"sub": email, "purpose": "reset", "nonce": secrets.token_urlsafe(8)}
     )
     # Use correct environment check (dev/test/prod)
+    settings = get_settings()
     if settings.environment in ("dev", "test"):
         logger.debug("Password reset token for development", email=email, token=token)
     else:

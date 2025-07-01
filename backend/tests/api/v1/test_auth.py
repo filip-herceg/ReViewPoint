@@ -8,7 +8,7 @@ from httpx import ASGITransport, AsyncClient, Response
 from jose import JWTError
 
 from src.core import security
-from src.core.config import settings
+from src.core.config import get_settings
 from tests.test_templates import AuthEndpointTestTemplate, AuthUnitTestTemplate
 
 

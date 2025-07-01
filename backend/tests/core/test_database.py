@@ -5,13 +5,8 @@ from __future__ import annotations
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.database import (
-    AsyncSessionLocal,
-    db_healthcheck,
-    engine,
-    get_async_session,
-)
-from src.models import File, User
+
+# Import config-dependent modules inside test class to ensure env vars are set by fixtures first
 from tests.test_templates import DatabaseTestTemplate
 
 USER_EMAIL = "test@example.com"
@@ -19,66 +14,76 @@ USER_DATA = {"email": USER_EMAIL, "hashed_password": "pw"}
 
 
 class TestDatabase(DatabaseTestTemplate):
+    def setup_method(self):
+        db_mod = __import__('src.core.database', fromlist=['AsyncSessionLocal', 'db_healthcheck', 'engine', 'get_async_session'])
+        self.AsyncSessionLocal = db_mod.AsyncSessionLocal
+        self.db_healthcheck = db_mod.db_healthcheck
+        self.engine = db_mod.engine
+        self.get_async_session = db_mod.get_async_session
+        models_mod = __import__('src.models', fromlist=['File', 'User'])
+        self.File = models_mod.File
+        self.User = models_mod.User
     @pytest.mark.asyncio
     async def test_db_healthcheck(self) -> None:
         """Test that db_healthcheck succeeds on a valid connection."""
-        await self.assert_healthcheck_ok(db_healthcheck)
+        await self.assert_healthcheck_ok(self.db_healthcheck)
 
     @pytest.mark.asyncio
     async def test_db_session_context(self) -> None:
         """Test that session context manager works properly."""
-        await self.assert_session_context_ok(get_async_session, AsyncSession)
+        from sqlalchemy.ext.asyncio import AsyncSession
+        await self.assert_session_context_ok(self.get_async_session, AsyncSession)
 
     @pytest.mark.asyncio
     async def test_session_rollback(self) -> None:
         """Test session rollback on error."""
-        await self.assert_session_rollback(AsyncSessionLocal)
+        await self.assert_session_rollback(self.AsyncSessionLocal)
 
     @pytest.mark.asyncio
     async def test_users_table_exists(self) -> None:
         """Test that the users table exists."""
-        await self.assert_table_exists(AsyncSessionLocal, "users")
+        await self.assert_table_exists(self.AsyncSessionLocal, "users")
 
     @pytest.mark.asyncio
     async def test_can_insert_and_query_user(self) -> None:
         """Test inserting and querying a user."""
         await self.assert_can_insert_and_query(
-            AsyncSessionLocal, User, USER_DATA, {"email": USER_EMAIL}
+            self.AsyncSessionLocal, self.User, USER_DATA, {"email": USER_EMAIL}
         )
 
     @pytest.mark.asyncio
     async def test_transaction_isolation(self) -> None:
         """Test transaction isolation for concurrent sessions."""
-        await self.assert_transaction_isolation(AsyncSessionLocal, User, USER_DATA)
+        await self.assert_transaction_isolation(self.AsyncSessionLocal, self.User, USER_DATA)
 
     @pytest.mark.asyncio
     async def test_integrity_error_on_duplicate_email(self) -> None:
         """Test that inserting a user with a duplicate email raises an integrity error."""
-        await self.bulk_insert(AsyncSessionLocal, User, [USER_DATA])
-        await self.assert_db_integrity_error(AsyncSessionLocal, User, USER_DATA)
+        await self.bulk_insert(self.AsyncSessionLocal, self.User, [USER_DATA])
+        await self.assert_db_integrity_error(self.AsyncSessionLocal, self.User, USER_DATA)
 
     @pytest.mark.asyncio
     async def test_bulk_insert_and_query(self) -> None:
         """Test bulk inserting and querying users."""
         emails = [f"user{i}@ex.com" for i in range(5)]
         rows = [dict(email=e, hashed_password="pw") for e in emails]
-        await self.bulk_insert(AsyncSessionLocal, User, rows)
+        await self.bulk_insert(self.AsyncSessionLocal, self.User, rows)
         await self.assert_bulk_query(
-            AsyncSessionLocal, User, {"is_active": True}, expected_count=5
+            self.AsyncSessionLocal, self.User, {"is_active": True}, expected_count=5
         )
 
     @pytest.mark.asyncio
     async def test_seed_and_truncate(self) -> None:
         """Test seeding and truncating the users table."""
-        await self.seed_database(AsyncSessionLocal, User, [USER_DATA])
-        await self.truncate_tables(AsyncSessionLocal, ["users"])
+        await self.seed_database(self.AsyncSessionLocal, self.User, [USER_DATA])
+        await self.truncate_tables(self.AsyncSessionLocal, ["users"])
         await self.assert_bulk_query(
-            AsyncSessionLocal, User, {"is_active": True}, expected_count=0
+            self.AsyncSessionLocal, self.User, {"is_active": True}, expected_count=0
         )
 
     def test_migration_applied(self) -> None:
         """Test that the migration has been applied."""
-        self.assert_migration_applied(AsyncSessionLocal, table_name="users")
+        self.assert_migration_applied(self.AsyncSessionLocal, table_name="users")
 
     def test_run_migration(self) -> None:
         """Test running the migration."""
@@ -86,20 +91,19 @@ class TestDatabase(DatabaseTestTemplate):
 
     def test_simulate_db_disconnect(self) -> None:
         """Test simulating a database disconnect."""
-        self.simulate_db_disconnect(AsyncSessionLocal)
+        self.simulate_db_disconnect(self.AsyncSessionLocal)
         with pytest.raises(Exception):
             import asyncio
-
-            asyncio.run(self.assert_healthcheck_ok(db_healthcheck))
+            asyncio.run(self.assert_healthcheck_ok(self.db_healthcheck))
 
     def test_simulate_db_latency(self) -> None:
         """Test simulating database latency."""
-        self.simulate_db_latency(AsyncSessionLocal, delay=0.1)
+        self.simulate_db_latency(self.AsyncSessionLocal, delay=0.1)
         # No assertion: just ensures patching works and doesn't error
 
     def test_connection_pool_size(self) -> None:
         """Test the connection pool size."""
-        self.assert_connection_pool_size(engine, expected_size=5)
+        self.assert_connection_pool_size(self.engine, expected_size=5)
 
     @pytest.mark.asyncio
     async def test_file_fk_constraint(self):
@@ -107,10 +111,9 @@ class TestDatabase(DatabaseTestTemplate):
         from sqlalchemy.exc import IntegrityError
 
         bad_file = dict(filename="bad.txt", content_type="text/plain", user_id=999999)
-        from src.models import File
 
-        async with AsyncSessionLocal() as session:
-            file = File(**bad_file)
+        async with self.AsyncSessionLocal() as session:
+            file = self.File(**bad_file)
             session.add(file)
             with pytest.raises(IntegrityError):
                 await session.commit()

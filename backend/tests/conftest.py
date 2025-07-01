@@ -13,7 +13,11 @@ Test DB Policy:
 This policy ensures robust, maintainable, and explicit test DB management for all developers.
 """
 
+
+
+# --- DO NOT set env vars at the top level. All config-dependent imports must be inside fixtures. ---
 import os
+
 import uuid
 from collections.abc import AsyncGenerator, Callable, Generator, Iterator
 from pathlib import Path
@@ -21,24 +25,9 @@ from typing import Any
 
 import pytest
 import pytest_asyncio
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
 from loguru import logger
-from sqlalchemy.ext.asyncio import (
-    AsyncEngine,
-    AsyncSession,
-    async_sessionmaker,
-    create_async_engine,
-)
-from testcontainers.postgres import PostgresContainer
-
-from src.core.database import get_async_session
-from src.core.security import create_access_token
-from src.main import create_app
-from src.models.base import Base
 
 
-# --- Centralized PostgreSQL test container management ---
 @pytest.fixture(scope="session", autouse=True)
 def postgres_container():
     """
@@ -46,6 +35,7 @@ def postgres_container():
     Logs the connection URL at startup. Raises a clear error if Docker is not running.
     The Postgres image can be overridden with the REVIEWPOINT_TEST_POSTGRES_IMAGE env var.
     """
+    from testcontainers.postgres import PostgresContainer
     image = os.environ.get("REVIEWPOINT_TEST_POSTGRES_IMAGE", "postgres:15-alpine")
     try:
         with PostgresContainer(image) as postgres:
@@ -87,17 +77,10 @@ def postgres_container():
 # This is enforced by an automated check below. If you need to add a new exception, update the list in the check.
 #
 
-# Set required env vars before any other imports
-os.environ["REVIEWPOINT_DB_URL"] = (
-    os.environ.get("REVIEWPOINT_DB_URL")
-    or "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint"
-)
-os.environ["REVIEWPOINT_JWT_SECRET"] = (
-    os.environ.get("REVIEWPOINT_JWT_SECRET") or "testsecret"
-)
-os.environ["REVIEWPOINT_JWT_SECRET_KEY"] = (
-    os.environ.get("REVIEWPOINT_JWT_SECRET_KEY") or "testsecret"
-)
+
+
+# ENFORCEMENT: Never import or create a global settings = Settings() at import time in any code or test.
+# Always use get_settings() to ensure env vars are set first.
 
 import asyncio
 
@@ -109,12 +92,16 @@ def set_required_env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
     Automatically set all required environment variables and feature flags for tests.
     Ensures a consistent environment for every test function.
     """
+    logger.debug(f"[conftest.py][fixture] (before) REVIEWPOINT_JWT_SECRET={{os.environ.get('REVIEWPOINT_JWT_SECRET')}}")
+    logger.debug(f"[conftest.py][fixture] (before) REVIEWPOINT_JWT_SECRET_KEY={{os.environ.get('REVIEWPOINT_JWT_SECRET_KEY')}}")
     monkeypatch.setenv(
         "REVIEWPOINT_DB_URL",
         "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint",
     )
     monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "testsecret")
     monkeypatch.setenv("REVIEWPOINT_JWT_SECRET_KEY", "testsecret")
+    logger.debug(f"[conftest.py][fixture] (after) REVIEWPOINT_JWT_SECRET={{os.environ.get('REVIEWPOINT_JWT_SECRET')}}")
+    logger.debug(f"[conftest.py][fixture] (after) REVIEWPOINT_JWT_SECRET_KEY={{os.environ.get('REVIEWPOINT_JWT_SECRET_KEY')}}")
     monkeypatch.setenv("REVIEWPOINT_API_KEY_ENABLED", "true")
     monkeypatch.setenv("REVIEWPOINT_API_KEY", "testkey")
     # Enable all known feature flags for all endpoints
@@ -168,28 +155,28 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
 
 
 # 3. Database/session fixtures
+
 @pytest_asyncio.fixture(scope="function")
-async def async_engine(
-    postgres_container: PostgresContainer,
-) -> AsyncGenerator[AsyncEngine, None]:
+async def async_engine(postgres_container):
     """
     Provide a SQLAlchemy async engine for the test session, using the testcontainers DB URL.
     Depends on the postgres_container fixture to ensure the container is running.
     """
+    from sqlalchemy.ext.asyncio import create_async_engine
     db_url = os.environ["REVIEWPOINT_DB_URL"]
     engine = create_async_engine(db_url, future=True)
     yield engine
     await engine.dispose()
 
 
+
 @pytest_asyncio.fixture(scope="function")
-async def async_session(
-    async_engine: AsyncEngine,
-) -> AsyncGenerator[AsyncSession, None]:
+async def async_session(async_engine):
     """
     Provide an async SQLAlchemy session for each test function.
     Depends on async_engine, which depends on postgres_container.
     """
+    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
     async_session_local = async_sessionmaker(
         bind=async_engine, class_=AsyncSession, expire_on_commit=False
     )
@@ -198,47 +185,14 @@ async def async_session(
 
 
 # 4. App and client fixtures
-@pytest.fixture
-def test_app() -> Generator[FastAPI, None, None]:
-    """
-    Provide a new FastAPI app instance for each test.
-    Ensures a fresh app context for every test function.
-    """
-    app = create_app()
-    yield app
 
 
-@pytest.fixture
-def client(test_app: FastAPI):
-    """
-    Provide a FastAPI TestClient for making HTTP requests in tests.
-    Uses a context manager to ensure proper event loop/resource management.
-    """
-    with TestClient(test_app) as c:
-        yield c
+
+
 
 
 # 5. Dependency overrides
-@pytest.fixture(autouse=True)
-def override_get_async_session(test_app: FastAPI, async_engine: AsyncEngine):
-    """
-    Override the get_async_session dependency in FastAPI with a new session per request.
-    Ensures all DB operations in the app use a fresh test session for each request.
-    """
 
-    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-
-    async_session_local = async_sessionmaker(
-        bind=async_engine, class_=AsyncSession, expire_on_commit=False
-    )
-
-    async def _override() -> AsyncGenerator[AsyncSession, None]:
-        async with async_session_local() as session:
-            yield session
-
-    test_app.dependency_overrides[get_async_session] = _override
-    yield
-    test_app.dependency_overrides.pop(get_async_session, None)
 
 
 # 6. Logging fixtures
@@ -377,7 +331,7 @@ def wait_for_condition(
 
 
 def wait_for_admin_promotion(
-    client: TestClient,
+    client,
     email: str,
     password: str,
     timeout: float = 2.0,
@@ -436,18 +390,18 @@ def pytest_collection_finish(session: pytest.Session):
             pass
 
 
+
 @pytest_asyncio.fixture(scope="session", autouse=True)
-async def create_and_drop_tables(postgres_container: PostgresContainer):
+async def create_and_drop_tables(postgres_container):
     """
     Automatically create all tables before the test session and drop them after.
     Ensures a clean PostgreSQL test database for every test run.
     Depends on postgres_container to guarantee DB is up before setup.
     """
     from sqlalchemy.ext.asyncio import create_async_engine
-
+    from src.models.base import Base
     db_url = os.environ["REVIEWPOINT_DB_URL"]
     engine = create_async_engine(db_url, future=True)
-
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
@@ -464,11 +418,9 @@ def test_db_url() -> str:
     return os.environ["REVIEWPOINT_DB_URL"]
 
 
-def get_auth_header(
-    client: TestClient,
-    email: str | None = None,
-    password: str = "TestPassword123!",
-) -> dict[str, str]:
+
+
+def get_auth_header(client, email=None, password="TestPassword123!"):
     """
     Register a new user (or login if already exists) and return an auth header for API requests.
     Promotes the user to admin if registration is successful.
@@ -476,6 +428,7 @@ def get_auth_header(
     Uses the provided TestClient for all requests for consistency and speed.
     Raises RuntimeError if admin promotion fails unexpectedly.
     """
+    from src.core.security import create_access_token
     if email is None:
         email = f"testuser_{uuid.uuid4().hex[:8]}@example.com"
     register_data = {"email": email, "password": password, "name": "Test User"}

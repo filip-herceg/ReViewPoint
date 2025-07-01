@@ -1,9 +1,12 @@
 """
 Centralized runtime configuration for ReViewPoint.
 
-Import the cached singleton everywhere::
+Import the settings using the lazy getter everywhere::
 
-    from core.config import settings
+    from src.core.config import get_settings
+    settings = get_settings()
+
+Never use a global `settings = Settings()` at import time. This ensures all environment variables are set before config is loaded, especially in tests.
 
 All variables are read from the REVIEWPOINT_* environment variables. A .env file is loaded as fallback,
 or a custom path can be specified by setting ENV_FILE. Unknown variables are ignored, which is useful
@@ -22,9 +25,10 @@ from loguru import logger
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-__all__ = ["Settings", "get_settings", "settings"]
+__all__ = ["Settings", "get_settings"]
 
 ENV_PREFIX = "REVIEWPOINT_"
+
 
 # Determine .env file path at import time, but skip if running under pytest (test suite)
 IS_PYTEST = "pytest" in sys.modules or any(
@@ -33,6 +37,18 @@ IS_PYTEST = "pytest" in sys.modules or any(
 _env_path = os.getenv("ENV_FILE")
 if IS_PYTEST:
     _env_file = None  # Always ignore .env during tests
+    if _env_path or Path("backend/.env").exists():
+        # Defensive: log if any .env file would have been loaded during tests
+        devlog_msg = (
+            f"[DEVLOG] Prevented .env loading during tests. ENV_FILE={_env_path}, ".ljust(80) +
+            f"backend/.env exists={Path('backend/.env').exists()}"
+        )
+        print(devlog_msg)
+        try:
+            from loguru import logger
+            logger.warning(devlog_msg)
+        except Exception:
+            pass
 elif _env_path:
     _env_file = Path(_env_path)
 elif Path("backend/.env").exists():
@@ -232,7 +248,8 @@ def get_settings() -> Settings:
     return s
 
 
-settings = get_settings()
 
-# Initialize settings and log the loaded configuration
-logger.debug("Settings initialized: %s", settings.to_public_dict())
+# Remove eager settings initialization! Use get_settings() everywhere.
+
+# ENFORCEMENT: Never create a global settings = Settings() at import time. Always use get_settings().
+# This is critical for testability and correct environment variable handling.

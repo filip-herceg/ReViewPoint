@@ -9,7 +9,7 @@ from typing import Any
 from jose import JWTError, jwt
 from loguru import logger
 
-from src.core.config import settings
+from src.core.config import get_settings
 
 # Add current dir to path for stubs
 # NOTE: Removed sys.path modification as it is not essential for production.
@@ -26,6 +26,7 @@ def create_access_token(data: dict[str, Any]) -> str:
     """
     try:
         to_encode = data.copy()
+        settings = get_settings()
         expire = datetime.now(UTC) + timedelta(minutes=settings.jwt_expire_minutes)
         to_encode["exp"] = expire
         to_encode["iat"] = int(datetime.now(UTC).timestamp())
