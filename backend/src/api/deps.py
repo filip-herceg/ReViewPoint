@@ -366,6 +366,7 @@ async def get_current_user(
     Usage:
         user = Depends(get_current_user)
     """
+    settings = get_settings()
     if not settings.auth_enabled:
         logger.warning("Authentication is DISABLED! Returning development admin user.")
         return _get_dev_admin_user()
@@ -435,6 +436,7 @@ async def optional_get_current_user(
     Usage:
         user = Depends(optional_get_current_user)
     """
+    settings = get_settings()
     if not settings.auth_enabled:
         return _get_dev_admin_user()
     try:
@@ -561,6 +563,7 @@ async def validate_api_key(
     Returns:
         bool: True if the API key is valid, False otherwise.
     """
+    settings = get_settings()
     if not settings.api_key_enabled:
         # API key validation is disabled, always return True
         return True

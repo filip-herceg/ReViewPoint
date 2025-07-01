@@ -34,6 +34,7 @@ class TestJWTUtils(AuthUnitTestTemplate):
             security.verify_access_token(tampered)
 
     def test_expired_access_token_raises(self):
+        settings = get_settings()
         self.monkeypatch.setattr(settings, "jwt_expire_minutes", -1)
         token = security.create_access_token({"sub": "expired"})
         with pytest.raises(JWTError):
@@ -41,6 +42,7 @@ class TestJWTUtils(AuthUnitTestTemplate):
         self.monkeypatch.setattr(settings, "jwt_expire_minutes", 30)
 
     def test_missing_secret_raises(self):
+        settings = get_settings()
         self.monkeypatch.setattr(settings, "jwt_secret_key", None)
         with pytest.raises(ValueError):
             security.create_access_token({"sub": "user"})
@@ -54,10 +56,10 @@ class TestJWTUtils(AuthUnitTestTemplate):
         assert payload["permissions"] == ["read", "write"]
 
     def test_jwt_invalid_algorithm(self):
+        settings = get_settings()
         token = security.create_access_token({"sub": "user789"})
         with pytest.raises(JWTError):
             from jose import jwt
-
             jwt.decode(token, str(settings.jwt_secret_key), algorithms=["HS512"])
 
     def test_jwt_empty_token(self):
@@ -367,6 +369,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "jti": str(uuid.uuid4()),
                 "exp": int((datetime.now(jwt.UTC) - timedelta(minutes=10)).timestamp()),
             }
+            settings = get_settings()
             expired_token = jwt.encode(
                 expired_payload,
                 str(settings.jwt_secret_key or "dummy"),
@@ -385,6 +388,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "jti": str(uuid.uuid4()),
                 "exp": int((datetime.now(jwt.UTC) + timedelta(minutes=10)).timestamp()),
             }
+            settings = get_settings()
             valid_token = jwt.encode(
                 valid_payload,
                 str(settings.jwt_secret_key or "dummy"),
@@ -404,6 +408,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
 
     @pytest.mark.asyncio
     async def test_auth_disabled_allows_access(self):
+        settings = get_settings()
         self.monkeypatch.setattr(settings, "auth_enabled", False)
         from src.api.deps import get_current_user
 

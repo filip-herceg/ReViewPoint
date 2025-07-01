@@ -180,12 +180,41 @@ async def async_session(async_engine):
         yield session
 
 
+
+
 # 4. App and client fixtures
 
 
 
+import pytest
+from typing import Generator
+from fastapi.testclient import TestClient
 
 
+@pytest.fixture(scope="function")
+def test_app(async_session) -> Generator:
+    """
+    Provides a new FastAPI app instance for each test function.
+    Overrides get_async_session dependency to use the test async_session fixture.
+    """
+    from src.main import create_app
+    from src.core.database import get_async_session
+    app = create_app()
+    # Override get_async_session to yield the test session
+    async def _override_get_async_session():
+        yield async_session
+    app.dependency_overrides[get_async_session] = _override_get_async_session
+    yield app
+
+
+# Fixture to provide a TestClient for all API tests
+@pytest.fixture(scope="function")
+def client(test_app) -> Generator:
+    """
+    Provides a TestClient for the FastAPI app for use in API tests.
+    """
+    with TestClient(test_app) as c:
+        yield c
 
 # 5. Dependency overrides
 

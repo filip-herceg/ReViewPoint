@@ -61,6 +61,7 @@ def verify_access_token(token: str) -> dict[str, Any]:
     Validate a JWT access token and return the decoded payload.
     If authentication is disabled, return a default admin payload.
     """
+    settings = get_settings()
     if not settings.auth_enabled:
         logger.warning(
             "Authentication is DISABLED! Bypassing token verification and returning default admin payload."
@@ -116,6 +117,7 @@ def create_refresh_token(data: dict[str, Any]) -> str:
     Adds a unique jti for blacklisting support.
     """
     try:
+        settings = get_settings()
         to_encode = data.copy()
         expire = datetime.now(UTC) + timedelta(
             days=7
@@ -163,6 +165,7 @@ def verify_refresh_token(token: str) -> dict[str, Any]:
     Raises JWTError or ValueError on failure.
     Maximized robustness: strict type checks, clear error messages, and no debug logs in production.
     """
+    settings = get_settings()
     if not settings.jwt_secret_key:
         logger.error("JWT secret key is not configured. Cannot verify refresh token.")
         raise ValueError("JWT secret key is not configured.")
