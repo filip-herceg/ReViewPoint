@@ -1,9 +1,9 @@
 import pytest
-from tests.test_templates import AsyncModelTestTemplate, ModelUnitTestTemplate
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from src.models.user import User
+from tests.test_templates import AsyncModelTestTemplate, ModelUnitTestTemplate
 
 
 class TestUserUnit(ModelUnitTestTemplate):

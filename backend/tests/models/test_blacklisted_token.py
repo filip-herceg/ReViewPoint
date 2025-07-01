@@ -2,9 +2,9 @@ import uuid
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from tests.test_templates import AsyncModelTestTemplate
 
 from src.models.blacklisted_token import BlacklistedToken
+from tests.test_templates import AsyncModelTestTemplate
 
 
 class TestBlacklistedTokenModel(AsyncModelTestTemplate):

@@ -394,7 +394,9 @@ async def get_current_user(
     user = None
     if user_id is not None:
         from sqlalchemy import select
+
         from src.models.user import User
+
         if isinstance(user_id, int) or (isinstance(user_id, str) and user_id.isdigit()):
             user = await get_user_by_id(session, int(user_id))
         else:

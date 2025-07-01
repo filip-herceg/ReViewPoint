@@ -2,11 +2,11 @@ from datetime import UTC, datetime, timedelta
 from typing import cast
 
 import pytest
-from tests.test_templates import SecurityUnitTestTemplate
 from jose import jwt
 
 from src.core.config import settings
 from src.core.security import create_access_token
+from tests.test_templates import SecurityUnitTestTemplate
 
 
 class TestSecurity(SecurityUnitTestTemplate):

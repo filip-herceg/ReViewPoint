@@ -6,13 +6,13 @@ Covers all code paths, including edge and error cases.
 from unittest.mock import AsyncMock
 
 import pytest
-from tests.test_templates import AuthUnitTestTemplate
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api import deps
 from src.core.config import settings
 from src.models.user import User
+from tests.test_templates import AuthUnitTestTemplate
 
 
 class TestDeps(AuthUnitTestTemplate):

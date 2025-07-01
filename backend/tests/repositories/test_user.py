@@ -1,10 +1,9 @@
-import pytest
 from datetime import UTC, datetime, timedelta
+
+import pytest
 from sqlalchemy import text
-from sqlalchemy.exc import IntegrityError
 
 from src.models.file import File
-from src.models.user import User
 from src.repositories.user import (
     create_user_with_validation,
     filter_users_by_status,
@@ -28,14 +27,14 @@ class TestUserRepository:
             ("repo@example.com", "Password123!", None),
         ],
     )
-    async def test_create_user_validation(self, async_session, email, password, expected_exc):
+    async def test_create_user_validation(
+        self, async_session, email, password, expected_exc
+    ):
         if expected_exc:
             with pytest.raises(expected_exc):
                 await create_user_with_validation(async_session, email, password)
         else:
-            user = await create_user_with_validation(
-                async_session, email, password
-            )
+            user = await create_user_with_validation(async_session, email, password)
             assert user.email == email
             assert user.is_active is True
 
@@ -125,14 +124,20 @@ class TestUserRepository:
 
     @pytest.mark.asyncio
     async def test_search_users_by_name_or_email(self, async_session):
-        await create_user_with_validation(async_session, "searchme@example.com", "Password123!")
+        await create_user_with_validation(
+            async_session, "searchme@example.com", "Password123!"
+        )
         found = await search_users_by_name_or_email(async_session, "searchme")
         assert any("searchme" in u.email for u in found)
 
     @pytest.mark.asyncio
     async def test_filter_users_by_status(self, async_session):
-        user1 = await create_user_with_validation(async_session, "active@example.com", "Password123!")
-        user2 = await create_user_with_validation(async_session, "inactive@example.com", "Password123!")
+        user1 = await create_user_with_validation(
+            async_session, "active@example.com", "Password123!"
+        )
+        user2 = await create_user_with_validation(
+            async_session, "inactive@example.com", "Password123!"
+        )
         user2.is_active = False
         await async_session.commit()
         active = await filter_users_by_status(async_session, is_active=True)
@@ -142,7 +147,9 @@ class TestUserRepository:
 
     @pytest.mark.asyncio
     async def test_update_user(self, async_session):
-        user = await create_user_with_validation(async_session, "update@example.com", "Password123!")
+        user = await create_user_with_validation(
+            async_session, "update@example.com", "Password123!"
+        )
         user.email = "updated@example.com"
         await async_session.commit()
         found = await get_user_by_id(async_session, user.id)
@@ -150,7 +157,9 @@ class TestUserRepository:
 
     @pytest.mark.asyncio
     async def test_update_user_invalid(self, async_session):
-        user = await create_user_with_validation(async_session, "updateinv@example.com", "Password123!")
+        user = await create_user_with_validation(
+            async_session, "updateinv@example.com", "Password123!"
+        )
         user.email = None  # type: ignore
         with pytest.raises(Exception):
             await async_session.commit()
@@ -158,7 +167,9 @@ class TestUserRepository:
 
     @pytest.mark.asyncio
     async def test_delete_user(self, async_session):
-        user = await create_user_with_validation(async_session, "delme@example.com", "Password123!")
+        user = await create_user_with_validation(
+            async_session, "delme@example.com", "Password123!"
+        )
         await async_session.delete(user)
         await async_session.commit()
         found = await get_user_by_id(async_session, user.id)
@@ -166,7 +177,9 @@ class TestUserRepository:
 
     @pytest.mark.asyncio
     async def test_user_profile_fields_and_preferences(self, async_session):
-        user = await create_user_with_validation(async_session, "profile@example.com", "Password123!")
+        user = await create_user_with_validation(
+            async_session, "profile@example.com", "Password123!"
+        )
         user.profile_fields = {"bio": "Hello", "location": "World"}
         user.preferences = {"theme": "dark"}
         await async_session.commit()
@@ -176,7 +189,9 @@ class TestUserRepository:
 
     @pytest.mark.asyncio
     async def test_user_file_relationship(self, async_session):
-        user = await create_user_with_validation(async_session, "fileuser@example.com", "Password123!")
+        user = await create_user_with_validation(
+            async_session, "fileuser@example.com", "Password123!"
+        )
         file = File(filename="relfile.txt", content_type="text/plain", user_id=user.id)
         async_session.add(file)
         await async_session.commit()
@@ -187,7 +202,9 @@ class TestUserRepository:
     async def test_bulk_create_and_delete_users(self, async_session):
         users = []
         for i in range(5):
-            user = await create_user_with_validation(async_session, f"bulkuser{i}@ex.com", "Password123!")
+            user = await create_user_with_validation(
+                async_session, f"bulkuser{i}@ex.com", "Password123!"
+            )
             users.append(user)
         await async_session.commit()
         for u in users:

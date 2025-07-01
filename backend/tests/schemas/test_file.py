@@ -1,10 +1,10 @@
 from datetime import UTC, datetime
 
 import pytest
-from tests.test_templates import ModelUnitTestTemplate
 from pydantic import ValidationError
 
 from src.schemas.file import FileSchema
+from tests.test_templates import ModelUnitTestTemplate
 
 
 class TestFileSchema(ModelUnitTestTemplate):

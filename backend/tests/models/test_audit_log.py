@@ -1,6 +1,7 @@
 import pytest
-from tests.test_templates import DatabaseTestTemplate
 from sqlalchemy import text
+
+from tests.test_templates import DatabaseTestTemplate
 
 
 @pytest.mark.asyncio

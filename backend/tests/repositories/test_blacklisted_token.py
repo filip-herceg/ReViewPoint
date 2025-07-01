@@ -3,6 +3,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 from sqlalchemy.exc import IntegrityError
+
 from src.repositories.blacklisted_token import blacklist_token, is_token_blacklisted
 
 
@@ -24,9 +25,7 @@ class TestBlacklistedTokenRepository:
     @pytest.mark.asyncio
     async def test_is_token_blacklisted_not_found(self, async_session):
         assert (
-            await is_token_blacklisted(
-                async_session, f"notfoundjti-{uuid.uuid4()}"
-            )
+            await is_token_blacklisted(async_session, f"notfoundjti-{uuid.uuid4()}")
             is False
         )
 

@@ -2,10 +2,10 @@ import statistics
 import time
 
 import pytest
-from tests.test_templates import DatabaseTestTemplate
 from sqlalchemy import select
 
 from src.models.user import User
+from tests.test_templates import DatabaseTestTemplate
 
 
 @pytest.mark.performance

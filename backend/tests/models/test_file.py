@@ -1,12 +1,12 @@
 from datetime import datetime
 
 import pytest
-from tests.test_templates import AsyncModelTestTemplate
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from src.models.file import File
 from src.models.user import User
+from tests.test_templates import AsyncModelTestTemplate
 
 
 class TestFileModel(AsyncModelTestTemplate):

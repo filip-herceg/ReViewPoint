@@ -1,10 +1,10 @@
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from tests.test_templates import AsyncModelTestTemplate, ModelUnitTestTemplate
 from sqlalchemy.exc import IntegrityError
 
 from src.models.used_password_reset_token import UsedPasswordResetToken
+from tests.test_templates import AsyncModelTestTemplate, ModelUnitTestTemplate
 
 
 class TestUsedPasswordResetTokenUnit(ModelUnitTestTemplate):

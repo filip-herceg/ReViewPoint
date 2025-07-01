@@ -149,7 +149,9 @@ async def register(
         {"email": data.email},
         action="registration",
     )
-    logger.info(f"User registration attempt: {data.email}, name: {getattr(data, 'name', None)}")
+    logger.info(
+        f"User registration attempt: {data.email}, name: {getattr(data, 'name', None)}"
+    )
     logger.debug(f"Registration payload: {data}")
     try:
         user = await user_service.register_user(session, data.model_dump())
@@ -172,6 +174,7 @@ async def register(
         )
     except Exception as e:
         import traceback
+
         tb = traceback.format_exc()
         logger.error(f"Registration failed for {data.email}: {e}\nTraceback: {tb}")
         http_error(

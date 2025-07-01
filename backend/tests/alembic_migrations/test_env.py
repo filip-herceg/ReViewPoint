@@ -11,7 +11,10 @@ from src.alembic_migrations import env
 from tests.test_templates import AlembicEnvTestTemplate
 
 # TEST_DB_URL for legacy tests (use the test_db_url fixture)
-TEST_DB_URL = os.environ.get("REVIEWPOINT_DB_URL", "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint")
+TEST_DB_URL = os.environ.get(
+    "REVIEWPOINT_DB_URL",
+    "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint",
+)
 
 
 class TestAlembicEnv(AlembicEnvTestTemplate):
@@ -40,9 +43,7 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
     def test_run_migrations_offline_success(
         self, monkeypatch: pytest.MonkeyPatch, test_db_url
     ) -> None:
-        fake_context = self._make_context(
-            url=test_db_url
-        )
+        fake_context = self._make_context(url=test_db_url)
         self.patch_alembic_context(monkeypatch, fake_context)
         monkeypatch.setattr("logging.config.fileConfig", lambda *a, **k: None)
         env.run_migrations_offline()
@@ -60,9 +61,7 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
     def test_run_migrations_online_success(
         self, monkeypatch: pytest.MonkeyPatch, test_db_url
     ) -> None:
-        fake_context = self._make_context(
-            url=test_db_url
-        )
+        fake_context = self._make_context(url=test_db_url)
         self.patch_alembic_context(monkeypatch, fake_context)
         monkeypatch.setattr("logging.config.fileConfig", lambda *a, **k: None)
 
@@ -424,10 +423,16 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
 
         def fake_engine_from_config(*a, **k):
             class FakeConnection:
-                def __enter__(self): return self
-                def __exit__(self, exc_type, exc_val, exc_tb): return False
+                def __enter__(self):
+                    return self
+
+                def __exit__(self, exc_type, exc_val, exc_tb):
+                    return False
+
             class FakeEngine:
-                def connect(self): return FakeConnection()
+                def connect(self):
+                    return FakeConnection()
+
             return FakeEngine()
 
         env_mod.run_migrations_online(fake_engine_from_config)

@@ -1,8 +1,8 @@
 import pytest
-from tests.test_templates import AuthEndpointTestTemplate
 from httpx import ASGITransport, AsyncClient
 from pydantic import ValidationError
 
+from src.api.deps import get_async_refresh_access_token
 from src.schemas.auth import (
     AuthResponse,
     MessageResponse,
@@ -11,8 +11,12 @@ from src.schemas.auth import (
     UserLoginRequest,
     UserRegisterRequest,
 )
-from src.api.deps import get_async_refresh_access_token
-from src.services.user import RefreshTokenBlacklistedError, RefreshTokenRateLimitError, RefreshTokenError
+from src.services.user import (
+    RefreshTokenBlacklistedError,
+    RefreshTokenError,
+    RefreshTokenRateLimitError,
+)
+from tests.test_templates import AuthEndpointTestTemplate
 
 
 class TestAuthSchemas:

@@ -68,7 +68,9 @@ class TestUserProfileSchema(ModelUnitTestTemplate):
         self.assert_in("üñîçødë", profile.email)
         self.assert_is_true(profile.name and "测试用户" in profile.name)
         self.assert_is_true(profile.bio and "💡" in profile.bio)
-        self.assert_is_true(profile.avatar_url and profile.avatar_url.endswith("😀.png"))
+        self.assert_is_true(
+            profile.avatar_url and profile.avatar_url.endswith("😀.png")
+        )
 
     def test_serialization(self):
         now = datetime.now(UTC)
@@ -254,6 +256,7 @@ class TestUserPreferencesUpdateSchema(ModelUnitTestTemplate):
     def test_non_string_keys_and_values(self):
         import pydantic
         import pytest
+
         with pytest.raises(pydantic.ValidationError):
             UserPreferencesUpdate(preferences={1: "one", "two": 2})
         prefs = UserPreferencesUpdate(preferences={"two": 2})

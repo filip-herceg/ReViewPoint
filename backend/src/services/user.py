@@ -142,7 +142,11 @@ async def authenticate_user(
             "sub": str(user.id),
             "user_id": str(user.id),
             "email": user.email,
-            "role": user.role if hasattr(user, "role") else ("admin" if getattr(user, "is_admin", False) else "user"),
+            "role": (
+                user.role
+                if hasattr(user, "role")
+                else ("admin" if getattr(user, "is_admin", False) else "user")
+            ),
         }
     )
     jti = str(uuid.uuid4())
@@ -152,7 +156,11 @@ async def authenticate_user(
             "sub": str(user.id),
             "user_id": str(user.id),
             "email": user.email,
-            "role": user.role if hasattr(user, "role") else ("admin" if getattr(user, "is_admin", False) else "user"),
+            "role": (
+                user.role
+                if hasattr(user, "role")
+                else ("admin" if getattr(user, "is_admin", False) else "user")
+            ),
             "jti": jti,
             "exp": exp,
         }

@@ -1,6 +1,8 @@
-import pytest
 from datetime import UTC, datetime, timedelta
+
+import pytest
 from sqlalchemy.exc import IntegrityError
+
 from src.repositories.file import (
     create_file,
     delete_file,
@@ -13,9 +15,7 @@ from src.utils.errors import ValidationError
 class TestFileRepository:
     @pytest.mark.asyncio
     async def test_create_file_success(self, async_session):
-        file = await create_file(
-            async_session, "test.txt", "text/plain", user_id=1
-        )
+        file = await create_file(async_session, "test.txt", "text/plain", user_id=1)
         assert file.filename == "test.txt"
         assert file.content_type == "text/plain"
         assert file.user_id == 1
@@ -78,17 +78,13 @@ class TestFileRepository:
     @pytest.mark.asyncio
     async def test_create_file_missing_user(self, async_session):
         with pytest.raises(IntegrityError):
-            await create_file(
-                async_session, "nouser.txt", "text/plain", user_id=999999
-            )
+            await create_file(async_session, "nouser.txt", "text/plain", user_id=999999)
         await async_session.rollback()
 
     @pytest.mark.asyncio
     async def test_bulk_create_and_delete(self, async_session):
         files = [
-            await create_file(
-                async_session, f"bulk-{i}.txt", "text/plain", user_id=7
-            )
+            await create_file(async_session, f"bulk-{i}.txt", "text/plain", user_id=7)
             for i in range(5)
         ]
         for f in files:
@@ -144,6 +140,7 @@ class TestFileRepository:
             await create_file(
                 async_session, "rollbackfile.txt", "text/plain", user_id=10
             )
+
         trans = await async_session.begin()
         try:
             await op()
@@ -182,13 +179,9 @@ class TestFileRepository:
     @pytest.mark.asyncio
     async def test_invalid_user_id(self, async_session):
         with pytest.raises(Exception):
-            await create_file(
-                async_session, "baduser.txt", "text/plain", user_id=-1
-            )
+            await create_file(async_session, "baduser.txt", "text/plain", user_id=-1)
         with pytest.raises(Exception):
-            await create_file(
-                async_session, "baduser2.txt", "text/plain", user_id=0
-            )
+            await create_file(async_session, "baduser2.txt", "text/plain", user_id=0)
         with pytest.raises(Exception):
             await create_file(async_session, "baduser3.txt", "text/plain", user_id=None)  # type: ignore
 
@@ -214,9 +207,7 @@ class TestFileRepository:
 
     @pytest.mark.asyncio
     async def test_rollback_after_integrity_error(self, async_session):
-        await create_file(
-            async_session, "rollbackdup.txt", "text/plain", user_id=15
-        )
+        await create_file(async_session, "rollbackdup.txt", "text/plain", user_id=15)
         with pytest.raises(IntegrityError):
             await create_file(
                 async_session, "rollbackdup.txt", "text/plain", user_id=15

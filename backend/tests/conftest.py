@@ -14,7 +14,7 @@ This policy ensures robust, maintainable, and explicit test DB management for al
 """
 
 import os
-import sys
+import uuid
 from collections.abc import AsyncGenerator, Callable, Generator, Iterator
 from pathlib import Path
 from typing import Any
@@ -52,16 +52,24 @@ def postgres_container():
             db_url = postgres.get_connection_url()
             # Convert sync driver to asyncpg for SQLAlchemy async engine
             if db_url.startswith("postgresql://"):
-                async_db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+                async_db_url = db_url.replace(
+                    "postgresql://", "postgresql+asyncpg://", 1
+                )
             elif db_url.startswith("postgresql+psycopg2://"):
-                async_db_url = db_url.replace("postgresql+psycopg2://", "postgresql+asyncpg://", 1)
+                async_db_url = db_url.replace(
+                    "postgresql+psycopg2://", "postgresql+asyncpg://", 1
+                )
             else:
                 async_db_url = db_url
-            logger.info(f"[testcontainers] Started PostgreSQL container: {async_db_url}")
+            logger.info(
+                f"[testcontainers] Started PostgreSQL container: {async_db_url}"
+            )
             os.environ["REVIEWPOINT_DB_URL"] = async_db_url
             yield async_db_url
             os.environ.pop("REVIEWPOINT_DB_URL", None)
-            logger.info("[testcontainers] PostgreSQL container stopped and env cleaned up.")
+            logger.info(
+                "[testcontainers] PostgreSQL container stopped and env cleaned up."
+            )
     except Exception as e:
         logger.error(f"[testcontainers] Failed to start PostgreSQL container: {e}")
         raise RuntimeError(
@@ -92,9 +100,6 @@ os.environ["REVIEWPOINT_JWT_SECRET_KEY"] = (
 )
 
 import asyncio
-import uuid
-
-import pytest
 
 
 # 1. Environment setup (env vars, DB cleanup, DB/table creation)
@@ -164,7 +169,9 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
 
 # 3. Database/session fixtures
 @pytest_asyncio.fixture(scope="function")
-async def async_engine(postgres_container) -> AsyncGenerator[AsyncEngine, None]:
+async def async_engine(
+    postgres_container: PostgresContainer,
+) -> AsyncGenerator[AsyncEngine, None]:
     """
     Provide a SQLAlchemy async engine for the test session, using the testcontainers DB URL.
     Depends on the postgres_container fixture to ensure the container is running.
@@ -330,7 +337,7 @@ def patch_loguru_remove(monkeypatch: Any) -> Generator[None, None, None]:
 
 @pytest.fixture
 def override_env_vars(
-    monkeypatch: pytest.MonkeyPatch, set_required_env_vars
+    monkeypatch: pytest.MonkeyPatch, set_required_env_vars: Callable[[], None]
 ) -> Callable[[dict[str, str]], None]:
     """
     Helper fixture to override environment variables for a single test.
@@ -339,7 +346,7 @@ def override_env_vars(
     """
 
     def _override(vars: dict[str, str]) -> None:
-        set_required_env_vars  # Ensure defaults are set first
+        set_required_env_vars()  # Ensure defaults are set first
         for k, v in vars.items():
             monkeypatch.setenv(k, v)
 
@@ -347,57 +354,50 @@ def override_env_vars(
 
 
 # 8. Helper functions (not fixtures)
-def get_auth_header(
-    client: TestClient,
-    email: str | None = None,
-    password: str = "TestPassword123!",
-) -> dict[str, str]:
+def wait_for_condition(
+    condition_fn: Callable[[], Any],
+    timeout: float = 2.0,
+    interval: float = 0.05,
+) -> Any:
     """
-    Register a new user (or login if already exists) and return an auth header for API requests.
-    Promotes the user to admin if registration is successful.
-    Returns a dict with Authorization and X-API-Key headers.
+    Polls the given condition_fn until it returns a truthy value or timeout is reached.
+    Returns the value from condition_fn if successful, else None.
     """
-    if email is None:
-        email = f"testuser_{uuid.uuid4().hex[:8]}@example.com"
-    register_data = {"email": email, "password": password, "name": "Test User"}
-    register_resp = client.post(
-        "/api/v1/auth/register", json=register_data, headers={"X-API-Key": "testkey"}
-    )
-    if register_resp.status_code == 201:
-        token = register_resp.json().get("access_token")
-        try:
-            promote_resp = client.post(
-                "/api/v1/users/promote-admin",
-                json={"email": email},
-                headers={"Authorization": f"Bearer {token}", "X-API-Key": "testkey"},
-            )
-            if promote_resp.status_code == 200:
-                import time
+    import time
 
-                time.sleep(0.1)
-                login_data = {"email": email, "password": password}
-                login_resp = client.post(
-                    "/api/v1/auth/login",
-                    json=login_data,
-                    headers={"X-API-Key": "testkey"},
-                )
-                if login_resp.status_code == 200:
-                    token = login_resp.json().get("access_token")
-                return {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
-        except Exception:
-            pass
-        return {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
-    else:
-        login_data = {"email": email, "password": password}
-        login_resp = client.post(
-            "/api/v1/auth/login", json=login_data, headers={"X-API-Key": "testkey"}
+    start = time.time()
+    while time.time() - start < timeout:
+        result = condition_fn()
+        if result:
+            return result
+        time.sleep(interval)
+    return None
+
+
+def wait_for_admin_promotion(
+    client: TestClient,
+    email: str,
+    password: str,
+    timeout: float = 2.0,
+    interval: float = 0.05,
+) -> str | None:
+    """
+    Polls the login endpoint until the user can log in as admin, or timeout is reached.
+    Returns the access token if successful, else None.
+    """
+    login_data = {"email": email, "password": password}
+
+    def try_login():
+        resp = client.post(
+            "/api/v1/auth/login",
+            json=login_data,
+            headers={"X-API-Key": "testkey"},
         )
-        if login_resp.status_code == 200:
-            token = login_resp.json().get("access_token")
-            return {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
-        payload = {"sub": email}
-        token = create_access_token(payload)
-        return {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
+        if resp.status_code == 200:
+            return resp.json().get("access_token")
+        return None
+
+    return wait_for_condition(try_login, timeout=timeout, interval=interval)
 
 
 import pathlib
@@ -410,7 +410,7 @@ ALLOWED_ENV_OVERRIDE_FILES = {
 
 
 @pytest.hookimpl(tryfirst=True)
-def pytest_collection_finish(session):
+def pytest_collection_finish(session: pytest.Session):
     """
     Enforce that no test file (except allowed exceptions) sets environment variables or DB URLs directly.
     """
@@ -434,11 +434,8 @@ def pytest_collection_finish(session):
             pass
 
 
-import pytest_asyncio
-
-
 @pytest_asyncio.fixture(scope="session", autouse=True)
-async def create_and_drop_tables(postgres_container):
+async def create_and_drop_tables(postgres_container: PostgresContainer):
     """
     Automatically create all tables before the test session and drop them after.
     Ensures a clean PostgreSQL test database for every test run.
@@ -463,3 +460,63 @@ def test_db_url() -> str:
     Returns the test database URL used for all tests (from env var REVIEWPOINT_DB_URL).
     """
     return os.environ["REVIEWPOINT_DB_URL"]
+
+
+def get_auth_header(
+    client: TestClient,
+    email: str | None = None,
+    password: str = "TestPassword123!",
+) -> dict[str, str]:
+    """
+    Register a new user (or login if already exists) and return an auth header for API requests.
+    Promotes the user to admin if registration is successful.
+    Returns a dict with Authorization and X-API-Key headers.
+    Uses the provided TestClient for all requests for consistency and speed.
+    Raises RuntimeError if admin promotion fails unexpectedly.
+    """
+    if email is None:
+        email = f"testuser_{uuid.uuid4().hex[:8]}@example.com"
+    register_data = {"email": email, "password": password, "name": "Test User"}
+    register_resp = client.post(
+        "/api/v1/auth/register", json=register_data, headers={"X-API-Key": "testkey"}
+    )
+    if register_resp.status_code == 201:
+        token = register_resp.json().get("access_token")
+        try:
+            promote_resp = client.post(
+                "/api/v1/users/promote-admin",
+                json={"email": email},
+                headers={"Authorization": f"Bearer {token}", "X-API-Key": "testkey"},
+            )
+            if promote_resp.status_code == 200:
+                # Wait for admin promotion to take effect, polling login endpoint
+                new_token = wait_for_admin_promotion(client, email, password)
+                if new_token:
+                    token = new_token
+                    return {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
+                else:
+                    logger.error(
+                        f"Admin promotion for {email} did not take effect within timeout."
+                    )
+                    raise RuntimeError(
+                        f"Admin promotion for {email} did not take effect within timeout."
+                    )
+        except Exception as exc:
+            logger.error(f"Exception during admin promotion for {email}: {exc}")
+            raise
+        return {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
+    else:
+        login_data = {"email": email, "password": password}
+        try:
+            login_resp = client.post(
+                "/api/v1/auth/login", json=login_data, headers={"X-API-Key": "testkey"}
+            )
+            if login_resp.status_code == 200:
+                token = login_resp.json().get("access_token")
+                return {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
+        except Exception as exc:
+            logger.error(f"Exception during login for {email}: {exc}")
+            raise
+        payload = {"sub": email}
+        token = create_access_token(payload)
+        return {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}

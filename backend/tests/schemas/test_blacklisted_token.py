@@ -1,10 +1,10 @@
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from tests.test_templates import ModelUnitTestTemplate
 from pydantic import ValidationError
 
 from src.schemas.blacklisted_token import BlacklistedTokenSchema
+from tests.test_templates import ModelUnitTestTemplate
 
 
 class TestBlacklistedTokenSchema(ModelUnitTestTemplate):

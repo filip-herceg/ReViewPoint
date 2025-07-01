@@ -57,9 +57,7 @@ async def create_user_with_validation(
     """Create a user with validation and error handling."""
     import traceback
 
-    logging.debug(
-        f"create_user_with_validation called with email={email}, name={name}"
-    )
+    logging.debug(f"create_user_with_validation called with email={email}, name={name}")
     if not validate_email(email):
         logging.warning(f"Invalid email format: {email}")
         raise ValidationError("Invalid email format.")
