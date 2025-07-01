@@ -145,11 +145,12 @@ class TestUploads(ExportEndpointTestTemplate):
         headers = self.get_auth_header(client)
         import datetime
 
-        now = datetime.datetime.now(datetime.UTC).isoformat()
+        # Use naive datetime (no tzinfo) to match backend expectation
+        now = datetime.datetime.now().isoformat(timespec="microseconds")
         resp = client.get(f"{UPLOAD_ENDPOINT}?created_before={now}", headers=headers)
         self.assert_status(resp, 200)
         resp = client.get(
-            f"{UPLOAD_ENDPOINT}?created_after=2000-01-01T00:00:00Z", headers=headers
+            f"{UPLOAD_ENDPOINT}?created_after=2000-01-01T00:00:00", headers=headers
         )
         self.assert_status(resp, 200)
 
