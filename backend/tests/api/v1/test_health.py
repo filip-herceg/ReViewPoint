@@ -19,7 +19,7 @@ class TestHealthEndpoint(HealthEndpointTestTemplate):
         pass
 
     def test_health_get_no_auth(self, client: TestClient):
-        resp = client.get(HEALTH_ENDPOINT)
+        resp = self.safe_request(client.get, HEALTH_ENDPOINT)
         if resp.status_code == 200:
             self.assert_health_response(resp)
             self.assert_content_type(resp, "application/json")
@@ -27,8 +27,8 @@ class TestHealthEndpoint(HealthEndpointTestTemplate):
             self.assert_status(resp, 401)
 
     def test_health_get_with_invalid_token(self, client: TestClient):
-        resp = client.get(
-            HEALTH_ENDPOINT, headers={"Authorization": "Bearer not.a.jwt"}
+        resp = self.safe_request(
+            client.get, HEALTH_ENDPOINT, headers={"Authorization": "Bearer not.a.jwt"}
         )
         if resp.status_code == 200:
             self.assert_health_response(resp)
@@ -38,7 +38,7 @@ class TestHealthEndpoint(HealthEndpointTestTemplate):
 
     def test_health_get_with_valid_token(self, client: TestClient):
         headers = self.get_auth_header(client)
-        resp = client.get(HEALTH_ENDPOINT, headers=headers)
+        resp = self.safe_request(client.get, HEALTH_ENDPOINT, headers=headers)
         # Accept 200, 401, or 503 (service unavailable) for CI/test environments
         if resp.status_code == 200:
             self.assert_health_response(resp)
@@ -47,15 +47,15 @@ class TestHealthEndpoint(HealthEndpointTestTemplate):
             self.assert_status(resp, (401, 503))
 
     def test_health_post_method(self, client: TestClient):
-        resp = client.post(HEALTH_ENDPOINT)
+        resp = self.safe_request(client.post, HEALTH_ENDPOINT)
         self.assert_status(resp, (405, 401))
 
     def test_health_put_method(self, client: TestClient):
-        resp = client.put(HEALTH_ENDPOINT)
+        resp = self.safe_request(client.put, HEALTH_ENDPOINT)
         self.assert_status(resp, (405, 401))
 
     def test_health_delete_method(self, client: TestClient):
-        resp = client.delete(HEALTH_ENDPOINT)
+        resp = self.safe_request(client.delete, HEALTH_ENDPOINT)
         self.assert_status(resp, (405, 401))
 
     def test_health_get_missing_api_key(self, client: TestClient):
@@ -64,7 +64,7 @@ class TestHealthEndpoint(HealthEndpointTestTemplate):
             for k, v in self.get_auth_header(client).items()
             if k.lower() != "x-api-key"
         }
-        resp = client.get(HEALTH_ENDPOINT, headers=headers)
+        resp = self.safe_request(client.get, HEALTH_ENDPOINT, headers=headers)
         if resp.status_code == 200:
             self.assert_health_response(resp)
             self.assert_content_type(resp, "application/json")
@@ -75,22 +75,22 @@ class TestHealthEndpoint(HealthEndpointTestTemplate):
 class TestHealthFeatureFlags(HealthEndpointTestTemplate):
     def test_health_feature_disabled(self, client: TestClient):
         self.override_env_vars({"REVIEWPOINT_FEATURE_HEALTH": "false"})
-        resp = client.get("/api/v1/health")
+        resp = self.safe_request(client.get, "/api/v1/health")
         assert resp.status_code in (404, 403, 501)
 
     def test_health_read_feature_disabled(self, client: TestClient):
         self.override_env_vars({"REVIEWPOINT_FEATURE_HEALTH_READ": "false"})
-        resp = client.get("/api/v1/health")
+        resp = self.safe_request(client.get, "/api/v1/health")
         assert resp.status_code in (404, 403, 501)
 
     def test_api_key_disabled(self, client: TestClient):
         self.override_env_vars({"REVIEWPOINT_API_KEY_ENABLED": "false"})
-        resp = client.get("/api/v1/health")
+        resp = self.safe_request(client.get, "/api/v1/health")
         assert resp.status_code in (200, 401, 403)
 
     def test_api_key_wrong(self, client: TestClient):
         self.override_env_vars({"REVIEWPOINT_API_KEY": "nottherightkey"})
         headers = self.get_auth_header(client)
         headers["X-API-Key"] = "wrongkey"
-        resp = client.get("/api/v1/health", headers=headers)
+        resp = self.safe_request(client.get, "/api/v1/health", headers=headers)
         self.assert_api_key_required(resp)

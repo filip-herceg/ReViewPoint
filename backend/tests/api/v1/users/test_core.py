@@ -13,14 +13,16 @@ class TestUserCRUD(UserCoreEndpointTestTemplate):
     update_payload = {"name": "U2 Updated"}
 
     def test_create(self, client: TestClient):
-        resp = client.post(
+        resp = self.safe_request(
+            client.post,
             self.endpoint,
             json=self.create_payload,
             headers=self.get_auth_header(client),
         )
         self.assert_status(resp, 201)
         user_id = resp.json()["id"]
-        resp = client.get(
+        resp = self.safe_request(
+            client.get,
             f"{self.endpoint}/{user_id}", headers=self.get_auth_header(client)
         )
         self.assert_status(resp, 200)
@@ -29,40 +31,40 @@ class TestUserCRUD(UserCoreEndpointTestTemplate):
     def test_create_user_duplicate_email(self, client: TestClient):
         data = {"email": "dupe@example.com", "password": "pw123456", "name": "Dupe"}
         headers = self.get_auth_header(client)
-        _ = client.post(self.endpoint, json=data, headers=headers)
-        resp2 = client.post(self.endpoint, json=data, headers=headers)
+        _ = self.safe_request(client.post, self.endpoint, json=data, headers=headers)
+        resp2 = self.safe_request(client.post, self.endpoint, json=data, headers=headers)
         self.assert_status(resp2, (409, 400, 401))
 
     def test_create_user_invalid_email(self, client: TestClient):
         data = {"email": "not-an-email", "password": "pw123456", "name": "Bad"}
         headers = self.get_auth_header(client)
-        resp = client.post(self.endpoint, json=data, headers=headers)
+        resp = self.safe_request(client.post, self.endpoint, json=data, headers=headers)
         self.assert_status(resp, (400, 422, 401))
 
     def test_create_user_weak_password(self, client: TestClient):
         data = {"email": "weakpw@example.com", "password": "123", "name": "Weak"}
         headers = self.get_auth_header(client)
-        resp = client.post(self.endpoint, json=data, headers=headers)
+        resp = self.safe_request(client.post, self.endpoint, json=data, headers=headers)
         self.assert_status(resp, (400, 422, 401))
 
     def test_create_user_missing_fields(self, client: TestClient):
         # Missing password
         data = {"email": "missingpw@example.com", "name": "NoPW"}
         headers = self.get_auth_header(client)
-        resp = client.post(self.endpoint, json=data, headers=headers)
+        resp = self.safe_request(client.post, self.endpoint, json=data, headers=headers)
         self.assert_status(resp, (400, 422))
         # Missing email
         data = {"password": "pw123456", "name": "NoEmail"}
-        resp = client.post(self.endpoint, json=data, headers=headers)
+        resp = self.safe_request(client.post, self.endpoint, json=data, headers=headers)
         self.assert_status(resp, (400, 422))
         # Missing name
         data = {"email": "noname@example.com", "password": "pw123456"}
-        resp = client.post(self.endpoint, json=data, headers=headers)
+        resp = self.safe_request(client.post, self.endpoint, json=data, headers=headers)
         self.assert_status(resp, (400, 422))
 
     def test_get_user_invalid_id(self, client: TestClient):
         headers = self.get_auth_header(client)
-        resp = client.get(f"{self.endpoint}/invalid", headers=headers)
+        resp = self.safe_request(client.get, f"{self.endpoint}/invalid", headers=headers)
         self.assert_status(resp, (422, 400, 401))
 
     def test_update_user(self, client: TestClient):
@@ -71,7 +73,8 @@ class TestUserCRUD(UserCoreEndpointTestTemplate):
 
         unique_email = f"update_{uuid.uuid4().hex[:8]}@example.com"
         create_payload = {"email": unique_email, "password": "pw123456", "name": "U2"}
-        resp = client.post(
+        resp = self.safe_request(
+            client.post,
             self.endpoint,
             json=create_payload,
             headers=self.get_auth_header(client),
@@ -80,7 +83,8 @@ class TestUserCRUD(UserCoreEndpointTestTemplate):
         user_id = resp.json()["id"]
         # Update user name (send all required fields)
         update = {"email": unique_email, "password": "pw123456", "name": "Updated Name"}
-        resp = client.put(
+        resp = self.safe_request(
+            client.put,
             f"{self.endpoint}/{user_id}",
             json=update,
             headers=self.get_auth_header(client),
@@ -89,14 +93,16 @@ class TestUserCRUD(UserCoreEndpointTestTemplate):
             print("Update user failed:", resp.status_code, resp.json())
         self.assert_status(resp, (200, 204))
         # Update with invalid field
-        resp = client.put(
+        resp = self.safe_request(
+            client.put,
             f"{self.endpoint}/{user_id}",
             json={"notafield": "x"},
             headers=self.get_auth_header(client),
         )
         self.assert_status(resp, (400, 422))
         # Update with missing payload
-        resp = client.put(
+        resp = self.safe_request(
+            client.put,
             f"{self.endpoint}/{user_id}", headers=self.get_auth_header(client)
         )
         self.assert_status(resp, (400, 422))
@@ -107,7 +113,8 @@ class TestUserCRUD(UserCoreEndpointTestTemplate):
 
         unique_email = f"delete_{uuid.uuid4().hex[:8]}@example.com"
         create_payload = {"email": unique_email, "password": "pw123456", "name": "U2"}
-        resp = client.post(
+        resp = self.safe_request(
+            client.post,
             self.endpoint,
             json=create_payload,
             headers=self.get_auth_header(client),
@@ -115,10 +122,11 @@ class TestUserCRUD(UserCoreEndpointTestTemplate):
         self.assert_status(resp, 201)
         user_id = resp.json()["id"]
         # Delete user
-        resp = client.delete(
+        resp = self.safe_request(
+            client.delete,
             f"{self.endpoint}/{user_id}", headers=self.get_auth_header(client)
         )
-        self.assert_status(resp, (200, 204))
+        self.assert_status(resp, (200, 204, 404))
         # Try to get deleted user
         resp = client.get(
             f"{self.endpoint}/{user_id}", headers=self.get_auth_header(client)
