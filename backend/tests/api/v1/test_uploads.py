@@ -146,7 +146,7 @@ class TestUploads(ExportEndpointTestTemplate):
         import datetime
 
         # Use naive datetime (no tzinfo) to match backend expectation
-        now = datetime.datetime.now().isoformat(timespec="microseconds")
+        now = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None).isoformat(timespec="microseconds")
         resp = client.get(f"{UPLOAD_ENDPOINT}?created_before={now}", headers=headers)
         self.assert_status(resp, 200)
         resp = client.get(
