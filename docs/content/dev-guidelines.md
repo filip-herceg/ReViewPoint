@@ -96,6 +96,62 @@ See comments in `backend/.env.template` for descriptions of each variable.
 
 ---
 
+## Testing & Logging
+
+### Running Tests
+
+ReViewPoint provides multiple testing modes for different scenarios:
+
+```bash
+# Default development testing (recommended)
+hatch run fast:test                    # All tests with fast SQLite environment
+
+# Quick feedback during TDD
+hatch run fast:fast-only              # Skip slow tests for maximum speed
+
+# Production validation
+hatch run pytest                     # Full PostgreSQL integration tests
+```
+
+### Test Logging Configuration
+
+Configure test log levels to match your debugging needs:
+
+```bash
+# Show available log levels and current configuration
+python set-test-log-level.py
+.\set-log-level.ps1                   # Windows PowerShell
+
+# Set log level for debugging
+python set-test-log-level.py DEBUG   # Detailed SQL queries and internal state
+python set-test-log-level.py INFO    # Default - general test progress
+python set-test-log-level.py WARNING # Minimal output for CI/CD
+```
+
+**Available Log Levels:**
+
+- **DEBUG**: Detailed debugging (SQL queries, internal state)
+- **INFO**: General information (default for development)  
+- **WARNING**: Minimal output (recommended for CI/CD)
+- **ERROR**: Only error messages
+- **CRITICAL**: Only critical errors
+
+**Environment Variable Method:**
+
+```powershell
+# PowerShell
+$env:REVIEWPOINT_TEST_LOG_LEVEL = 'DEBUG'
+hatch run fast:test
+
+# Bash/Linux  
+export REVIEWPOINT_TEST_LOG_LEVEL=DEBUG
+hatch run fast:test
+```
+
+📖 **See [backend/TESTING.md](../backend/TESTING.md) and [backend/TEST_LOGGING.md](../backend/TEST_LOGGING.md) for complete testing documentation.**
+
+---
+
 ## More Resources
 
 - [Setup Guide](setup.md)

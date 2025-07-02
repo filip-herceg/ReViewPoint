@@ -12,6 +12,8 @@ ReViewPoint backend provides multiple testing modes optimized for different scen
 
 **🎯 For most development work, use `hatch run fast:test` - it gives you complete test coverage with fast database setup.**
 
+**🔧 Need different log levels?** Use `python set-test-log-level.py DEBUG` for detailed output or `WARNING` for minimal noise. See [Logging Configuration](#logging-configuration) below.
+
 ## 🚀 Quick Start
 
 ### TL;DR - For Developers
@@ -317,3 +319,71 @@ The old scattered files have been organized:
    - **For maximum speed**: Use `hatch run fast:fast-only` (old behavior)
 2. Import templates from new location: `from testing.fast.templates import FastAPITestCase`
 3. Update CI/CD scripts if needed to use the new command structure
+
+## Logging Configuration
+
+### Overview
+
+Test logging is now configurable to help with debugging and reduce noise during development. You can easily switch between different log levels depending on your needs.
+
+### Available Log Levels
+
+| Level    | What it shows | When to use |
+|----------|---------------|-------------|
+| **CRITICAL** | Only critical errors (application crashes) | Production monitoring |
+| **ERROR**    | Error messages (failed operations, exceptions) | CI/CD pipelines |
+| **WARNING**  | Warning messages (deprecated features, recoverable issues) | Minimal output needed |
+| **INFO**     | General information (test progress, basic operations) | **Default development** |
+| **DEBUG**    | Detailed debugging information (SQL queries, internal state) | Troubleshooting issues |
+
+### Quick Commands
+
+```bash
+# Show current log level and available options
+python set-test-log-level.py
+.\set-log-level.ps1                    # Windows PowerShell
+
+# Set to DEBUG for detailed troubleshooting
+python set-test-log-level.py DEBUG
+.\set-log-level.ps1 DEBUG              # Windows PowerShell
+
+# Set to WARNING for minimal output
+python set-test-log-level.py WARNING
+.\set-log-level.ps1 WARNING            # Windows PowerShell
+
+# Run tests with configured level
+python run-fast-tests.py
+hatch run fast:test
+```
+
+### Environment Variable Method
+
+```bash
+# PowerShell
+$env:REVIEWPOINT_TEST_LOG_LEVEL = 'DEBUG'
+python run-fast-tests.py
+
+# Bash/Linux
+export REVIEWPOINT_TEST_LOG_LEVEL=DEBUG
+python run-fast-tests.py
+
+# Inline for single command
+$env:REVIEWPOINT_TEST_LOG_LEVEL='WARNING'; hatch run fast:test
+```
+
+### Hatch Script Shortcuts
+
+```bash
+hatch run test          # Uses configured level (INFO by default)
+hatch run test-debug    # Forces DEBUG level
+hatch run test-quiet    # Forces WARNING level
+```
+
+### Tips for Log Levels
+
+- **Start with INFO**: Good balance of information without overwhelming output
+- **Use DEBUG when stuck**: Shows SQL queries, detailed request/response data
+- **Use WARNING in CI**: Faster runs with only important messages
+- **Check log files**: `tests/test_debug.log` always contains DEBUG information
+
+📖 **See [TEST_LOGGING.md](TEST_LOGGING.md) for complete documentation.**

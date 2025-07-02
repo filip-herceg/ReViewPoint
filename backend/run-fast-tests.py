@@ -35,6 +35,10 @@ def main():
     
     # Set up environment for fast tests
     env = os.environ.copy()
+    
+    # Get log level from environment variable, default to INFO
+    test_log_level = env.get("REVIEWPOINT_TEST_LOG_LEVEL", "INFO")
+    
     env.update({
         "FAST_TESTS": "1",
         "REVIEWPOINT_ENVIRONMENT": "test",
@@ -58,6 +62,7 @@ def main():
             "--disable-warnings",
             "-x",
             "-p", "no:cacheprovider",
+            f"--log-cli-level={test_log_level}",
         ]
         
         # Add --fast flag only if --fast-only was specified

@@ -78,7 +78,12 @@ dependencies = [
   "types-python-jose",
   "testcontainers",
 ]
-env-vars = { PYTHONPATH = "src" }
+env-vars = { PYTHONPATH = "src", REVIEWPOINT_TEST_LOG_LEVEL = "INFO" }
+
+[tool.hatch.envs.default.scripts]
+test = "pytest --log-cli-level={env:REVIEWPOINT_TEST_LOG_LEVEL:INFO} {args}"
+test-debug = "pytest --log-cli-level=DEBUG {args}"
+test-quiet = "pytest --log-cli-level=WARNING {args}"
 
 [tool.hatch.envs.types]
 extra-dependencies = ["mypy>=1.0.0"]
@@ -102,6 +107,7 @@ PYTHONPATH = "src"
 FAST_TESTS = "1"
 REVIEWPOINT_ENVIRONMENT = "test"
 REVIEWPOINT_LOG_LEVEL = "WARNING"
+REVIEWPOINT_TEST_LOG_LEVEL = "INFO"
 REVIEWPOINT_DB_URL = "sqlite+aiosqlite:///:memory:"
 REVIEWPOINT_FEATURE_AUTH_REGISTER = "true"
 REVIEWPOINT_FEATURE_AUTH_LOGIN = "true"
@@ -210,14 +216,14 @@ exclude_lines = [
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-ra -q --strict-markers --strict-config --tb=short --log-cli-level=DEBUG --log-cli-format='%(asctime)s [%(levelname)8s] %(name)s: %(message)s'"
+addopts = "-ra -q --strict-markers --strict-config --tb=short --log-cli-format='%(asctime)s [%(levelname)8s] %(name)s: %(message)s'"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 pythonpath = ["src"]
 log_cli = true
-log_cli_level = "DEBUG"
+log_cli_level = "INFO"
 log_cli_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
 log_file = "tests/test_debug.log"
 log_file_level = "DEBUG"
