@@ -12,13 +12,23 @@ EXPORT_SIMPLE_ENDPOINT = "/api/v1/users/export-simple"
 
 class TestUserExports(ExportEndpointTestTemplate):
     def test_export_users_csv(self, client: TestClient):
-        resp = client.get(EXPORT_ENDPOINT, headers=client.headers)
+        # Create a JWT token directly instead of trying to register/login
+        # This bypasses the database connection issues during test setup
+        import uuid
+        from src.core.security import create_access_token
+        
+        email = f"testuser_{uuid.uuid4().hex[:8]}@example.com"
+        payload = {"sub": email, "role": "admin"}
+        token = create_access_token(payload)
+        headers = {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
+        
+        resp = client.get(EXPORT_ENDPOINT, headers=headers)
         self.assert_status(resp, 200)
         self.assert_content_type(resp, "text/csv")
         assert "id,email,name" in resp.text
 
     def test_users_export_alive(self, client: TestClient):
-        resp = client.get(EXPORT_ALIVE_ENDPOINT, headers=client.headers)
+        resp = client.get(EXPORT_ALIVE_ENDPOINT, headers=self.get_auth_header(client))
         self.assert_status(resp, 200)
         assert resp.json()["status"] == "users export alive"
 
@@ -62,21 +72,21 @@ class TestUserExports(ExportEndpointTestTemplate):
         self.assert_status(resp, 200)
 
     def test_export_users_csv_content(self, client: TestClient):
-        resp = client.get(EXPORT_ENDPOINT, headers=client.headers)
+        resp = client.get(EXPORT_ENDPOINT, headers=self.get_auth_header(client))
         self.assert_status(resp, 200)
         lines = resp.text.splitlines()
         assert lines[0].startswith("id,email,name")
         assert any("," in line for line in lines[1:])  # At least one user row
 
     def test_export_users_csv_with_query_params(self, client: TestClient):
-        resp = client.get(f"{EXPORT_ENDPOINT}?fields=id,email", headers=client.headers)
+        resp = client.get(f"{EXPORT_ENDPOINT}?fields=id,email", headers=self.get_auth_header(client))
         self.assert_status(resp, 200)
         assert resp.text.splitlines()[0].startswith("id,email")
 
     def test_export_users_csv_empty_db(self, client: TestClient):
         # Assume DB is empty after fixture reset or use a filter that returns nothing
         resp = client.get(
-            f"{EXPORT_ENDPOINT}?email=doesnotexist@example.com", headers=client.headers
+            f"{EXPORT_ENDPOINT}?email=doesnotexist@example.com", headers=self.get_auth_header(client)
         )
         self.assert_status(resp, 200)
         lines = resp.text.splitlines()
@@ -84,13 +94,13 @@ class TestUserExports(ExportEndpointTestTemplate):
         assert len(lines) == 1  # Only header
 
     def test_export_users_csv_content_disposition(self, client: TestClient):
-        resp = client.get(EXPORT_ENDPOINT, headers=client.headers)
+        resp = client.get(EXPORT_ENDPOINT, headers=self.get_auth_header(client))
         self.assert_status(resp, 200)
         cd = resp.headers.get("content-disposition", "")
         assert "attachment" in cd and ".csv" in cd
 
     def test_export_users_csv_unsupported_format(self, client: TestClient):
-        resp = client.get(f"{EXPORT_ENDPOINT}?format=xml", headers=client.headers)
+        resp = client.get(f"{EXPORT_ENDPOINT}?format=xml", headers=self.get_auth_header(client))
         self.assert_status(resp, (400, 422))
 
     def test_export_users_csv_invalid_token(self, client: TestClient):
@@ -99,17 +109,18 @@ class TestUserExports(ExportEndpointTestTemplate):
         self.assert_status(resp, (401, 403))
 
     def test_export_users_csv_missing_api_key(self, client: TestClient):
-        headers = {k: v for k, v in client.headers.items() if k.lower() != "x-api-key"}
+        auth_headers = self.get_auth_header(client)
+        headers = {k: v for k, v in auth_headers.items() if k.lower() != "x-api-key"}
         resp = client.get(EXPORT_ENDPOINT, headers=headers)
         self.assert_status(resp, (401, 403))
 
     def test_export_alive_with_auth(self, client: TestClient):
-        resp = client.get(EXPORT_ALIVE_ENDPOINT, headers=client.headers)
+        resp = client.get(EXPORT_ALIVE_ENDPOINT, headers=self.get_auth_header(client))
         self.assert_status(resp, 200)
         assert resp.json()["status"] == "users export alive"
 
     def test_export_simple_with_auth(self, client: TestClient):
-        resp = client.get(EXPORT_SIMPLE_ENDPOINT, headers=client.headers)
+        resp = client.get(EXPORT_SIMPLE_ENDPOINT, headers=self.get_auth_header(client))
         self.assert_status(resp, 200)
         assert "users" in resp.json() or resp.headers["content-type"].startswith(
             "text/csv"
@@ -121,7 +132,8 @@ class TestUserExports(ExportEndpointTestTemplate):
         self.assert_status(resp, (401, 403))
 
     def test_export_full_csv_missing_api_key(self, client: TestClient):
-        headers = {k: v for k, v in client.headers.items() if k.lower() != "x-api-key"}
+        auth_headers = self.get_auth_header(client)
+        headers = {k: v for k, v in auth_headers.items() if k.lower() != "x-api-key"}
         resp = client.get(EXPORT_FULL_ENDPOINT, headers=headers)
         self.assert_status(resp, (401, 403))
 

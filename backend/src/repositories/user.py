@@ -146,9 +146,9 @@ async def list_users(
 ) -> tuple[list[User], int]:
     stmt = select(User)
     if email:
-        stmt = stmt.where(User.email == email)
+        stmt = stmt.where(User.email.ilike(f"%{email}%"))
     if name:
-        stmt = stmt.where(User.name == name)
+        stmt = stmt.where(User.name.ilike(f"%{name}%"))
     if q:
         stmt = stmt.where(or_(User.email.ilike(f"%{q}%"), User.name.ilike(f"%{q}%")))
     if created_after:

@@ -5,8 +5,9 @@ User export endpoints: CSV, health, and simple export endpoints.
 import csv
 from io import StringIO
 
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Depends, Response
 
+from src.api.deps import require_api_key, require_feature
 from src.utils.datetime import parse_flexible_datetime
 
 router = APIRouter()
@@ -16,6 +17,10 @@ router = APIRouter()
     "/export",
     summary="Export users as CSV (debug minimal)",
     response_class=Response,
+    dependencies=[
+        Depends(require_feature("users:export")),
+        Depends(require_api_key),
+    ],
 )
 async def export_users_csv() -> Response:
     output = StringIO()
@@ -34,6 +39,10 @@ async def export_alive() -> dict[str, str]:
     "/export-full",
     summary="Export users as CSV (full)",
     response_class=Response,
+    dependencies=[
+        Depends(require_feature("users:export")),
+        Depends(require_api_key),
+    ],
 )
 async def export_users_full_csv() -> Response:
     output = StringIO()

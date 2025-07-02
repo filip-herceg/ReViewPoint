@@ -98,13 +98,20 @@ async def list_users(
     params: PaginationParams = Depends(pagination_params),
     email: str | None = Query(None, description="Filter by email"),
     name: str | None = Query(None, description="Filter by name"),
+    created_after: str | None = Query(None, description="Filter by created_after datetime"),
     session: AsyncSession = Depends(get_async_session),
     user_service: UserService = Depends(get_user_service),
     current_user: UserResponse = Depends(require_admin),
 ):
     try:
+        # Parse created_after if provided
+        created_after_dt = None
+        if created_after:
+            from src.utils.datetime import parse_flexible_datetime
+            created_after_dt = parse_flexible_datetime(created_after)
+            
         users, total = await user_service.list_users(
-            session, offset=params.offset, limit=params.limit, email=email, name=name
+            session, offset=params.offset, limit=params.limit, email=email, name=name, created_after=created_after_dt
         )
         logger.info(
             "users_listed",

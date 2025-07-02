@@ -668,11 +668,11 @@ class UserService:
         await session.delete(user)
         await session.commit()
 
-    async def list_users(self, session, offset=0, limit=20, email=None, name=None):
+    async def list_users(self, session, offset=0, limit=20, email=None, name=None, created_after=None):
         from src.repositories.user import list_users
 
         return await list_users(
-            session, offset=offset, limit=limit, email=email, name=name
+            session, offset=offset, limit=limit, email=email, name=name, created_after=created_after
         )
 
     async def get_user_by_id(self, session, user_id):

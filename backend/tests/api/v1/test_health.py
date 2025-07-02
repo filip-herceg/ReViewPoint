@@ -15,7 +15,7 @@ HEALTH_ENDPOINT = "/api/v1/health"
 
 class TestHealthEndpoint(HealthEndpointTestTemplate):
     @pytest.fixture(autouse=True)
-    def _setup(self, set_required_env_vars):
+    def _setup(self, set_remaining_env_vars):
         pass
 
     def test_health_get_no_auth(self, client: TestClient):
