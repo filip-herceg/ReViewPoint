@@ -35,9 +35,10 @@ async def admin_user_setup(test_app, async_session):
     from src.core.security import create_access_token
     from src.models.user import User
     
-    # Create a real admin user in the database
+    # Create a real admin user in the database with unique email
+    unique_email = f"optimized_admin_{uuid.uuid4().hex[:8]}@example.com"
     real_user = User(
-        email="optimized_admin@example.com",
+        email=unique_email,
         name="Optimized Test Admin",
         hashed_password="hashed_password",  # Not used in tests
         is_active=True,

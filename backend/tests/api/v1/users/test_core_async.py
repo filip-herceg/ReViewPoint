@@ -1,5 +1,6 @@
 # Tests for users/core.py (CRUD endpoints) - Async version
 import pytest
+import uuid
 from httpx import ASGITransport, AsyncClient
 
 from tests.test_templates import UserCoreEndpointTestTemplate
@@ -9,7 +10,7 @@ USER_ENDPOINT = "/api/v1/users"
 
 class TestUserCRUDAsync(UserCoreEndpointTestTemplate):
     endpoint = USER_ENDPOINT
-    create_payload = {"email": "u2@example.com", "password": "pw123456", "name": "U2"}
+    create_payload = {"email": f"u2_{uuid.uuid4().hex[:8]}@example.com", "password": "pw123456", "name": "U2"}
     update_payload = {"name": "U2 Updated"}
 
     @pytest.mark.asyncio
