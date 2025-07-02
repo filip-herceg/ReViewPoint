@@ -4,14 +4,17 @@ Uses a dedicated ConfigTestTemplate for DRYness and maintainability.
 """
 
 import importlib
+import os
 import sys
 from pathlib import Path
 from types import ModuleType
+from unittest.mock import patch
 
 import pytest
 
 from tests.test_templates import DatabaseTestTemplate
 from src.core.security import create_access_token, verify_access_token
+from src.core.config import Settings
 
 MODULE = "src.core.config"
 PFX = "REVIEWPOINT_"
@@ -99,21 +102,39 @@ class TestConfig(ConfigTestTemplate):
 
     def test_missing_jwt_secret(self, tmp_path: Path):
         self.chdir_tmp(tmp_path)
-        # Clear all environment variables to ensure clean state
-        self.del_env("REVIEWPOINT_ENVIRONMENT", raising=False)
-        self.del_env("FAST_TESTS", raising=False) 
-        self.del_env_vars(["JWT_SECRET", "JWT_SECRET_KEY"], raising=False)
-        with pytest.raises(RuntimeError):
-            self.reload_with_env({"DB_URL": "postgresql+asyncpg://db"})
+        
+        # Force production mode by temporarily patching os.environ
+        import os
+        import unittest.mock
+        
+        # Create a mock environment that excludes JWT secrets and test mode flags
+        mock_env = {}
+        # Add only the minimum necessary env vars - DB URL but no JWT secret or test mode flags
+        mock_env["REVIEWPOINT_DB_URL"] = "postgresql+asyncpg://test:test@localhost/test"
+        
+        with unittest.mock.patch.dict('os.environ', mock_env, clear=True):
+            with pytest.raises(RuntimeError, match="Missing JWT secret"):
+                # Import the Settings class directly and instantiate it in the mocked environment
+                from src.core.config import Settings
+                Settings()
 
     def test_missing_db_url(self, tmp_path: Path):
         self.chdir_tmp(tmp_path)
-        # Clear all environment variables to ensure clean state
-        self.del_env("REVIEWPOINT_ENVIRONMENT", raising=False)
-        self.del_env("FAST_TESTS", raising=False)
-        self.del_env_vars(["DB_URL"], raising=False)
-        with pytest.raises(RuntimeError):
-            self.reload_with_env({"JWT_SECRET": "secret"})
+        
+        # Force production mode by temporarily patching os.environ
+        import os
+        import unittest.mock
+        
+        # Create a mock environment that excludes DB URLs and test mode flags
+        mock_env = {}
+        # Add only the minimum necessary env vars - JWT secret but no DB URL or test mode flags
+        mock_env["REVIEWPOINT_JWT_SECRET"] = "testsecret"
+        
+        with unittest.mock.patch.dict('os.environ', mock_env, clear=True):
+            with pytest.raises(RuntimeError, match="Missing database URL"):
+                # Import the Settings class directly and instantiate it in the mocked environment
+                from src.core.config import Settings
+                Settings()
 
     def test_repr_hides_secret(self):
         secret = "supersecret"
@@ -168,13 +189,20 @@ class TestConfig(ConfigTestTemplate):
     # --------------------------------------------------------------------------- #
     def test_invalid_db_scheme_rejected(self):
         from pydantic import ValidationError
+        import os
+        import unittest.mock
 
-        # Remove test environment detection to ensure validation
-        self.del_env("REVIEWPOINT_ENVIRONMENT", raising=False)
-        self.del_env("FAST_TESTS", raising=False)
-        
-        with pytest.raises(ValidationError):
-            self.reload_with_env({"DB_URL": "mysql://oops", "JWT_SECRET": "s"})
+        # Force production mode by temporarily patching os.environ
+        mock_env = {}
+        # Add invalid DB URL (mysql instead of postgresql) but valid JWT secret
+        mock_env["REVIEWPOINT_DB_URL"] = "mysql://oops"
+        mock_env["REVIEWPOINT_JWT_SECRET"] = "testsecret"
+
+        with unittest.mock.patch.dict('os.environ', mock_env, clear=True):
+            with pytest.raises(ValidationError):
+                # Import the Settings class directly and instantiate it in the mocked environment
+                from src.core.config import Settings
+                Settings()
 
     def test_log_level_override(self):
         cfg = self.reload_with_env(
@@ -230,22 +258,18 @@ class TestConfig(ConfigTestTemplate):
         assert "jwt_secret" not in public
         assert public["db_url"].startswith("postgresql")
 
-    def test_settings_debug_logged(self, caplog: pytest.LogCaptureFixture) -> None:
-        import logging
-
-        self.override_env_vars(
-            {
-                "REVIEWPOINT_DB_URL": "postgresql+asyncpg://db",
-                "REVIEWPOINT_JWT_SECRET": "secret",
-            }
-        )
-        caplog.set_level(logging.DEBUG, logger="core.config")
-        _ = self.reload_with_env(
-            {"DB_URL": "postgresql+asyncpg://db", "JWT_SECRET": "secret"}
-        )
+    def test_settings_debug_logged(self, loguru_list_sink: list[str]) -> None:
+        with patch.dict(os.environ, {
+            "REVIEWPOINT_DB_URL": "postgresql+asyncpg://db",
+            "REVIEWPOINT_JWT_SECRET": "secret",
+        }, clear=False):
+            # Directly instantiate Settings to trigger the debug log
+            # This ensures the log is generated after the loguru sink is set up
+            _ = Settings()
+        
         assert any(
-            "Settings initialized" in record.getMessage() for record in caplog.records
-        ), "Expected a 'Settings initialized' debug log in core.config"
+            "Settings initialized for environment" in log_message for log_message in loguru_list_sink
+        ), f"Expected a 'Settings initialized for environment' debug log in loguru logs. Found: {loguru_list_sink}"
 
     def test_optional_env_vars(self) -> None:
         cfg = self.reload_with_env(
@@ -338,27 +362,56 @@ class TestConfig(ConfigTestTemplate):
         assert cfg2.settings.auth_enabled is True
 
     def test_verify_access_token_bypass(self) -> None:
-        self.patch_var("src.core.config.settings.auth_enabled", False)
-        token = create_access_token({"sub": "anyuser", "role": "user"})
-        payload = verify_access_token(token)
-        assert payload["sub"] == "dev-user"
-        assert payload["role"] == "admin"
-        assert payload["is_authenticated"] is True
-        self.patch_var("src.core.config.settings.auth_enabled", True)
+        import unittest.mock
+        
+        # Create a mock settings object with auth_enabled=False
+        mock_settings = unittest.mock.MagicMock()
+        mock_settings.auth_enabled = False
+        # Provide required JWT fields for create_access_token
+        mock_settings.jwt_expire_minutes = 30
+        mock_settings.jwt_secret_key = "test_secret_key"
+        mock_settings.jwt_algorithm = "HS256"
+        
+        # Patch the get_settings function to return our mock
+        with unittest.mock.patch('src.core.security.get_settings', return_value=mock_settings):
+            token = create_access_token({"sub": "anyuser", "role": "user"})
+            payload = verify_access_token(token)
+            assert payload["sub"] == "dev-user"
+            assert payload["role"] == "admin"
+            assert payload["is_authenticated"] is True
 
     def test_verify_access_token_invalid_token_bypass(self) -> None:
-        self.patch_var("src.core.config.settings.auth_enabled", False)
-        payload = verify_access_token("not.a.jwt.token")
-        assert payload["sub"] == "dev-user"
-        self.patch_var("src.core.config.settings.auth_enabled", True)
+        import unittest.mock
+        
+        # Create a mock settings object with auth_enabled=False
+        mock_settings = unittest.mock.MagicMock()
+        mock_settings.auth_enabled = False
+        # Provide required JWT fields (not needed for invalid token test but keeps consistency)
+        mock_settings.jwt_expire_minutes = 30
+        mock_settings.jwt_secret_key = "test_secret_key"
+        mock_settings.jwt_algorithm = "HS256"
+        
+        # Patch the get_settings function to return our mock
+        with unittest.mock.patch('src.core.security.get_settings', return_value=mock_settings):
+            payload = verify_access_token("not.a.jwt.token")
+            assert payload["sub"] == "dev-user"
 
     def test_verify_access_token_expired_token_bypass(self) -> None:
-        self.patch_var("src.core.config.settings.auth_enabled", False)
+        import unittest.mock
         import time
 
-        expired_token = create_access_token(
-            {"sub": "expired", "exp": int(time.time()) - 1000}
-        )
-        payload = verify_access_token(expired_token)
-        assert payload["sub"] == "dev-user"
-        self.patch_var("src.core.config.settings.auth_enabled", True)
+        # Create a mock settings object with auth_enabled=False
+        mock_settings = unittest.mock.MagicMock()
+        mock_settings.auth_enabled = False
+        # Provide required JWT fields for create_access_token
+        mock_settings.jwt_expire_minutes = 30
+        mock_settings.jwt_secret_key = "test_secret_key"
+        mock_settings.jwt_algorithm = "HS256"
+        
+        # Patch the get_settings function to return our mock
+        with unittest.mock.patch('src.core.security.get_settings', return_value=mock_settings):
+            expired_token = create_access_token(
+                {"sub": "expired", "exp": int(time.time()) - 1000}
+            )
+            payload = verify_access_token(expired_token)
+            assert payload["sub"] == "dev-user"

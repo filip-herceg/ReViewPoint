@@ -73,8 +73,8 @@ class Settings(BaseSettings):
     log_level: Literal["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"] = "INFO"
 
     # Database settings
-    db_url: str = Field(
-        default="postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint",  # Default for all environments
+    db_url: str | None = Field(
+        default=None,
         description="Async SQLAlchemy database URL",
     )
 
@@ -155,27 +155,36 @@ class Settings(BaseSettings):
 
     @field_validator("db_url", mode="before")
     @classmethod
-    def check_db_scheme(cls, v: str) -> str:
+    def check_db_scheme(cls, v: str | None) -> str:
         """
-        Ensure the database URL uses a supported scheme.
+        Ensure the database URL uses a supported scheme and is not empty.
 
         Accepted schemes:
         - postgresql+asyncpg:// (production)
         - sqlite+aiosqlite:// (testing only)
         """
-        # Only allow sqlite in test mode if explicitly enabled via environment
-        is_test_mode = (
+        # For config validation, use explicit test mode detection
+        # Only allow relaxed validation if explicitly enabled
+        is_explicit_test_mode = (
+            os.environ.get("REVIEWPOINT_ENVIRONMENT") == "test" or
             os.environ.get("FAST_TESTS") == "1" or
-            os.environ.get("REVIEWPOINT_ENVIRONMENT") == "test"
+            os.environ.get("REVIEWPOINT_TEST_MODE") == "1"
         )
         
-        if is_test_mode and v.startswith("sqlite+aiosqlite://"):
+        # Check if DB URL is missing (only enforce in production mode)
+        if not v:
+            if not is_explicit_test_mode:
+                raise RuntimeError("Missing database URL: set REVIEWPOINT_DB_URL")
+            # In test mode, provide a default
+            v = "sqlite+aiosqlite:///:memory:"
+        
+        if is_explicit_test_mode and v.startswith("sqlite+aiosqlite://"):
             return v
         elif v.startswith("postgresql+asyncpg://"):
             return v
         else:
             accepted_schemes = "postgresql+asyncpg://"
-            if is_test_mode:
+            if is_explicit_test_mode:
                 accepted_schemes += " or sqlite+aiosqlite://"
             raise ValueError(f"db_url must use {accepted_schemes} scheme")
     
@@ -184,8 +193,15 @@ class Settings(BaseSettings):
         Post-initialization adjustments for specific environments.
         - If environment is 'test', override DB URL to use SQLite in memory
         - If jwt_secret_key is not set but jwt_secret is, use it (for backward compatibility)
-        - Raise error if neither is set
+        - Raise error if neither is set (only in production mode)
         """
+        # For config validation, use explicit test mode detection
+        is_explicit_test_mode = (
+            os.environ.get("REVIEWPOINT_ENVIRONMENT") == "test" or
+            os.environ.get("FAST_TESTS") == "1" or
+            os.environ.get("REVIEWPOINT_TEST_MODE") == "1"
+        )
+        
         # Test environment overrides (only if explicitly set via env var)
         if (self.environment == "test" and 
             os.environ.get("REVIEWPOINT_ENVIRONMENT") == "test"):
@@ -198,7 +214,9 @@ class Settings(BaseSettings):
             self, "jwt_secret", None
         ):
             object.__setattr__(self, "jwt_secret_key", self.jwt_secret)
-        if not getattr(self, "jwt_secret_key", None):
+        
+        # Only require JWT secret in production mode
+        if not getattr(self, "jwt_secret_key", None) and not is_explicit_test_mode:
             raise RuntimeError(
                 "Missing JWT secret: set REVIEWPOINT_JWT_SECRET_KEY or legacy REVIEWPOINT_JWT_SECRET."
             )
@@ -244,6 +262,8 @@ class Settings(BaseSettings):
     @property
     def async_db_url(self) -> str:
         """Alias for the database URL to emphasize async usage."""
+        if self.db_url is None:
+            raise RuntimeError("Database URL is not configured")
         return self.db_url
 
     @property
