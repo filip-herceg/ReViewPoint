@@ -128,6 +128,7 @@ REVIEWPOINT_EXTERNAL_SERVICES_ENABLED = "false"
 
 [tool.hatch.envs.fast.scripts]
 test = "python run-fast-tests.py {args}"
+fast-only = "python run-fast-tests.py --fast-only {args}"
 watch = "python run-fast-tests.py -f {args}"
 coverage = "python run-fast-tests.py --cov=src --cov-report=html {args}"
 

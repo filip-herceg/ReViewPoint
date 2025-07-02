@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """
 Fast test runner that handles conftest switching.
+
+By default, this runner uses the fast test environment (SQLite in-memory) and runs ALL tests,
+including those marked as slow. The focus is on providing a complete test suite
+with faster setup, not necessarily faster individual tests.
+
+Use --fast-only flag to skip slow tests and run only the fast subset.
 """
 
 import os
@@ -15,6 +21,12 @@ def main():
     backend_dir = Path(__file__).parent
     tests_dir = backend_dir / "tests"
     fast_conftest = backend_dir / "testing" / "fast" / "conftest.py"
+    
+    # Check if --fast-only flag is present
+    args = sys.argv[1:]
+    use_fast_only = "--fast-only" in args
+    if use_fast_only:
+        args.remove("--fast-only")  # Remove our custom flag
     
     # Paths for conftest files
     original_conftest = tests_dir / "conftest.py"
@@ -45,14 +57,20 @@ def main():
             "--tb=short",
             "--disable-warnings",
             "-x",
-            "--fast",
             "-p", "no:cacheprovider",
-        ] + sys.argv[1:]  # Pass through all arguments
+        ]
         
-        if not sys.argv[1:]:
+        # Add --fast flag only if --fast-only was specified
+        if use_fast_only:
+            cmd.append("--fast")
+            
+        cmd.extend(args)  # Add remaining arguments
+        
+        if not args:
             cmd.append("tests/")
         
-        print(f"🚀 Running fast tests: {' '.join(cmd)}")
+        test_type = "fast-only tests" if use_fast_only else "all tests"
+        print(f"Running {test_type}: {' '.join(cmd)}")
         result = subprocess.run(cmd, cwd=backend_dir, env=env)
         return result.returncode
         
