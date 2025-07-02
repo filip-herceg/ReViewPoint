@@ -476,7 +476,7 @@ class TestAuthFeatureFlags(AuthEndpointTestTemplate):
                         "name": "Flag",
                     },
                 )
-                self.assert_status(resp, (200, 401, 403))
+                self.assert_status(resp, (201,))  # Registration should succeed when API keys are disabled
 
         import asyncio
 

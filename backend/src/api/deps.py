@@ -567,6 +567,11 @@ async def validate_api_key(
         # API key validation is disabled, always return True
         return True
 
+    # If API key validation is enabled but no key provided
+    if not api_key:
+        logger.warning("API key validation is enabled but no API key provided in request")
+        return False
+
     # Get the configured API key
     configured_api_key = os.environ.get("REVIEWPOINT_API_KEY")
     if not configured_api_key:

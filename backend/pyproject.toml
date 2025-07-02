@@ -85,6 +85,52 @@ extra-dependencies = ["mypy>=1.0.0"]
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:src tests}"
 
+# Fast test environment for rapid development
+[tool.hatch.envs.fast]
+path = ".venv-fast"
+dependencies = [
+  "pytest>=8.3.4",
+  "pytest-asyncio>=0.24.0", 
+  "pytest-mock>=3.14.0",
+  "httpx>=0.28.1",
+  "aiosqlite==0.20.0",
+  "pytest-xdist>=3.6.1",
+  "pytest-timeout>=2.1.0",
+]
+[tool.hatch.envs.fast.env-vars]
+PYTHONPATH = "src"
+FAST_TESTS = "1"
+REVIEWPOINT_ENVIRONMENT = "test"
+REVIEWPOINT_LOG_LEVEL = "WARNING"
+REVIEWPOINT_DB_URL = "sqlite+aiosqlite:///:memory:"
+REVIEWPOINT_FEATURE_AUTH_REGISTER = "true"
+REVIEWPOINT_FEATURE_AUTH_LOGIN = "true"
+REVIEWPOINT_FEATURE_AUTH_REQUEST_PASSWORD_RESET = "true"
+REVIEWPOINT_FEATURE_AUTH_RESET_PASSWORD = "true"
+REVIEWPOINT_FEATURE_AUTH_ME = "true"
+REVIEWPOINT_FEATURE_AUTH_LOGOUT = "true"
+REVIEWPOINT_FEATURE_AUTH_REFRESH_TOKEN = "true"
+REVIEWPOINT_FEATURE_USERS_CREATE = "true"
+REVIEWPOINT_FEATURE_USERS_GET = "true"
+REVIEWPOINT_FEATURE_USERS_UPDATE = "true"
+REVIEWPOINT_FEATURE_USERS_DELETE = "true"
+REVIEWPOINT_FEATURE_USERS_LIST = "true"
+REVIEWPOINT_FEATURE_UPLOADS_UPLOAD = "true"
+REVIEWPOINT_FEATURE_UPLOADS_GET = "true"
+REVIEWPOINT_FEATURE_UPLOADS_LIST = "true"
+REVIEWPOINT_FEATURE_UPLOADS_UPDATE = "true"
+REVIEWPOINT_FEATURE_UPLOADS_DELETE = "true"
+REVIEWPOINT_FEATURE_UPLOADS_EXPORT = "true"
+REVIEWPOINT_FEATURE_HEALTH_READ = "true"
+REVIEWPOINT_API_KEY_ENABLED = "false"
+REVIEWPOINT_API_KEY = "testkey"
+REVIEWPOINT_EXTERNAL_SERVICES_ENABLED = "false"
+
+[tool.hatch.envs.fast.scripts]
+test = "python run-fast-tests.py {args}"
+watch = "python run-fast-tests.py -f {args}"
+coverage = "python run-fast-tests.py --cov=src --cov-report=html {args}"
+
 [tool.black]
 line-length = 88
 target-version = ["py311"]

@@ -11,6 +11,7 @@ from types import ModuleType
 import pytest
 
 from tests.test_templates import DatabaseTestTemplate
+from src.core.security import create_access_token, verify_access_token
 
 MODULE = "src.core.config"
 PFX = "REVIEWPOINT_"
@@ -98,12 +99,18 @@ class TestConfig(ConfigTestTemplate):
 
     def test_missing_jwt_secret(self, tmp_path: Path):
         self.chdir_tmp(tmp_path)
+        # Clear all environment variables to ensure clean state
+        self.del_env("REVIEWPOINT_ENVIRONMENT", raising=False)
+        self.del_env("FAST_TESTS", raising=False) 
         self.del_env_vars(["JWT_SECRET", "JWT_SECRET_KEY"], raising=False)
         with pytest.raises(RuntimeError):
             self.reload_with_env({"DB_URL": "postgresql+asyncpg://db"})
 
     def test_missing_db_url(self, tmp_path: Path):
         self.chdir_tmp(tmp_path)
+        # Clear all environment variables to ensure clean state
+        self.del_env("REVIEWPOINT_ENVIRONMENT", raising=False)
+        self.del_env("FAST_TESTS", raising=False)
         self.del_env_vars(["DB_URL"], raising=False)
         with pytest.raises(RuntimeError):
             self.reload_with_env({"JWT_SECRET": "secret"})
@@ -143,15 +150,17 @@ class TestConfig(ConfigTestTemplate):
     # Environment == test overrides                                               #
     # --------------------------------------------------------------------------- #
     def test_test_env_overrides(self):
+        # Set environment to test mode and override necessary vars
+        self.set_env("REVIEWPOINT_ENVIRONMENT", "test") 
         cfg = self.reload_with_env(
             {
                 "ENVIRONMENT": "test",
-                "DB_URL": "postgresql+asyncpg://ignored",
+                "DB_URL": "sqlite+aiosqlite:///:memory:",  # Valid test DB URL
                 "JWT_SECRET": "s",
             }
         )
         assert cfg.settings.environment == "test"
-        assert cfg.settings.db_url.startswith("postgresql://")
+        assert cfg.settings.db_url.startswith("sqlite+aiosqlite://")
         assert cfg.settings.log_level == "WARNING"
 
     # --------------------------------------------------------------------------- #
@@ -160,6 +169,10 @@ class TestConfig(ConfigTestTemplate):
     def test_invalid_db_scheme_rejected(self):
         from pydantic import ValidationError
 
+        # Remove test environment detection to ensure validation
+        self.del_env("REVIEWPOINT_ENVIRONMENT", raising=False)
+        self.del_env("FAST_TESTS", raising=False)
+        
         with pytest.raises(ValidationError):
             self.reload_with_env({"DB_URL": "mysql://oops", "JWT_SECRET": "s"})
 

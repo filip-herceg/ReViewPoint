@@ -159,12 +159,52 @@ class Settings(BaseSettings):
         """
         Ensure the database URL uses a supported scheme.
 
-        Accepted scheme:
-        - postgresql+asyncpg://
+        Accepted schemes:
+        - postgresql+asyncpg:// (production)
+        - sqlite+aiosqlite:// (testing only)
         """
-        if not v.startswith("postgresql+asyncpg://"):
-            raise ValueError("db_url must use postgresql+asyncpg scheme")
-        return v
+        # Only allow sqlite in test mode if explicitly enabled via environment
+        is_test_mode = (
+            os.environ.get("FAST_TESTS") == "1" or
+            os.environ.get("REVIEWPOINT_ENVIRONMENT") == "test"
+        )
+        
+        if is_test_mode and v.startswith("sqlite+aiosqlite://"):
+            return v
+        elif v.startswith("postgresql+asyncpg://"):
+            return v
+        else:
+            accepted_schemes = "postgresql+asyncpg://"
+            if is_test_mode:
+                accepted_schemes += " or sqlite+aiosqlite://"
+            raise ValueError(f"db_url must use {accepted_schemes} scheme")
+    
+    def model_post_init(self, __context: Any) -> None:
+        """
+        Post-initialization adjustments for specific environments.
+        - If environment is 'test', override DB URL to use SQLite in memory
+        - If jwt_secret_key is not set but jwt_secret is, use it (for backward compatibility)
+        - Raise error if neither is set
+        """
+        # Test environment overrides (only if explicitly set via env var)
+        if (self.environment == "test" and 
+            os.environ.get("REVIEWPOINT_ENVIRONMENT") == "test"):
+            # Override with SQLite in-memory DB for test environment
+            object.__setattr__(self, "db_url", "sqlite+aiosqlite:///:memory:")
+            object.__setattr__(self, "log_level", "WARNING")
+        
+        # Handle JWT secret (both for test and non-test environments)
+        if not getattr(self, "jwt_secret_key", None) and getattr(
+            self, "jwt_secret", None
+        ):
+            object.__setattr__(self, "jwt_secret_key", self.jwt_secret)
+        if not getattr(self, "jwt_secret_key", None):
+            raise RuntimeError(
+                "Missing JWT secret: set REVIEWPOINT_JWT_SECRET_KEY or legacy REVIEWPOINT_JWT_SECRET."
+            )
+        
+        # Log settings initialization at DEBUG level
+        logger.debug("Settings initialized for environment: {}", self.environment)
 
     @field_validator("upload_dir", mode="after")
     @classmethod
@@ -197,21 +237,6 @@ class Settings(BaseSettings):
             except ValueError as err:
                 raise ValueError("email_port must be an integer") from err
         raise TypeError("email_port must be an integer or string")
-
-    def model_post_init(self, __context: Any) -> None:
-        """
-        Post-initialization adjustments for specific environments.
-        - If jwt_secret_key is not set but jwt_secret is, use it (for backward compatibility)
-        - Raise error if neither is set
-        """
-        if not getattr(self, "jwt_secret_key", None) and getattr(
-            self, "jwt_secret", None
-        ):
-            object.__setattr__(self, "jwt_secret_key", self.jwt_secret)
-        if not getattr(self, "jwt_secret_key", None):
-            raise RuntimeError(
-                "Missing JWT secret: set REVIEWPOINT_JWT_SECRET_KEY or legacy REVIEWPOINT_JWT_SECRET."
-            )
 
     def __init__(self, **values: Any):
         super().__init__(**values)
@@ -255,6 +280,16 @@ def reload_settings() -> Settings:
     """
     clear_settings_cache()
     return get_settings()
+
+
+# Create a module-level settings object for backward compatibility with tests
+class SettingsProxy:
+    """Proxy object that always returns the current settings"""
+    
+    def __getattr__(self, name: str) -> Any:
+        return getattr(get_settings(), name)
+
+settings = SettingsProxy()
 
 
 # Remove eager settings initialization! Use get_settings() everywhere.

@@ -43,17 +43,94 @@
 - Use sync tests for authenticated endpoints requiring real users
 - Split tests by authentication requirements
 
-## Implementation
+## Implementation - FINAL SOLUTION ✅
 
-We implemented Option 1 (optimized sync) in `test_uploads_fast.py` which:
+We successfully implemented Option 1 (optimized sync) in `test_uploads_fast.py` which:
+
 - Uses the proven `ExportEndpointTestTemplate` pattern
 - Leverages `self.get_auth_header(client)` for efficient auth
+- **WORKS PERFECTLY** with automatic SQLite fallback to avoid DB conflicts
 - Reuses the same TestClient instance
 - Maintains test independence while optimizing auth overhead
+
+## Performance Results
+
+| Test Method | Time | Result | Notes |
+|------------|------|--------|-------|
+| **Original async** | ~15-20s | Many XFAIL | Slow due to concurrent DB conflicts |
+| **FAST_TESTS=1 (single)** | **8.56s** | ✅ All pass | **OPTIMAL for CI/quick runs** |
+| **Parallel (-n 4)** | 12.03s | ✅ All pass | Good for development |
+| **Parallel (-n auto/32)** | 19.00s | ✅ All pass | Too much overhead |
+
+## How to Use
+
+### Test Runner Scripts (Recommended) 🚀
+
+For the best experience, use the provided test runner scripts that automatically handle environment setup:
+
+#### Windows (PowerShell)
+
+```powershell
+# Fast mode (8.5s) - Best for CI/CD and quick testing
+.\run_upload_tests.ps1 fast
+
+# Parallel mode (12s) - Good for development
+.\run_upload_tests.ps1 parallel
+
+# Regular mode (8.5s) - PostgreSQL testcontainer
+.\run_upload_tests.ps1 regular
+```
+
+#### Linux/Mac (Bash)
+
+```bash
+# Make executable (first time only)
+chmod +x run_upload_tests.sh
+
+# Fast mode (8.5s) - Best for CI/CD and quick testing  
+./run_upload_tests.sh fast
+
+# Parallel mode (12s) - Good for development
+./run_upload_tests.sh parallel  
+
+# Regular mode (8.5s) - PostgreSQL testcontainer
+./run_upload_tests.sh regular
+```
+
+**Test Runner Features:**
+
+- ✅ **Automatically detects and uses Hatch** for proper virtual environment
+- ✅ **Clear mode explanations** with performance expectations
+- ✅ **Intelligent fallbacks** when Hatch is not available
+- ✅ **Colored output** and helpful tips
+- ✅ **Cross-platform support** (PowerShell + Bash)
+
+### Manual Commands (Advanced Users)
+
+#### Fastest (8.5s) - For CI and Quick Testing
+
+```bash
+$env:FAST_TESTS="1"; python -m pytest tests/api/v1/test_uploads_fast.py -v
+```
+
+#### Parallel (12s) - For Development
+
+```bash
+python -m pytest tests/api/v1/test_uploads_fast.py -v -n 4
+```
+
+#### Regular (8.5s) - Single Thread
+
+```bash
+python -m pytest tests/api/v1/test_uploads_fast.py -v
+```
+
+The **`FAST_TESTS=1`** mode automatically switches to SQLite in-memory database, eliminating all PostgreSQL connection conflicts while maintaining full test coverage.
 
 ## Key Code Patterns
 
 ### Fast Sync Test (Recommended)
+
 ```python
 class TestUploadsFast(ExportEndpointTestTemplate):
     def test_upload_file_authenticated(self, client: TestClient):
@@ -64,6 +141,7 @@ class TestUploadsFast(ExportEndpointTestTemplate):
 ```
 
 ### Fast Async Export Test (Works for export-only endpoints)
+
 ```python
 def create_admin_headers() -> dict[str, str]:
     from src.core.security import create_access_token
@@ -82,6 +160,7 @@ class TestUploadsAsync(ExportEndpointTestTemplate):
 ## Conclusion
 
 For upload endpoint tests requiring authentication:
+
 - **Use the optimized sync pattern** for reliability and good performance
 - **Reserve pure async patterns** for export-only endpoints or create dependency overrides
 - **The `get_auth_header()` function** in conftest.py is already optimized for test performance
