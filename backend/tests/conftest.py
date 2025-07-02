@@ -396,15 +396,31 @@ async def async_engine_isolated(use_fast_db, postgres_container):
 
     engine_start_time = time.time()
     
-    if use_fast_db:
+    if use_fast_db or os.environ.get('PYTEST_XDIST_WORKER'):
+        # Use SQLite for fast tests OR parallel execution to avoid asyncpg concurrency issues
         db_url = f"sqlite+aiosqlite:///:memory:?cache=shared&test_id={test_id}"
-        logger.debug(f"[ENGINE_ISOLATED] Using SQLite in-memory DB: {db_url}")
+        logger.debug(f"[ENGINE_ISOLATED] Using SQLite in-memory DB (parallel={bool(os.environ.get('PYTEST_XDIST_WORKER'))}): {db_url}")
         engine = create_async_engine(db_url, future=True, connect_args={"check_same_thread": False})
     else:
-        # Use the same DB URL, but pool_size=1 for isolation
+        # Use the same DB URL, but configure for strict isolation in parallel testing
         db_url = os.environ["REVIEWPOINT_DB_URL"]
         logger.debug(f"[ENGINE_ISOLATED] Using PostgreSQL with isolation pool (worker: {worker_id})")
-        engine = create_async_engine(db_url, future=True, pool_size=1, max_overflow=0)
+        
+        # Configure engine for strict connection isolation to avoid asyncpg event loop conflicts
+        engine_kwargs = {
+            "future": True,
+            "pool_size": 1,  # Single connection per worker
+            "max_overflow": 0,  # No overflow connections
+            "pool_reset_on_return": "commit",  # Reset connections between uses
+            "pool_pre_ping": True,  # Verify connections before use
+            "connect_args": {
+                "server_settings": {
+                    "application_name": f"reviewpoint_test_{worker_id}_{os.getpid()}",
+                }
+            }
+        }
+        
+        engine = create_async_engine(db_url, **engine_kwargs)
 
     engine_creation_time = time.time() - engine_start_time
     logger.debug(f"[ENGINE_ISOLATED] Engine created in {engine_creation_time:.3f}s")
@@ -441,8 +457,8 @@ async def async_engine_isolated(use_fast_db, postgres_container):
 @pytest_asyncio.fixture(scope="function")
 async def async_session(async_engine_isolated):
     """
-    Provide an async SQLAlchemy session for each test function, using a function-scoped engine for parallel safety.
-    Each test gets its own engine and connection pool.
+    Provide an async SQLAlchemy session for each test function using transaction-level isolation.
+    Simplified approach that works well with both SQLite and PostgreSQL.
     """
     from sqlalchemy.ext.asyncio import AsyncSession
     import time
@@ -452,13 +468,14 @@ async def async_session(async_engine_isolated):
     
     session_start_time = time.time()
     
+    # For SQLite (parallel tests), use simpler session management
+    # For PostgreSQL (single tests), use transaction isolation
+    is_parallel = bool(os.environ.get('PYTEST_XDIST_WORKER'))
+    
     try:
-        connection_start = time.time()
-        async with async_engine_isolated.connect() as connection:
-            connection_time = time.time() - connection_start
-            logger.debug(f"[SESSION_ISOLATED] Connection established in {connection_time:.3f}s")
-            
-            session = AsyncSession(bind=connection, expire_on_commit=False)
+        if is_parallel:
+            # Simple session for SQLite in parallel tests
+            session = AsyncSession(bind=async_engine_isolated, expire_on_commit=False)
             
             # Test the session with a simple query
             test_start = time.time()
@@ -475,16 +492,49 @@ async def async_session(async_engine_isolated):
             total_session_time = time.time() - session_start_time
             logger.debug(f"[SESSION_ISOLATED] Session ready in {total_session_time:.3f}s (worker: {worker_id})")
             
-            yield session
+            try:
+                yield session
+            finally:
+                await session.close()
+                logger.debug(f"[SESSION_ISOLATED] Session closed (worker: {worker_id})")
+        else:
+            # Transaction isolation for PostgreSQL single tests
+            connection_start = time.time()
+            async with async_engine_isolated.connect() as connection:
+                connection_time = time.time() - connection_start
+                logger.debug(f"[SESSION_ISOLATED] Connection established in {connection_time:.3f}s")
+                
+                # Start a transaction that will be rolled back after the test
+                async with connection.begin() as transaction:
+                    session = AsyncSession(bind=connection, expire_on_commit=False)
+                    
+                    # Test the session with a simple query
+                    test_start = time.time()
+                    try:
+                        from sqlalchemy import text
+                        await session.execute(text("SELECT 1"))
+                        test_time = time.time() - test_start
+                        logger.debug(f"[SESSION_ISOLATED] Session test query completed in {test_time:.3f}s")
+                    except Exception as e:
+                        test_time = time.time() - test_start
+                        logger.error(f"[SESSION_ISOLATED] Session test query failed in {test_time:.3f}s: {e}")
+                        raise
+                    
+                    total_session_time = time.time() - session_start_time
+                    logger.debug(f"[SESSION_ISOLATED] Session ready in {total_session_time:.3f}s (worker: {worker_id})")
+                    
+                    try:
+                        yield session
+                    finally:
+                        # Close the session and let the transaction rollback automatically
+                        await session.close()
+                        await transaction.rollback()
+                        logger.debug(f"[SESSION_ISOLATED] Session closed and transaction rolled back (worker: {worker_id})")
             
     except Exception as e:
         total_session_time = time.time() - session_start_time
         logger.error(f"[SESSION_ISOLATED] Session creation failed in {total_session_time:.3f}s: {e}")
         raise
-        try:
-            yield session
-        finally:
-            await session.close()
 
 
 # 4. App and client fixtures

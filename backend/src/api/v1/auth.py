@@ -19,6 +19,7 @@ from src.api.deps import (
     require_api_key,
     require_feature,
 )
+from src.core.config import get_settings
 from src.core.database import get_async_session
 from src.models.user import User
 from src.schemas.auth import (
@@ -285,6 +286,7 @@ async def logout(
     if auth_header and auth_header.lower().startswith("bearer "):
         token = auth_header.split(" ", 1)[1]
         try:
+            settings = get_settings()
             if not settings.jwt_secret_key:
                 raise ValueError("JWT secret key is not configured.")
             payload = jwt.decode(
@@ -299,7 +301,15 @@ async def logout(
                     "logout_token_blacklisted", extra={"user_id": current_user.id}
                 )
         except Exception as e:
-            logger.error("logout_token_blacklist_error", extra={"error": str(e)})
+            logger.error(
+                "logout_token_blacklist_error", 
+                extra={
+                    "error": str(e), 
+                    "error_type": type(e).__name__,
+                    "user_id": current_user.id,
+                    "token_length": len(token) if token else 0
+                }
+            )
             http_error(
                 401, "Invalid or expired token.", logger.warning, {"error": str(e)}
             )

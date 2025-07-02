@@ -87,9 +87,17 @@ def get_engine_and_sessionmaker():
         # Adjust pool settings for parallel testing
         if os.environ.get('PYTEST_XDIST_WORKER'):
             # Smaller pools for parallel workers to avoid connection exhaustion
-            engine_kwargs["pool_size"] = 2
-            engine_kwargs["max_overflow"] = 3
-            logger.info(f"[DB_ENGINE_CREATE] Using parallel test pool settings: size=2, overflow=3")
+            # Use very minimal settings to avoid asyncpg event loop conflicts
+            engine_kwargs["pool_size"] = 1
+            engine_kwargs["max_overflow"] = 1
+            engine_kwargs["pool_reset_on_return"] = "commit"
+            # Additional asyncpg-specific settings for parallel testing
+            engine_kwargs["connect_args"] = {
+                "server_settings": {
+                    "application_name": f"reviewpoint_test_{worker_id}_{process_id}",
+                }
+            }
+            logger.info(f"[DB_ENGINE_CREATE] Using parallel test pool settings: size=1, overflow=1, reset_on_return=commit")
         else:
             # Standard pool settings
             engine_kwargs["pool_size"] = int(10 if settings.environment == "prod" else 5)
