@@ -418,7 +418,7 @@ class DatabaseTestTemplate(BaseAPITest):
 
 
     @pytest.fixture(autouse=True, scope="function")
-    def _setup_db_env_function(
+    async def _setup_db_env_function(
         self, monkeypatch, override_env_vars, loguru_list_sink, async_engine_isolated
     ):
         """

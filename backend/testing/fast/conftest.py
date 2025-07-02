@@ -62,6 +62,7 @@ os.environ.update({
     "REVIEWPOINT_FEATURE_USERS_DELETE": "true",
     "REVIEWPOINT_FEATURE_USERS_LIST": "true",
     "REVIEWPOINT_FEATURE_USERS_EXPORT": "true",
+    "REVIEWPOINT_FEATURE_USERS_EXPORT_FULL": "true",
     "REVIEWPOINT_FEATURE_USERS_EXPORT_ALIVE": "true",
     "REVIEWPOINT_FEATURE_USERS_EXPORT_SIMPLE": "true",
     
@@ -181,10 +182,9 @@ async def test_user(db_session):
     from src.utils.hashing import hash_password
     
     user = User(
-        id=uuid.uuid4(),
-        email="test@example.com",
+        email=f"test_{uuid.uuid4().hex[:8]}@example.com",
         name="Test User",
-        password_hash=hash_password("password123"),
+        hashed_password=hash_password("password123"),
         is_active=True,
         is_admin=False
     )
@@ -200,10 +200,9 @@ async def admin_user(db_session):
     from src.utils.hashing import hash_password
     
     user = User(
-        id=uuid.uuid4(),
-        email="admin@example.com",
+        email=f"admin_{uuid.uuid4().hex[:8]}@example.com",
         name="Admin User",
-        password_hash=hash_password("admin123"),
+        hashed_password=hash_password("admin123"),
         is_active=True,
         is_admin=True
     )
@@ -371,6 +370,9 @@ def override_env_vars(monkeypatch: pytest.MonkeyPatch, set_remaining_env_vars: N
     def _override(vars: dict[str, str]) -> None:
         for k, v in vars.items():
             monkeypatch.setenv(k, v)
+        # Clear settings cache so new environment variables take effect
+        from src.core.config import clear_settings_cache
+        clear_settings_cache()
     return _override
 
 @pytest.fixture

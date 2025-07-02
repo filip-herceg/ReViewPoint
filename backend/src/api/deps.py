@@ -696,17 +696,25 @@ async def get_current_user_with_export_api_key(
     """
     Authentication dependency for export endpoints that respects global API key settings.
     
-    When REVIEWPOINT_API_KEY_ENABLED is true:
+    When REVIEWPOINT_AUTH_ENABLED is false:
+        - Returns development admin user regardless of token validity
+        
+    When REVIEWPOINT_AUTH_ENABLED is true and REVIEWPOINT_API_KEY_ENABLED is true:
         - Requires both valid JWT token and API key
         - Returns the authenticated User
         
-    When REVIEWPOINT_API_KEY_ENABLED is false:
+    When REVIEWPOINT_AUTH_ENABLED is true and REVIEWPOINT_API_KEY_ENABLED is false:
         - Only requires JWT token (if provided)
         - If JWT token is provided, validates it and returns User
         - If JWT token is invalid, raises 401 error
         - If no JWT token is provided, returns None (unauthenticated access allowed)
     """
     settings = get_settings()
+    
+    # Check if authentication is disabled globally
+    if not settings.auth_enabled:
+        logger.warning("Authentication is DISABLED! Returning development admin user.")
+        return _get_dev_admin_user()
     
     # Check JWT token first (regardless of API key setting)
     authorization = request.headers.get("Authorization")
@@ -732,28 +740,8 @@ async def get_current_user_with_export_api_key(
             )
             return None  # This line will never be reached due to http_error, but helps with type checking
         
-        # Validate JWT token
-        if settings.api_key_enabled:
-            # When API key validation is enabled, require full user validation
-            current_user = await get_current_user(token, session)
-        else:
-            # When API key validation is disabled, allow any valid JWT token
-            # (for test environments where we want to bypass user database checks)
-            try:
-                current_user = await get_current_user(token, session)
-            except Exception:
-                # If user lookup fails but API key validation is disabled,
-                # create a mock user for test purposes
-                from src.models.user import User
-                current_user = User(
-                    id=999,
-                    email="test@example.com",
-                    name="Test User",
-                    is_active=True,
-                    is_admin=True,
-                    is_deleted=False,
-                    hashed_password="mock"
-                )
+        # Validate JWT token - always do full validation when auth is enabled
+        current_user = await get_current_user(token, session)
         
         # If API key validation is enabled, also check API key
         if settings.api_key_enabled:

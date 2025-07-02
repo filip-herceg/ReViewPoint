@@ -42,7 +42,10 @@ class TestUserExports(ExportEndpointTestTemplate):
 
     def test_export_users_full_csv(self, override_env_vars, client: TestClient, monkeypatch):
         # Disable authentication to bypass JWT validation and database lookup issues
-        override_env_vars({"REVIEWPOINT_AUTH_ENABLED": "false"})
+        override_env_vars({
+            "REVIEWPOINT_AUTH_ENABLED": "false",
+            "REVIEWPOINT_FEATURE_USERS_EXPORT_FULL": "true"
+        })
         
         # Mock the list_users function at the point where it's imported in the exports module
         async def mock_list_users(session):
@@ -81,7 +84,10 @@ class TestUserExports(ExportEndpointTestTemplate):
     def test_export_users_full_csv_unauthenticated(
         self, override_env_vars, client: TestClient
     ):
-        override_env_vars({"REVIEWPOINT_API_KEY_ENABLED": "false"})
+        override_env_vars({
+            "REVIEWPOINT_API_KEY_ENABLED": "false",
+            "REVIEWPOINT_FEATURE_USERS_EXPORT_FULL": "true"
+        })
         resp = client.get(EXPORT_FULL_ENDPOINT)
         # When API keys are disabled, endpoint should be accessible
         self.assert_status(resp, 200)
@@ -129,7 +135,13 @@ class TestUserExports(ExportEndpointTestTemplate):
         resp = client.get(f"{EXPORT_ENDPOINT}?format=xml", headers=self.get_auth_header(client))
         self.assert_status(resp, (400, 422))
 
-    def test_export_users_csv_invalid_token(self, client: TestClient):
+    def test_export_users_csv_invalid_token(self, override_env_vars, client: TestClient):
+        # Enable both feature flag and API key validation to ensure proper error handling
+        override_env_vars({
+            "REVIEWPOINT_FEATURE_USERS_EXPORT": "true",
+            "REVIEWPOINT_AUTH_ENABLED": "true",
+            "REVIEWPOINT_API_KEY_ENABLED": "true"
+        })
         headers = {"Authorization": "Bearer not.a.jwt.token", "X-API-Key": "testkey"}
         resp = client.get(EXPORT_ENDPOINT, headers=headers)
         self.assert_status(resp, (401, 403))
@@ -162,12 +174,21 @@ class TestUserExports(ExportEndpointTestTemplate):
             "text/csv"
         )
 
-    def test_export_full_csv_invalid_token(self, client: TestClient):
+    def test_export_full_csv_invalid_token(self, override_env_vars, client: TestClient):
+        # Enable the feature flag and authentication to ensure proper error handling
+        override_env_vars({
+            "REVIEWPOINT_FEATURE_USERS_EXPORT_FULL": "true",
+            "REVIEWPOINT_AUTH_ENABLED": "true",
+            "REVIEWPOINT_API_KEY_ENABLED": "true"
+        })
         headers = {"Authorization": "Bearer not.a.jwt.token", "X-API-Key": "testkey"}
         resp = client.get(EXPORT_FULL_ENDPOINT, headers=headers)
         self.assert_status(resp, (401, 403))
 
-    def test_export_full_csv_missing_api_key(self, client: TestClient):
+    def test_export_full_csv_missing_api_key(self, override_env_vars, client: TestClient):
+        # Enable the feature flag so the endpoint is accessible
+        override_env_vars({"REVIEWPOINT_FEATURE_USERS_EXPORT_FULL": "true"})
+        
         auth_headers = self.get_auth_header(client)
         headers = {k: v for k, v in auth_headers.items() if k.lower() != "x-api-key"}
         resp = client.get(EXPORT_FULL_ENDPOINT, headers=headers)
