@@ -16,17 +16,25 @@ APP_START_TIME = time.time()
 
 def get_pool_stats() -> dict[str, Any]:
     stats: dict[str, Any] = {}
-    pool = getattr(engine, "pool", None)
-    if pool:
-        for attr in ["size", "checkedin", "checkedout", "overflow", "awaiting"]:
-            val = getattr(pool, attr, None)
-            if callable(val):
-                try:
-                    stats[attr] = val()
-                except Exception:
-                    stats[attr] = None
-            else:
-                stats[attr] = val
+    try:
+        # Ensure engine is initialized before accessing pool
+        from src.core.database import ensure_engine_initialized
+        ensure_engine_initialized()
+        
+        pool = getattr(engine, "pool", None)
+        if pool:
+            for attr in ["size", "checkedin", "checkedout", "overflow", "awaiting"]:
+                val = getattr(pool, attr, None)
+                if callable(val):
+                    try:
+                        stats[attr] = val()
+                    except Exception:
+                        stats[attr] = None
+                else:
+                    stats[attr] = val
+    except Exception:
+        # If engine initialization fails, return empty stats
+        pass
     return stats
 
 

@@ -462,28 +462,33 @@ class TestAuthFeatureFlags(AuthEndpointTestTemplate):
 
         asyncio.run(run())
 
-    def test_api_key_disabled(self):
+    @pytest.mark.asyncio
+    async def test_api_key_disabled(self):
         self.override_env_vars({"REVIEWPOINT_API_KEY_ENABLED": "false"})
         transport = ASGITransport(app=self.test_app)
 
-        async def run():
-            async with AsyncClient(transport=transport, base_url="http://test") as ac:
-                resp = await ac.post(
-                    "/api/v1/auth/register",
-                    json={
-                        "email": "flag@example.com",
-                        "password": "pw123456",
-                        "name": "Flag",
-                    },
-                )
-                self.assert_status(resp, (201,))  # Registration should succeed when API keys are disabled
-
-        import asyncio
-
-        asyncio.run(run())
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            resp = await ac.post(
+                "/api/v1/auth/register",
+                json={
+                    "email": "flag@example.com",
+                    "password": "pw123456",
+                    "name": "Flag",
+                },
+            )
+            self.assert_status(resp, (201,))  # Registration should succeed when API keys are disabled
 
     def test_api_key_wrong(self):
-        self.override_env_vars({"REVIEWPOINT_API_KEY": "nottherightkey"})
+        # Override environment variables for this test
+        self.override_env_vars({
+            "REVIEWPOINT_API_KEY": "nottherightkey",
+            "REVIEWPOINT_API_KEY_ENABLED": "true"
+        })
+        
+        # Clear settings cache to pick up new environment variables
+        from src.core.config import clear_settings_cache
+        clear_settings_cache()
+        
         transport = ASGITransport(app=self.test_app)
 
         async def run():
@@ -503,5 +508,4 @@ class TestAuthFeatureFlags(AuthEndpointTestTemplate):
                 self.assert_status(resp, (401, 403))
 
         import asyncio
-
         asyncio.run(run())

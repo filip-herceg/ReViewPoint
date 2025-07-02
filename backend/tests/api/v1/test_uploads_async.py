@@ -37,24 +37,41 @@ def create_mock_admin_user():
 
 
 @pytest_asyncio.fixture
-async def fast_admin_client(test_app):
+async def fast_admin_client(test_app, async_session):
     """Ultra-fast async client with mocked admin authentication - no database calls."""
     from src.api.deps import get_current_user
+    from src.core.security import create_access_token
+    from src.models.user import User
     
-    # Override the auth dependency to return mock admin user
-    mock_admin = create_mock_admin_user()
+    # Create a real user in the database with unique email
+    unique_email = f"test_admin_{uuid.uuid4().hex[:8]}@example.com"
+    real_user = User(
+        email=unique_email,
+        name="Test Admin",
+        hashed_password="hashed_password",  # Not used in tests
+        is_active=True,
+        is_admin=True
+    )
+    async_session.add(real_user)
+    await async_session.commit()
+    await async_session.refresh(real_user)
     
+    # Override the auth dependency to return real user
     def override_get_current_user():
-        return mock_admin
+        return real_user
     
     test_app.dependency_overrides[get_current_user] = override_get_current_user
+    
+    # Create a proper JWT token with the real user ID
+    token_payload = {"sub": str(real_user.id), "role": "admin"}
+    valid_token = create_access_token(token_payload)
     
     try:
         transport = ASGITransport(app=test_app)
         async with AsyncClient(
             transport=transport,
             base_url="http://test",
-            headers={"X-API-Key": "testkey", "Authorization": "Bearer mock_token"},
+            headers={"X-API-Key": "testkey", "Authorization": f"Bearer {valid_token}"},
         ) as ac:
             yield ac
     finally:

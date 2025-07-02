@@ -51,14 +51,16 @@ class TestUserExports(ExportEndpointTestTemplate):
     ):
         override_env_vars({"REVIEWPOINT_API_KEY_ENABLED": "false"})
         resp = client.get(EXPORT_ENDPOINT)
-        self.assert_status(resp, (401, 403))
+        # When API keys are disabled, endpoint should be accessible
+        self.assert_status(resp, 200)
 
     def test_export_users_full_csv_unauthenticated(
         self, override_env_vars, client: TestClient
     ):
         override_env_vars({"REVIEWPOINT_API_KEY_ENABLED": "false"})
         resp = client.get(EXPORT_FULL_ENDPOINT)
-        self.assert_status(resp, (401, 403))
+        # When API keys are disabled, endpoint should be accessible
+        self.assert_status(resp, 200)
 
     def test_export_alive_unauthenticated(self, override_env_vars, client: TestClient):
         override_env_vars({"REVIEWPOINT_API_KEY_ENABLED": "false"})

@@ -84,25 +84,37 @@ def get_engine_and_sessionmaker():
             "future": True,
         }
         
-        # Adjust pool settings for parallel testing
-        if os.environ.get('PYTEST_XDIST_WORKER'):
-            # Smaller pools for parallel workers to avoid connection exhaustion
-            # Use very minimal settings to avoid asyncpg event loop conflicts
-            engine_kwargs["pool_size"] = 1
-            engine_kwargs["max_overflow"] = 1
-            engine_kwargs["pool_reset_on_return"] = "commit"
-            # Additional asyncpg-specific settings for parallel testing
-            engine_kwargs["connect_args"] = {
-                "server_settings": {
-                    "application_name": f"reviewpoint_test_{worker_id}_{process_id}",
+        # Only apply pool settings for PostgreSQL databases (SQLite doesn't support them)
+        if url_obj.drivername.startswith('postgresql'):
+            # Adjust pool settings for parallel testing
+            if os.environ.get('PYTEST_XDIST_WORKER'):
+                # Smaller pools for parallel workers to avoid connection exhaustion
+                # Use very minimal settings to avoid asyncpg event loop conflicts
+                engine_kwargs["pool_size"] = 1
+                engine_kwargs["max_overflow"] = 1
+                engine_kwargs["pool_reset_on_return"] = "commit"
+                # Additional asyncpg-specific settings for parallel testing
+                engine_kwargs["connect_args"] = {
+                    "server_settings": {
+                        "application_name": f"reviewpoint_test_{worker_id}_{process_id}",
+                    }
                 }
-            }
-            logger.info(f"[DB_ENGINE_CREATE] Using parallel test pool settings: size=1, overflow=1, reset_on_return=commit")
+                logger.info(f"[DB_ENGINE_CREATE] Using parallel test pool settings: size=1, overflow=1, reset_on_return=commit")
+            else:
+                # Standard pool settings
+                engine_kwargs["pool_size"] = int(10 if settings.environment == "prod" else 5)
+                engine_kwargs["max_overflow"] = int(20 if settings.environment == "prod" else 10)
+                logger.info(f"[DB_ENGINE_CREATE] Using standard pool settings: size={engine_kwargs['pool_size']}, overflow={engine_kwargs['max_overflow']}")
+        elif url_obj.drivername.startswith('sqlite'):
+            # SQLite-specific settings
+            connect_args = engine_kwargs.get("connect_args", {})
+            if not isinstance(connect_args, dict):
+                connect_args = {}
+            connect_args["check_same_thread"] = False
+            engine_kwargs["connect_args"] = connect_args
+            logger.info(f"[DB_ENGINE_CREATE] Using SQLite settings: check_same_thread=False")
         else:
-            # Standard pool settings
-            engine_kwargs["pool_size"] = int(10 if settings.environment == "prod" else 5)
-            engine_kwargs["max_overflow"] = int(20 if settings.environment == "prod" else 10)
-            logger.info(f"[DB_ENGINE_CREATE] Using standard pool settings: size={engine_kwargs['pool_size']}, overflow={engine_kwargs['max_overflow']}")
+            logger.info(f"[DB_ENGINE_CREATE] Unknown database type: {url_obj.drivername}, using default settings")
 
         logger.info(f"[DB_ENGINE_CREATE] Engine kwargs: {engine_kwargs}")
 
@@ -139,6 +151,14 @@ engine = None
 AsyncSessionLocal = None
 
 
+def ensure_engine_initialized():
+    """Ensure the global engine and sessionmaker are initialized."""
+    global engine, AsyncSessionLocal
+    if engine is None or AsyncSessionLocal is None:
+        logger.info("[DB_INIT] Initializing global engine and sessionmaker")
+        engine, AsyncSessionLocal = get_engine_and_sessionmaker()
+
+
 @asynccontextmanager
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     """Dependency for FastAPI routes/services."""
@@ -156,7 +176,7 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     if AsyncSessionLocal is None:
         logger.info(f"[DB_SESSION] SessionLocal not initialized, creating engine/sessionmaker")
         try:
-            _, AsyncSessionLocal = get_engine_and_sessionmaker()
+            ensure_engine_initialized()
         except Exception as e:
             logger.error(f"[DB_SESSION] Failed to initialize SessionLocal: {e}")
             raise

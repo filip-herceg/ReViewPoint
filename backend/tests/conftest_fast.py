@@ -21,7 +21,8 @@ import pytest
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
+from fastapi.testclient import TestClient
 from loguru import logger
 from pydantic import field_validator
 
@@ -47,11 +48,15 @@ os.environ.update({
     "REVIEWPOINT_FEATURE_AUTH_ME": "true",
     "REVIEWPOINT_FEATURE_AUTH_LOGOUT": "true",
     "REVIEWPOINT_FEATURE_AUTH_REFRESH_TOKEN": "true",
+    "REVIEWPOINT_FEATURE_HEALTH": "true",
+    "REVIEWPOINT_FEATURE_HEALTH_READ": "true",
+    "REVIEWPOINT_FEATURE_HEALTH_WRITE": "true",
     "REVIEWPOINT_FEATURE_USERS_CREATE": "true",
     "REVIEWPOINT_FEATURE_USERS_GET": "true",
     "REVIEWPOINT_FEATURE_USERS_UPDATE": "true",
     "REVIEWPOINT_FEATURE_USERS_DELETE": "true",
     "REVIEWPOINT_FEATURE_USERS_LIST": "true",
+    "REVIEWPOINT_FEATURE_UPLOADS": "true",
     "REVIEWPOINT_FEATURE_UPLOADS_SUBMIT": "true",
     "REVIEWPOINT_FEATURE_UPLOADS_GET": "true",
     "REVIEWPOINT_FEATURE_UPLOADS_LIST": "true",
@@ -119,11 +124,46 @@ async def app():
     """Create FastAPI test application."""
     return create_app()
 
+@pytest.fixture
+def client(app):
+    """Create synchronous test client using TestClient."""
+    with TestClient(app) as client:
+        yield client
+
 @pytest_asyncio.fixture
-async def client(app):
-    """Create test client."""
-    async with AsyncClient(app=app, base_url="http://test") as ac:
+async def async_client(app):
+    """Create async test client."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
+
+@pytest.fixture
+def client_with_api_key(app):
+    """Create synchronous test client with API key validation enabled via dependency override."""
+    from fastapi import HTTPException, Security
+    from src.api.deps import require_api_key, api_key_header
+    
+    async def mock_require_api_key(
+        api_key: str = Security(api_key_header),
+    ) -> None:
+        """Mock API key validation that always enforces validation."""
+        if not api_key or api_key != "testkey":
+            raise HTTPException(status_code=401, detail="Invalid API key")
+    
+    # Override the dependency
+    app.dependency_overrides[require_api_key] = mock_require_api_key
+    
+    try:
+        with TestClient(app) as client:
+            yield client
+    finally:
+        # Clean up the override
+        app.dependency_overrides.pop(require_api_key, None)
+
+@pytest.fixture
+def test_fixture_debug():
+    """Test fixture to verify conftest_fast.py is being loaded."""
+    return "fast_conftest_loaded"
 
 # Auth fixtures
 @pytest_asyncio.fixture

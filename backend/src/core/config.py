@@ -142,6 +142,11 @@ class Settings(BaseSettings):
 
     # API Key
     api_key_enabled: bool = Field(default=True, description="Enable API key validation")
+    api_key: str | None = Field(
+        default=None,
+        repr=False,
+        description="API key for authentication (env: REVIEWPOINT_API_KEY)",
+    )
 
     # Pydantic settings configuration
     model_config = SettingsConfigDict(

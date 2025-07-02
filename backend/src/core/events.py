@@ -26,10 +26,15 @@ async def validate_config() -> None:
 
 async def db_healthcheck() -> None:
     """Run a simple DB health check query. Raises on DB error."""
-    from src.core.database import engine
+    from src.core.database import ensure_engine_initialized
+    import src.core.database as db_module
 
     try:
-        async with engine.connect() as conn:
+        # Ensure engine is initialized before attempting health check
+        if db_module.engine is None:
+            ensure_engine_initialized()
+        
+        async with db_module.engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
     except SQLAlchemyError as e:
         error_msg = str(e)
@@ -43,12 +48,21 @@ async def db_healthcheck() -> None:
 def log_startup_complete() -> None:
     """Log startup completion information."""
     from src.core.config import get_settings
-    from src.core.database import engine
+    from src.core.database import ensure_engine_initialized
+    import src.core.database as db_module
 
     settings = get_settings()
     environment = settings.environment
     db_type = settings.db_url.split("://")[0] if settings.db_url else "unknown"
-    pool_size = engine.pool.size() if hasattr(engine.pool, "size") else "n/a"
+    
+    # Ensure engine is initialized for startup logging
+    if db_module.engine is None:
+        ensure_engine_initialized()
+    
+    try:
+        pool_size = db_module.engine.pool.size() if hasattr(db_module.engine.pool, "size") else "n/a"
+    except (AttributeError, Exception):
+        pool_size = "n/a"
 
     logger.info(f"Startup complete. Environment: {environment}, DB: {db_type}")
     logger.info(f"DB pool size: {pool_size}")

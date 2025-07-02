@@ -48,17 +48,19 @@ os.environ.update({
     "REVIEWPOINT_FEATURE_AUTH_ME": "true",
     "REVIEWPOINT_FEATURE_AUTH_LOGOUT": "true",
     "REVIEWPOINT_FEATURE_AUTH_REFRESH_TOKEN": "true",
-    "REVIEWPOINT_FEATURE_USERS_CREATE": "true",
-    "REVIEWPOINT_FEATURE_USERS_GET": "true",
-    "REVIEWPOINT_FEATURE_USERS_UPDATE": "true",
-    "REVIEWPOINT_FEATURE_USERS_DELETE": "true",
-    "REVIEWPOINT_FEATURE_USERS_LIST": "true",
+    "REVIEWPOINT_FEATURE_HEALTH": "true",
+    "REVIEWPOINT_FEATURE_HEALTH_READ": "true",
+    "REVIEWPOINT_FEATURE_UPLOADS": "true",
     "REVIEWPOINT_FEATURE_UPLOADS_UPLOAD": "true",
     "REVIEWPOINT_FEATURE_UPLOADS_GET": "true",
     "REVIEWPOINT_FEATURE_UPLOADS_LIST": "true",
     "REVIEWPOINT_FEATURE_UPLOADS_UPDATE": "true",
     "REVIEWPOINT_FEATURE_UPLOADS_DELETE": "true",
-    "REVIEWPOINT_FEATURE_HEALTH_READ": "true",
+    "REVIEWPOINT_FEATURE_USERS_CREATE": "true",
+    "REVIEWPOINT_FEATURE_USERS_GET": "true",
+    "REVIEWPOINT_FEATURE_USERS_UPDATE": "true",
+    "REVIEWPOINT_FEATURE_USERS_DELETE": "true",
+    "REVIEWPOINT_FEATURE_USERS_LIST": "true",
     
     # Mock external services
     "REVIEWPOINT_EXTERNAL_SERVICES_ENABLED": "false",
@@ -141,6 +143,32 @@ def client(test_app):
     """
     with TestClient(test_app) as c:
         yield c
+
+@pytest.fixture(scope="function")
+def client_with_api_key(test_app):
+    """
+    Provides a synchronous TestClient with API key validation enabled via dependency override.
+    This enables testing API key validation in the fast test environment.
+    """
+    from fastapi import HTTPException, Security
+    from src.api.deps import require_api_key, api_key_header
+    
+    async def mock_require_api_key(
+        api_key: str = Security(api_key_header),
+    ) -> None:
+        """Mock API key validation that always enforces validation."""
+        if not api_key or api_key != "testkey":
+            raise HTTPException(status_code=401, detail="Invalid API key")
+    
+    # Override the dependency
+    test_app.dependency_overrides[require_api_key] = mock_require_api_key
+    
+    try:
+        with TestClient(test_app) as c:
+            yield c
+    finally:
+        # Clean up the override
+        test_app.dependency_overrides.pop(require_api_key, None)
 
 # Auth fixtures
 @pytest_asyncio.fixture

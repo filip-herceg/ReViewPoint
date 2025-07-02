@@ -563,6 +563,7 @@ async def validate_api_key(
         bool: True if the API key is valid, False otherwise.
     """
     settings = get_settings()
+    
     if not settings.api_key_enabled:
         # API key validation is disabled, always return True
         return True
@@ -572,8 +573,8 @@ async def validate_api_key(
         logger.warning("API key validation is enabled but no API key provided in request")
         return False
 
-    # Get the configured API key
-    configured_api_key = os.environ.get("REVIEWPOINT_API_KEY")
+    # Get the configured API key from settings
+    configured_api_key = settings.api_key
     if not configured_api_key:
         logger.warning("API key validation is enabled but no API key is configured")
         return False
@@ -595,7 +596,9 @@ async def require_api_key(
     Usage:
         _ = Depends(require_api_key)
     """
-    if not await validate_api_key(api_key):
+    validation_result = await validate_api_key(api_key)
+    
+    if not validation_result:
         http_error(
             status.HTTP_401_UNAUTHORIZED,
             "Invalid or missing API key",

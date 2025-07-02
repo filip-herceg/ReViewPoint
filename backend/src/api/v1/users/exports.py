@@ -4,10 +4,14 @@ User export endpoints: CSV, health, and simple export endpoints.
 
 import csv
 from io import StringIO
+from typing import Optional
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Query, Response
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.deps import require_api_key, require_feature
+from src.core.database import get_async_session
+from src.repositories.user import get_active_users, list_users
 from src.utils.datetime import parse_flexible_datetime
 
 router = APIRouter()
@@ -22,15 +26,48 @@ router = APIRouter()
         Depends(require_api_key),
     ],
 )
-async def export_users_csv() -> Response:
+async def export_users_csv(
+    session: AsyncSession = Depends(get_async_session),
+    email: Optional[str] = Query(None, description="Filter by email"),
+    format: Optional[str] = Query("csv", description="Export format (only csv supported)"),
+) -> Response:
+    # Validate format parameter
+    if format and format.lower() != "csv":
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Unsupported format. Only 'csv' is supported.")
+    
+    # Query users from database
+    users_data, total_count = await list_users(session)
+    
+    # Filter by email if provided
+    if email:
+        users_data = [user for user in users_data if user.email == email]
+    
+    # Generate CSV
     output = StringIO()
     writer = csv.writer(output)
     writer.writerow(["id", "email", "name"])
-    writer.writerow([1, "dummy@example.com", "Dummy User"])
-    return Response(content=output.getvalue(), media_type="text/csv")
+    
+    for user in users_data:
+        writer.writerow([user.id, user.email, user.name])
+    
+    csv_content = output.getvalue()
+    
+    # Add content-disposition header for file download
+    headers = {
+        "Content-Disposition": "attachment; filename=users_export.csv"
+    }
+    
+    return Response(content=csv_content, media_type="text/csv", headers=headers)
 
 
-@router.get("/export-alive", summary="Test endpoint for export router")
+@router.get(
+    "/export-alive", 
+    summary="Test endpoint for export router",
+    dependencies=[
+        Depends(require_feature("users:export_alive")),
+    ],
+)
 async def export_alive() -> dict[str, str]:
     return {"status": "users export alive"}
 
@@ -44,15 +81,44 @@ async def export_alive() -> dict[str, str]:
         Depends(require_api_key),
     ],
 )
-async def export_users_full_csv() -> Response:
+async def export_users_full_csv(
+    session: AsyncSession = Depends(get_async_session),
+) -> Response:
+    # Query users from database
+    users_data, total_count = await list_users(session)
+    
+    # Generate CSV with full user data
     output = StringIO()
     writer = csv.writer(output)
-    writer.writerow(["id", "email", "name", "created_at", "updated_at"])
-    created_time = parse_flexible_datetime("2023-01-01T00:00:00")
-    writer.writerow([1, "dummy@example.com", "Dummy User", created_time, created_time])
-    return Response(content=output.getvalue(), media_type="text/csv")
+    writer.writerow(["id", "email", "name", "created_at", "updated_at", "is_active", "is_admin"])
+    
+    for user in users_data:
+        writer.writerow([
+            user.id,
+            user.email,
+            user.name,
+            user.created_at.isoformat() if user.created_at else "",
+            user.updated_at.isoformat() if user.updated_at else "",
+            user.is_active,
+            user.is_admin
+        ])
+    
+    csv_content = output.getvalue()
+    
+    # Add content-disposition header for file download
+    headers = {
+        "Content-Disposition": "attachment; filename=users_full_export.csv"
+    }
+    
+    return Response(content=csv_content, media_type="text/csv", headers=headers)
 
 
-@router.get("/export-simple", summary="Simple test endpoint for debugging")
+@router.get(
+    "/export-simple", 
+    summary="Simple test endpoint for debugging",
+    dependencies=[
+        Depends(require_feature("users:export_simple")),
+    ],
+)
 async def export_simple() -> dict[str, str]:
-    return {"status": "users export simple"}
+    return {"users": "export simple status"}
