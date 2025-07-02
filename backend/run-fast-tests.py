@@ -60,7 +60,6 @@ def main():
             sys.executable, "-m", "pytest",
             "--tb=short",
             "--disable-warnings",
-            "-x",
             "-p", "no:cacheprovider",
             f"--log-cli-level={test_log_level}",
         ]
