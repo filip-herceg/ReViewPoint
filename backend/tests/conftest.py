@@ -413,10 +413,12 @@ async def async_engine_isolated(use_fast_db, postgres_container):
             "max_overflow": 0,  # No overflow connections
             "pool_reset_on_return": "commit",  # Reset connections between uses
             "pool_pre_ping": True,  # Verify connections before use
+            "pool_recycle": 300,  # Recycle connections every 5 minutes
             "connect_args": {
                 "server_settings": {
                     "application_name": f"reviewpoint_test_{worker_id}_{os.getpid()}",
-                }
+                },
+                "command_timeout": 30,  # 30 second timeout for commands
             }
         }
         
@@ -457,10 +459,11 @@ async def async_engine_isolated(use_fast_db, postgres_container):
 @pytest_asyncio.fixture(scope="function")
 async def async_session(async_engine_isolated):
     """
-    Provide an async SQLAlchemy session for each test function using transaction-level isolation.
-    Simplified approach that works well with both SQLite and PostgreSQL.
+    Provide an async SQLAlchemy session for each test function.
+    Uses a simplified approach to avoid async event loop conflicts.
     """
     from sqlalchemy.ext.asyncio import AsyncSession
+    import asyncio
     import time
     
     worker_id = os.environ.get('PYTEST_XDIST_WORKER', 'main')
@@ -468,68 +471,46 @@ async def async_session(async_engine_isolated):
     
     session_start_time = time.time()
     
-    # For SQLite (parallel tests), use simpler session management
-    # For PostgreSQL (single tests), use transaction isolation
-    is_parallel = bool(os.environ.get('PYTEST_XDIST_WORKER'))
-    
     try:
-        if is_parallel:
-            # Simple session for SQLite in parallel tests
-            session = AsyncSession(bind=async_engine_isolated, expire_on_commit=False)
-            
-            # Test the session with a simple query
-            test_start = time.time()
+        # Create a simple session bound to the engine
+        # This approach avoids transaction context manager issues
+        session = AsyncSession(bind=async_engine_isolated, expire_on_commit=False)
+        
+        # Test the session with a simple query
+        test_start = time.time()
+        try:
+            from sqlalchemy import text
+            await session.execute(text("SELECT 1"))
+            test_time = time.time() - test_start
+            logger.debug(f"[SESSION_ISOLATED] Session test query completed in {test_time:.3f}s")
+        except Exception as e:
+            test_time = time.time() - test_start
+            logger.error(f"[SESSION_ISOLATED] Session test query failed in {test_time:.3f}s: {e}")
+            # Close session and re-raise
+            await session.close()
+            raise
+        
+        total_session_time = time.time() - session_start_time
+        logger.debug(f"[SESSION_ISOLATED] Session ready in {total_session_time:.3f}s (worker: {worker_id})")
+        
+        try:
+            yield session
+        finally:
+            # Clean shutdown of session
             try:
-                from sqlalchemy import text
-                await session.execute(text("SELECT 1"))
-                test_time = time.time() - test_start
-                logger.debug(f"[SESSION_ISOLATED] Session test query completed in {test_time:.3f}s")
+                # First, rollback any uncommitted changes
+                if session.in_transaction():
+                    await session.rollback()
+                    logger.debug(f"[SESSION_ISOLATED] Session transaction rolled back (worker: {worker_id})")
             except Exception as e:
-                test_time = time.time() - test_start
-                logger.error(f"[SESSION_ISOLATED] Session test query failed in {test_time:.3f}s: {e}")
-                raise
-            
-            total_session_time = time.time() - session_start_time
-            logger.debug(f"[SESSION_ISOLATED] Session ready in {total_session_time:.3f}s (worker: {worker_id})")
+                logger.warning(f"[SESSION_ISOLATED] Error rolling back session (worker: {worker_id}): {e}")
             
             try:
-                yield session
-            finally:
+                # Close the session
                 await session.close()
                 logger.debug(f"[SESSION_ISOLATED] Session closed (worker: {worker_id})")
-        else:
-            # Transaction isolation for PostgreSQL single tests
-            connection_start = time.time()
-            async with async_engine_isolated.connect() as connection:
-                connection_time = time.time() - connection_start
-                logger.debug(f"[SESSION_ISOLATED] Connection established in {connection_time:.3f}s")
-                
-                # Start a transaction that will be rolled back after the test
-                async with connection.begin() as transaction:
-                    session = AsyncSession(bind=connection, expire_on_commit=False)
-                    
-                    # Test the session with a simple query
-                    test_start = time.time()
-                    try:
-                        from sqlalchemy import text
-                        await session.execute(text("SELECT 1"))
-                        test_time = time.time() - test_start
-                        logger.debug(f"[SESSION_ISOLATED] Session test query completed in {test_time:.3f}s")
-                    except Exception as e:
-                        test_time = time.time() - test_start
-                        logger.error(f"[SESSION_ISOLATED] Session test query failed in {test_time:.3f}s: {e}")
-                        raise
-                    
-                    total_session_time = time.time() - session_start_time
-                    logger.debug(f"[SESSION_ISOLATED] Session ready in {total_session_time:.3f}s (worker: {worker_id})")
-                    
-                    try:
-                        yield session
-                    finally:
-                        # Close the session and let the transaction rollback automatically
-                        await session.close()
-                        await transaction.rollback()
-                        logger.debug(f"[SESSION_ISOLATED] Session closed and transaction rolled back (worker: {worker_id})")
+            except Exception as e:
+                logger.warning(f"[SESSION_ISOLATED] Error closing session (worker: {worker_id}): {e}")
             
     except Exception as e:
         total_session_time = time.time() - session_start_time

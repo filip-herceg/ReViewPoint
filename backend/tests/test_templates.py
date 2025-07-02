@@ -216,17 +216,23 @@ class ExportEndpointTestTemplate(BaseAPITest):
 
 class UserCoreEndpointTestTemplate(BaseAPITest):
     """
-    Template for user core endpoint tests that require loguru_list_sink, and override_env_vars for every test.
+    Template for user core endpoint tests that require async_session, test_app, loguru_list_sink, and override_env_vars.
     The override_env_vars fixture is available as self.override_env_vars for env var overrides in tests.
+    Uses async fixtures to avoid event loop conflicts.
     """
 
     @pytest.fixture(autouse=True)
-    def _setup_env_and_logs(
-        self, loguru_list_sink, override_env_vars
+    def _setup_async_fixtures(
+        self,
+        async_session,
+        test_app,
+        loguru_list_sink,
+        override_env_vars,
     ):
+        self.async_session = async_session
+        self.test_app = test_app
         self.loguru_list_sink = loguru_list_sink
         self.override_env_vars = override_env_vars
-        pass
 
 
 class LogCaptureTestTemplate(BaseAPITest):
