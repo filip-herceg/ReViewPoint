@@ -12,6 +12,35 @@ def pytest_configure(config):
     """Register test markers for slow and fast tests."""
     config.addinivalue_line("markers", "slow: marks tests that access real database or are slow")
     config.addinivalue_line("markers", "fast: marks tests that use mocks or in-memory DB")
+
+
+def pytest_sessionstart(session):
+    """
+    Set critical environment variables before any fixtures or tests run.
+    This runs once per pytest-xdist worker session, ensuring env vars are set 
+    before any code that might create database engines executes.
+    """
+    worker_id = os.environ.get('PYTEST_XDIST_WORKER', 'main')
+    
+    # Set critical secrets that are needed during engine creation
+    os.environ["REVIEWPOINT_JWT_SECRET"] = "testsecret"
+    os.environ["REVIEWPOINT_JWT_SECRET_KEY"] = "testsecret"
+    os.environ["REVIEWPOINT_API_KEY_ENABLED"] = "true"
+    os.environ["REVIEWPOINT_API_KEY"] = "testkey"
+    
+    logger.info(f"[PYTEST_SESSIONSTART] Critical env vars set for worker: {worker_id}")
+    logger.info(f"[PYTEST_SESSIONSTART] JWT_SECRET_KEY set: {'REVIEWPOINT_JWT_SECRET_KEY' in os.environ}")
+    
+    # Import configuration here to trigger any early validation
+    try:
+        # Delay the import until env vars are set
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+        from src.core.config import get_settings
+        logger.info(f"[PYTEST_SESSIONSTART] Config validation successful for worker: {worker_id}")
+    except Exception as e:
+        logger.error(f"[PYTEST_SESSIONSTART] Config validation failed for worker {worker_id}: {e}")
+        # Don't fail here, let the test handle it
 """
 Centralized test database and environment management for all tests in the backend.
 
@@ -38,6 +67,30 @@ import pytest
 import pytest_asyncio
 from loguru import logger
 
+# Early environment setup for pytest-xdist workers
+# This must happen before any imports that might create database engines
+if "PYTEST_CURRENT_TEST" in os.environ:
+    # Only set during pytest runs to avoid affecting normal app usage
+    worker_id = os.environ.get('PYTEST_XDIST_WORKER', 'main')
+    
+    # Set critical secrets that are needed during engine creation
+    if "REVIEWPOINT_JWT_SECRET_KEY" not in os.environ:
+        os.environ["REVIEWPOINT_JWT_SECRET"] = "testsecret"
+        os.environ["REVIEWPOINT_JWT_SECRET_KEY"] = "testsecret"
+        os.environ["REVIEWPOINT_API_KEY_ENABLED"] = "true"
+        os.environ["REVIEWPOINT_API_KEY"] = "testkey"
+        logger.info(f"[EARLY_ENV_SETUP] Critical env vars set for worker: {worker_id}")
+        
+        # Clear any cached settings since env vars have changed
+        try:
+            import sys
+            sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+            from src.core.config import clear_settings_cache
+            clear_settings_cache()
+            logger.info(f"[EARLY_ENV_SETUP] Settings cache cleared for worker: {worker_id}")
+        except Exception as e:
+            logger.warning(f"[EARLY_ENV_SETUP] Could not clear settings cache: {e}")
+
 
 @pytest.fixture(scope="session", autouse=True)
 def postgres_container():
@@ -51,7 +104,13 @@ def postgres_container():
     image = os.environ.get("REVIEWPOINT_TEST_POSTGRES_IMAGE", "postgres:15-alpine")
     import time
     import socket
+    
+    # Log parallel test worker information
+    worker_id = os.environ.get('PYTEST_XDIST_WORKER', 'main')
+    logger.info(f"[TESTCONTAINER_DEBUG] Starting container setup for worker: {worker_id}")
+    
     try:
+        container_start_time = time.time()
         # Set up the container with high max_connections and shared_buffers
         postgres = PostgresContainer(image)
         postgres.with_env("POSTGRES_MAX_CONNECTIONS", "300")
@@ -60,7 +119,13 @@ def postgres_container():
         postgres.with_exposed_ports(5432)
         # Optionally, try host networking (may not work on Docker Desktop for Windows)
         # postgres.with_network_mode("host")
+        
+        logger.info(f"[TESTCONTAINER_DEBUG] Container configured, starting with image: {image}")
+        
         with postgres as pg:
+            container_ready_time = time.time() - container_start_time
+            logger.info(f"[TESTCONTAINER_DEBUG] Container started in {container_ready_time:.2f}s")
+            
             db_url = pg.get_connection_url()
             # Convert sync driver to asyncpg for SQLAlchemy async engine
             if db_url.startswith("postgresql://"):
@@ -73,9 +138,13 @@ def postgres_container():
                 )
             else:
                 async_db_url = db_url
-            logger.info(
-                f"[testcontainers] Started PostgreSQL container: {async_db_url}"
-            )
+            
+            # Log connection details (sanitized)
+            sanitized_url = async_db_url.split('@')[1] if '@' in async_db_url else async_db_url
+            logger.info(f"[TESTCONTAINER_DEBUG] Container URL: postgresql+asyncpg://...@{sanitized_url}")
+            logger.info(f"[TESTCONTAINER_DEBUG] Internal host: {pg.get_container_host_ip()}")
+            logger.info(f"[TESTCONTAINER_DEBUG] Mapped port: {pg.get_exposed_port(5432)}")
+            
             # Wait for DB port to be open (robust wait)
             def port_open(host, port):
                 try:
@@ -83,40 +152,64 @@ def postgres_container():
                         return True
                 except Exception:
                     return False
+            
             # Parse host/port from db_url
             import re
             m = re.match(r"postgresql\+asyncpg://[^:]+:[^@]+@([^:/]+):(\d+)/", async_db_url)
             if m:
                 host, port = m.group(1), int(m.group(2))
-                logger.info(f"[testcontainers] Waiting for DB port {host}:{port} to be open...")
-                for _ in range(60):
+                logger.info(f"[TESTCONTAINER_DEBUG] Testing port connectivity to {host}:{port}")
+                
+                port_wait_start = time.time()
+                for attempt in range(60):
                     if port_open(host, port):
-                        logger.info(f"[testcontainers] DB port {host}:{port} is open.")
+                        port_wait_time = time.time() - port_wait_start
+                        logger.info(f"[TESTCONTAINER_DEBUG] Port {host}:{port} is open after {port_wait_time:.2f}s, {attempt+1} attempts")
                         break
                     time.sleep(0.5)
                 else:
-                    raise RuntimeError(f"Postgres container port {host}:{port} did not open in time.")
+                    port_wait_time = time.time() - port_wait_start
+                    raise RuntimeError(f"Postgres container port {host}:{port} did not open in {port_wait_time:.2f}s after 60 attempts.")
             else:
-                logger.warning(f"[testcontainers] Could not parse host/port from DB URL: {async_db_url}")
-            # Optionally, try a real connection
+                logger.warning(f"[TESTCONTAINER_DEBUG] Could not parse host/port from DB URL: {async_db_url}")
+            
+            # Test actual database connection
             try:
                 import asyncpg
-                for _ in range(30):
+                connection_test_start = time.time()
+                
+                # Convert SQLAlchemy URL to plain PostgreSQL URL for asyncpg
+                asyncpg_url = async_db_url.replace("postgresql+asyncpg://", "postgresql://")
+                
+                for attempt in range(30):
                     try:
-                        conn = asyncio.get_event_loop().run_until_complete(
-                            asyncpg.connect(async_db_url)
-                        )
-                        asyncio.get_event_loop().run_until_complete(conn.close())
-                        logger.info("[testcontainers] Successfully connected to Postgres DB.")
+                        logger.debug(f"[TESTCONTAINER_DEBUG] Connection attempt #{attempt+1}")
+                        
+                        # Simple synchronous test using asyncio.run
+                        async def test_connection():
+                            conn = await asyncpg.connect(asyncpg_url)
+                            await conn.close()
+                        
+                        asyncio.run(test_connection())
+                        
+                        connection_test_time = time.time() - connection_test_start
+                        logger.info(f"[TESTCONTAINER_DEBUG] Database connection successful after {connection_test_time:.2f}s, {attempt+1} attempts")
                         break
                     except Exception as e:
-                        logger.info(f"[testcontainers] Waiting for Postgres DB to accept connections: {e}")
+                        logger.debug(f"[TESTCONTAINER_DEBUG] Connection attempt #{attempt+1} failed: {type(e).__name__}: {e}")
                         time.sleep(0.5)
                 else:
-                    raise RuntimeError("Postgres DB did not accept connections in time.")
+                    connection_test_time = time.time() - connection_test_start
+                    raise RuntimeError(f"Postgres DB did not accept connections after {connection_test_time:.2f}s, 30 attempts.")
             except ImportError:
-                logger.warning("[testcontainers] asyncpg not available for connection check.")
+                logger.warning("[TESTCONTAINER_DEBUG] asyncpg not available for connection check.")
+            
+            # Set environment variable for all tests
             os.environ["REVIEWPOINT_DB_URL"] = async_db_url
+            
+            total_setup_time = time.time() - container_start_time
+            logger.info(f"[TESTCONTAINER_DEBUG] Container fully ready in {total_setup_time:.2f}s")
+            
             yield async_db_url
             os.environ.pop("REVIEWPOINT_DB_URL", None)
             logger.info(
@@ -147,21 +240,47 @@ import asyncio
 
 
 # 1. Environment setup (env vars, DB cleanup, DB/table creation)
+@pytest.fixture(autouse=True, scope="session")
+def set_required_env_vars_session(postgres_container) -> None:
+    """
+    Set critical environment variables at session scope before any code that might 
+    create database engines runs. This is essential for pytest-xdist workers.
+    """
+    worker_id = os.environ.get('PYTEST_XDIST_WORKER', 'main')
+    logger.info(f"[ENV_SETUP_SESSION] Setting session-level environment variables for worker: {worker_id}")
+    
+    # Set critical secrets that are needed during engine creation
+    os.environ["REVIEWPOINT_JWT_SECRET"] = "testsecret"
+    os.environ["REVIEWPOINT_JWT_SECRET_KEY"] = "testsecret"
+    os.environ["REVIEWPOINT_API_KEY_ENABLED"] = "true"
+    os.environ["REVIEWPOINT_API_KEY"] = "testkey"
+    
+    # DB URL is already set by postgres_container fixture
+    logger.info(f"[ENV_SETUP_SESSION] Critical env vars set for worker: {worker_id}")
+    logger.info(f"[ENV_SETUP_SESSION] DB_URL: {os.environ.get('REVIEWPOINT_DB_URL', 'NOT_SET')}")
+    
+
 @pytest.fixture(autouse=True, scope="function")
-def set_required_env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
+def set_remaining_env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
     """
-    Automatically set all required environment variables and feature flags for tests.
-    Ensures a consistent environment for every test function.
+    Set remaining environment variables and feature flags for tests.
+    Uses monkeypatch for proper cleanup after each test.
+    Also clears settings cache to ensure fresh config for each test.
     """
-    monkeypatch.setenv(
-        "REVIEWPOINT_DB_URL",
-        "postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint",
-    )
-    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET", "testsecret")
-    monkeypatch.setenv("REVIEWPOINT_JWT_SECRET_KEY", "testsecret")
-    monkeypatch.setenv("REVIEWPOINT_API_KEY_ENABLED", "true")
-    monkeypatch.setenv("REVIEWPOINT_API_KEY", "testkey")
-    # Enable all known feature flags for all endpoints
+    worker_id = os.environ.get('PYTEST_XDIST_WORKER', 'main')
+    logger.debug(f"[ENV_SETUP_FUNC] Setting function-level environment variables for worker: {worker_id}")
+    
+    # Clear settings cache to ensure fresh config
+    try:
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+        from src.core.config import clear_settings_cache
+        clear_settings_cache()
+        logger.debug(f"[ENV_SETUP_FUNC] Settings cache cleared for worker: {worker_id}")
+    except Exception as e:
+        logger.warning(f"[ENV_SETUP_FUNC] Could not clear settings cache: {e}")
+    
+    # Feature flags (these can be set per-function since they don't affect engine creation)
     # Auth endpoints
     monkeypatch.setenv("REVIEWPOINT_FEATURE_AUTH_REGISTER", "true")
     monkeypatch.setenv("REVIEWPOINT_FEATURE_AUTH_LOGIN", "true")
@@ -266,25 +385,57 @@ async def async_engine_isolated(use_fast_db, postgres_container):
     Uses in-memory SQLite if FAST_TESTS=1, otherwise uses PostgreSQL.
     """
     from sqlalchemy.ext.asyncio import create_async_engine
+    import time
     import uuid
     sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
     from src.models import Base
 
+    worker_id = os.environ.get('PYTEST_XDIST_WORKER', 'main')
+    test_id = str(uuid.uuid4())[:8]
+    logger.debug(f"[ENGINE_ISOLATED] Creating engine for worker: {worker_id}, test_id: {test_id}")
+
+    engine_start_time = time.time()
+    
     if use_fast_db:
-        db_url = f"sqlite+aiosqlite:///:memory:?cache=shared&test_id={uuid.uuid4()}"
+        db_url = f"sqlite+aiosqlite:///:memory:?cache=shared&test_id={test_id}"
+        logger.debug(f"[ENGINE_ISOLATED] Using SQLite in-memory DB: {db_url}")
         engine = create_async_engine(db_url, future=True, connect_args={"check_same_thread": False})
     else:
         # Use the same DB URL, but pool_size=1 for isolation
         db_url = os.environ["REVIEWPOINT_DB_URL"]
+        logger.debug(f"[ENGINE_ISOLATED] Using PostgreSQL with isolation pool (worker: {worker_id})")
         engine = create_async_engine(db_url, future=True, pool_size=1, max_overflow=0)
 
+    engine_creation_time = time.time() - engine_start_time
+    logger.debug(f"[ENGINE_ISOLATED] Engine created in {engine_creation_time:.3f}s")
+
     # Create tables for this test
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    table_creation_start = time.time()
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        table_creation_time = time.time() - table_creation_start
+        logger.debug(f"[ENGINE_ISOLATED] Tables created in {table_creation_time:.3f}s")
+    except Exception as e:
+        table_creation_time = time.time() - table_creation_start
+        logger.error(f"[ENGINE_ISOLATED] Failed to create tables in {table_creation_time:.3f}s: {e}")
+        await engine.dispose()
+        raise
+
+    total_setup_time = time.time() - engine_start_time
+    logger.debug(f"[ENGINE_ISOLATED] Engine fully set up in {total_setup_time:.3f}s (worker: {worker_id})")
 
     yield engine
-    await engine.dispose()
-
+    
+    # Clean up
+    disposal_start_time = time.time()
+    try:
+        await engine.dispose()
+        disposal_time = time.time() - disposal_start_time
+        logger.debug(f"[ENGINE_ISOLATED] Engine disposed in {disposal_time:.3f}s (worker: {worker_id})")
+    except Exception as e:
+        disposal_time = time.time() - disposal_start_time
+        logger.error(f"[ENGINE_ISOLATED] Failed to dispose engine in {disposal_time:.3f}s: {e}")
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -294,8 +445,42 @@ async def async_session(async_engine_isolated):
     Each test gets its own engine and connection pool.
     """
     from sqlalchemy.ext.asyncio import AsyncSession
-    async with async_engine_isolated.connect() as connection:
-        session = AsyncSession(bind=connection, expire_on_commit=False)
+    import time
+    
+    worker_id = os.environ.get('PYTEST_XDIST_WORKER', 'main')
+    logger.debug(f"[SESSION_ISOLATED] Creating session for worker: {worker_id}")
+    
+    session_start_time = time.time()
+    
+    try:
+        connection_start = time.time()
+        async with async_engine_isolated.connect() as connection:
+            connection_time = time.time() - connection_start
+            logger.debug(f"[SESSION_ISOLATED] Connection established in {connection_time:.3f}s")
+            
+            session = AsyncSession(bind=connection, expire_on_commit=False)
+            
+            # Test the session with a simple query
+            test_start = time.time()
+            try:
+                from sqlalchemy import text
+                await session.execute(text("SELECT 1"))
+                test_time = time.time() - test_start
+                logger.debug(f"[SESSION_ISOLATED] Session test query completed in {test_time:.3f}s")
+            except Exception as e:
+                test_time = time.time() - test_start
+                logger.error(f"[SESSION_ISOLATED] Session test query failed in {test_time:.3f}s: {e}")
+                raise
+            
+            total_session_time = time.time() - session_start_time
+            logger.debug(f"[SESSION_ISOLATED] Session ready in {total_session_time:.3f}s (worker: {worker_id})")
+            
+            yield session
+            
+    except Exception as e:
+        total_session_time = time.time() - session_start_time
+        logger.error(f"[SESSION_ISOLATED] Session creation failed in {total_session_time:.3f}s: {e}")
+        raise
         try:
             yield session
         finally:
@@ -440,7 +625,7 @@ def patch_loguru_remove(monkeypatch: Any) -> Generator[None, None, None]:
 
 
 @pytest.fixture
-def override_env_vars(monkeypatch: pytest.MonkeyPatch, set_required_env_vars: None):
+def override_env_vars(monkeypatch: pytest.MonkeyPatch, set_remaining_env_vars: None):
     """
     Fixture to override environment variables for a single test.
     Usage: override_env_vars({"VAR1": "value1", "VAR2": "value2"})

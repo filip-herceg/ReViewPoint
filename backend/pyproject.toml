@@ -163,16 +163,22 @@ exclude_lines = [
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-ra -q --strict-markers --strict-config -n auto"
+addopts = "-ra -q --strict-markers --strict-config --tb=short --log-cli-level=DEBUG --log-cli-format='%(asctime)s [%(levelname)8s] %(name)s: %(message)s'"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 pythonpath = ["src"]
+log_cli = true
+log_cli_level = "DEBUG"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
+log_file = "tests/test_debug.log"
+log_file_level = "DEBUG"
+log_file_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
 markers = [
     "jwt: mark tests that require JWT handling",
-    "performance: marks tests as performance (deselect with '-m \"not performance\"')"
-    ,"slow: marks tests that access real database or are slow",
+    "performance: marks tests as performance (deselect with '-m \"not performance\"')",
+    "slow: marks tests that access real database or are slow",
     "fast: marks tests that use mocks or in-memory DB"
 ]
 

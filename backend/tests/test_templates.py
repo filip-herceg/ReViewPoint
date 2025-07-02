@@ -32,9 +32,8 @@ class BaseAPITest:
 
     @pytest.fixture(autouse=True)
     def _setup_base_fixtures(
-        self, set_required_env_vars, override_env_vars, loguru_list_sink
+        self, override_env_vars, loguru_list_sink
     ):
-        self.set_required_env_vars = set_required_env_vars
         self.override_env_vars = override_env_vars
         self.loguru_list_sink = loguru_list_sink
         pass
@@ -138,7 +137,7 @@ class CRUDTestTemplate(BaseAPITest):
     """
     Template for CRUD endpoint tests. Inherit and override methods as needed.
     Set the endpoint, create_payload, and update_payload in your subclass.
-    Uses set_required_env_vars, loguru_list_sink, and override_env_vars for env setup and log capture.
+    Uses loguru_list_sink and override_env_vars for env setup and log capture.
     The override_env_vars fixture is available as self.override_env_vars for env var overrides in tests.
     """
 
@@ -147,7 +146,7 @@ class CRUDTestTemplate(BaseAPITest):
     update_payload: dict = {}
 
     def test_create(
-        self, client: TestClient, set_required_env_vars, loguru_list_sink: list[str]
+        self, client: TestClient, loguru_list_sink: list[str]
     ):
         """
         Test creating a resource via POST. Captures logs for assertion if needed.
@@ -163,12 +162,12 @@ class CRUDTestTemplate(BaseAPITest):
         return data
 
     def test_read(
-        self, client: TestClient, set_required_env_vars, loguru_list_sink: list[str]
+        self, client: TestClient, loguru_list_sink: list[str]
     ):
         """
         Test reading a resource via GET after creation. Captures logs for assertion if needed.
         """
-        created = self.test_create(client, set_required_env_vars, loguru_list_sink)
+        created = self.test_create(client, loguru_list_sink)
         resp = client.get(
             f"{self.endpoint}/{created['id']}", headers=self.get_auth_header(client)
         )
@@ -177,12 +176,12 @@ class CRUDTestTemplate(BaseAPITest):
         assert data["id"] == created["id"]
 
     def test_update(
-        self, client: TestClient, set_required_env_vars, loguru_list_sink: list[str]
+        self, client: TestClient, loguru_list_sink: list[str]
     ):
         """
         Test updating a resource via PUT. Captures logs for assertion if needed.
         """
-        created = self.test_create(client, set_required_env_vars, loguru_list_sink)
+        created = self.test_create(client, loguru_list_sink)
         resp = client.put(
             f"{self.endpoint}/{created['id']}",
             json=self.update_payload,
@@ -191,12 +190,12 @@ class CRUDTestTemplate(BaseAPITest):
         assert resp.status_code in (200, 204)
 
     def test_delete(
-        self, client: TestClient, set_required_env_vars, loguru_list_sink: list[str]
+        self, client: TestClient, loguru_list_sink: list[str]
     ):
         """
         Test deleting a resource via DELETE. Captures logs for assertion if needed.
         """
-        created = self.test_create(client, set_required_env_vars, loguru_list_sink)
+        created = self.test_create(client, loguru_list_sink)
         resp = client.delete(
             f"{self.endpoint}/{created['id']}", headers=self.get_auth_header(client)
         )
@@ -205,25 +204,25 @@ class CRUDTestTemplate(BaseAPITest):
 
 class ExportEndpointTestTemplate(BaseAPITest):
     """
-    Template for export/read-only endpoints that require set_required_env_vars for every test.
+    Template for export/read-only endpoints.
     The override_env_vars fixture is available as self.override_env_vars for env var overrides in tests.
     """
 
     @pytest.fixture(autouse=True)
-    def _setup_env(self, set_required_env_vars, override_env_vars):
+    def _setup_env(self, override_env_vars):
         self.override_env_vars = override_env_vars
         pass
 
 
 class UserCoreEndpointTestTemplate(BaseAPITest):
     """
-    Template for user core endpoint tests that require set_required_env_vars, loguru_list_sink, and override_env_vars for every test.
+    Template for user core endpoint tests that require loguru_list_sink, and override_env_vars for every test.
     The override_env_vars fixture is available as self.override_env_vars for env var overrides in tests.
     """
 
     @pytest.fixture(autouse=True)
     def _setup_env_and_logs(
-        self, set_required_env_vars, loguru_list_sink, override_env_vars
+        self, loguru_list_sink, override_env_vars
     ):
         self.loguru_list_sink = loguru_list_sink
         self.override_env_vars = override_env_vars
@@ -233,13 +232,13 @@ class UserCoreEndpointTestTemplate(BaseAPITest):
 class LogCaptureTestTemplate(BaseAPITest):
     """
     Template for tests that need to assert on log output.
-    Uses set_required_env_vars, loguru_list_sink, and override_env_vars.
+    Uses loguru_list_sink, and override_env_vars.
     The override_env_vars fixture is available as self.override_env_vars for env var overrides in tests.
     """
 
     @pytest.fixture(autouse=True)
     def _setup_env_and_logs(
-        self, set_required_env_vars, loguru_list_sink, override_env_vars
+        self, loguru_list_sink, override_env_vars
     ):
         self.loguru_list_sink = loguru_list_sink
         self.override_env_vars = override_env_vars
@@ -255,10 +254,9 @@ class AuthUnitTestTemplate(BaseAPITest):
 
     @pytest.fixture(autouse=True)
     def _setup_monkeypatch_and_logs(
-        self, monkeypatch, set_required_env_vars, loguru_list_sink, override_env_vars
+        self, monkeypatch, loguru_list_sink, override_env_vars
     ):
         self.monkeypatch = monkeypatch
-        self.set_required_env_vars = set_required_env_vars
         self.loguru_list_sink = loguru_list_sink
         self.override_env_vars = override_env_vars
         self._patches = []
@@ -363,13 +361,11 @@ class AuthEndpointTestTemplate(BaseAPITest):
         self,
         async_session,
         test_app,
-        set_required_env_vars,
         loguru_list_sink,
         override_env_vars,
     ):
         self.async_session = async_session
         self.test_app = test_app
-        self.set_required_env_vars = set_required_env_vars
         self.loguru_list_sink = loguru_list_sink
         self.override_env_vars = override_env_vars
         pass
@@ -386,8 +382,7 @@ class HealthEndpointTestTemplate(BaseAPITest):
     """
 
     @pytest.fixture(autouse=True)
-    def _setup_env(self, set_required_env_vars, override_env_vars, loguru_list_sink):
-        self.set_required_env_vars = set_required_env_vars
+    def _setup_env(self, override_env_vars, loguru_list_sink):
         self.override_env_vars = override_env_vars
         self.loguru_list_sink = loguru_list_sink
         pass
@@ -409,7 +404,7 @@ class DatabaseTestTemplate(BaseAPITest):
 
     @pytest.fixture(autouse=True, scope="function")
     def _setup_db_env_function(
-        self, monkeypatch, set_required_env_vars, override_env_vars, loguru_list_sink, async_engine_isolated
+        self, monkeypatch, override_env_vars, loguru_list_sink, async_engine_isolated
     ):
         """
         Set up DB env, monkeypatch, and log sink per test function for parallel safety.
@@ -417,7 +412,6 @@ class DatabaseTestTemplate(BaseAPITest):
         """
         self.override_env_vars = override_env_vars
         self.monkeypatch = monkeypatch
-        self.set_required_env_vars = set_required_env_vars
         self.loguru_list_sink = loguru_list_sink
         self.engine = async_engine_isolated
         pass
@@ -656,14 +650,12 @@ class EventTestTemplate:
         monkeypatch,
         tmp_path,
         caplog,
-        set_required_env_vars,
         loguru_list_sink,
         override_env_vars,
     ):
         self.monkeypatch = monkeypatch
         self.tmp_path = tmp_path
         self.caplog = caplog
-        self.set_required_env_vars = set_required_env_vars
         self.loguru_list_sink = loguru_list_sink
         self.override_env_vars = override_env_vars
         # Setup loguru sink for log file capture
@@ -711,7 +703,6 @@ class OpenAPITestTemplate(BaseAPITest):
         self,
         test_app: Any,
         request: pytest.FixtureRequest,
-        set_required_env_vars,
         override_env_vars,
         loguru_list_sink,
     ):
@@ -719,7 +710,6 @@ class OpenAPITestTemplate(BaseAPITest):
 
         setup_openapi(test_app)
         self.client: TestClient = TestClient(test_app)
-        self.set_required_env_vars = set_required_env_vars
         self.override_env_vars = override_env_vars
         self.loguru_list_sink = loguru_list_sink
         yield
@@ -784,10 +774,9 @@ class SecurityUnitTestTemplate(BaseAPITest):
 
     @pytest.fixture(autouse=True)
     def _setup_security_fixtures(
-        self, monkeypatch, set_required_env_vars, override_env_vars, loguru_list_sink
+        self, monkeypatch, override_env_vars, loguru_list_sink
     ):
         self.monkeypatch = monkeypatch
-        self.set_required_env_vars = set_required_env_vars
         self.override_env_vars = override_env_vars
         self.loguru_list_sink = loguru_list_sink
         pass
@@ -871,17 +860,16 @@ class ModelUnitTestTemplate:
 
 class AsyncModelTestTemplate(ModelUnitTestTemplate):
     """
-    Template for async SQLAlchemy model tests that require async_session and set_required_env_vars.
+    Template for async SQLAlchemy model tests that require async_session.
     Inherit from this for DB-backed async model tests.
     Provides helpers for DB seeding, cleanup, and transactional test patterns.
     """
 
     @pytest.fixture(autouse=True)
     def _setup_async_model_fixtures(
-        self, async_session, set_required_env_vars, override_env_vars, loguru_list_sink
+        self, async_session, override_env_vars, loguru_list_sink
     ):
         self.async_session = async_session
-        self.set_required_env_vars = set_required_env_vars
         self.override_env_vars = override_env_vars
         self.loguru_list_sink = loguru_list_sink
         pass

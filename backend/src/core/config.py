@@ -242,6 +242,21 @@ def get_settings() -> Settings:
     return s
 
 
+def clear_settings_cache() -> None:
+    """
+    Clear the settings cache. Useful for tests when environment variables change.
+    """
+    get_settings.cache_clear()
+
+
+def reload_settings() -> Settings:
+    """
+    Force reload settings from environment. Useful for tests.
+    """
+    clear_settings_cache()
+    return get_settings()
+
+
 # Remove eager settings initialization! Use get_settings() everywhere.
 
 # ENFORCEMENT: Never create a global settings = Settings() at import time. Always use get_settings().
