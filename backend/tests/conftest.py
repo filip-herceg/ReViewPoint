@@ -1,312 +1,264 @@
-"""
-Fast test configuration for ReViewPoint backend.
 
-This configuration optimizes the entire test suite for speed by:
-1. Using SQLite in-memory databases
-2. Disabling authentication middleware in tests
-3. Optimizing fixture scopes
-4. Reducing startup overhead
-5. Providing mock implementations for slow operations
-"""
-
-import os
+# Fast test mode: use in-memory SQLite for fast tests
 import sys
-import asyncio
+import pytest
+
+@pytest.fixture(scope="session")
+def use_fast_db():
+    """Enable fast testing mode with shared in-memory SQLite if FAST_TESTS env var is set."""
+    return os.environ.get("FAST_TESTS", "0") == "1"
+
+def pytest_configure(config):
+    """Register test markers for slow and fast tests."""
+    config.addinivalue_line("markers", "slow: marks tests that access real database or are slow")
+    config.addinivalue_line("markers", "fast: marks tests that use mocks or in-memory DB")
+
+
+def pytest_sessionstart(session):
+    """
+    Set critical environment variables before any fixtures or tests run.
+    This runs once per pytest-xdist worker session, ensuring env vars are set 
+    before any code that might create database engines executes.
+    """
+    worker_id = os.environ.get('PYTEST_XDIST_WORKER', 'main')
+    
+    # Set critical secrets that are needed during engine creation
+    os.environ["REVIEWPOINT_JWT_SECRET"] = "testsecret"
+    os.environ["REVIEWPOINT_JWT_SECRET_KEY"] = "testsecret"
+    os.environ["REVIEWPOINT_API_KEY_ENABLED"] = "true"
+    os.environ["REVIEWPOINT_API_KEY"] = "testkey"
+    
+    logger.info(f"[PYTEST_SESSIONSTART] Critical env vars set for worker: {worker_id}")
+    logger.info(f"[PYTEST_SESSIONSTART] JWT_SECRET_KEY set: {'REVIEWPOINT_JWT_SECRET_KEY' in os.environ}")
+    
+    # Import configuration here to trigger any early validation
+    try:
+        # Delay the import until env vars are set
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+        from src.core.config import get_settings
+        logger.info(f"[PYTEST_SESSIONSTART] Config validation successful for worker: {worker_id}")
+    except Exception as e:
+        logger.error(f"[PYTEST_SESSIONSTART] Config validation failed for worker {worker_id}: {e}")
+        # Don't fail here, let the test handle it
+"""
+Centralized test database and environment management for all tests in the backend.
+
+Test DB Policy:
+- All tests use a single PostgreSQL container, managed by the session-scoped fixture below.
+- The container is started before any tests run and stopped after all tests complete.
+- The test DB connection URL is set via the REVIEWPOINT_DB_URL environment variable for all tests.
+- No test or fixture should start its own DB container or set DB URLs directly (except for explicit config/env error tests).
+- The Postgres image/tag can be overridden via the REVIEWPOINT_TEST_POSTGRES_IMAGE environment variable.
+- Container connection details are logged at startup for debugging.
+- If Docker is not running or the container fails to start, a clear error is raised and logged.
+
+This policy ensures robust, maintainable, and explicit test DB management for all developers.
+"""
+
+# --- DO NOT set env vars at the top level. All config-dependent imports must be inside fixtures. ---
+import os
 import uuid
+from collections.abc import Callable, Generator, Iterator
 from pathlib import Path
-from typing import Any, Callable, Generator, Iterator
-from unittest.mock import MagicMock, patch
+from typing import Any
 
 import pytest
 import pytest_asyncio
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
-from httpx import AsyncClient, ASGITransport
-from fastapi.testclient import TestClient
 from loguru import logger
-from pydantic import field_validator
 
-# Set up the source path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / "src"))
-
-# Fast test environment variables - set early
-os.environ.update({
-    "REVIEWPOINT_ENVIRONMENT": "test",
-    "REVIEWPOINT_JWT_SECRET": "fasttestsecret123",
-    "REVIEWPOINT_JWT_SECRET_KEY": "fasttestsecret123",
-    "REVIEWPOINT_API_KEY_ENABLED": "false",  # Disable API key auth for fast tests
-    "REVIEWPOINT_API_KEY": "testkey",
-    "REVIEWPOINT_AUTH_ENABLED": "true",
-    "REVIEWPOINT_LOG_LEVEL": "WARNING",  # Reduce log noise
-    "REVIEWPOINT_DB_URL": "sqlite+aiosqlite:///:memory:",
+# Early environment setup for pytest-xdist workers
+# This must happen before any imports that might create database engines
+if "PYTEST_CURRENT_TEST" in os.environ:
+    # Only set during pytest runs to avoid affecting normal app usage
+    worker_id = os.environ.get('PYTEST_XDIST_WORKER', 'main')
     
-    # Feature flags - enable all
-    "REVIEWPOINT_FEATURE_AUTH_REGISTER": "true",
-    "REVIEWPOINT_FEATURE_AUTH_LOGIN": "true",
-    "REVIEWPOINT_FEATURE_AUTH_REQUEST_PASSWORD_RESET": "true",
-    "REVIEWPOINT_FEATURE_AUTH_RESET_PASSWORD": "true",
-    "REVIEWPOINT_FEATURE_AUTH_ME": "true",
-    "REVIEWPOINT_FEATURE_AUTH_LOGOUT": "true",
-    "REVIEWPOINT_FEATURE_AUTH_REFRESH_TOKEN": "true",
-    "REVIEWPOINT_FEATURE_USERS_CREATE": "true",
-    "REVIEWPOINT_FEATURE_USERS_GET": "true",
-    "REVIEWPOINT_FEATURE_USERS_UPDATE": "true",
-    "REVIEWPOINT_FEATURE_USERS_DELETE": "true",
-    "REVIEWPOINT_FEATURE_USERS_LIST": "true",
-    "REVIEWPOINT_FEATURE_UPLOADS_UPLOAD": "true",
-    "REVIEWPOINT_FEATURE_UPLOADS_GET": "true",
-    "REVIEWPOINT_FEATURE_UPLOADS_LIST": "true",
-    "REVIEWPOINT_FEATURE_UPLOADS_UPDATE": "true",
-    "REVIEWPOINT_FEATURE_UPLOADS_DELETE": "true",
-    "REVIEWPOINT_FEATURE_HEALTH_READ": "true",
+    # Set critical secrets that are needed during engine creation
+    if "REVIEWPOINT_JWT_SECRET_KEY" not in os.environ:
+        os.environ["REVIEWPOINT_JWT_SECRET"] = "testsecret"
+        os.environ["REVIEWPOINT_JWT_SECRET_KEY"] = "testsecret"
+        os.environ["REVIEWPOINT_API_KEY_ENABLED"] = "true"
+        os.environ["REVIEWPOINT_API_KEY"] = "testkey"
+        logger.info(f"[EARLY_ENV_SETUP] Critical env vars set for worker: {worker_id}")
+        
+        # Clear any cached settings since env vars have changed
+        try:
+            import sys
+            sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+            from src.core.config import clear_settings_cache
+            clear_settings_cache()
+            logger.info(f"[EARLY_ENV_SETUP] Settings cache cleared for worker: {worker_id}")
+        except Exception as e:
+            logger.warning(f"[EARLY_ENV_SETUP] Could not clear settings cache: {e}")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def postgres_container():
+    """
+    Start a PostgreSQL container for the test session and set DB URL env var for all tests.
+    Logs the connection URL at startup. Raises a clear error if Docker is not running.
+    The Postgres image can be overridden with the REVIEWPOINT_TEST_POSTGRES_IMAGE env var.
+    """
+    from testcontainers.postgres import PostgresContainer
+
+    image = os.environ.get("REVIEWPOINT_TEST_POSTGRES_IMAGE", "postgres:15-alpine")
+    import time
+    import socket
     
-    # Mock external services
-    "REVIEWPOINT_EXTERNAL_SERVICES_ENABLED": "false",
-    "FAST_TESTS": "1",
-})
-
-# Import after environment setup
-from src.core.config import Settings
-from src.models.base import Base
-from src.models import user, file
-from src.main import create_app
-
-# Configure test logging
-logger.remove()  # Remove default handler
-logger.add(sys.stderr, level="WARNING", format="{time} | {level} | {message}")
-
-# Optimize async event loop for tests
-@pytest.fixture(scope="session")
-def event_loop():
-    """Create an instance of the default event loop for the test session."""
+    # Log parallel test worker information
+    worker_id = os.environ.get('PYTEST_XDIST_WORKER', 'main')
+    logger.info(f"[TESTCONTAINER_DEBUG] Starting container setup for worker: {worker_id}")
+    
     try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-    
-    yield loop
-    loop.close()
-
-# Test engine and session
-@pytest_asyncio.fixture(scope="session")
-async def test_engine():
-    """Create test database engine."""
-    engine = create_async_engine(
-        "sqlite+aiosqlite:///:memory:",
-        echo=False,  # Disable SQL echo for speed
-        pool_pre_ping=False,  # Disable ping for speed
-    )
-    
-    # Create all tables
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    
-    yield engine
-    
-    await engine.dispose()
-
-@pytest_asyncio.fixture
-async def db_session(test_engine):
-    """Create clean database session for each test."""
-    async_session = sessionmaker(
-        test_engine, class_=AsyncSession, expire_on_commit=False
-    )
-    
-    async with async_session() as session:
-        yield session
-        await session.rollback()
-
-@pytest_asyncio.fixture
-async def async_session(db_session):
-    """Alias for db_session to match test expectations."""
-    return db_session
-
-@pytest_asyncio.fixture
-async def app():
-    """Create FastAPI test application."""
-    return create_app()
-
-@pytest_asyncio.fixture
-async def async_client(app):
-    """Create async test client."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        yield ac
-
-@pytest.fixture(scope="function")
-def client(test_app):
-    """
-    Provides a synchronous TestClient for the FastAPI app for use in API tests.
-    This matches the signature from the main conftest.py for compatibility.
-    """
-    with TestClient(test_app) as c:
-        yield c
-
-# Auth fixtures
-@pytest_asyncio.fixture
-async def test_user(db_session):
-    """Create a test user."""
-    from src.models.user import User
-    from src.utils.hashing import hash_password
-    
-    user = User(
-        id=uuid.uuid4(),
-        email="test@example.com",
-        name="Test User",
-        password_hash=hash_password("password123"),
-        is_active=True,
-        is_admin=False
-    )
-    db_session.add(user)
-    await db_session.commit()
-    await db_session.refresh(user)
-    return user
-
-@pytest_asyncio.fixture
-async def admin_user(db_session):
-    """Create an admin test user."""
-    from src.models.user import User
-    from src.utils.hashing import hash_password
-    
-    user = User(
-        id=uuid.uuid4(),
-        email="admin@example.com",
-        name="Admin User",
-        password_hash=hash_password("admin123"),
-        is_active=True,
-        is_admin=True
-    )
-    db_session.add(user)
-    await db_session.commit()
-    await db_session.refresh(user)
-    return user
-
-@pytest_asyncio.fixture
-async def auth_headers(test_user):
-    """Get auth headers for test user."""
-    from src.core.security import create_access_token
-    
-    token = create_access_token({"sub": str(test_user.id)})
-    return {"Authorization": f"Bearer {token}"}
-
-@pytest_asyncio.fixture
-async def admin_headers(admin_user):
-    """Get auth headers for admin user."""
-    from src.core.security import create_access_token
-    
-    token = create_access_token({"sub": str(admin_user.id)})
-    return {"Authorization": f"Bearer {token}"}
-
-# Mock fixtures for external dependencies
-@pytest.fixture(autouse=True)
-def mock_external_services():
-    """Mock external services for all tests."""
-    # Mock any external dependencies that might exist
-    # Note: Only mock modules that actually exist
-    yield None
-
-# Performance optimization fixtures
-@pytest.fixture(autouse=True)
-def optimize_for_speed():
-    """Apply speed optimizations without breaking password validation."""
-    # Only patch slow async operations, not password hashing
-    with patch("asyncio.sleep", return_value=None):
-        yield
-
-# Test markers
-pytest_markers = [
-    "slow: marks tests as slow (deselected with --fast)",
-    "fast: marks tests as fast",
-    "integration: marks tests as integration tests", 
-    "unit: marks tests as unit tests",
-    "auth: marks tests that require authentication",
-    "database: marks tests that require database access",
-]
-
-# Custom test collection
-def pytest_collection_modifyitems(config, items):
-    """Modify test collection for fast mode."""
-    if config.getoption("--fast", default=False):
-        # Skip slow tests in fast mode
-        skip_slow = pytest.mark.skip(reason="skipped in fast mode")
-        for item in items:
-            if "slow" in item.keywords:
-                item.add_marker(skip_slow)
-
-def pytest_addoption(parser):
-    """Add custom command line options."""
-    parser.addoption(
-        "--fast",
-        action="store_true",
-        default=False,
-        help="run in fast mode (skip slow tests)"
-    )
-
-# Fast test utilities
-class FastTestMixin:
-    """Mixin class for fast test utilities."""
-    
-    @staticmethod
-    async def create_test_user(session: AsyncSession, **kwargs):
-        """Create a test user with defaults."""
-        from src.models.user import User
-        from src.utils.hashing import hash_password
+        container_start_time = time.time()
+        # Set up the container with high max_connections and shared_buffers
+        postgres = PostgresContainer(image)
+        postgres.with_env("POSTGRES_MAX_CONNECTIONS", "300")
+        postgres.with_env("POSTGRES_SHARED_BUFFERS", "512MB")
+        # Expose the default port and try to bind it for Windows compatibility
+        postgres.with_exposed_ports(5432)
+        # Optionally, try host networking (may not work on Docker Desktop for Windows)
+        # postgres.with_network_mode("host")
         
-        defaults = {
-            "email": f"user_{uuid.uuid4().hex[:8]}@example.com",
-            "name": "Test User",
-            "password_hash": hash_password("password123"),
-            "is_active": True,
-            "is_admin": False
-        }
-        defaults.update(kwargs)
+        logger.info(f"[TESTCONTAINER_DEBUG] Container configured, starting with image: {image}")
         
-        user = User(**defaults)
-        session.add(user)
-        await session.commit()
-        await session.refresh(user)
-        return user
+        with postgres as pg:
+            container_ready_time = time.time() - container_start_time
+            logger.info(f"[TESTCONTAINER_DEBUG] Container started in {container_ready_time:.2f}s")
+            
+            db_url = pg.get_connection_url()
+            # Convert sync driver to asyncpg for SQLAlchemy async engine
+            if db_url.startswith("postgresql://"):
+                async_db_url = db_url.replace(
+                    "postgresql://", "postgresql+asyncpg://", 1
+                )
+            elif db_url.startswith("postgresql+psycopg2://"):
+                async_db_url = db_url.replace(
+                    "postgresql+psycopg2://", "postgresql+asyncpg://", 1
+                )
+            else:
+                async_db_url = db_url
+            
+            # Log connection details (sanitized)
+            sanitized_url = async_db_url.split('@')[1] if '@' in async_db_url else async_db_url
+            logger.info(f"[TESTCONTAINER_DEBUG] Container URL: postgresql+asyncpg://...@{sanitized_url}")
+            logger.info(f"[TESTCONTAINER_DEBUG] Internal host: {pg.get_container_host_ip()}")
+            logger.info(f"[TESTCONTAINER_DEBUG] Mapped port: {pg.get_exposed_port(5432)}")
+            
+            # Wait for DB port to be open (robust wait)
+            def port_open(host, port):
+                try:
+                    with socket.create_connection((host, port), timeout=1):
+                        return True
+                except Exception:
+                    return False
+            
+            # Parse host/port from db_url
+            import re
+            m = re.match(r"postgresql\+asyncpg://[^:]+:[^@]+@([^:/]+):(\d+)/", async_db_url)
+            if m:
+                host, port = m.group(1), int(m.group(2))
+                logger.info(f"[TESTCONTAINER_DEBUG] Testing port connectivity to {host}:{port}")
+                
+                port_wait_start = time.time()
+                for attempt in range(60):
+                    if port_open(host, port):
+                        port_wait_time = time.time() - port_wait_start
+                        logger.info(f"[TESTCONTAINER_DEBUG] Port {host}:{port} is open after {port_wait_time:.2f}s, {attempt+1} attempts")
+                        break
+                    time.sleep(0.5)
+                else:
+                    port_wait_time = time.time() - port_wait_start
+                    raise RuntimeError(f"Postgres container port {host}:{port} did not open in {port_wait_time:.2f}s after 60 attempts.")
+            else:
+                logger.warning(f"[TESTCONTAINER_DEBUG] Could not parse host/port from DB URL: {async_db_url}")
+            
+            # Test actual database connection
+            try:
+                import asyncpg
+                connection_test_start = time.time()
+                
+                # Convert SQLAlchemy URL to plain PostgreSQL URL for asyncpg
+                asyncpg_url = async_db_url.replace("postgresql+asyncpg://", "postgresql://")
+                
+                for attempt in range(30):
+                    try:
+                        logger.debug(f"[TESTCONTAINER_DEBUG] Connection attempt #{attempt+1}")
+                        
+                        # Simple synchronous test using asyncio.run
+                        async def test_connection():
+                            conn = await asyncpg.connect(asyncpg_url)
+                            await conn.close()
+                        
+                        asyncio.run(test_connection())
+                        
+                        connection_test_time = time.time() - connection_test_start
+                        logger.info(f"[TESTCONTAINER_DEBUG] Database connection successful after {connection_test_time:.2f}s, {attempt+1} attempts")
+                        break
+                    except Exception as e:
+                        logger.debug(f"[TESTCONTAINER_DEBUG] Connection attempt #{attempt+1} failed: {type(e).__name__}: {e}")
+                        time.sleep(0.5)
+                else:
+                    connection_test_time = time.time() - connection_test_start
+                    raise RuntimeError(f"Postgres DB did not accept connections after {connection_test_time:.2f}s, 30 attempts.")
+            except ImportError:
+                logger.warning("[TESTCONTAINER_DEBUG] asyncpg not available for connection check.")
+            
+            # Set environment variable for all tests
+            os.environ["REVIEWPOINT_DB_URL"] = async_db_url
+            
+            total_setup_time = time.time() - container_start_time
+            logger.info(f"[TESTCONTAINER_DEBUG] Container fully ready in {total_setup_time:.2f}s")
+            
+            yield async_db_url
+            os.environ.pop("REVIEWPOINT_DB_URL", None)
+            logger.info(
+                "[testcontainers] PostgreSQL container stopped and env cleaned up."
+            )
+    except Exception as e:
+        logger.error(f"[testcontainers] Failed to start PostgreSQL container: {e}")
+        raise RuntimeError(
+            "Could not start PostgreSQL test container. Is Docker running? "
+            "See the error above for details."
+        ) from e
+
+
+#
+# ENFORCED TEST ENVIRONMENT/DB SETUP POLICY
+#
+# All environment variable and database setup for tests MUST be centralized in this file (conftest.py).
+# No test file (except explicit config/validation tests) may set environment variables or database URLs directly.
+# Valid exceptions: tests that explicitly test config/env/DB error handling (e.g., test_config.py).
+# This is enforced by an automated check below. If you need to add a new exception, update the list in the check.
+#
+
+
+# ENFORCEMENT: Never import or create a global settings = Settings() at import time in any code or test.
+# Always use get_settings() to ensure env vars are set first.
+
+import asyncio
+
+
+# 1. Environment setup (env vars, DB cleanup, DB/table creation)
+@pytest.fixture(autouse=True, scope="session")
+def set_required_env_vars_session(postgres_container) -> None:
+    """
+    Set critical environment variables at session scope before any code that might 
+    create database engines runs. This is essential for pytest-xdist workers.
+    """
+    worker_id = os.environ.get('PYTEST_XDIST_WORKER', 'main')
+    logger.info(f"[ENV_SETUP_SESSION] Setting session-level environment variables for worker: {worker_id}")
     
-    @staticmethod
-    async def create_test_file(session: AsyncSession, user_id: uuid.UUID, **kwargs):
-        """Create a test file with defaults."""
-        from src.models.file import File
-        
-        defaults = {
-            "filename": f"test_{uuid.uuid4().hex[:8]}.txt",
-            "original_filename": "test.txt",
-            "content_type": "text/plain",
-            "size": 1024,
-            "user_id": user_id
-        }
-        defaults.update(kwargs)
-        
-        file = File(**defaults)
-        session.add(file)
-        await session.commit()
-        await session.refresh(file)
-        return file
-
-# Export for easy imports
-__all__ = [
-    "FastTestMixin",
-    "test_engine", 
-    "db_session",
-    "app",
-    "client",
-    "test_user",
-    "admin_user", 
-    "auth_headers",
-    "admin_headers"
-]
-
-@pytest.fixture(scope="session")
-def test_db_url() -> str:
-    """
-    Returns the test database URL used for all tests.
-    For fast tests, this will be the SQLite URL.
-    """
-    return os.environ.get("REVIEWPOINT_DB_URL", "sqlite+aiosqlite:///:memory:")
+    # Set critical secrets that are needed during engine creation
+    os.environ["REVIEWPOINT_JWT_SECRET"] = "testsecret"
+    os.environ["REVIEWPOINT_JWT_SECRET_KEY"] = "testsecret"
+    os.environ["REVIEWPOINT_API_KEY_ENABLED"] = "true"
+    os.environ["REVIEWPOINT_API_KEY"] = "testkey"
+    
+    # DB URL is already set by postgres_container fixture
+    logger.info(f"[ENV_SETUP_SESSION] Critical env vars set for worker: {worker_id}")
+    logger.info(f"[ENV_SETUP_SESSION] DB_URL: {os.environ.get('REVIEWPOINT_DB_URL', 'NOT_SET')}")
+    
 
 @pytest.fixture(autouse=True, scope="function")
 def set_remaining_env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -315,33 +267,299 @@ def set_remaining_env_vars(monkeypatch: pytest.MonkeyPatch) -> None:
     Uses monkeypatch for proper cleanup after each test.
     Also clears settings cache to ensure fresh config for each test.
     """
+    worker_id = os.environ.get('PYTEST_XDIST_WORKER', 'main')
+    logger.debug(f"[ENV_SETUP_FUNC] Setting function-level environment variables for worker: {worker_id}")
+    
     # Clear settings cache to ensure fresh config
     try:
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
         from src.core.config import clear_settings_cache
         clear_settings_cache()
+        logger.debug(f"[ENV_SETUP_FUNC] Settings cache cleared for worker: {worker_id}")
     except Exception as e:
-        logger.debug(f"Settings cache clear failed: {e}")
+        logger.warning(f"[ENV_SETUP_FUNC] Could not clear settings cache: {e}")
     
-    # Set remaining environment variables for fast testing
-    monkeypatch.setenv("REVIEWPOINT_DEBUG", "True")
-    monkeypatch.setenv("REVIEWPOINT_LOG_LEVEL", "DEBUG")
-    # Keep API key authentication disabled for fast tests to avoid JWT validation issues
-    monkeypatch.setenv("REVIEWPOINT_API_KEY_ENABLED", "false")
-    monkeypatch.setenv("REVIEWPOINT_API_KEY", "testkey")
+    # Feature flags (these can be set per-function since they don't affect engine creation)
+    # Auth endpoints
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_AUTH_REGISTER", "true")
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_AUTH_LOGIN", "true")
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_AUTH_REQUEST_PASSWORD_RESET", "true")
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_AUTH_RESET_PASSWORD", "true")
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_AUTH_ME", "true")
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_AUTH_LOGOUT", "true")
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_AUTH_REFRESH_TOKEN", "true")
+    # User endpoints
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_USERS_CREATE", "true")
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_USERS_LIST", "true")
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_USERS_GET", "true")
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_USERS_EXPORT", "true")
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_USERS_EXPORT_FULL", "true")
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_USERS_EXPORT_ALIVE", "true")
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_USERS_EXPORT_SIMPLE", "true")
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_USERS_READ", "true")
+    # Uploads/files endpoints (granular flags)
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_UPLOADS", "true")
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_UPLOADS_GET_FILE", "true")
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_UPLOADS_EXPORT", "true")
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_UPLOADS_UPLOAD", "true")
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_UPLOADS_DELETE", "true")
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_UPLOADS_LIST", "true")
+    # Optionally, enable all granular features at once for convenience
+    monkeypatch.setenv(
+        "REVIEWPOINT_FEATURES",
+        "uploads:export,uploads:upload,uploads:delete,uploads:list",
+    )
+    # Health endpoints
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_HEALTH", "true")
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_HEALTH_READ", "true")
+    # Any other likely features (add more as needed)
+    monkeypatch.setenv("REVIEWPOINT_FEATURE_API_KEY", "true")
 
 
-@pytest.fixture
-def override_env_vars(monkeypatch: pytest.MonkeyPatch, set_remaining_env_vars: None):
+# 2. Event loop (for async tests)
+@pytest.fixture(scope="session")
+def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
     """
-    Fixture to override environment variables for a single test.
-    Usage: override_env_vars({"VAR1": "value1", "VAR2": "value2"})
-    Ensures required defaults are set first, then applies overrides.
+    Create a new asyncio event loop for the test session.
+    Required for running async tests with pytest-asyncio.
     """
-    def _override(vars: dict[str, str]) -> None:
-        for k, v in vars.items():
-            monkeypatch.setenv(k, v)
-    return _override
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    yield loop
+    loop.close()
 
+
+
+# 3. Database/session fixtures
+
+# Session-scoped engine for backward compatibility (not used by default)
+@pytest_asyncio.fixture(scope="session")
+async def async_engine(use_fast_db, postgres_container):
+    from sqlalchemy.ext.asyncio import create_async_engine
+    if use_fast_db:
+        db_url = "sqlite+aiosqlite:///:memory:?cache=shared"
+        engine = create_async_engine(db_url, future=True, connect_args={"check_same_thread": False})
+    else:
+        db_url = os.environ["REVIEWPOINT_DB_URL"]
+        engine = create_async_engine(db_url, future=True)
+    yield engine
+    await engine.dispose()
+
+
+
+# Fixture to truncate all tables before each test for full isolation
+@pytest_asyncio.fixture(autouse=True, scope="function")
+async def truncate_tables(async_engine_isolated):
+    """
+    Truncate all tables in the test database before each test for full isolation.
+    Handles DBs with no tables, and logs errors for unsupported backends.
+    """
+    import sqlalchemy
+    sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+    from src.models import Base
+    try:
+        async with async_engine_isolated.begin() as conn:
+            # Only run for PostgreSQL
+            if conn.dialect.name != "postgresql":
+                logger.warning(f"truncate_tables: Skipping for non-PostgreSQL backend: {conn.dialect.name}")
+                return
+            # If no tables, skip
+            if not Base.metadata.sorted_tables:
+                logger.info("truncate_tables: No tables to truncate.")
+                return
+            for table in reversed(Base.metadata.sorted_tables):
+                try:
+                    await conn.execute(sqlalchemy.text(f'TRUNCATE TABLE "{table.name}" RESTART IDENTITY CASCADE;'))
+                except Exception as e:
+                    logger.error(f"truncate_tables: Failed to truncate {table.name}: {e}")
+    except Exception as e:
+        logger.error(f"truncate_tables: Unexpected error: {e}")
+
+
+# Function-scoped engine for parallel/isolated tests
+@pytest_asyncio.fixture(scope="function")
+async def async_engine_isolated(use_fast_db, postgres_container):
+    """
+    Provide a SQLAlchemy async engine for each test function (parallel safe).
+    Uses in-memory SQLite if FAST_TESTS=1, otherwise uses PostgreSQL.
+    """
+    from sqlalchemy.ext.asyncio import create_async_engine
+    import time
+    import uuid
+    sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+    from src.models import Base
+
+    worker_id = os.environ.get('PYTEST_XDIST_WORKER', 'main')
+    test_id = str(uuid.uuid4())[:8]
+    logger.debug(f"[ENGINE_ISOLATED] Creating engine for worker: {worker_id}, test_id: {test_id}")
+
+    engine_start_time = time.time()
+    
+    if use_fast_db or os.environ.get('PYTEST_XDIST_WORKER'):
+        # Use SQLite for fast tests OR parallel execution to avoid asyncpg concurrency issues
+        db_url = f"sqlite+aiosqlite:///:memory:?cache=shared&test_id={test_id}"
+        logger.debug(f"[ENGINE_ISOLATED] Using SQLite in-memory DB (parallel={bool(os.environ.get('PYTEST_XDIST_WORKER'))}): {db_url}")
+        engine = create_async_engine(db_url, future=True, connect_args={"check_same_thread": False})
+    else:
+        # Use the same DB URL, but configure for strict isolation in parallel testing
+        db_url = os.environ["REVIEWPOINT_DB_URL"]
+        logger.debug(f"[ENGINE_ISOLATED] Using PostgreSQL with isolation pool (worker: {worker_id})")
+        
+        # Configure engine for strict connection isolation to avoid asyncpg event loop conflicts
+        engine_kwargs = {
+            "future": True,
+            "pool_size": 1,  # Single connection per worker
+            "max_overflow": 0,  # No overflow connections
+            "pool_reset_on_return": "commit",  # Reset connections between uses
+            "pool_pre_ping": True,  # Verify connections before use
+            "pool_recycle": 300,  # Recycle connections every 5 minutes
+            "connect_args": {
+                "server_settings": {
+                    "application_name": f"reviewpoint_test_{worker_id}_{os.getpid()}",
+                },
+                "command_timeout": 30,  # 30 second timeout for commands
+            }
+        }
+        
+        engine = create_async_engine(db_url, **engine_kwargs)
+
+    engine_creation_time = time.time() - engine_start_time
+    logger.debug(f"[ENGINE_ISOLATED] Engine created in {engine_creation_time:.3f}s")
+
+    # Create tables for this test
+    table_creation_start = time.time()
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        table_creation_time = time.time() - table_creation_start
+        logger.debug(f"[ENGINE_ISOLATED] Tables created in {table_creation_time:.3f}s")
+    except Exception as e:
+        table_creation_time = time.time() - table_creation_start
+        logger.error(f"[ENGINE_ISOLATED] Failed to create tables in {table_creation_time:.3f}s: {e}")
+        await engine.dispose()
+        raise
+
+    total_setup_time = time.time() - engine_start_time
+    logger.debug(f"[ENGINE_ISOLATED] Engine fully set up in {total_setup_time:.3f}s (worker: {worker_id})")
+
+    yield engine
+    
+    # Clean up
+    disposal_start_time = time.time()
+    try:
+        await engine.dispose()
+        disposal_time = time.time() - disposal_start_time
+        logger.debug(f"[ENGINE_ISOLATED] Engine disposed in {disposal_time:.3f}s (worker: {worker_id})")
+    except Exception as e:
+        disposal_time = time.time() - disposal_start_time
+        logger.error(f"[ENGINE_ISOLATED] Failed to dispose engine in {disposal_time:.3f}s: {e}")
+
+
+@pytest_asyncio.fixture(scope="function")
+async def async_session(async_engine_isolated):
+    """
+    Provide an async SQLAlchemy session for each test function.
+    Uses a simplified approach to avoid async event loop conflicts.
+    """
+    from sqlalchemy.ext.asyncio import AsyncSession
+    import asyncio
+    import time
+    
+    worker_id = os.environ.get('PYTEST_XDIST_WORKER', 'main')
+    logger.debug(f"[SESSION_ISOLATED] Creating session for worker: {worker_id}")
+    
+    session_start_time = time.time()
+    
+    try:
+        # Create a simple session bound to the engine
+        # This approach avoids transaction context manager issues
+        session = AsyncSession(bind=async_engine_isolated, expire_on_commit=False)
+        
+        # Test the session with a simple query
+        test_start = time.time()
+        try:
+            from sqlalchemy import text
+            await session.execute(text("SELECT 1"))
+            test_time = time.time() - test_start
+            logger.debug(f"[SESSION_ISOLATED] Session test query completed in {test_time:.3f}s")
+        except Exception as e:
+            test_time = time.time() - test_start
+            logger.error(f"[SESSION_ISOLATED] Session test query failed in {test_time:.3f}s: {e}")
+            # Close session and re-raise
+            await session.close()
+            raise
+        
+        total_session_time = time.time() - session_start_time
+        logger.debug(f"[SESSION_ISOLATED] Session ready in {total_session_time:.3f}s (worker: {worker_id})")
+        
+        try:
+            yield session
+        finally:
+            # Clean shutdown of session
+            try:
+                # First, rollback any uncommitted changes
+                if session.in_transaction():
+                    await session.rollback()
+                    logger.debug(f"[SESSION_ISOLATED] Session transaction rolled back (worker: {worker_id})")
+            except Exception as e:
+                logger.warning(f"[SESSION_ISOLATED] Error rolling back session (worker: {worker_id}): {e}")
+            
+            try:
+                # Close the session
+                await session.close()
+                logger.debug(f"[SESSION_ISOLATED] Session closed (worker: {worker_id})")
+            except Exception as e:
+                logger.warning(f"[SESSION_ISOLATED] Error closing session (worker: {worker_id}): {e}")
+            
+    except Exception as e:
+        total_session_time = time.time() - session_start_time
+        logger.error(f"[SESSION_ISOLATED] Session creation failed in {total_session_time:.3f}s: {e}")
+        raise
+
+
+# 4. App and client fixtures
+
+
+from collections.abc import Generator
+
+import pytest
+from fastapi.testclient import TestClient
+
+
+@pytest.fixture(scope="function")
+def test_app(async_session) -> Generator:
+    """
+    Provides a new FastAPI app instance for each test function.
+    Overrides get_async_session dependency to use the test async_session fixture.
+    """
+    from src.core.database import get_async_session
+    from src.main import create_app
+
+    app = create_app()
+
+    # Override get_async_session to yield the test session
+    async def _override_get_async_session():
+        yield async_session
+
+    app.dependency_overrides[get_async_session] = _override_get_async_session
+    yield app
+
+
+# Fixture to provide a TestClient for all API tests
+@pytest.fixture(scope="function")
+def client(test_app) -> Generator:
+    """
+    Provides a TestClient for the FastAPI app for use in API tests.
+    """
+    with TestClient(test_app) as c:
+        yield c
+
+
+# 5. Dependency overrides
+
+
+# 6. Logging fixtures
 @pytest.fixture
 def loguru_list_sink() -> Iterator[list[str]]:
     """
@@ -366,25 +584,91 @@ def loguru_list_sink() -> Iterator[list[str]]:
         except ValueError:
             pass
 
-@pytest.fixture(scope="function")
-def test_app(async_session) -> Generator[Any, None, None]:
+
+@pytest.fixture
+def loguru_list_sink_middleware() -> Iterator[list[str]]:
     """
-    Provides a new FastAPI app instance for each test function.
-    Overrides get_async_session dependency to use the test async_session fixture.
+    Capture loguru logs in a list for middleware tests.
+    Ensures the sink is attached before the FastAPI app is created.
+    Use this fixture in middleware tests instead of loguru_list_sink.
     """
-    from src.core.database import get_async_session
-    from src.main import create_app
+    logs: list[str] = []
 
-    app = create_app()
+    def sink(message: Any) -> None:
+        try:
+            logs.append(message.record["message"])
+        except Exception:
+            logs.append(str(message))
 
-    # Override get_async_session to yield the test session
-    async def _override_get_async_session():
-        yield async_session
+    sink_id = logger.add(sink)
+    try:
+        yield logs
+    finally:
+        try:
+            logger.remove(sink_id)
+        except ValueError:
+            pass
 
-    app.dependency_overrides[get_async_session] = _override_get_async_session
-    yield app
 
-# Helper functions for auth testing
+@pytest.fixture
+def loguru_sink(tmp_path: Path) -> Iterator[Path]:
+    """
+    Create a log file for capturing loguru logs during tests.
+    Returns the path to the log file for inspection.
+    """
+    log_file = tmp_path / "loguru.log"
+    handler_id = logger.add(
+        str(log_file),
+        format="{message}",
+        enqueue=True,
+        catch=True,
+        diagnose=False,
+        backtrace=False,
+        colorize=False,
+    )
+    try:
+        yield log_file
+    finally:
+        try:
+            logger.remove(handler_id)
+        except ValueError:
+            pass
+
+
+# 7. Utility fixtures
+@pytest.fixture(autouse=True)
+def patch_loguru_remove(monkeypatch: Any) -> Generator[None, None, None]:
+    """
+    Patch loguru's logger.remove to suppress ValueError during pytest-loguru teardown.
+    Prevents test failures due to loguru teardown issues.
+    """
+    original_remove = logger.remove
+
+    def safe_remove(*args: Any, **kwargs: Any) -> None:
+        try:
+            original_remove(*args, **kwargs)
+        except ValueError:
+            pass
+
+    monkeypatch.setattr(logger, "remove", safe_remove)
+    yield
+    monkeypatch.setattr(logger, "remove", original_remove)
+
+
+@pytest.fixture
+def override_env_vars(monkeypatch: pytest.MonkeyPatch, set_remaining_env_vars: None):
+    """
+    Fixture to override environment variables for a single test.
+    Usage: override_env_vars({"VAR1": "value1", "VAR2": "value2"})
+    Ensures required defaults are set first, then applies overrides.
+    """
+    def _override(vars: dict[str, str]) -> None:
+        for k, v in vars.items():
+            monkeypatch.setenv(k, v)
+    return _override
+
+
+# 8. Helper functions (not fixtures)
 def wait_for_condition(
     condition_fn: Callable[[], Any],
     timeout: float = 2.0,
@@ -431,6 +715,69 @@ def wait_for_admin_promotion(
     return wait_for_condition(try_login, timeout=timeout, interval=interval)
 
 
+import pathlib
+import re
+
+# List of test files (relative to backend/tests/) allowed to set env vars/DB URLs directly
+ALLOWED_ENV_OVERRIDE_FILES = {
+    "core/test_config.py",  # config/env/DB error handling tests
+}
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_collection_finish(session: pytest.Session):
+    """
+    Enforce that no test file (except allowed exceptions) sets environment variables or DB URLs directly.
+    """
+    root = pathlib.Path(__file__).parent
+    pattern_env = re.compile(r"(os\\.environ|setenv|DATABASE_URL)")
+    for item in session.items:
+        path = pathlib.Path(item.fspath)
+        rel_path = str(path.relative_to(root)).replace("\\", "/")
+        if rel_path in ALLOWED_ENV_OVERRIDE_FILES:
+            continue
+        try:
+            with open(path, encoding="utf-8") as f:
+                content = f.read()
+            if pattern_env.search(content):
+                raise RuntimeError(
+                    f"Test file {rel_path} sets environment variables or DB URLs directly. "
+                    f"All such setup must be in conftest.py. If this is a valid exception, add it to ALLOWED_ENV_OVERRIDE_FILES."
+                )
+        except Exception:
+            # Don't block collection for unreadable files
+            pass
+
+
+@pytest_asyncio.fixture(scope="session", autouse=True)
+async def create_and_drop_tables(postgres_container):
+    """
+    Automatically create all tables before the test session and drop them after.
+    Ensures a clean PostgreSQL test database for every test run.
+    Depends on postgres_container to guarantee DB is up before setup.
+    """
+    from sqlalchemy.ext.asyncio import create_async_engine
+
+    from src.models.base import Base
+
+    db_url = os.environ["REVIEWPOINT_DB_URL"]
+    engine = create_async_engine(db_url, future=True)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+    await engine.dispose()
+
+
+@pytest.fixture(scope="session")
+def test_db_url() -> str:
+    """
+    Returns the test database URL used for all tests (from env var REVIEWPOINT_DB_URL).
+    """
+    return os.environ["REVIEWPOINT_DB_URL"]
+
+
 def get_auth_header(client, email=None, password="TestPassword123!"):
     """
     Register a new user (or login if already exists) and return an auth header for API requests.
@@ -439,8 +786,6 @@ def get_auth_header(client, email=None, password="TestPassword123!"):
     Uses the provided TestClient for all requests for consistency and speed.
     Raises RuntimeError if admin promotion fails unexpectedly.
     """
-    import uuid
-    from loguru import logger
     from src.core.security import create_access_token
 
     if email is None:
