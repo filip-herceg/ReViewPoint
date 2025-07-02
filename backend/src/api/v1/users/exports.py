@@ -6,11 +6,12 @@ import csv
 from io import StringIO
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, Depends, Query, Response, Security
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.deps import require_api_key, require_feature
+from src.api.deps import get_current_user_with_export_api_key, require_feature
 from src.core.database import get_async_session
+from src.models.user import User
 from src.repositories.user import get_active_users, list_users
 from src.utils.datetime import parse_flexible_datetime
 
@@ -23,11 +24,11 @@ router = APIRouter()
     response_class=Response,
     dependencies=[
         Depends(require_feature("users:export")),
-        Depends(require_api_key),
     ],
 )
 async def export_users_csv(
     session: AsyncSession = Depends(get_async_session),
+    current_user: User | None = Depends(get_current_user_with_export_api_key),
     email: Optional[str] = Query(None, description="Filter by email"),
     format: Optional[str] = Query("csv", description="Export format (only csv supported)"),
 ) -> Response:
@@ -77,12 +78,12 @@ async def export_alive() -> dict[str, str]:
     summary="Export users as CSV (full)",
     response_class=Response,
     dependencies=[
-        Depends(require_feature("users:export")),
-        Depends(require_api_key),
+        Depends(require_feature("users:export_full")),
     ],
 )
 async def export_users_full_csv(
     session: AsyncSession = Depends(get_async_session),
+    current_user: User | None = Depends(get_current_user_with_export_api_key),
 ) -> Response:
     # Query users from database
     users_data, total_count = await list_users(session)
