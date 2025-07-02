@@ -77,9 +77,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
     @staticmethod
     def debug_response(resp: Response, expected_status: int) -> Response:
         if resp.status_code != expected_status:
-            print(f"[DEBUG] Unexpected status: {resp.status_code}")
-            print(f"[DEBUG] Response text: {resp.text}")
-            print(f"[DEBUG] Response headers: {resp.headers}")
+            pass
         return resp
 
     @pytest.mark.asyncio

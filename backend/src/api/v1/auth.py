@@ -349,7 +349,6 @@ async def refresh_token(
         http_error(422, "Missing refresh token.", logger.warning, {})
     assert isinstance(token_val, str)
     token = token_val  # type: str
-    logger.debug(f"[DEBUG] refresh_token endpoint received token: {token}")
     try:
         new_token = await async_refresh_access_token(session, token)
         logger.info("refresh_success", extra={"token": token})

@@ -89,8 +89,6 @@ class TestUserCRUD(UserCoreEndpointTestTemplate):
             json=update,
             headers=self.get_auth_header(client),
         )
-        if resp.status_code not in (200, 204):
-            print("Update user failed:", resp.status_code, resp.json())
         self.assert_status(resp, (200, 204))
         # Update with invalid field
         resp = self.safe_request(

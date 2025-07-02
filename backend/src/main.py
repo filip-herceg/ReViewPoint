@@ -321,7 +321,6 @@ def print_routes(app: FastAPI) -> None:
 if os.getenv("ENVIRONMENT", "production") == "development":
     print_routes(app)
     # print_all_routes(app)  # Disabled: function not defined at this point
-    print(f"UPLOADS ROUTER: {uploads_router}")
 
 
 def print_all_routes(app: FastAPI) -> None:

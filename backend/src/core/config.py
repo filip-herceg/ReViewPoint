@@ -239,12 +239,6 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     s = Settings()
-    print(
-        f"[CONFIG DEBUG] api_key_enabled: {s.api_key_enabled} (type: {type(s.api_key_enabled)})"
-    )
-    logger.info(
-        f"[CONFIG DEBUG] api_key_enabled: {s.api_key_enabled} (type: {type(s.api_key_enabled)})"
-    )
     return s
 
 

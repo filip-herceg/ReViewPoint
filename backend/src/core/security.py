@@ -125,15 +125,6 @@ def create_refresh_token(data: dict[str, Any]) -> str:
         to_encode["exp"] = expire
         to_encode["iat"] = int(datetime.now(UTC).timestamp())
         to_encode["jti"] = str(uuid.uuid4())
-        logger.debug(
-            "[DEBUG] create_refresh_token using secret: %s, algorithm: %s",
-            settings.jwt_secret_key,
-            settings.jwt_algorithm,
-        )
-        logger.debug(
-            "[DEBUG] create_refresh_token using secret value: %r",
-            settings.jwt_secret_key,
-        )
         if not settings.jwt_secret_key:
             logger.error(
                 "JWT secret key is not configured. Cannot create refresh token."
