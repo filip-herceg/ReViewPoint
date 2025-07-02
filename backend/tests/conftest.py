@@ -49,9 +49,19 @@ def postgres_container():
     from testcontainers.postgres import PostgresContainer
 
     image = os.environ.get("REVIEWPOINT_TEST_POSTGRES_IMAGE", "postgres:15-alpine")
+    import time
+    import socket
     try:
-        with PostgresContainer(image) as postgres:
-            db_url = postgres.get_connection_url()
+        # Set up the container with high max_connections and shared_buffers
+        postgres = PostgresContainer(image)
+        postgres.with_env("POSTGRES_MAX_CONNECTIONS", "300")
+        postgres.with_env("POSTGRES_SHARED_BUFFERS", "512MB")
+        # Expose the default port and try to bind it for Windows compatibility
+        postgres.with_exposed_ports(5432)
+        # Optionally, try host networking (may not work on Docker Desktop for Windows)
+        # postgres.with_network_mode("host")
+        with postgres as pg:
+            db_url = pg.get_connection_url()
             # Convert sync driver to asyncpg for SQLAlchemy async engine
             if db_url.startswith("postgresql://"):
                 async_db_url = db_url.replace(
@@ -66,6 +76,46 @@ def postgres_container():
             logger.info(
                 f"[testcontainers] Started PostgreSQL container: {async_db_url}"
             )
+            # Wait for DB port to be open (robust wait)
+            def port_open(host, port):
+                try:
+                    with socket.create_connection((host, port), timeout=1):
+                        return True
+                except Exception:
+                    return False
+            # Parse host/port from db_url
+            import re
+            m = re.match(r"postgresql\+asyncpg://[^:]+:[^@]+@([^:/]+):(\d+)/", async_db_url)
+            if m:
+                host, port = m.group(1), int(m.group(2))
+                logger.info(f"[testcontainers] Waiting for DB port {host}:{port} to be open...")
+                for _ in range(60):
+                    if port_open(host, port):
+                        logger.info(f"[testcontainers] DB port {host}:{port} is open.")
+                        break
+                    time.sleep(0.5)
+                else:
+                    raise RuntimeError(f"Postgres container port {host}:{port} did not open in time.")
+            else:
+                logger.warning(f"[testcontainers] Could not parse host/port from DB URL: {async_db_url}")
+            # Optionally, try a real connection
+            try:
+                import asyncpg
+                for _ in range(30):
+                    try:
+                        conn = asyncio.get_event_loop().run_until_complete(
+                            asyncpg.connect(async_db_url)
+                        )
+                        asyncio.get_event_loop().run_until_complete(conn.close())
+                        logger.info("[testcontainers] Successfully connected to Postgres DB.")
+                        break
+                    except Exception as e:
+                        logger.info(f"[testcontainers] Waiting for Postgres DB to accept connections: {e}")
+                        time.sleep(0.5)
+                else:
+                    raise RuntimeError("Postgres DB did not accept connections in time.")
+            except ImportError:
+                logger.warning("[testcontainers] asyncpg not available for connection check.")
             os.environ["REVIEWPOINT_DB_URL"] = async_db_url
             yield async_db_url
             os.environ.pop("REVIEWPOINT_DB_URL", None)
@@ -161,38 +211,52 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
     loop.close()
 
 
+
 # 3. Database/session fixtures
 
-
-
-
-# Session-scoped engine for backward compatibility
+# Session-scoped engine for backward compatibility (not used by default)
 @pytest_asyncio.fixture(scope="session")
 async def async_engine(use_fast_db, postgres_container):
-    """
-    Provide a SQLAlchemy async engine for the test session.
-    Uses in-memory SQLite if FAST_TESTS=1, otherwise uses PostgreSQL.
-    """
     from sqlalchemy.ext.asyncio import create_async_engine
-    from sqlalchemy.orm import declarative_base
-
     if use_fast_db:
         db_url = "sqlite+aiosqlite:///:memory:?cache=shared"
         engine = create_async_engine(db_url, future=True, connect_args={"check_same_thread": False})
     else:
         db_url = os.environ["REVIEWPOINT_DB_URL"]
         engine = create_async_engine(db_url, future=True)
-
-    # Import Base only after DB URL is set
-    sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-    from src.models import Base
-
-    # Create tables once per session
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
     yield engine
     await engine.dispose()
+
+
+
+# Fixture to truncate all tables before each test for full isolation
+@pytest_asyncio.fixture(autouse=True, scope="function")
+async def truncate_tables(async_engine_isolated):
+    """
+    Truncate all tables in the test database before each test for full isolation.
+    Handles DBs with no tables, and logs errors for unsupported backends.
+    """
+    import sqlalchemy
+    sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+    from src.models import Base
+    try:
+        async with async_engine_isolated.begin() as conn:
+            # Only run for PostgreSQL
+            if conn.dialect.name != "postgresql":
+                logger.warning(f"truncate_tables: Skipping for non-PostgreSQL backend: {conn.dialect.name}")
+                return
+            # If no tables, skip
+            if not Base.metadata.sorted_tables:
+                logger.info("truncate_tables: No tables to truncate.")
+                return
+            for table in reversed(Base.metadata.sorted_tables):
+                try:
+                    await conn.execute(sqlalchemy.text(f'TRUNCATE TABLE "{table.name}" RESTART IDENTITY CASCADE;'))
+                except Exception as e:
+                    logger.error(f"truncate_tables: Failed to truncate {table.name}: {e}")
+    except Exception as e:
+        logger.error(f"truncate_tables: Unexpected error: {e}")
+
 
 # Function-scoped engine for parallel/isolated tests
 @pytest_asyncio.fixture(scope="function")
@@ -230,7 +294,6 @@ async def async_session(async_engine_isolated):
     Each test gets its own engine and connection pool.
     """
     from sqlalchemy.ext.asyncio import AsyncSession
-
     async with async_engine_isolated.connect() as connection:
         session = AsyncSession(bind=connection, expire_on_commit=False)
         try:
