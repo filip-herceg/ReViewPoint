@@ -1,0 +1,55 @@
+/* ReViewPoint Swagger UI Custom Styles */
+
+.swagger-ui .topbar {
+    background: #222831;
+    border-bottom: 2px solid #00adb5;
+}
+.swagger-ui .topbar .download-url-wrapper input {
+    background: #393e46;
+    color: #eeeeee;
+}
+.swagger-ui .topbar .topbar-wrapper span {
+    color: #00adb5 !important;
+    font-weight: bold;
+}
+.swagger-ui .info .title {
+    color: #00adb5;
+}
+.swagger-ui .scheme-container {
+    background: #393e46;
+    color: #eeeeee;
+}
+.swagger-ui .opblock.opblock-post {
+    border-color: #00adb5;
+}
+.swagger-ui .opblock.opblock-get {
+    border-color: #00bfae;
+}
+.swagger-ui .opblock.opblock-delete {
+    border-color: #ff5722;
+}
+.swagger-ui .opblock.opblock-put {
+    border-color: #ffc107;
+}
+.swagger-ui .btn.authorize {
+    background: #00adb5;
+    color: #fff;
+}
+.swagger-ui .btn.authorize svg {
+    fill: #fff;
+}
+.swagger-ui .btn.execute {
+    background: #00adb5;
+    color: #fff;
+}
+.swagger-ui .btn.cancel {
+    background: #393e46;
+    color: #fff;
+}
+.swagger-ui .responses-inner {
+    background: #23272f;
+    color: #eeeeee;
+}
+.swagger-ui .response-col_status {
+    color: #00adb5;
+}
