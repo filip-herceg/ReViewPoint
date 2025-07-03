@@ -66,11 +66,8 @@ class TestFileModel(AsyncModelTestTemplate):
         assert db_file.user_id == user.id
 
     @pytest.mark.asyncio
+    @pytest.mark.requires_real_db("SQLite in-memory does not reliably enforce foreign key constraints for this test.")
     async def test_file_integrity_error_missing_user(self):
-        import os
-        if os.environ.get("FAST_TESTS") == "1":
-            import pytest
-            pytest.skip("SQLite in-memory does not reliably enforce foreign key constraints for this test.")
         file = File(filename="bad.txt", content_type="text/plain", user_id=999999)
         await self.assert_integrity_error(file)
 

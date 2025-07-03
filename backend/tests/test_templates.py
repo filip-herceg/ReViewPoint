@@ -611,12 +611,9 @@ class DatabaseTestTemplate(BaseAPITest):
 
         asyncio.run(_check())
 
+    @pytest.mark.requires_real_db("Alembic migrations are not supported in fast (SQLite in-memory) mode.")
     def run_migration(self, command="upgrade head"):
         # Run Alembic migration command
-        import os
-        if os.environ.get("FAST_TESTS") == "1":
-            import pytest
-            pytest.skip("Alembic migrations are not supported in fast (SQLite in-memory) mode.")
         import subprocess
         result = subprocess.run(
             ["alembic"] + command.split(), capture_output=True, text=True

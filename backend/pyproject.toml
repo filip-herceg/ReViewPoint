@@ -237,7 +237,11 @@ markers = [
     "jwt: mark tests that require JWT handling",
     "performance: marks tests as performance (deselect with '-m \"not performance\"')",
     "slow: marks tests that access real database or are slow",
-    "fast: marks tests that use mocks or in-memory DB"
+    "fast: marks tests that use mocks or in-memory DB",
+    "skip_if_fast_tests: skip test only in fast test mode",
+    "skip_if_not_fast_tests: skip test only in regular test mode",
+    "requires_real_db: skip test if using in-memory SQLite",
+    "requires_timing_precision: skip test if timing is unreliable"
 ]
 
 [tool.hatch.build.targets.wheel]

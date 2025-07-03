@@ -151,12 +151,9 @@ class TestDatabase(DatabaseTestTemplate):
         """Test running the migration."""
         self.run_migration("upgrade head")
 
+    @pytest.mark.requires_real_db("Simulate DB disconnect is not supported in fast (SQLite in-memory) mode.")
     def test_simulate_db_disconnect(self) -> None:
         """Test simulating a database disconnect."""
-        import os
-        if os.environ.get("FAST_TESTS") == "1":
-            import pytest
-            pytest.skip("Simulate DB disconnect is not supported in fast (SQLite in-memory) mode.")
         self.simulate_db_disconnect(self.AsyncSessionLocal)
         with pytest.raises(Exception):
             import asyncio
@@ -172,11 +169,8 @@ class TestDatabase(DatabaseTestTemplate):
         self.assert_connection_pool_size(self.engine, expected_size=5)
 
     @pytest.mark.asyncio
+    @pytest.mark.requires_real_db("SQLite in-memory does not reliably enforce foreign key constraints for this test.")
     async def test_file_fk_constraint(self):
-        import os
-        if os.environ.get("FAST_TESTS") == "1":
-            import pytest
-            pytest.skip("SQLite in-memory does not reliably enforce foreign key constraints for this test.")
         # Should fail: user_id does not exist
         from sqlalchemy.exc import IntegrityError
         bad_file = dict(filename="bad.txt", content_type="text/plain", user_id=999999)
@@ -188,11 +182,8 @@ class TestDatabase(DatabaseTestTemplate):
             await session.rollback()
 
     @pytest.mark.asyncio
+    @pytest.mark.requires_real_db("SQLite in-memory does not reliably support ON DELETE CASCADE for this test.")
     async def test_cascade_delete_user_files(self):
-        import os
-        if os.environ.get("FAST_TESTS") == "1":
-            import pytest
-            pytest.skip("SQLite in-memory does not reliably support ON DELETE CASCADE for this test.")
         # Insert user and file, delete user, file should be deleted if cascade is enabled
         user = self.User(email="cascade@example.com", hashed_password="pw")
         async with self.AsyncSessionLocal() as session:

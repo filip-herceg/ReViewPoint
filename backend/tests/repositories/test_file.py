@@ -51,11 +51,9 @@ class TestFileRepository:
         assert deleted is False
 
     @pytest.mark.asyncio
+    @pytest.mark.requires_real_db("Duplicate filename constraint test not applicable in SQLite in-memory mode")
     async def test_duplicate_filename_same_user(self, async_session):
         # Skip for SQLite in-memory mode - no unique constraint on filename+user_id exists
-        if "sqlite" in str(async_session.bind.url).lower():
-            pytest.skip("Duplicate filename constraint test not applicable in SQLite in-memory mode")
-        
         await create_file(async_session, "dup.txt", "text/plain", user_id=4)
         with pytest.raises(IntegrityError):
             await create_file(async_session, "dup.txt", "text/plain", user_id=4)
@@ -80,11 +78,9 @@ class TestFileRepository:
         assert "спец" in file.content_type
 
     @pytest.mark.asyncio
+    @pytest.mark.requires_real_db("SQLite in-memory does not reliably enforce foreign key constraints for this test.")
     async def test_create_file_missing_user(self, async_session):
         # Skip for SQLite in-memory mode - foreign key constraints not reliably enforced
-        if "sqlite" in str(async_session.bind.url).lower():
-            pytest.skip("SQLite in-memory does not reliably enforce foreign key constraints for this test.")
-        
         with pytest.raises(IntegrityError):
             await create_file(async_session, "nouser.txt", "text/plain", user_id=999999)
         await async_session.rollback()
@@ -102,11 +98,9 @@ class TestFileRepository:
             assert deleted is True
 
     @pytest.mark.asyncio
+    @pytest.mark.requires_real_db("SQLite in-memory does not reliably preserve timezone information for this test.")
     async def test_list_files_pagination_and_search(self, async_session):
         # Skip for SQLite in-memory mode - timezone handling inconsistencies  
-        if "sqlite" in str(async_session.bind.url).lower():
-            pytest.skip("SQLite in-memory does not reliably preserve timezone information for this test.")
-        
         user_id = 8
         now = datetime.now(UTC)
         for i in range(10):
@@ -126,11 +120,9 @@ class TestFileRepository:
         assert all(f.created_at >= now - timedelta(days=5) for f in files)
 
     @pytest.mark.asyncio
+    @pytest.mark.requires_real_db("SQLite in-memory does not reliably preserve timezone information for this test.")
     async def test_list_files_sorting(self, async_session):
         # Skip for SQLite in-memory mode - timezone handling inconsistencies  
-        if "sqlite" in str(async_session.bind.url).lower():
-            pytest.skip("SQLite in-memory does not reliably preserve timezone information for this test.")
-        
         user_id = 9
         now = datetime.now(UTC)
         for i in range(3):
@@ -224,7 +216,7 @@ class TestFileRepository:
         assert files == []
         assert total == 1
 
-    @pytest.mark.skip(reason="SQLite in-memory does not reliably enforce unique constraints for this test.")
+    @pytest.mark.requires_real_db("SQLite in-memory does not reliably enforce unique constraints for this test.")
     @pytest.mark.asyncio
     async def test_rollback_after_integrity_error(self, async_session):
         await create_file(async_session, "rollbackdup.txt", "text/plain", user_id=15)
@@ -238,7 +230,7 @@ class TestFileRepository:
         )
         assert file.filename == "rollbackok.txt"
 
-    @pytest.mark.skip(reason="SQLite in-memory does not reliably enforce unique constraints for this test.")
+    @pytest.mark.requires_real_db("SQLite in-memory does not reliably enforce unique constraints for this test.")
     @pytest.mark.asyncio
     async def test_simulated_concurrent_creation(self, async_session):
         user_id = 16
