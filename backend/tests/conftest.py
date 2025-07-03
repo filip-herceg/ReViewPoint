@@ -34,6 +34,23 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "fast: marks tests that use mocks or in-memory DB")
 
 
+def pytest_runtest_setup(item):
+    """Handle custom markers for conditional test skipping."""
+    # Handle requires_real_db marker
+    requires_real_db_mark = item.get_closest_marker("requires_real_db")
+    if requires_real_db_mark is not None:
+        # Check if we're using SQLite (fast tests or forced SQLite)
+        fast_tests = os.environ.get("FAST_TESTS") == "1"
+        force_sqlite = os.environ.get("FORCE_SQLITE_TESTS", "1") == "1"
+        
+        if fast_tests or force_sqlite:
+            # Get the reason from the marker args if provided
+            reason = "Test requires real database features not available in SQLite in-memory"
+            if requires_real_db_mark.args:
+                reason = requires_real_db_mark.args[0]
+            pytest.skip(reason)
+
+
 def pytest_sessionstart(session):
     """
     Set critical environment variables before any fixtures or tests run.

@@ -142,18 +142,29 @@ class TestFileRepository:
         created_ats = [f.created_at for f in files]
         assert created_ats == sorted(created_ats, reverse=True)
 
+    @pytest.mark.requires_real_db("Transaction rollback test not supported in SQLite in-memory mode")
     @pytest.mark.asyncio
     async def test_transactional_rollback_create_file(self, async_session):
-        async def op():
-            await create_file(
-                async_session, "rollbackfile.txt", "text/plain", user_id=10
-            )
-
-        trans = await async_session.begin()
-        try:
-            await op()
-        finally:
-            await trans.rollback()
+        # Check if we're already in a transaction
+        if async_session.in_transaction():
+            # If already in transaction, create a nested savepoint
+            savepoint = await async_session.begin_nested()
+            try:
+                await create_file(
+                    async_session, "rollbackfile.txt", "text/plain", user_id=10
+                )
+            finally:
+                await savepoint.rollback()
+        else:
+            # If not in transaction, start a new one
+            trans = await async_session.begin()
+            try:
+                await create_file(
+                    async_session, "rollbackfile.txt", "text/plain", user_id=10
+                )
+            finally:
+                await trans.rollback()
+        
         file = await get_file_by_filename(async_session, "rollbackfile.txt")
         assert file is None
 

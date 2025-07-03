@@ -31,58 +31,43 @@ class TestDatabase(DatabaseTestTemplate):
         # Check that all emails are unique and present
         assert len(set(results)) == 5
     def setup_method(self):
-        import os
-        # Check for either FAST_TESTS or FORCE_SQLITE_TESTS
-        use_fast_db = (os.environ.get("FAST_TESTS") == "1" or 
-                       os.environ.get("FORCE_SQLITE_TESTS") == "1")
-        if use_fast_db:
-            from src.models.user import User
-            from src.models.file import File
-            from src.models.base import Base
-            from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-            import asyncio
-            self.engine = create_async_engine(
-                "sqlite+aiosqlite:///:memory:",
-                echo=False,
-                pool_pre_ping=False,
-            )
-            # Create all tables on this engine
-            async def create_tables():
-                async with self.engine.begin() as conn:
-                    await conn.run_sync(Base.metadata.create_all)
-            import sys
-            try:
-                loop = asyncio.get_event_loop()
-            except RuntimeError:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-            
-            if sys.version_info >= (3, 7):
-                loop.run_until_complete(create_tables())
-            else:
-                loop.run_until_complete(create_tables())
-
+        # Use the engine provided by the test framework's async_engine_isolated fixture
+        # This ensures we use the correct isolated database (SQLite or PostgreSQL)
+        from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+        
+        # The engine is injected by the _setup_db_env_function fixture
+        if hasattr(self, 'engine') and self.engine is not None:
+            # Use the injected isolated engine
             self.AsyncSessionLocal = async_sessionmaker(self.engine, class_=AsyncSession, expire_on_commit=False)
             
             # Create async context manager compatible with the real get_async_session
             from contextlib import asynccontextmanager
             @asynccontextmanager
-            async def get_async_session_fast():
+            async def get_async_session_isolated():
                 session = self.AsyncSessionLocal()
                 try:
                     yield session
                 finally:
                     await session.close()
             
-            self.get_async_session = get_async_session_fast
+            self.get_async_session = get_async_session_isolated
+            
             from sqlalchemy import text
             async def db_healthcheck():
                 async with self.AsyncSessionLocal() as session:
                     await session.execute(text("SELECT 1"))
             self.db_healthcheck = db_healthcheck
+            
+            # Import models
+            from src.models.user import User
+            from src.models.file import File
             self.User = User
             self.File = File
         else:
+            # Fallback: import from production modules (should not happen in normal test runs)
+            import warnings
+            warnings.warn("Test engine not injected, falling back to production database modules", RuntimeWarning)
+            
             db_mod = __import__(
                 "src.core.database",
                 fromlist=[
@@ -230,6 +215,8 @@ class TestDatabase(DatabaseTestTemplate):
     async def test_unique_constraint_on_email(self):
         await self.bulk_insert(self.AsyncSessionLocal, self.User, [USER_DATA])
         await self.assert_db_integrity_error(self.AsyncSessionLocal, self.User, USER_DATA)
+    
+    @pytest.mark.requires_real_db("SQLite async engine inspection not supported")
     def test_indexes_exist(self):
         import os
         if os.environ.get("FAST_TESTS") == "1":
