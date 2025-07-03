@@ -23,7 +23,7 @@ class TestDatabasePerformance(DatabaseTestTemplate):
             query_times.append(time.time() - start)
         # Calculate statistics
         avg_time = statistics.mean(query_times)
-        p95_time = statistics.quantiles(query_times, n=20)[19]  # 95th percentile
+        p95_time = statistics.quantiles(query_times, n=20)[18]  # 95th percentile (index 18 of 19)
         # Assert performance thresholds (adjust as needed for your infra)
         assert avg_time < 0.05, f"Average query time too slow: {avg_time:.4f}s"
         assert p95_time < 0.2, f"95th percentile query time too slow: {p95_time:.4f}s"
