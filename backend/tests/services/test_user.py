@@ -107,6 +107,8 @@ class TestAuthenticateUser(AuthUnitTestTemplate):
         self.patch_dep(
             "src.services.user.create_refresh_token", lambda payload: "refresh"
         )
+        # Mock the database interaction
+        session.execute = AsyncMock(return_value=DummyResult(None))
         tokens = await user_service.authenticate_user(session, "dev@example.com", "pw")
         access_token, refresh_token = tokens
         assert access_token == "token"
@@ -176,17 +178,22 @@ class TestRefreshAccessToken(AuthUnitTestTemplate):
         )
         assert user_service.refresh_access_token(1, "sometoken") == "newtoken"
 
-    @pytest.mark.skip(reason="Refresh token tests not reliable in fast test mode")
+    @pytest.mark.skip(reason="Refresh token invalid test not reliable in fast test mode")
     def test_invalid(self):
         import src.services.user as user_service
+        from fastapi import HTTPException
 
         def bad_verify(token: str):
             raise Exception("bad token")
 
-        self.patch_dep("src.services.user.verify_access_token", bad_verify)
-        self.assert_http_exception(
-            lambda: user_service.refresh_access_token(1, "badtoken"), 422
-        )
+        self.patch_dep("src.services.user.verify_refresh_token", bad_verify)
+        
+        # Modified to directly check the exception instead of using assert_http_exception
+        try:
+            user_service.refresh_access_token(1, "badtoken")
+            assert False, "Should have raised an exception"
+        except HTTPException as e:
+            assert e.status_code == 422
 
 
 class TestPasswordStrength(AuthUnitTestTemplate):
@@ -314,12 +321,17 @@ class TestUserExists(AuthUnitTestTemplate):
     @pytest.mark.skip(reason="User exists test not reliable in fast test mode")
     async def test_invalid(self):
         import src.services.user as user_service
+        from fastapi import HTTPException
 
         session = AsyncMock()
         self.patch_dep("src.services.user.validate_email", lambda e: False)
-        await self.assert_async_http_exception(
-            lambda: user_service.user_exists(session, "bad"), 422
-        )
+        
+        # Modified to directly check the exception instead of using assert_async_http_exception
+        try:
+            await user_service.user_exists(session, "bad")
+            assert False, "Should have raised an exception"
+        except HTTPException as e:
+            assert e.status_code == 422
 
 
 class TestAssignRoleAndCheck(AuthUnitTestTemplate):
@@ -423,18 +435,18 @@ class TestSetUserPreferences(AuthUnitTestTemplate):
 class TestAsyncRefreshAccessToken(AuthUnitTestTemplate):
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
-        "error_case,patches,expected_exception,expected_msg",
+        "error_case,expected_exception,expected_msg",
         [
             # The patch objects are created in the test body to avoid top-level imports
-            ("jwt_decode_error", None, None, "JWT decode failed: fail"),
-            ("missing_user_id", None, None, "Invalid token format: missing user_id."),
-            ("rate_limited", None, None, "Too many token refresh attempts."),
-            ("blacklisted", None, None, "Refresh token is blacklisted."),
-            ("unexpected_error", None, None, "Unexpected error: fail"),
+            ("jwt_decode_error", "RefreshTokenError", "JWT decode failed: fail"),
+            ("missing_user_id", "RefreshTokenError", "Invalid token format: missing user_id."),
+            ("rate_limited", "RefreshTokenRateLimitError", "Too many token refresh attempts."),
+            ("blacklisted", "RefreshTokenBlacklistedError", "Refresh token is blacklisted."),
+            ("unexpected_error", "RefreshTokenError", "Unexpected error: fail"),
         ],
     )
-    @pytest.mark.skip(reason="Async refresh token test not reliable in fast test mode")
-    async def test_errors(self, error_case, patches, expected_exception, expected_msg):
+    @pytest.mark.skip(reason="Async refresh token error tests still require fixes for fast test mode")
+    async def test_errors(self, error_case, expected_exception, expected_msg):
         import src.services.user as user_service
         from src.models.user import User
 
@@ -549,7 +561,7 @@ class TestAsyncRefreshAccessToken(AuthUnitTestTemplate):
                     assert expected_msg in str(exc.value)
 
     @pytest.mark.asyncio
-    @pytest.mark.skip(reason="Async refresh token test not reliable in fast test mode")
+    @pytest.mark.skip(reason="Refresh token tests still require fixes for fast test mode")
     async def test_success(self):
         import src.services.user as user_service
         from src.models.user import User
@@ -569,24 +581,25 @@ class TestAsyncRefreshAccessToken(AuthUnitTestTemplate):
             avatar_url=None,
             preferences=None,
         )
-        self.patch_dep("src.services.user.jwt.decode", lambda *a, **kw: payload)
-        self.patch_async_dep(
-            "src.services.user.user_action_limiter", AsyncMock(return_value=True)
-        )
-        self.patch_async_dep(
-            "src.services.user.is_token_blacklisted", AsyncMock(return_value=False)
-        )
-        self.patch_dep(
-            "src.services.user.refresh_access_token", lambda user_id, token: "newtoken"
-        )
-        self.patch_dep(
-            "src.core.security.verify_refresh_token",
-            lambda t: {"sub": "1", "email": "e"},
-        )
-        with patch(
-            "src.services.user.get_user_by_id", new=AsyncMock(return_value=real_user)
-        ):
-            result = await user_service.async_refresh_access_token(
-                session, token, jwt_secret, jwt_algorithm
-            )
+        # Use a direct patch on jwt.decode rather than through src.services.user
+        with patch("jwt.decode", return_value=payload):
+            with patch(
+                "src.services.user.user_action_limiter", new_callable=AsyncMock, return_value=True
+            ):
+                with patch(
+                    "src.services.user.is_token_blacklisted", new_callable=AsyncMock, return_value=False
+                ):
+                    with patch(
+                        "src.services.user.refresh_access_token", return_value="newtoken"
+                    ):
+                        with patch(
+                            "src.core.security.verify_refresh_token",
+                            return_value={"sub": "1", "email": "e"},
+                        ):
+                            with patch(
+                                "src.services.user.get_user_by_id", new=AsyncMock(return_value=real_user)
+                            ):
+                                result = await user_service.async_refresh_access_token(
+                                    session, token, jwt_secret, jwt_algorithm
+                                )
         assert result == "newtoken"
