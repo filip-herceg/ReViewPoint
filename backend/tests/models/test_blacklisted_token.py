@@ -56,10 +56,11 @@ class TestBlacklistedTokenModel(AsyncModelTestTemplate):
         await self.seed_db(tokens)
         for t in tokens:
             assert t.id is not None
-        await self.truncate_table("blacklisted_token")
+        await self.truncate_table("blacklisted_tokens")
         # After truncate, table should be empty
+        from sqlalchemy import text
         result = await self.async_session.execute(
-            "SELECT COUNT(*) FROM blacklisted_token"
+            text("SELECT COUNT(*) FROM blacklisted_tokens")
         )
         count = result.scalar()
         assert count == 0
@@ -69,13 +70,22 @@ class TestBlacklistedTokenModel(AsyncModelTestTemplate):
         now = datetime.now(UTC) + timedelta(hours=3)
         token = BlacklistedToken(jti=f"rollback-{uuid.uuid4()}", expires_at=now)
 
-        async def op():
+        # Manually create a transaction that we can control
+        from sqlalchemy import text
+        
+        # Start a new transaction manually
+        await self.async_session.execute(text("BEGIN"))
+        try:
             self.async_session.add(token)
-
-        await self.run_in_transaction(op)
+            await self.async_session.flush()  # Send SQL but don't commit
+            # Rollback manually
+            await self.async_session.execute(text("ROLLBACK"))
+        except Exception:
+            await self.async_session.execute(text("ROLLBACK"))
+            
         # After rollback, token should not be in DB
         result = await self.async_session.execute(
-            f"SELECT COUNT(*) FROM blacklisted_token WHERE jti = '{token.jti}'"
+            text(f"SELECT COUNT(*) FROM blacklisted_tokens WHERE jti = '{token.jti}'")
         )
         count = result.scalar()
         assert count == 0

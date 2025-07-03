@@ -23,5 +23,13 @@ class BaseModel(Base):
         DateTime(timezone=True), default=func.now(), onupdate=func.now(), nullable=False
     )
 
+    def to_dict(self):
+        """Convert model instance to dictionary, including all mapped columns."""
+        result = {}
+        for column in self.__table__.columns:
+            value = getattr(self, column.name, None)
+            result[column.name] = value
+        return result
+
 
 __all__ = ["Base", "BaseModel"]

@@ -309,10 +309,21 @@ class AuthUnitTestTemplate(BaseAPITest):
         """
         Patch a config/settings attribute and restore after test.
         Usage: self.patch_setting(settings, 'auth_enabled', False)
+        
+        Special case: If patching a module's 'settings' attribute and the module
+        doesn't have one (uses get_settings() instead), patch get_settings function.
         """
-        orig = getattr(obj, attr)
-        self.monkeypatch.setattr(obj, attr, value)
-        self._patches.append((obj, attr, orig))
+        try:
+            orig = getattr(obj, attr)
+            self.monkeypatch.setattr(obj, attr, value)
+            self._patches.append((obj, attr, orig))
+        except AttributeError:
+            if attr == "settings":
+                # Module uses get_settings() function instead of settings attribute
+                self.monkeypatch.setattr("src.core.config.get_settings", lambda: value)
+                self._patches.append(("src.core.config.get_settings", None, None))
+            else:
+                raise
 
     def assert_http_exception(self, func, status_code, detail_substr=None):
         import pytest
@@ -715,7 +726,18 @@ class EventTestTemplate:
         logger.remove()
 
     def patch_settings(self, target_module, settings_obj):
-        self.monkeypatch.setattr(target_module, "settings", settings_obj)
+        """
+        Patch settings for a module. This handles both:
+        1. Modules that have a 'settings' attribute (legacy)
+        2. Modules that use get_settings() function (modern approach)
+        """
+        try:
+            # Try to patch the settings attribute directly
+            self.monkeypatch.setattr(target_module, "settings", settings_obj)
+        except AttributeError:
+            # If the module doesn't have a settings attribute, 
+            # mock the get_settings function in src.core.config
+            self.monkeypatch.setattr("src.core.config.get_settings", lambda: settings_obj)
 
     def get_loguru_text(self):
         return self.log_file.read_text()
@@ -863,6 +885,13 @@ class ModelUnitTestTemplate:
     Provides helpers for to_dict, __repr__, and attribute assertions.
     Centralizes model test patterns for DRYness and maintainability.
     """
+
+    def assert_to_dict(self, model, expected_dict, msg=None):
+        """Assert that model.to_dict() returns the expected dictionary."""
+        actual = model.to_dict()
+        assert actual == expected_dict, (
+            msg or f"Expected to_dict() to return {expected_dict!r}, got {actual!r}"
+        )
 
     def assert_model_attrs(self, model, attrs: dict, msg=None):
         for k, v in attrs.items():

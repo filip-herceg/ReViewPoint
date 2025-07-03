@@ -4,12 +4,14 @@ from typing import cast
 import pytest
 from jose import jwt
 
+from src.core.config import get_settings
 from src.core.security import create_access_token
 from tests.test_templates import SecurityUnitTestTemplate
 
 
 class TestSecurity(SecurityUnitTestTemplate):
     def test_jwt_token_creation(self):
+        settings = get_settings()
         data = {"sub": "1", "email": "test@example.com"}
         token = create_access_token(data=data)
         self.assert_jwt_claims(
@@ -21,6 +23,7 @@ class TestSecurity(SecurityUnitTestTemplate):
 
     @pytest.mark.jwt
     def test_manual_jwt_token(self):
+        settings = get_settings()
         payload = {
             "sub": "42",
             "email": "testuser@example.com",
@@ -45,6 +48,7 @@ class TestSecurity(SecurityUnitTestTemplate):
         )
 
     def test_jwt_expired(self):
+        settings = get_settings()
         payload = {
             "sub": "expired",
             "exp": int((datetime.now(UTC) - timedelta(seconds=1)).timestamp()),
@@ -62,6 +66,7 @@ class TestSecurity(SecurityUnitTestTemplate):
         )
 
     def test_jwt_invalid_signature(self):
+        settings = get_settings()
         data = {"sub": "1", "email": "test@example.com"}
         token = create_access_token(data=data)
         self.assert_jwt_invalid(
@@ -71,6 +76,7 @@ class TestSecurity(SecurityUnitTestTemplate):
         )
 
     def test_patch_jwt_secret(self):
+        settings = get_settings()
         # Patch the secret and check that a valid token now fails
         data = {"sub": "1", "email": "test@example.com"}
         token = create_access_token(data=data)

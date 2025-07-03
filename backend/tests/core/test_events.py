@@ -81,17 +81,20 @@ class TestEvents(EventTestTemplate):
     @pytest.mark.asyncio
     async def test_shutdown_handles_exception(self, monkeypatch):
         self.patch_settings(events, DummySettings())
-        monkeypatch.setattr(
-            events.engine,
-            "dispose",
-            lambda: (_ for _ in ()).throw(Exception("dispose fail")),
-        )
+        # Mock the engine.dispose method to raise an exception
+        from unittest.mock import AsyncMock
+        mock_engine = AsyncMock()
+        mock_engine.dispose.side_effect = Exception("dispose fail")
+        monkeypatch.setattr("src.core.database.engine", mock_engine)
+        
         with self.caplog.at_level("ERROR"):
             with pytest.raises(RuntimeError) as excinfo:
                 await events.on_shutdown()
         assert "dispose fail" in str(excinfo.value)
         self.assert_caplog_contains("Shutdown error", level="ERROR")
-        self.assert_caplog_contains("Shutdown complete.")
+        # "Shutdown complete." is logged via loguru, not through caplog
+        logs = self.get_loguru_text()
+        assert "Shutdown complete." in logs
 
     @pytest.mark.asyncio
     async def test_startup_with_legacy_jwt_secret(self):

@@ -1,19 +1,18 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import DateTime, Integer, String
+from sqlalchemy import DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column, validates
 
-from src.models.base import Base
+from src.models.base import BaseModel
 
 
-class UsedPasswordResetToken(Base):
+class UsedPasswordResetToken(BaseModel):
     __tablename__ = "used_password_reset_tokens"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     nonce: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     used_at: Mapped[datetime] = mapped_column(
-        DateTime, default=lambda: datetime.now(UTC), nullable=False
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
     )
 
     @validates("email", "nonce")
