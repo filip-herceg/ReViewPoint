@@ -9,12 +9,12 @@ class TestOpenAPI(OpenAPITestTemplate):
         [
             ("/api/v1/auth/register", "post", "Register a new user", 201),
             ("/api/v1/auth/login", "post", "User login", 200),
-            ("/api/v1/auth/logout", "post", "User logout", 200),
-            ("/api/v1/users/me", "get", "Get current user", 200),
+            ("/api/v1/auth/logout", "post", "Logout user", 200),
+            ("/api/v1/auth/me", "get", "Get current user profile", 200),
             ("/api/v1/users", "get", "List users", 200),
             ("/api/v1/users/{user_id}", "get", "Get user by ID", 200),
-            ("/api/v1/uploads", "get", "List uploads", 200),
-            ("/api/v1/uploads", "post", "Upload file", 201),
+            ("/api/v1/uploads", "get", "List all uploaded files", 200),
+            ("/api/v1/uploads", "post", "Upload a file", 201),
             ("/api/v1/health", "get", "Health check", 200),
         ],
     )

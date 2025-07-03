@@ -13,7 +13,7 @@ from starlette.responses import Response
 
 
 @pytest.fixture
-def app(loguru_list_sink_middleware: list[str]) -> FastAPI:
+def app(loguru_list_sink: list[str]) -> FastAPI:
     """Create a test FastAPI app with the RequestLoggingMiddleware, ensuring loguru sink is attached first."""
     # Import middleware and logger only after loguru sink is attached
     from src.middlewares.logging import RequestLoggingMiddleware, get_request_id
@@ -70,7 +70,7 @@ def safe_request(func, *args, **kwargs):
         pytest.xfail(f"Connection/HTTP error: {e}")
 
 def test_request_id_generation(
-    client: TestClient, loguru_list_sink_middleware: list[str]
+    client: TestClient, loguru_list_sink: list[str]
 ) -> None:
     """Test that a request ID is generated for each request."""
     response = safe_request(client.get, "/test")
@@ -81,13 +81,13 @@ def test_request_id_generation(
     # Check that the request ID is in the response body
     assert response.json()["request_id"] is not None
 
-    logs = "\n".join(loguru_list_sink_middleware)
+    logs = "\n".join(loguru_list_sink)
     assert "Request GET /test" in logs
     assert "Response GET /test completed with status 200" in logs
 
 
 def test_custom_request_id_header(
-    client: TestClient, loguru_list_sink_middleware: list[str]
+    client: TestClient, loguru_list_sink: list[str]
 ) -> None:
     """Test that a custom request ID header is respected."""
     custom_id = "test-123"
@@ -98,13 +98,13 @@ def test_custom_request_id_header(
     assert response.headers["X-Request-ID"] == custom_id
     assert response.json()["request_id"] == custom_id
 
-    logs = "\n".join(loguru_list_sink_middleware)
+    logs = "\n".join(loguru_list_sink)
     assert "Request GET /test" in logs
     assert "Response GET /test completed with status 200" in logs
 
 
 def test_error_logging(
-    client: TestClient, loguru_list_sink_middleware: list[str]
+    client: TestClient, loguru_list_sink: list[str]
 ) -> None:
     """Test that errors are properly logged with request context."""
     import pytest
@@ -112,7 +112,7 @@ def test_error_logging(
     with pytest.raises(ValueError):
         safe_request(client.get, "/error")
 
-    logs = "\n".join(loguru_list_sink_middleware)
+    logs = "\n".join(loguru_list_sink)
     assert "Request GET /error" in logs
     # Accept both with and without colon/exception message for robust matching
     assert (
@@ -133,25 +133,25 @@ def test_request_id_propagation_to_other_middleware(client: TestClient) -> None:
 
 
 def test_performance_logging(
-    client: TestClient, loguru_list_sink_middleware: list[str]
+    client: TestClient, loguru_list_sink: list[str]
 ) -> None:
     """Test that request performance is logged."""
     safe_request(client.get, "/test")
 
     # Find the response log entry
     response_log = next(
-        (log for log in loguru_list_sink_middleware if "completed with status" in log),
+        (log for log in loguru_list_sink if "completed with status" in log),
         None,
     )
     assert response_log is not None
 
     # Check that the log message includes the status code and time
     assert re.search(r"status 200", response_log)
-    assert re.search(r"in \\d+ms", response_log)
+    assert re.search(r"in \d+ms", response_log)
 
 
 def test_sensitive_query_param_filtering(
-    client: TestClient, loguru_list_sink_middleware: list[str]
+    client: TestClient, loguru_list_sink: list[str]
 ) -> None:
     """Test that sensitive query parameters are filtered from loguru logs."""
     response = safe_request(
@@ -163,7 +163,7 @@ def test_sensitive_query_param_filtering(
     logs = "\n".join(
         [
             log_entry
-            for log_entry in loguru_list_sink_middleware
+            for log_entry in loguru_list_sink
             if "Request GET" in log_entry or "Response GET" in log_entry
         ]
     )

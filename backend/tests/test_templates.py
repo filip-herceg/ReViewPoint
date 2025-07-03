@@ -721,9 +721,13 @@ class EventTestTemplate:
         from loguru import logger
 
         self.log_file = tmp_path / "loguru.log"
-        logger.add(self.log_file, format="{message}", enqueue=True)
+        handler_id = logger.add(self.log_file, format="{message}", enqueue=True)
         yield
-        logger.remove()
+        try:
+            logger.remove(handler_id)
+        except ValueError:
+            # Handler already removed or doesn't exist
+            pass
 
     def patch_settings(self, target_module, settings_obj):
         """
