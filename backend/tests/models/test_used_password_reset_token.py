@@ -2,6 +2,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import text
 
 from src.models.used_password_reset_token import UsedPasswordResetToken
 from tests.test_templates import AsyncModelTestTemplate, ModelUnitTestTemplate
@@ -109,20 +110,17 @@ class TestUsedPasswordResetTokenDB(AsyncModelTestTemplate):
 
     @pytest.mark.asyncio
     async def test_integrity_error_empty_email(self):
-        token = UsedPasswordResetToken(email="", nonce="n", used_at=datetime.now(UTC))
-        self.async_session.add(token)
-        with pytest.raises(ValueError):
-            await self.async_session.flush()
-        await self.async_session.rollback()
+        """Test that empty email raises a validation error"""
+        with pytest.raises(ValueError, match="email must be a non-empty string"):
+            UsedPasswordResetToken(email="", nonce="n", used_at=datetime.now(UTC))
 
     @pytest.mark.asyncio
     async def test_integrity_error_empty_nonce(self):
-        token = UsedPasswordResetToken(
-            email="a@b.com", nonce="", used_at=datetime.now(UTC)
-        )
-        self.async_session.add(token)
-        with pytest.raises(ValueError):
-            await self.async_session.flush()
+        """Test that empty nonce raises a validation error"""
+        with pytest.raises(ValueError, match="nonce must be a non-empty string"):
+            UsedPasswordResetToken(
+                email="a@b.com", nonce="", used_at=datetime.now(UTC)
+            )
         await self.async_session.rollback()
 
     @pytest.mark.asyncio
@@ -139,7 +137,7 @@ class TestUsedPasswordResetTokenDB(AsyncModelTestTemplate):
             assert t.id is not None
         await self.truncate_table("used_password_reset_tokens")
         result = await self.async_session.execute(
-            "SELECT COUNT(*) FROM used_password_reset_tokens"
+            text("SELECT COUNT(*) FROM used_password_reset_tokens")
         )
         count = result.scalar()
         assert count == 0
@@ -156,7 +154,7 @@ class TestUsedPasswordResetTokenDB(AsyncModelTestTemplate):
 
         await self.run_in_transaction(op)
         result = await self.async_session.execute(
-            "SELECT COUNT(*) FROM used_password_reset_tokens WHERE email = 'rollback@ex.com'"
+            text("SELECT COUNT(*) FROM used_password_reset_tokens WHERE email = 'rollback@ex.com'")
         )
         count = result.scalar()
         assert count == 0
@@ -240,7 +238,7 @@ class TestUsedPasswordResetTokenDB(AsyncModelTestTemplate):
         await self.seed_db(tokens)
         # Lookup by indexed email
         result = await self.async_session.execute(
-            "SELECT * FROM used_password_reset_tokens WHERE email = :email",
+            text("SELECT * FROM used_password_reset_tokens WHERE email = :email"),
             {"email": "idx1@ex.com"},
         )
         row = result.first()
@@ -270,7 +268,7 @@ class TestUsedPasswordResetTokenDB(AsyncModelTestTemplate):
         await self.seed_db(tokens)
         await self.truncate_table("used_password_reset_tokens")
         result = await self.async_session.execute(
-            "SELECT COUNT(*) FROM used_password_reset_tokens"
+            text("SELECT COUNT(*) FROM used_password_reset_tokens")
         )
         count = result.scalar()
         assert count == 0

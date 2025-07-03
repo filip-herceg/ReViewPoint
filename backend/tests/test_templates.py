@@ -965,7 +965,11 @@ class AsyncModelTestTemplate(ModelUnitTestTemplate):
 
     async def run_in_transaction(self, coro):
         """Run a coroutine in a transaction and roll back after."""
-        trans = await self.async_session.begin()
+        # If already in a transaction, use a savepoint instead
+        if self.async_session.in_transaction():
+            trans = await self.async_session.begin_nested()
+        else:
+            trans = await self.async_session.begin()
         try:
             await coro()
         finally:
