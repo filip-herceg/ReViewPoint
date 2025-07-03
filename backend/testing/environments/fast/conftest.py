@@ -81,6 +81,51 @@ from src.main import create_app
 logger.remove()  # Remove default handler
 logger.add(sys.stderr, level="WARNING", format="{time} | {level} | {message}")
 
+# Register and handle custom markers
+def pytest_configure(config):
+    """Register test markers for slow and fast tests."""
+    config.addinivalue_line("markers", "slow: marks tests that access real database or are slow")
+    config.addinivalue_line("markers", "fast: marks tests that use mocks or in-memory DB")
+    config.addinivalue_line("markers", "skip_if_fast_tests: skip test only in fast test mode")
+    config.addinivalue_line("markers", "skip_if_not_fast_tests: skip test only in regular test mode")
+    config.addinivalue_line("markers", "requires_real_db: skip test if using in-memory SQLite")
+    config.addinivalue_line("markers", "requires_timing_precision: skip test if timing is unreliable")
+
+
+def pytest_runtest_setup(item):
+    """
+    Handle conditional skip markers before each test runs.
+    
+    This hook checks for custom skip markers and applies them conditionally
+    based on the test environment.
+    """
+    # Check if running in fast test mode
+    is_fast_tests = os.environ.get("FAST_TESTS") == "1"
+    
+    # Handle skip_if_fast_tests marker
+    if item.get_closest_marker("skip_if_fast_tests") and is_fast_tests:
+        marker = item.get_closest_marker("skip_if_fast_tests")
+        reason = marker.args[0] if marker.args else "Test not compatible with fast test mode"
+        pytest.skip(reason)
+    
+    # Handle skip_if_not_fast_tests marker
+    if item.get_closest_marker("skip_if_not_fast_tests") and not is_fast_tests:
+        marker = item.get_closest_marker("skip_if_not_fast_tests")
+        reason = marker.args[0] if marker.args else "Test only runs in fast test mode"
+        pytest.skip(reason)
+    
+    # Handle requires_real_db marker
+    if item.get_closest_marker("requires_real_db") and is_fast_tests:
+        marker = item.get_closest_marker("requires_real_db")
+        reason = marker.args[0] if marker.args else "Test requires real database features"
+        pytest.skip(reason)
+    
+    # Handle requires_timing_precision marker
+    if item.get_closest_marker("requires_timing_precision") and is_fast_tests:
+        marker = item.get_closest_marker("requires_timing_precision")
+        reason = marker.args[0] if marker.args else "Test requires precise timing not reliable in fast mode"
+        pytest.skip(reason)
+
 # Optimize async event loop for tests
 @pytest.fixture(scope="session")
 def event_loop():

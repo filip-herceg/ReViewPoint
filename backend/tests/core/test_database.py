@@ -147,6 +147,7 @@ class TestDatabase(DatabaseTestTemplate):
         """Test that the migration has been applied."""
         self.assert_migration_applied(self.AsyncSessionLocal, table_name="users")
 
+    @pytest.mark.requires_real_db("Alembic migrations are not supported in fast (SQLite in-memory) mode.")
     def test_run_migration(self) -> None:
         """Test running the migration."""
         self.run_migration("upgrade head")
