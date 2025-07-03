@@ -19,9 +19,9 @@ class TestAuthSchemas(AuthEndpointTestTemplate):
         [
             ("not-an-email", "password123", "Test User"),
             ("user@example.com", "short", "Test User"),
-            # Skipping None test case as name is optional in UserRegisterRequest
+            # Name is optional in UserRegisterRequest, so this should actually pass
             pytest.param("user@example.com", "password123", None, 
-                      marks=pytest.mark.skip(reason="name is optional in UserRegisterRequest")),
+                      id="name_is_optional"),
         ],
     )
     def test_user_register_request_invalid(self, email, password, name):
@@ -29,8 +29,17 @@ class TestAuthSchemas(AuthEndpointTestTemplate):
 
         from src.schemas.auth import UserRegisterRequest
 
-        with pytest.raises(ValidationError):
-            UserRegisterRequest(email=email, password=password, name=name)
+        # Special case for name=None since it's optional
+        if email == "user@example.com" and password == "password123" and name is None:
+            # This should pass validation since name is optional
+            req = UserRegisterRequest(email=email, password=password, name=name)
+            assert req.email == email
+            assert req.password == password
+            assert req.name is None
+        else:
+            # All other test cases should fail validation
+            with pytest.raises(ValidationError):
+                UserRegisterRequest(email=email, password=password, name=name)
 
     def test_user_login_request_valid(self):
         from src.schemas.auth import UserLoginRequest
@@ -175,7 +184,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             assert resp2.json()["message"] == "Logged out successfully."
 
     @pytest.mark.asyncio
-    @pytest.mark.skip(reason="Refresh token tests not reliable in fast test mode")
+    @pytest.mark.skip_if_fast_tests("Refresh token tests not reliable in fast test mode")
     async def test_refresh_token_success(self):
         from httpx import ASGITransport, AsyncClient
 
@@ -449,7 +458,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
         self.test_app.dependency_overrides = {}
 
     @pytest.mark.asyncio
-    @pytest.mark.skip(reason="Refresh token tests not reliable in fast test mode")
+    @pytest.mark.skip_if_fast_tests("Refresh token tests not reliable in fast test mode")
     async def test_refresh_token_unexpected_error(self):
         from httpx import ASGITransport, AsyncClient
 
