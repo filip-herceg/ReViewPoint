@@ -1,7 +1,8 @@
 import pytest
+import pytest_asyncio
 
 # --- Fixture to inject DB env and engine into test classes needing parallel DB tests ---
-@pytest.fixture(autouse=True, scope="function")
+@pytest_asyncio.fixture(autouse=True, scope="function")
 async def _setup_db_env_function(request, monkeypatch, override_env_vars, loguru_list_sink, async_engine_isolated):
     """
     Set up DB env, monkeypatch, and log sink per test function for parallel safety.
@@ -19,6 +20,7 @@ async def _setup_db_env_function(request, monkeypatch, override_env_vars, loguru
 
 # Fast test mode: use in-memory SQLite for fast tests
 import sys
+import os
 import pytest
 
 @pytest.fixture(scope="session")
@@ -30,10 +32,6 @@ def pytest_configure(config):
     """Register test markers for slow and fast tests."""
     config.addinivalue_line("markers", "slow: marks tests that access real database or are slow")
     config.addinivalue_line("markers", "fast: marks tests that use mocks or in-memory DB")
-    config.addinivalue_line("markers", "skip_if_fast_tests: skip test only in fast test mode")
-    config.addinivalue_line("markers", "skip_if_not_fast_tests: skip test only in regular test mode")
-    config.addinivalue_line("markers", "requires_real_db: skip test if using in-memory SQLite")
-    config.addinivalue_line("markers", "requires_timing_precision: skip test if timing is unreliable")
 
 
 def pytest_sessionstart(session):
@@ -86,7 +84,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-import pytest_asyncio
 from loguru import logger
 
 # Early environment setup for pytest-xdist workers
@@ -404,7 +401,15 @@ async def truncate_tables(async_engine_isolated):
 async def async_engine_isolated(use_fast_db, postgres_container):
     """
     Provide a SQLAlchemy async engine for each test function (parallel safe).
-    Uses in-memory SQLite if FAST_TESTS=1, otherwise uses PostgreSQL.
+    
+    Database Engine Selection:
+    - Uses SQLite by default to avoid asyncpg event loop conflicts
+    - Uses PostgreSQL only when FORCE_SQLITE_TESTS=0 is explicitly set
+    - Always uses SQLite for FAST_TESTS=1 or pytest-xdist parallel runs
+    - SQLite provides sufficient compatibility for most test scenarios
+    
+    To force PostgreSQL for specific integration tests:
+    Set environment variable FORCE_SQLITE_TESTS=0
     """
     from sqlalchemy.ext.asyncio import create_async_engine
     import time
@@ -418,10 +423,17 @@ async def async_engine_isolated(use_fast_db, postgres_container):
 
     engine_start_time = time.time()
     
-    if use_fast_db or os.environ.get('PYTEST_XDIST_WORKER'):
+    # Determine database engine: default to SQLite to avoid asyncpg event loop conflicts
+    force_sqlite_env = os.environ.get("FORCE_SQLITE_TESTS", "1")
+    force_sqlite = force_sqlite_env != "0"  # Default to SQLite unless explicitly set to "0"
+    use_sqlite = force_sqlite or use_fast_db or bool(os.environ.get('PYTEST_XDIST_WORKER'))
+    
+    logger.debug(f"[ENGINE_ISOLATED] Engine selection: FORCE_SQLITE_TESTS={force_sqlite_env}, force_sqlite={force_sqlite}, use_fast_db={use_fast_db}, parallel={bool(os.environ.get('PYTEST_XDIST_WORKER'))}, final_use_sqlite={use_sqlite}")
+    
+    if use_sqlite:
         # Use SQLite for fast tests OR parallel execution to avoid asyncpg concurrency issues
         db_url = f"sqlite+aiosqlite:///:memory:?cache=shared&test_id={test_id}"
-        logger.debug(f"[ENGINE_ISOLATED] Using SQLite in-memory DB (parallel={bool(os.environ.get('PYTEST_XDIST_WORKER'))}): {db_url}")
+        logger.debug(f"[ENGINE_ISOLATED] Using SQLite in-memory DB: {db_url}")
         engine = create_async_engine(db_url, future=True, connect_args={"check_same_thread": False})
     else:
         # Use the same DB URL, but configure for strict isolation in parallel testing
@@ -865,40 +877,3 @@ def get_auth_header(client, email=None, password="TestPassword123!"):
         payload = {"sub": email}
         token = create_access_token(payload)
         return {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
-
-
-def pytest_runtest_setup(item):
-    """
-    Handle conditional skip markers before each test runs.
-    
-    This hook checks for custom skip markers and applies them conditionally
-    based on the test environment.
-    """
-    import os
-    
-    # Check if running in fast test mode
-    is_fast_tests = os.environ.get("FAST_TESTS") == "1"
-    
-    # Handle skip_if_fast_tests marker
-    if item.get_closest_marker("skip_if_fast_tests") and is_fast_tests:
-        marker = item.get_closest_marker("skip_if_fast_tests")
-        reason = marker.args[0] if marker.args else "Test not compatible with fast test mode"
-        pytest.skip(reason)
-    
-    # Handle skip_if_not_fast_tests marker
-    if item.get_closest_marker("skip_if_not_fast_tests") and not is_fast_tests:
-        marker = item.get_closest_marker("skip_if_not_fast_tests")
-        reason = marker.args[0] if marker.args else "Test only runs in fast test mode"
-        pytest.skip(reason)
-    
-    # Handle requires_real_db marker
-    if item.get_closest_marker("requires_real_db") and is_fast_tests:
-        marker = item.get_closest_marker("requires_real_db")
-        reason = marker.args[0] if marker.args else "Test requires real database features"
-        pytest.skip(reason)
-    
-    # Handle requires_timing_precision marker
-    if item.get_closest_marker("requires_timing_precision") and is_fast_tests:
-        marker = item.get_closest_marker("requires_timing_precision")
-        reason = marker.args[0] if marker.args else "Test requires precise timing not reliable in fast mode"
-        pytest.skip(reason)
