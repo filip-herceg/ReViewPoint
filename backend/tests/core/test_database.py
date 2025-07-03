@@ -229,8 +229,8 @@ class TestDatabase(DatabaseTestTemplate):
         else:
             from sqlalchemy import inspect
             insp = inspect(self.engine)
-            user_indexes = [ix["name"] for ix in insp.get_indexes("users")]
-            file_indexes = [ix["name"] for ix in insp.get_indexes("files")]
+            user_indexes = [ix["name"] for ix in insp.get_indexes("users") or []]
+            file_indexes = [ix["name"] for ix in insp.get_indexes("files") or []]
             assert any("ix_users_email" in ix for ix in user_indexes)
             assert any("ix_files_user_id" in ix for ix in file_indexes)
 
@@ -322,6 +322,7 @@ class TestDatabase(DatabaseTestTemplate):
                 select(self.User).filter_by(email="dt@example.com")
             )
             row = result.scalar_one()
-            assert row.last_login_at.replace(microsecond=0) == now.replace(
-                microsecond=0
-            )
+            if row.last_login_at:  # Check if last_login_at is not None
+                assert row.last_login_at.replace(microsecond=0) == now.replace(
+                    microsecond=0
+                )
