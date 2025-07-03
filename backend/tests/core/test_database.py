@@ -32,7 +32,10 @@ class TestDatabase(DatabaseTestTemplate):
         assert len(set(results)) == 5
     def setup_method(self):
         import os
-        if os.environ.get("FAST_TESTS") == "1":
+        # Check for either FAST_TESTS or FORCE_SQLITE_TESTS
+        use_fast_db = (os.environ.get("FAST_TESTS") == "1" or 
+                       os.environ.get("FORCE_SQLITE_TESTS") == "1")
+        if use_fast_db:
             from src.models.user import User
             from src.models.file import File
             from src.models.base import Base
@@ -48,14 +51,30 @@ class TestDatabase(DatabaseTestTemplate):
                 async with self.engine.begin() as conn:
                     await conn.run_sync(Base.metadata.create_all)
             import sys
-            if sys.version_info >= (3, 7):
-                asyncio.run(create_tables())
-            else:
+            try:
                 loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            
+            if sys.version_info >= (3, 7):
+                loop.run_until_complete(create_tables())
+            else:
                 loop.run_until_complete(create_tables())
 
             self.AsyncSessionLocal = async_sessionmaker(self.engine, class_=AsyncSession, expire_on_commit=False)
-            self.get_async_session = lambda: self.AsyncSessionLocal()
+            
+            # Create async context manager compatible with the real get_async_session
+            from contextlib import asynccontextmanager
+            @asynccontextmanager
+            async def get_async_session_fast():
+                session = self.AsyncSessionLocal()
+                try:
+                    yield session
+                finally:
+                    await session.close()
+            
+            self.get_async_session = get_async_session_fast
             from sqlalchemy import text
             async def db_healthcheck():
                 async with self.AsyncSessionLocal() as session:
@@ -95,7 +114,10 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_session_rollback(self) -> None:
         """Test session rollback on error."""
-        await self.assert_session_rollback(self.AsyncSessionLocal)
+        # Create a factory function that returns a session instance
+        def session_factory():
+            return self.AsyncSessionLocal()
+        await self.assert_session_rollback(session_factory)
 
     @pytest.mark.asyncio
     async def test_users_table_exists(self) -> None:
@@ -229,10 +251,11 @@ class TestDatabase(DatabaseTestTemplate):
         else:
             from sqlalchemy import inspect
             insp = inspect(self.engine)
-            user_indexes = [ix["name"] for ix in insp.get_indexes("users") or []]
-            file_indexes = [ix["name"] for ix in insp.get_indexes("files") or []]
-            assert any("ix_users_email" in ix for ix in user_indexes)
-            assert any("ix_files_user_id" in ix for ix in file_indexes)
+            if insp is not None:
+                user_indexes = [ix["name"] for ix in insp.get_indexes("users") or []]
+                file_indexes = [ix["name"] for ix in insp.get_indexes("files") or []]
+                assert any("ix_users_email" in ix for ix in user_indexes)
+                assert any("ix_files_user_id" in ix for ix in file_indexes)
 
     @pytest.mark.asyncio
     async def test_user_defaults(self):
