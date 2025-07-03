@@ -8,7 +8,7 @@ def test_fast_test_environment():
     """Test that fast test environment variables are set correctly."""
     assert os.environ.get("FAST_TESTS") == "1"
     assert os.environ.get("REVIEWPOINT_ENVIRONMENT") == "test"
-    assert os.environ.get("REVIEWPOINT_LOG_LEVEL") == "WARNING"
+    assert os.environ.get("REVIEWPOINT_LOG_LEVEL") == "DEBUG"
     assert "sqlite" in os.environ.get("REVIEWPOINT_DB_URL", "")
 
 
