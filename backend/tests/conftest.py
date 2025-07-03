@@ -1,3 +1,21 @@
+import pytest
+
+# --- Fixture to inject DB env and engine into test classes needing parallel DB tests ---
+@pytest.fixture(autouse=True, scope="function")
+async def _setup_db_env_function(request, monkeypatch, override_env_vars, loguru_list_sink, async_engine_isolated):
+    """
+    Set up DB env, monkeypatch, and log sink per test function for parallel safety.
+    Injects function-scoped engine for parallel DB tests.
+    Sets attributes on test class instance if present.
+    """
+    test_instance = getattr(request, 'instance', None)
+    if test_instance is not None:
+        test_instance.override_env_vars = override_env_vars
+        test_instance.monkeypatch = monkeypatch
+        test_instance.loguru_list_sink = loguru_list_sink
+        test_instance.engine = async_engine_isolated
+    # If not a class-based test, do nothing
+    yield
 
 # Fast test mode: use in-memory SQLite for fast tests
 import sys

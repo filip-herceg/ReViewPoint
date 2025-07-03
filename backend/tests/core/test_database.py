@@ -31,22 +31,55 @@ class TestDatabase(DatabaseTestTemplate):
         # Check that all emails are unique and present
         assert len(set(results)) == 5
     def setup_method(self):
-        db_mod = __import__(
-            "src.core.database",
-            fromlist=[
-                "AsyncSessionLocal",
-                "db_healthcheck",
-                "engine",
-                "get_async_session",
-            ],
-        )
-        self.AsyncSessionLocal = db_mod.AsyncSessionLocal
-        self.db_healthcheck = db_mod.db_healthcheck
-        self.engine = db_mod.engine
-        self.get_async_session = db_mod.get_async_session
-        models_mod = __import__("src.models", fromlist=["File", "User"])
-        self.File = models_mod.File
-        self.User = models_mod.User
+        import os
+        if os.environ.get("FAST_TESTS") == "1":
+            from src.models.user import User
+            from src.models.file import File
+            from src.models.base import Base
+            from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+            import asyncio
+            self.engine = create_async_engine(
+                "sqlite+aiosqlite:///:memory:",
+                echo=False,
+                pool_pre_ping=False,
+            )
+            # Create all tables on this engine
+            async def create_tables():
+                async with self.engine.begin() as conn:
+                    await conn.run_sync(Base.metadata.create_all)
+            import sys
+            if sys.version_info >= (3, 7):
+                asyncio.run(create_tables())
+            else:
+                loop = asyncio.get_event_loop()
+                loop.run_until_complete(create_tables())
+
+            self.AsyncSessionLocal = async_sessionmaker(self.engine, class_=AsyncSession, expire_on_commit=False)
+            self.get_async_session = lambda: self.AsyncSessionLocal()
+            from sqlalchemy import text
+            async def db_healthcheck():
+                async with self.AsyncSessionLocal() as session:
+                    await session.execute(text("SELECT 1"))
+            self.db_healthcheck = db_healthcheck
+            self.User = User
+            self.File = File
+        else:
+            db_mod = __import__(
+                "src.core.database",
+                fromlist=[
+                    "AsyncSessionLocal",
+                    "db_healthcheck",
+                    "engine",
+                    "get_async_session",
+                ],
+            )
+            self.AsyncSessionLocal = db_mod.AsyncSessionLocal
+            self.db_healthcheck = db_mod.db_healthcheck
+            self.engine = db_mod.engine
+            self.get_async_session = db_mod.get_async_session
+            models_mod = __import__("src.models", fromlist=["File", "User"])
+            self.File = models_mod.File
+            self.User = models_mod.User
 
     @pytest.mark.asyncio
     async def test_db_healthcheck(self) -> None:
@@ -120,10 +153,13 @@ class TestDatabase(DatabaseTestTemplate):
 
     def test_simulate_db_disconnect(self) -> None:
         """Test simulating a database disconnect."""
+        import os
+        if os.environ.get("FAST_TESTS") == "1":
+            import pytest
+            pytest.skip("Simulate DB disconnect is not supported in fast (SQLite in-memory) mode.")
         self.simulate_db_disconnect(self.AsyncSessionLocal)
         with pytest.raises(Exception):
             import asyncio
-
             asyncio.run(self.assert_healthcheck_ok(self.db_healthcheck))
 
     def test_simulate_db_latency(self) -> None:
@@ -137,11 +173,13 @@ class TestDatabase(DatabaseTestTemplate):
 
     @pytest.mark.asyncio
     async def test_file_fk_constraint(self):
+        import os
+        if os.environ.get("FAST_TESTS") == "1":
+            import pytest
+            pytest.skip("SQLite in-memory does not reliably enforce foreign key constraints for this test.")
         # Should fail: user_id does not exist
         from sqlalchemy.exc import IntegrityError
-
         bad_file = dict(filename="bad.txt", content_type="text/plain", user_id=999999)
-
         async with self.AsyncSessionLocal() as session:
             file = self.File(**bad_file)
             session.add(file)
@@ -151,18 +189,22 @@ class TestDatabase(DatabaseTestTemplate):
 
     @pytest.mark.asyncio
     async def test_cascade_delete_user_files(self):
+        import os
+        if os.environ.get("FAST_TESTS") == "1":
+            import pytest
+            pytest.skip("SQLite in-memory does not reliably support ON DELETE CASCADE for this test.")
         # Insert user and file, delete user, file should be deleted if cascade is enabled
-        user = User(email="cascade@example.com", hashed_password="pw")
-        async with AsyncSessionLocal() as session:
+        user = self.User(email="cascade@example.com", hashed_password="pw")
+        async with self.AsyncSessionLocal() as session:
             session.add(user)
             await session.commit()
-            file = File(filename="f.txt", content_type="text/plain", user_id=user.id)
+            file = self.File(filename="f.txt", content_type="text/plain", user_id=user.id)
             session.add(file)
             await session.commit()
             await session.delete(user)
             await session.commit()
             result = await session.execute(
-                File.__table__.select().filter_by(user_id=user.id)
+                self.File.__table__.select().filter_by(user_id=user.id)
             )
             files = result.scalars().all()
             # If cascade is not enabled, files may remain; adjust assertion as needed
@@ -172,26 +214,43 @@ class TestDatabase(DatabaseTestTemplate):
 
     @pytest.mark.asyncio
     async def test_unique_constraint_on_email(self):
-        await self.bulk_insert(AsyncSessionLocal, User, [USER_DATA])
-        await self.assert_db_integrity_error(AsyncSessionLocal, User, USER_DATA)
-
+        await self.bulk_insert(self.AsyncSessionLocal, self.User, [USER_DATA])
+        await self.assert_db_integrity_error(self.AsyncSessionLocal, self.User, USER_DATA)
     def test_indexes_exist(self):
-        from sqlalchemy import inspect
-
-        insp = inspect(engine)
-        user_indexes = [ix["name"] for ix in insp.get_indexes("users")]
-        file_indexes = [ix["name"] for ix in insp.get_indexes("files")]
-        assert any("ix_users_email" in ix for ix in user_indexes)
-        assert any("ix_files_user_id" in ix for ix in file_indexes)
+        import os
+        if os.environ.get("FAST_TESTS") == "1":
+            import asyncio
+            from sqlalchemy import inspect
+            async def check_indexes():
+                async with self.engine.begin() as conn:
+                    def get_indexes(sync_conn):
+                        insp = inspect(sync_conn)
+                        if insp is None:
+                            raise RuntimeError(f"Inspector is None for sync_conn: {sync_conn}, type: {type(sync_conn)}")
+                        user_indexes = [ix["name"] for ix in insp.get_indexes("users")]
+                        file_indexes = [ix["name"] for ix in insp.get_indexes("files")]
+                        return user_indexes, file_indexes
+                    user_indexes, file_indexes = await conn.run_sync(get_indexes)
+                    assert any("ix_users_email" in ix for ix in user_indexes)
+                    assert any("ix_files_user_id" in ix for ix in file_indexes)
+            asyncio.run(check_indexes())
+        else:
+            from sqlalchemy import inspect
+            insp = inspect(self.engine)
+            user_indexes = [ix["name"] for ix in insp.get_indexes("users")]
+            file_indexes = [ix["name"] for ix in insp.get_indexes("files")]
+            assert any("ix_users_email" in ix for ix in user_indexes)
+            assert any("ix_files_user_id" in ix for ix in file_indexes)
 
     @pytest.mark.asyncio
     async def test_user_defaults(self):
-        user = User(email="defaults@example.com", hashed_password="pw")
-        async with AsyncSessionLocal() as session:
+        from sqlalchemy import select
+        user = self.User(email="defaults@example.com", hashed_password="pw")
+        async with self.AsyncSessionLocal() as session:
             session.add(user)
             await session.commit()
             result = await session.execute(
-                User.__table__.select().filter_by(email="defaults@example.com")
+                select(self.User).filter_by(email="defaults@example.com")
             )
             row = result.scalar_one()
             assert row.is_active is True
@@ -200,71 +259,75 @@ class TestDatabase(DatabaseTestTemplate):
 
     @pytest.mark.asyncio
     async def test_update_and_query(self):
-        user = User(email="update@example.com", hashed_password="pw")
-        async with AsyncSessionLocal() as session:
+        from sqlalchemy import select
+        user = self.User(email="update@example.com", hashed_password="pw")
+        async with self.AsyncSessionLocal() as session:
             session.add(user)
             await session.commit()
             user.is_active = False
             await session.commit()
             result = await session.execute(
-                User.__table__.select().filter_by(email="update@example.com")
+                select(self.User).filter_by(email="update@example.com")
             )
             row = result.scalar_one()
             assert row.is_active is False
 
     @pytest.mark.asyncio
     async def test_rollback_on_exception(self):
-        user = User(email="rollback@example.com", hashed_password="pw")
+        from sqlalchemy import select
+        user = self.User(email="rollback@example.com", hashed_password="pw")
         try:
-            async with AsyncSessionLocal() as session:
+            async with self.AsyncSessionLocal() as session:
                 session.add(user)
                 raise Exception("fail before commit")
         except Exception:
             pass
         # User should not be committed
-        async with AsyncSessionLocal() as session:
+        async with self.AsyncSessionLocal() as session:
             result = await session.execute(
-                User.__table__.select().filter_by(email="rollback@example.com")
+                select(self.User).filter_by(email="rollback@example.com")
             )
             row = result.scalar_one_or_none()
             assert row is None
 
     @pytest.mark.asyncio
     async def test_user_repr(self):
-        user = User(email="repr@example.com", hashed_password="pw")
-        async with AsyncSessionLocal() as session:
+        from sqlalchemy import select
+        user = self.User(email="repr@example.com", hashed_password="pw")
+        async with self.AsyncSessionLocal() as session:
             session.add(user)
             await session.commit()
             result = await session.execute(
-                User.__table__.select().filter_by(email="repr@example.com")
+                select(self.User).filter_by(email="repr@example.com")
             )
             row = result.scalar_one()
             assert f"<User id={row.id} email=repr@example.com>" == repr(row)
 
     @pytest.mark.asyncio
     async def test_user_preferences_json(self):
+        from sqlalchemy import select
         prefs = {"theme": "dark", "lang": "en"}
-        user = User(email="prefs@example.com", hashed_password="pw", preferences=prefs)
-        async with AsyncSessionLocal() as session:
+        user = self.User(email="prefs@example.com", hashed_password="pw", preferences=prefs)
+        async with self.AsyncSessionLocal() as session:
             session.add(user)
             await session.commit()
             result = await session.execute(
-                User.__table__.select().filter_by(email="prefs@example.com")
+                select(self.User).filter_by(email="prefs@example.com")
             )
             row = result.scalar_one()
             assert row.preferences == prefs
 
     @pytest.mark.asyncio
     async def test_user_last_login_datetime(self):
+        from sqlalchemy import select
         import datetime
-
         now = datetime.datetime.utcnow()
-        user = User(email="dt@example.com", hashed_password="pw", last_login_at=now)
-        async with AsyncSessionLocal() as session:
+        user = self.User(email="dt@example.com", hashed_password="pw", last_login_at=now)
+        async with self.AsyncSessionLocal() as session:
             session.add(user)
             await session.commit()
             result = await session.execute(
-                User.__table__.select().filter_by(email="dt@example.com")
+                select(self.User).filter_by(email="dt@example.com")
             )
             row = result.scalar_one()
             assert row.last_login_at.replace(microsecond=0) == now.replace(
