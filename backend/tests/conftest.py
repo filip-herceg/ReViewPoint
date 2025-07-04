@@ -31,11 +31,21 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 # Early environment setup for pytest-xdist workers
 # This must happen before any imports that might create database engines
-if "PYTEST_CURRENT_TEST" in os.environ:
+# We detect pytest runs by checking if we're being imported from within the tests directory
+# or if common pytest environment variables are set
+is_pytest_run = (
+    "PYTEST_CURRENT_TEST" in os.environ or 
+    "pytest" in str(sys.argv) or 
+    "__file__" in globals() and "tests" in str(Path(__file__).resolve()) or
+    any(arg.endswith("pytest") or "test" in arg for arg in sys.argv if isinstance(arg, str))
+)
+
+if is_pytest_run:
     # Only set during pytest runs to avoid affecting normal app usage
     worker_id = os.environ.get('PYTEST_XDIST_WORKER', 'main')
     
     # Set critical secrets that are needed during engine creation
+    # Always set these for tests to ensure Settings object can be created
     if "REVIEWPOINT_JWT_SECRET_KEY" not in os.environ:
         # Use different configs for fast vs slow tests
         if IS_FAST_TEST_MODE:
@@ -58,6 +68,7 @@ if "PYTEST_CURRENT_TEST" in os.environ:
             for flag in feature_flags:
                 os.environ[f"REVIEWPOINT_FEATURE_{flag}"] = "true"
         else:
+            # Regular test mode - set JWT secrets for slow tests
             os.environ["REVIEWPOINT_JWT_SECRET"] = "testsecret"
             os.environ["REVIEWPOINT_JWT_SECRET_KEY"] = "testsecret"
             os.environ["REVIEWPOINT_API_KEY_ENABLED"] = "true"
