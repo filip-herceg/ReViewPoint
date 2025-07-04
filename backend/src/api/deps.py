@@ -163,6 +163,7 @@ def get_async_refresh_access_token() -> Any:
     async_refresh_access_token = registry.get("async_refresh_access_token")
 
     async def wrapper(session, token):
+        settings = get_settings()
         return await async_refresh_access_token(
             session,
             token,

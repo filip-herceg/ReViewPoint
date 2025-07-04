@@ -87,6 +87,25 @@ class TestAuthSchemas(AuthEndpointTestTemplate):
 
 
 class TestAuthEndpoints(AuthEndpointTestTemplate):
+    def create_fresh_app(self):
+        """Create a fresh FastAPI app with current environment variables"""
+        from src.core.config import clear_settings_cache
+        from src.main import create_app
+        from src.core.database import get_async_session
+        
+        # Clear settings cache to pick up new environment variables
+        clear_settings_cache()
+        
+        # Create a fresh app with the new environment variables
+        fresh_app = create_app()
+        
+        # Override get_async_session to yield the test session
+        async def _override_get_async_session():
+            yield self.async_session
+
+        fresh_app.dependency_overrides[get_async_session] = _override_get_async_session
+        return fresh_app
+
     @pytest.mark.asyncio
     async def test_register_success(self):
         from httpx import ASGITransport, AsyncClient
@@ -99,7 +118,9 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:register",
             }
         )
-        transport = ASGITransport(app=self.test_app)
+        
+        fresh_app = self.create_fresh_app()
+        transport = ASGITransport(app=fresh_app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             import uuid
 
@@ -128,7 +149,9 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:login",
             }
         )
-        transport = ASGITransport(app=self.test_app)
+        
+        fresh_app = self.create_fresh_app()
+        transport = ASGITransport(app=fresh_app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             import uuid
 
@@ -163,9 +186,11 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:logout",
             }
         )
+        
+        fresh_app = self.create_fresh_app()
         import uuid
 
-        transport = ASGITransport(app=self.test_app)
+        transport = ASGITransport(app=fresh_app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             email = f"logout_success_{uuid.uuid4()}@example.com"
             resp = await ac.post(
@@ -196,9 +221,11 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:refresh_token",
             }
         )
+        
+        fresh_app = self.create_fresh_app()
         import uuid
 
-        transport = ASGITransport(app=self.test_app)
+        transport = ASGITransport(app=fresh_app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             email = f"refresh_success_{uuid.uuid4()}@example.com"
             await ac.post(
@@ -233,9 +260,11 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:request_password_reset",
             }
         )
+        
+        fresh_app = self.create_fresh_app()
         import uuid
 
-        transport = ASGITransport(app=self.test_app)
+        transport = ASGITransport(app=fresh_app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             email = f"reset_request_{uuid.uuid4()}@example.com"
             await ac.post(
@@ -265,9 +294,11 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:logout",
             }
         )
+        
+        fresh_app = self.create_fresh_app()
         import uuid
 
-        transport = ASGITransport(app=self.test_app)
+        transport = ASGITransport(app=fresh_app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             await ac.post(
                 "/api/v1/auth/register",
@@ -296,9 +327,11 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:logout",
             }
         )
+        
+        fresh_app = self.create_fresh_app()
         import uuid
 
-        transport = ASGITransport(app=self.test_app)
+        transport = ASGITransport(app=fresh_app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             await ac.post(
                 "/api/v1/auth/register",
@@ -327,13 +360,15 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:refresh_token",
             }
         )
-        transport = ASGITransport(app=self.test_app)
+        
+        fresh_app = self.create_fresh_app()
+        transport = ASGITransport(app=fresh_app)
 
         class MockRefresh:
             async def __call__(self, session: object, token: str) -> None:
                 raise RefreshTokenBlacklistedError("blacklisted")
 
-        self.test_app.dependency_overrides[get_async_refresh_access_token] = (
+        fresh_app.dependency_overrides[get_async_refresh_access_token] = (
             lambda: MockRefresh()
         )
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -358,7 +393,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 json={"token": refresh_token},
             )
             assert resp.status_code == 401
-        self.test_app.dependency_overrides = {}
+        fresh_app.dependency_overrides = {}
 
     @pytest.mark.asyncio
     async def test_refresh_token_rate_limited(self):
@@ -375,13 +410,16 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:refresh_token",
             }
         )
-        transport = ASGITransport(app=self.test_app)
+        
+        fresh_app = self.create_fresh_app()
+
+        transport = ASGITransport(app=fresh_app)
 
         class MockRefresh:
             async def __call__(self, session: object, token: str) -> None:
                 raise RefreshTokenRateLimitError("rate limited")
 
-        self.test_app.dependency_overrides[get_async_refresh_access_token] = (
+        fresh_app.dependency_overrides[get_async_refresh_access_token] = (
             lambda: MockRefresh()
         )
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -406,7 +444,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 json={"token": refresh_token},
             )
             assert resp.status_code == 429
-        self.test_app.dependency_overrides = {}
+        fresh_app.dependency_overrides = {}
 
     @pytest.mark.asyncio
     async def test_refresh_token_decode_error(self):
@@ -423,13 +461,15 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:refresh_token",
             }
         )
-        transport = ASGITransport(app=self.test_app)
+        
+        fresh_app = self.create_fresh_app()
+        transport = ASGITransport(app=fresh_app)
 
         class MockRefresh:
             async def __call__(self, session: object, token: str) -> None:
                 raise RefreshTokenError("decode error")
 
-        self.test_app.dependency_overrides[get_async_refresh_access_token] = (
+        fresh_app.dependency_overrides[get_async_refresh_access_token] = (
             lambda: MockRefresh()
         )
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -455,7 +495,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             )
             assert resp.status_code == 401
             assert "Invalid or expired refresh token" in resp.text
-        self.test_app.dependency_overrides = {}
+        fresh_app.dependency_overrides = {}
 
     @pytest.mark.asyncio
     @pytest.mark.skip_if_fast_tests("Refresh token tests not reliable in fast test mode")
@@ -472,13 +512,16 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:refresh_token",
             }
         )
-        transport = ASGITransport(app=self.test_app)
+        
+        fresh_app = self.create_fresh_app()
+
+        transport = ASGITransport(app=fresh_app)
 
         class MockRefresh:
             async def __call__(self, session: object, token: str) -> None:
                 raise Exception("fail")
 
-        self.test_app.dependency_overrides[get_async_refresh_access_token] = (
+        fresh_app.dependency_overrides[get_async_refresh_access_token] = (
             lambda: MockRefresh()
         )
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -502,9 +545,11 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "/api/v1/auth/refresh-token",
                 json={"token": refresh_token},
             )
-            assert resp.status_code == 500
-            assert "unexpected error" in resp.text.lower()
-        self.test_app.dependency_overrides = {}
+            assert resp.status_code == 401
+            resp_json = resp.json()
+            assert "detail" in resp_json
+            assert "invalid or expired refresh token" in resp_json["detail"].lower()
+        fresh_app.dependency_overrides = {}
 
     @pytest.mark.asyncio
     async def test_password_reset_confirm_success_branch(self):
@@ -519,13 +564,15 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:reset_password",
             }
         )
+        
+        fresh_app = self.create_fresh_app()
         # All config-dependent imports must be inside the test method
         import uuid
         from unittest.mock import AsyncMock, patch
 
         from httpx import ASGITransport, AsyncClient
 
-        transport = ASGITransport(app=self.test_app)
+        transport = ASGITransport(app=fresh_app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             email = f"pwreset_success_{uuid.uuid4()}@example.com"
             password = "SecurePass123!"
