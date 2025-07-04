@@ -30,6 +30,49 @@ hatch run pytest backend/tests/core/test_database.py
 hatch run pytest backend/tests/middlewares/test_logging.py
 ```
 
+## Controlling Log Levels During Testing
+
+You can control the log verbosity using pytest CLI flags without manually setting environment variables:
+
+### Using CLI Flags (Recommended)
+
+```powershell
+# Debug level - detailed SQL queries and internal state
+hatch run pytest --log-level=DEBUG
+
+# Info level - general test progress (default in most hatch scripts)
+hatch run pytest --log-level=INFO
+
+# Warning level - minimal output (default for fast tests)
+hatch run pytest --log-level=WARNING
+
+# Using log-cli-level for live log output
+hatch run pytest --log-cli-level=DEBUG -s
+```
+
+### Using Convenient Hatch Scripts
+
+```powershell
+# Debug testing with detailed logs
+hatch run test-debug
+
+# Quiet testing with minimal logs
+hatch run test-quiet
+
+# Default testing (INFO level)
+hatch run test
+```
+
+### Available Log Levels
+
+- **DEBUG**: Detailed debugging (SQL queries, internal state, all framework logs)
+- **INFO**: General information (default for most development testing)
+- **WARNING**: Minimal output (default for fast tests, recommended for CI/CD)
+- **ERROR**: Only error messages
+- **CRITICAL**: Only critical errors
+
+**Note**: The default log level is WARNING to reduce test noise, but you can override it anytime using the CLI flags above.
+
 
 ## Parallel and Database Test Safety
 

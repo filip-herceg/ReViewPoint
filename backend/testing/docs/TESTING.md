@@ -12,7 +12,7 @@ ReViewPoint backend provides multiple testing modes optimized for different scen
 
 **🎯 For most development work, use `hatch run fast:test` - it gives you complete test coverage with fast database setup.**
 
-**🔧 Need different log levels?** Use `python set-test-log-level.py DEBUG` for detailed output or `WARNING` for minimal noise. See [Logging Configuration](#logging-configuration) below.
+**🔧 Need different log levels?** Use `pytest --log-level=DEBUG` for detailed output or `--log-level=WARNING` for minimal noise. See [Logging Configuration](#logging-configuration) below.
 
 ## 🚀 Quick Start
 
@@ -322,66 +322,79 @@ The new unified approach uses a single `tests/conftest.py` file that conditional
 
 ### Overview
 
-Test logging is now configurable to help with debugging and reduce noise during development. You can easily switch between different log levels depending on your needs.
+Test logging is now configurable via pytest CLI flags. The default log level is WARNING to reduce test noise, but you can easily override it for debugging purposes without manually setting environment variables.
 
 ### Available Log Levels
 
 | Level    | What it shows | When to use |
 |----------|---------------|-------------|
 | **CRITICAL** | Only critical errors (application crashes) | Production monitoring |
-| **ERROR**    | Error messages (failed operations, exceptions) | CI/CD pipelines |
-| **WARNING**  | Warning messages (deprecated features, recoverable issues) | Minimal output needed |
-| **INFO**     | General information (test progress, basic operations) | **Default development** |
-| **DEBUG**    | Detailed debugging information (SQL queries, internal state) | Troubleshooting issues |
+| **ERROR**    | Error messages (failed operations, exceptions) | Error-only output |
+| **WARNING**  | Warning messages (deprecated features, recoverable issues) | **Default (minimal noise)** |
+| **INFO**     | General information (test progress, basic operations) | Development debugging |
+| **DEBUG**    | Detailed debugging information (SQL queries, internal state) | Deep troubleshooting |
 
-### Quick Commands
-
-```bash
-# Show current log level and available options
-python set-test-log-level.py
-.\set-log-level.ps1                    # Windows PowerShell
-
-# Set to DEBUG for detailed troubleshooting
-python set-test-log-level.py DEBUG
-.\set-log-level.ps1 DEBUG              # Windows PowerShell
-
-# Set to WARNING for minimal output
-python set-test-log-level.py WARNING
-.\set-log-level.ps1 WARNING            # Windows PowerShell
-
-# Run tests with configured level
-python run-fast-tests.py
-hatch run fast:test
-```
-
-### Environment Variable Method
+### CLI Flag Method (Recommended)
 
 ```bash
-# PowerShell
-$env:REVIEWPOINT_TEST_LOG_LEVEL = 'DEBUG'
-python run-fast-tests.py
+# Override log level via pytest CLI flags
+pytest --log-level=DEBUG               # Detailed troubleshooting
+pytest --log-level=INFO                # General information
+pytest --log-level=WARNING             # Minimal output (default)
 
-# Bash/Linux
-export REVIEWPOINT_TEST_LOG_LEVEL=DEBUG
-python run-fast-tests.py
+# With hatch (recommended for development)
+hatch run pytest --log-level=DEBUG     # Detailed logs
+hatch run pytest --log-level=INFO      # Balanced output
+hatch run pytest --log-level=WARNING   # Minimal output
 
-# Inline for single command
-$env:REVIEWPOINT_TEST_LOG_LEVEL='WARNING'; hatch run fast:test
+# Live log output during test execution
+hatch run pytest --log-cli-level=DEBUG -s    # Show logs in real-time
 ```
 
-### Hatch Script Shortcuts
+### Convenient Hatch Scripts
 
 ```bash
-hatch run test          # Uses configured level (INFO by default)
-hatch run test-debug    # Forces DEBUG level
-hatch run test-quiet    # Forces WARNING level
+hatch run test-debug    # Uses --log-cli-level=DEBUG for detailed output
+hatch run test-quiet    # Uses --log-cli-level=WARNING for minimal output  
+hatch run test          # Uses default INFO level
 ```
+
+### Environment Variable Method (Legacy)
+
+```bash
+# PowerShell (still supported)
+$env:REVIEWPOINT_LOG_LEVEL = 'DEBUG'
+hatch run pytest
+
+# Bash/Linux (still supported)
+export REVIEWPOINT_LOG_LEVEL=DEBUG
+hatch run pytest
+```
+
+### Key Features
+
+- **Default**: WARNING level reduces test noise
+- **CLI Override**: Use `--log-level` or `--log-cli-level` flags
+- **No Manual Env Vars**: CLI flags are automatically detected and converted
+- **Hatch Integration**: Convenient scripts for common log levels
+- **Fast/Slow Compatible**: Works with both SQLite and PostgreSQL test modes
 
 ### Tips for Log Levels
 
-- **Start with INFO**: Good balance of information without overwhelming output
+- **Start with WARNING**: Default minimal output for clean test runs
+- **Use INFO for development**: Good balance when actively working on features
 - **Use DEBUG when stuck**: Shows SQL queries, detailed request/response data
-- **Use WARNING in CI**: Faster runs with only important messages
-- **Check log files**: `tests/test_debug.log` always contains DEBUG information
+- **Use CLI flags**: Easier than setting environment variables manually
 
-📖 **See [TEST_LOGGING.md](TEST_LOGGING.md) for complete documentation.**
+### Examples
+
+```bash
+# Debug a specific test with detailed logs
+hatch run pytest tests/test_auth.py::test_login --log-level=DEBUG -s
+
+# Run all tests quietly (CI-style)
+hatch run pytest --log-level=WARNING
+
+# Development workflow with balanced output
+hatch run test-debug tests/test_user_creation.py
+```

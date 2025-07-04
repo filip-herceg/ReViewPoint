@@ -115,37 +115,48 @@ hatch run pytest                     # Full PostgreSQL integration tests
 
 ### Test Logging Configuration
 
-Configure test log levels to match your debugging needs:
+Configure test log levels using pytest CLI flags for different debugging needs:
 
 ```bash
-# Show available log levels and current configuration
-python set-test-log-level.py
-.\set-log-level.ps1                   # Windows PowerShell
+# CLI flags (recommended approach)
+hatch run pytest --log-level=DEBUG          # Detailed SQL queries and internal state
+hatch run pytest --log-level=INFO           # General test progress
+hatch run pytest --log-level=WARNING        # Minimal output (default)
 
-# Set log level for debugging
-python set-test-log-level.py DEBUG   # Detailed SQL queries and internal state
-python set-test-log-level.py INFO    # Default - general test progress
-python set-test-log-level.py WARNING # Minimal output for CI/CD
+# Using convenient hatch scripts
+hatch run test-debug                         # DEBUG level with live output
+hatch run test-quiet                         # WARNING level, minimal noise
+hatch run test                               # INFO level, balanced output
+
+# Live log output during test execution
+hatch run pytest --log-cli-level=DEBUG -s   # Show logs in real-time
 ```
 
 **Available Log Levels:**
 
-- **DEBUG**: Detailed debugging (SQL queries, internal state)
-- **INFO**: General information (default for development)  
-- **WARNING**: Minimal output (recommended for CI/CD)
+- **DEBUG**: Detailed debugging (SQL queries, internal state, all framework logs)
+- **INFO**: General information (default for development testing)
+- **WARNING**: Minimal output (default for fast tests, recommended for CI/CD)
 - **ERROR**: Only error messages
 - **CRITICAL**: Only critical errors
 
-**Environment Variable Method:**
+**Key Points:**
+
+- Default log level is **WARNING** to reduce test noise
+- Use CLI flags to override - no need to manually set environment variables
+- Fast tests (`FAST_TESTS=1`) default to WARNING for speed
+- All log levels work with both fast and slow test modes
+
+**Legacy Method (still supported):**
 
 ```powershell
-# PowerShell
-$env:REVIEWPOINT_TEST_LOG_LEVEL = 'DEBUG'
-hatch run fast:test
+# PowerShell - if you prefer environment variables
+$env:REVIEWPOINT_LOG_LEVEL = 'DEBUG'
+hatch run pytest
 
 # Bash/Linux  
-export REVIEWPOINT_TEST_LOG_LEVEL=DEBUG
-hatch run fast:test
+export REVIEWPOINT_LOG_LEVEL=DEBUG
+hatch run pytest
 ```
 
 📖 **See [backend/TESTING.md](../backend/TESTING.md) and [backend/TEST_LOGGING.md](../backend/TEST_LOGGING.md) for complete testing documentation.**
