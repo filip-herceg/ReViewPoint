@@ -53,7 +53,10 @@ if is_pytest_run:
             os.environ["REVIEWPOINT_JWT_SECRET_KEY"] = "fasttestsecret123"
             os.environ["REVIEWPOINT_API_KEY_ENABLED"] = "false"  # Disable API key auth for fast tests
             os.environ["REVIEWPOINT_AUTH_ENABLED"] = "true"
-            os.environ["REVIEWPOINT_LOG_LEVEL"] = "WARNING"  # Reduce log noise
+            # Only set default log level if user hasn't specified one via CLI or environment
+            # This allows pytest --log-level=DEBUG to work as expected
+            if "REVIEWPOINT_LOG_LEVEL" not in os.environ:
+                os.environ["REVIEWPOINT_LOG_LEVEL"] = "WARNING"  # Default to reduce log noise in tests
             os.environ["REVIEWPOINT_DB_URL"] = "sqlite+aiosqlite:///:memory:"
             
             # Set all feature flags for fast tests
@@ -94,10 +97,23 @@ def use_fast_db():
 
 
 def pytest_configure(config):
-    """Register test markers for slow and fast tests."""
+    """Register test markers for slow and fast tests and handle log level configuration."""
     config.addinivalue_line("markers", "slow: marks tests that access real database or are slow")
     config.addinivalue_line("markers", "fast: marks tests that use mocks or in-memory DB")
     config.addinivalue_line("markers", "skip_if_fast_tests: skip test when FAST_TESTS=1")
+    
+    # Check if user specified log level via CLI and override environment accordingly
+    log_level = None
+    
+    # Check for pytest's log level options
+    if hasattr(config.option, 'log_level') and config.option.log_level:
+        log_level = config.option.log_level.upper()
+    elif hasattr(config.option, 'log_cli_level') and config.option.log_cli_level:
+        log_level = config.option.log_cli_level.upper()
+    
+    # If user specified a log level via pytest CLI, override the environment variable
+    if log_level:
+        os.environ["REVIEWPOINT_LOG_LEVEL"] = log_level
 
 
 def pytest_runtest_setup(item):
