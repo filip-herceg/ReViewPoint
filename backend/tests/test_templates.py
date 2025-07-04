@@ -244,6 +244,26 @@ class UserCoreEndpointTestTemplate(BaseAPITest):
         self.override_env_vars = override_env_vars
 
 
+class UserAuthEndpointTestTemplate(BaseAPITest):
+    """
+    Template for user auth endpoint tests that require async_session, test_app_with_auth, loguru_list_sink, and override_env_vars.
+    This template is specifically for testing authentication requirements.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _setup_async_fixtures(
+        self,
+        async_session,
+        test_app_with_auth,
+        loguru_list_sink,
+        override_env_vars,
+    ):
+        self.async_session = async_session
+        self.test_app = test_app_with_auth
+        self.loguru_list_sink = loguru_list_sink
+        self.override_env_vars = override_env_vars
+
+
 class LogCaptureTestTemplate(BaseAPITest):
     """
     Template for tests that need to assert on log output.

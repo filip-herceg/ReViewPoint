@@ -179,16 +179,11 @@ class TestUserCRUDAsync(UserCoreEndpointTestTemplate):
 
 
 # Additional comprehensive test classes
-class TestUserList:
+class TestUserList(UserCoreEndpointTestTemplate):
     @pytest.mark.asyncio
     async def test_list_users(self):
         """Test listing users endpoint."""
-        from tests.test_templates import UserCoreEndpointTestTemplate
-        
-        # Create test instance
-        test_instance = UserCoreEndpointTestTemplate()
-        
-        transport = ASGITransport(app=test_instance.test_app)
+        transport = ASGITransport(app=self.test_app)
         async with AsyncClient(
             transport=transport,
             base_url="http://test",
@@ -220,11 +215,7 @@ class TestUserList:
     @pytest.mark.asyncio
     async def test_list_users_pagination(self):
         """Test user listing with pagination."""
-        from tests.test_templates import UserCoreEndpointTestTemplate
-        
-        test_instance = UserCoreEndpointTestTemplate()
-        
-        transport = ASGITransport(app=test_instance.test_app)
+        transport = ASGITransport(app=self.test_app)
         async with AsyncClient(
             transport=transport,
             base_url="http://test",
@@ -255,11 +246,7 @@ class TestUserList:
     @pytest.mark.asyncio
     async def test_get_user_by_id(self):
         """Test getting a user by ID."""
-        from tests.test_templates import UserCoreEndpointTestTemplate
-        
-        test_instance = UserCoreEndpointTestTemplate()
-        
-        transport = ASGITransport(app=test_instance.test_app)
+        transport = ASGITransport(app=self.test_app)
         async with AsyncClient(
             transport=transport,
             base_url="http://test",
@@ -287,11 +274,7 @@ class TestUserList:
     @pytest.mark.asyncio
     async def test_update_user(self):
         """Test updating a user."""
-        from tests.test_templates import UserCoreEndpointTestTemplate
-        
-        test_instance = UserCoreEndpointTestTemplate()
-        
-        transport = ASGITransport(app=test_instance.test_app)
+        transport = ASGITransport(app=self.test_app)
         async with AsyncClient(
             transport=transport,
             base_url="http://test",
@@ -330,11 +313,7 @@ class TestUserList:
     @pytest.mark.asyncio
     async def test_delete_user(self):
         """Test deleting a user."""
-        from tests.test_templates import UserCoreEndpointTestTemplate
-        
-        test_instance = UserCoreEndpointTestTemplate()
-        
-        transport = ASGITransport(app=test_instance.test_app)
+        transport = ASGITransport(app=self.test_app)
         async with AsyncClient(
             transport=transport,
             base_url="http://test",
@@ -370,15 +349,12 @@ class TestUserList:
                     assert resp.status_code in [204, 401, 403, 404]
 
 
-class TestUserAuthRequired:
+class TestUserAuthRequired(UserCoreEndpointTestTemplate):
     @pytest.mark.asyncio
+    @pytest.mark.skip_if_fast_tests("Authentication is disabled in fast test mode")
     async def test_auth_required_for_create(self):
         """Test that authentication is required for creating users."""
-        from tests.test_templates import UserCoreEndpointTestTemplate
-        
-        test_instance = UserCoreEndpointTestTemplate()
-        
-        transport = ASGITransport(app=test_instance.test_app)
+        transport = ASGITransport(app=self.test_app)
         async with AsyncClient(
             transport=transport,
             base_url="http://test",
@@ -392,11 +368,7 @@ class TestUserAuthRequired:
     @pytest.mark.asyncio
     async def test_auth_required_for_list(self):
         """Test that authentication is required for listing users."""
-        from tests.test_templates import UserCoreEndpointTestTemplate
-        
-        test_instance = UserCoreEndpointTestTemplate()
-        
-        transport = ASGITransport(app=test_instance.test_app)
+        transport = ASGITransport(app=self.test_app)
         async with AsyncClient(
             transport=transport,
             base_url="http://test",
@@ -409,11 +381,7 @@ class TestUserAuthRequired:
     @pytest.mark.asyncio
     async def test_auth_required_for_update(self):
         """Test that authentication is required for updating users."""
-        from tests.test_templates import UserCoreEndpointTestTemplate
-        
-        test_instance = UserCoreEndpointTestTemplate()
-        
-        transport = ASGITransport(app=test_instance.test_app)
+        transport = ASGITransport(app=self.test_app)
         async with AsyncClient(
             transport=transport,
             base_url="http://test",
@@ -427,11 +395,7 @@ class TestUserAuthRequired:
     @pytest.mark.asyncio
     async def test_auth_required_for_delete(self):
         """Test that authentication is required for deleting users."""
-        from tests.test_templates import UserCoreEndpointTestTemplate
-        
-        test_instance = UserCoreEndpointTestTemplate()
-        
-        transport = ASGITransport(app=test_instance.test_app)
+        transport = ASGITransport(app=self.test_app)
         async with AsyncClient(
             transport=transport,
             base_url="http://test",
@@ -442,15 +406,11 @@ class TestUserAuthRequired:
             assert resp.status_code in [401, 403]
 
 
-class TestUserFeatureFlags:
+class TestUserFeatureFlags(UserCoreEndpointTestTemplate):
     @pytest.mark.asyncio
     async def test_api_key_required(self):
         """Test that API key is required for all endpoints."""
-        from tests.test_templates import UserCoreEndpointTestTemplate
-        
-        test_instance = UserCoreEndpointTestTemplate()
-        
-        transport = ASGITransport(app=test_instance.test_app)
+        transport = ASGITransport(app=self.test_app)
         async with AsyncClient(
             transport=transport,
             base_url="http://test",
@@ -480,13 +440,10 @@ class TestUserFeatureFlags:
                 assert resp.status_code in [401, 403]
 
     @pytest.mark.asyncio
+    @pytest.mark.skip_if_fast_tests("Authentication is disabled in fast test mode")
     async def test_invalid_api_key(self):
         """Test behavior with invalid API key."""
-        from tests.test_templates import UserCoreEndpointTestTemplate
-        
-        test_instance = UserCoreEndpointTestTemplate()
-        
-        transport = ASGITransport(app=test_instance.test_app)
+        transport = ASGITransport(app=self.test_app)
         async with AsyncClient(
             transport=transport,
             base_url="http://test",
@@ -499,15 +456,13 @@ class TestUserFeatureFlags:
             assert resp.status_code in [401, 403]
 
 
-class TestUserValidation:
+class TestUserValidation(UserCoreEndpointTestTemplate):
     @pytest.mark.asyncio
     async def test_email_validation_edge_cases(self):
         """Test various email validation edge cases."""
         from tests.test_templates import UserCoreEndpointTestTemplate
         
-        test_instance = UserCoreEndpointTestTemplate()
-        
-        transport = ASGITransport(app=test_instance.test_app)
+        transport = ASGITransport(app=self.test_app)
         async with AsyncClient(
             transport=transport,
             base_url="http://test",
@@ -548,9 +503,7 @@ class TestUserValidation:
         """Test various password validation edge cases."""
         from tests.test_templates import UserCoreEndpointTestTemplate
         
-        test_instance = UserCoreEndpointTestTemplate()
-        
-        transport = ASGITransport(app=test_instance.test_app)
+        transport = ASGITransport(app=self.test_app)
         async with AsyncClient(
             transport=transport,
             base_url="http://test",
@@ -591,9 +544,7 @@ class TestUserValidation:
         """Test name field validation."""
         from tests.test_templates import UserCoreEndpointTestTemplate
         
-        test_instance = UserCoreEndpointTestTemplate()
-        
-        transport = ASGITransport(app=test_instance.test_app)
+        transport = ASGITransport(app=self.test_app)
         async with AsyncClient(
             transport=transport,
             base_url="http://test",

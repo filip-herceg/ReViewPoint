@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,43 +32,39 @@ class TestDatabase(DatabaseTestTemplate):
         # Check that all emails are unique and present
         assert len(set(results)) == 5
     def setup_method(self):
-        # Use the engine provided by the test framework's async_engine_isolated fixture
-        # This ensures we use the correct isolated database (SQLite or PostgreSQL)
-        from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-        
-        # The engine is injected by the _setup_db_env_function fixture
-        if hasattr(self, 'engine') and self.engine is not None:
-            # Use the injected isolated engine
+        import os
+        if os.environ.get("FAST_TESTS") == "1":
+            from src.models.user import User
+            from src.models.file import File
+            from src.models.base import Base
+            from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+            import asyncio
+            self.engine = create_async_engine(
+                "sqlite+aiosqlite:///:memory:",
+                echo=False,
+                pool_pre_ping=False,
+            )
+            # Create all tables on this engine
+            async def create_tables():
+                async with self.engine.begin() as conn:
+                    await conn.run_sync(Base.metadata.create_all)
+            import sys
+            if sys.version_info >= (3, 7):
+                asyncio.run(create_tables())
+            else:
+                loop = asyncio.get_event_loop()
+                loop.run_until_complete(create_tables())
+
             self.AsyncSessionLocal = async_sessionmaker(self.engine, class_=AsyncSession, expire_on_commit=False)
-            
-            # Create async context manager compatible with the real get_async_session
-            from contextlib import asynccontextmanager
-            @asynccontextmanager
-            async def get_async_session_isolated():
-                session = self.AsyncSessionLocal()
-                try:
-                    yield session
-                finally:
-                    await session.close()
-            
-            self.get_async_session = get_async_session_isolated
-            
+            self.get_async_session = lambda: self.AsyncSessionLocal()
             from sqlalchemy import text
             async def db_healthcheck():
                 async with self.AsyncSessionLocal() as session:
                     await session.execute(text("SELECT 1"))
             self.db_healthcheck = db_healthcheck
-            
-            # Import models
-            from src.models.user import User
-            from src.models.file import File
             self.User = User
             self.File = File
         else:
-            # Fallback: import from production modules (should not happen in normal test runs)
-            import warnings
-            warnings.warn("Test engine not injected, falling back to production database modules", RuntimeWarning)
-            
             db_mod = __import__(
                 "src.core.database",
                 fromlist=[
@@ -99,10 +96,7 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_session_rollback(self) -> None:
         """Test session rollback on error."""
-        # Create a factory function that returns a session instance
-        def session_factory():
-            return self.AsyncSessionLocal()
-        await self.assert_session_rollback(session_factory)
+        await self.assert_session_rollback(self.AsyncSessionLocal)
 
     @pytest.mark.asyncio
     async def test_users_table_exists(self) -> None:
@@ -154,14 +148,17 @@ class TestDatabase(DatabaseTestTemplate):
         """Test that the migration has been applied."""
         self.assert_migration_applied(self.AsyncSessionLocal, table_name="users")
 
-    @pytest.mark.requires_real_db("Alembic migrations are not supported in fast (SQLite in-memory) mode.")
+    @pytest.mark.skip_if_fast_tests("Migration test not applicable in fast (SQLite in-memory) mode")
     def test_run_migration(self) -> None:
         """Test running the migration."""
         self.run_migration("upgrade head")
 
-    @pytest.mark.requires_real_db("Simulate DB disconnect is not supported in fast (SQLite in-memory) mode.")
     def test_simulate_db_disconnect(self) -> None:
         """Test simulating a database disconnect."""
+        import os
+        if os.environ.get("FAST_TESTS") == "1":
+            import pytest
+            pytest.skip("Simulate DB disconnect is not supported in fast (SQLite in-memory) mode.")
         self.simulate_db_disconnect(self.AsyncSessionLocal)
         with pytest.raises(Exception):
             import asyncio
@@ -177,8 +174,11 @@ class TestDatabase(DatabaseTestTemplate):
         self.assert_connection_pool_size(self.engine, expected_size=5)
 
     @pytest.mark.asyncio
-    @pytest.mark.requires_real_db("SQLite in-memory does not reliably enforce foreign key constraints for this test.")
     async def test_file_fk_constraint(self):
+        import os
+        if os.environ.get("FAST_TESTS") == "1":
+            import pytest
+            pytest.skip("SQLite in-memory does not reliably enforce foreign key constraints for this test.")
         # Should fail: user_id does not exist
         from sqlalchemy.exc import IntegrityError
         bad_file = dict(filename="bad.txt", content_type="text/plain", user_id=999999)
@@ -190,8 +190,11 @@ class TestDatabase(DatabaseTestTemplate):
             await session.rollback()
 
     @pytest.mark.asyncio
-    @pytest.mark.requires_real_db("SQLite in-memory does not reliably support ON DELETE CASCADE for this test.")
     async def test_cascade_delete_user_files(self):
+        import os
+        if os.environ.get("FAST_TESTS") == "1":
+            import pytest
+            pytest.skip("SQLite in-memory does not reliably support ON DELETE CASCADE for this test.")
         # Insert user and file, delete user, file should be deleted if cascade is enabled
         user = self.User(email="cascade@example.com", hashed_password="pw")
         async with self.AsyncSessionLocal() as session:
@@ -215,8 +218,6 @@ class TestDatabase(DatabaseTestTemplate):
     async def test_unique_constraint_on_email(self):
         await self.bulk_insert(self.AsyncSessionLocal, self.User, [USER_DATA])
         await self.assert_db_integrity_error(self.AsyncSessionLocal, self.User, USER_DATA)
-    
-    @pytest.mark.requires_real_db("SQLite async engine inspection not supported")
     def test_indexes_exist(self):
         import os
         if os.environ.get("FAST_TESTS") == "1":
@@ -238,11 +239,10 @@ class TestDatabase(DatabaseTestTemplate):
         else:
             from sqlalchemy import inspect
             insp = inspect(self.engine)
-            if insp is not None:
-                user_indexes = [ix["name"] for ix in insp.get_indexes("users") or []]
-                file_indexes = [ix["name"] for ix in insp.get_indexes("files") or []]
-                assert any("ix_users_email" in ix for ix in user_indexes)
-                assert any("ix_files_user_id" in ix for ix in file_indexes)
+            user_indexes = [ix["name"] for ix in insp.get_indexes("users")]
+            file_indexes = [ix["name"] for ix in insp.get_indexes("files")]
+            assert any("ix_users_email" in ix for ix in user_indexes)
+            assert any("ix_files_user_id" in ix for ix in file_indexes)
 
     @pytest.mark.asyncio
     async def test_user_defaults(self):
@@ -332,7 +332,6 @@ class TestDatabase(DatabaseTestTemplate):
                 select(self.User).filter_by(email="dt@example.com")
             )
             row = result.scalar_one()
-            if row.last_login_at:  # Check if last_login_at is not None
-                assert row.last_login_at.replace(microsecond=0) == now.replace(
-                    microsecond=0
-                )
+            assert row.last_login_at.replace(microsecond=0) == now.replace(
+                microsecond=0
+            )
