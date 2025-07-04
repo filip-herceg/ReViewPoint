@@ -441,16 +441,14 @@ class HealthEndpointTestTemplate(BaseAPITest):
 
 
 class DatabaseTestTemplate(BaseAPITest):
-    @staticmethod
+    @staticmethod 
     async def _enable_sqlite_fk(engine):
-        # Enable SQLite foreign key enforcement for every new connection
-        from sqlalchemy import event
+        # Enable SQLite foreign key enforcement for async engines
         if "sqlite" in str(engine.url):
-            @event.listens_for(engine.sync_engine, "connect")
-            def set_sqlite_pragma(dbapi_connection, connection_record):
-                cursor = dbapi_connection.cursor()
-                cursor.execute("PRAGMA foreign_keys=ON")
-                cursor.close()
+            # For async SQLite engines, we need to enable FK on each connection
+            from sqlalchemy import text
+            async with engine.begin() as conn:
+                await conn.execute(text("PRAGMA foreign_keys=ON"))
     """
     Template for async database/session/engine/healthcheck tests.
     Provides self.override_env_vars and self.monkeypatch for env/patching, and async helpers.

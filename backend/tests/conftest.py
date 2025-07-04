@@ -90,9 +90,14 @@ def pytest_configure(config):
 
 
 def pytest_runtest_setup(item):
-    """Skip tests marked with skip_if_fast_tests when in fast test mode."""
-    if IS_FAST_TEST_MODE and item.get_closest_marker("skip_if_fast_tests"):
-        pytest.skip("Test skipped in fast test mode")
+    """Skip tests marked with skip_if_fast_tests or requires_real_db when in fast test mode."""
+    if IS_FAST_TEST_MODE and (item.get_closest_marker("skip_if_fast_tests") or item.get_closest_marker("requires_real_db")):
+        # Get the reason from the marker if available
+        marker = item.get_closest_marker("requires_real_db") or item.get_closest_marker("skip_if_fast_tests")
+        reason = "Test skipped in fast test mode"
+        if marker and marker.args:
+            reason = marker.args[0]
+        pytest.skip(reason)
 
 
 def pytest_sessionstart(session):
@@ -354,6 +359,14 @@ async def async_engine_isolated(use_fast_db, database_setup):
             echo=False,
             pool_pre_ping=False,
         )
+        
+        # Enable foreign key constraints for SQLite
+        from sqlalchemy import event, text
+        @event.listens_for(engine.sync_engine, "connect")
+        def set_sqlite_pragma(dbapi_connection, connection_record):
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA foreign_keys=ON")
+            cursor.close()
         
         # Create all tables
         async with engine.begin() as conn:
@@ -893,3 +906,37 @@ if IS_FAST_TEST_MODE:
             await session.refresh(file)
             return file
         return _create_file
+
+@pytest_asyncio.fixture(scope="function", autouse=True)
+async def _setup_db_env_function(request, monkeypatch, override_env_vars, loguru_list_sink, async_engine_isolated):
+    """
+    Auto-use fixture for database test classes that need engine access.
+    This provides the test instance with engine, models, and other DB utilities.
+    """
+    test_instance = getattr(request, 'instance', None)
+    if test_instance is not None:
+        import sys
+        sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+        
+        from src.models.user import User
+        from src.models.file import File
+        
+        # Set up the test instance with database utilities
+        test_instance.monkeypatch = monkeypatch
+        test_instance.override_env_vars = override_env_vars
+        test_instance.loguru_list_sink = loguru_list_sink
+        test_instance.engine = async_engine_isolated
+        test_instance.User = User
+        test_instance.File = File
+        
+        # Set up session factory and healthcheck
+        from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+        from sqlalchemy import text
+        
+        test_instance.AsyncSessionLocal = async_sessionmaker(async_engine_isolated, class_=AsyncSession, expire_on_commit=False)
+        test_instance.get_async_session = lambda: test_instance.AsyncSessionLocal()
+        
+        async def db_healthcheck():
+            async with test_instance.AsyncSessionLocal() as session:
+                await session.execute(text("SELECT 1"))
+        test_instance.db_healthcheck = db_healthcheck

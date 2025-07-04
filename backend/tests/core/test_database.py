@@ -31,56 +31,6 @@ class TestDatabase(DatabaseTestTemplate):
         results = await self.run_concurrent_operations([insert_user] * 5)
         # Check that all emails are unique and present
         assert len(set(results)) == 5
-    def setup_method(self):
-        import os
-        if os.environ.get("FAST_TESTS") == "1":
-            from src.models.user import User
-            from src.models.file import File
-            from src.models.base import Base
-            from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-            import asyncio
-            self.engine = create_async_engine(
-                "sqlite+aiosqlite:///:memory:",
-                echo=False,
-                pool_pre_ping=False,
-            )
-            # Create all tables on this engine
-            async def create_tables():
-                async with self.engine.begin() as conn:
-                    await conn.run_sync(Base.metadata.create_all)
-            import sys
-            if sys.version_info >= (3, 7):
-                asyncio.run(create_tables())
-            else:
-                loop = asyncio.get_event_loop()
-                loop.run_until_complete(create_tables())
-
-            self.AsyncSessionLocal = async_sessionmaker(self.engine, class_=AsyncSession, expire_on_commit=False)
-            self.get_async_session = lambda: self.AsyncSessionLocal()
-            from sqlalchemy import text
-            async def db_healthcheck():
-                async with self.AsyncSessionLocal() as session:
-                    await session.execute(text("SELECT 1"))
-            self.db_healthcheck = db_healthcheck
-            self.User = User
-            self.File = File
-        else:
-            db_mod = __import__(
-                "src.core.database",
-                fromlist=[
-                    "AsyncSessionLocal",
-                    "db_healthcheck",
-                    "engine",
-                    "get_async_session",
-                ],
-            )
-            self.AsyncSessionLocal = db_mod.AsyncSessionLocal
-            self.db_healthcheck = db_mod.db_healthcheck
-            self.engine = db_mod.engine
-            self.get_async_session = db_mod.get_async_session
-            models_mod = __import__("src.models", fromlist=["File", "User"])
-            self.File = models_mod.File
-            self.User = models_mod.User
 
     @pytest.mark.asyncio
     async def test_db_healthcheck(self) -> None:

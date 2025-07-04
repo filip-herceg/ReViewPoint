@@ -35,7 +35,7 @@ def main():
     env.update({
         "FAST_TESTS": "1",
         "REVIEWPOINT_ENVIRONMENT": "test",
-        "REVIEWPOINT_LOG_LEVEL": "WARNING",
+        "REVIEWPOINT_LOG_LEVEL": "DEBUG",
         "REVIEWPOINT_DB_URL": "sqlite+aiosqlite:///:memory:",
         "REVIEWPOINT_JWT_SECRET_KEY": "fasttestsecret123",
         "REVIEWPOINT_JWT_SECRET": "fasttestsecret123",

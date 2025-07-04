@@ -3,6 +3,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from sqlalchemy.exc import IntegrityError
 
+from src.models.user import User
 from src.repositories.file import (
     create_file,
     delete_file,
@@ -15,19 +16,34 @@ from src.utils.errors import ValidationError
 class TestFileRepository:
     @pytest.mark.asyncio
     async def test_create_file_success(self, async_session):
-        file = await create_file(async_session, "test.txt", "text/plain", user_id=1)
+        # Create a user first for the foreign key relationship
+        user = User(email="test@example.com", hashed_password="hashed", is_active=True)
+        async_session.add(user)
+        await async_session.flush()
+        
+        file = await create_file(async_session, "test.txt", "text/plain", user_id=user.id)
         assert file.filename == "test.txt"
         assert file.content_type == "text/plain"
-        assert file.user_id == 1
+        assert file.user_id == user.id
 
     @pytest.mark.asyncio
     async def test_create_file_missing_filename(self, async_session):
+        # Create a user first for the foreign key relationship
+        user = User(email="test2@example.com", hashed_password="hashed", is_active=True)
+        async_session.add(user)
+        await async_session.flush()
+        
         with pytest.raises(ValidationError):
-            await create_file(async_session, "", "text/plain", user_id=1)
+            await create_file(async_session, "", "text/plain", user_id=user.id)
 
     @pytest.mark.asyncio
     async def test_get_file_by_filename(self, async_session):
-        await create_file(async_session, "findme.txt", "text/plain", user_id=2)
+        # Create a user first for the foreign key relationship
+        user = User(email="test3@example.com", hashed_password="hashed", is_active=True)
+        async_session.add(user)
+        await async_session.flush()
+        
+        await create_file(async_session, "findme.txt", "text/plain", user_id=user.id)
         file = await get_file_by_filename(async_session, "findme.txt")
         assert file is not None
         assert file.filename == "findme.txt"
@@ -39,7 +55,12 @@ class TestFileRepository:
 
     @pytest.mark.asyncio
     async def test_delete_file(self, async_session):
-        await create_file(async_session, "todelete.txt", "text/plain", user_id=3)
+        # Create a user first for the foreign key relationship
+        user = User(email="test4@example.com", hashed_password="hashed", is_active=True)
+        async_session.add(user)
+        await async_session.flush()
+        
+        await create_file(async_session, "todelete.txt", "text/plain", user_id=user.id)
         deleted = await delete_file(async_session, "todelete.txt")
         assert deleted is True
         file = await get_file_by_filename(async_session, "todelete.txt")
@@ -61,18 +82,28 @@ class TestFileRepository:
 
     @pytest.mark.asyncio
     async def test_long_filename_and_content_type(self, async_session):
+        # Create a user first for the foreign key relationship
+        user = User(email="test5@example.com", hashed_password="hashed", is_active=True)
+        async_session.add(user)
+        await async_session.flush()
+        
         long_filename = "a" * 255
         long_content_type = "b" * 128
         file = await create_file(
-            async_session, long_filename, long_content_type, user_id=5
+            async_session, long_filename, long_content_type, user_id=user.id
         )
         assert file.filename == long_filename
         assert file.content_type == long_content_type
 
     @pytest.mark.asyncio
     async def test_non_ascii_and_special_chars(self, async_session):
+        # Create a user first for the foreign key relationship
+        user = User(email="test6@example.com", hashed_password="hashed", is_active=True)
+        async_session.add(user)
+        await async_session.flush()
+        
         file = await create_file(
-            async_session, "файл!@#.txt", "application/x-спец", user_id=6
+            async_session, "файл!@#.txt", "application/x-спец", user_id=user.id
         )
         assert "файл" in file.filename
         assert "спец" in file.content_type
@@ -87,8 +118,13 @@ class TestFileRepository:
 
     @pytest.mark.asyncio
     async def test_bulk_create_and_delete(self, async_session):
+        # Create a user first for the foreign key relationship
+        user = User(email="test7@example.com", hashed_password="hashed", is_active=True)
+        async_session.add(user)
+        await async_session.flush()
+        
         files = [
-            await create_file(async_session, f"bulk-{i}.txt", "text/plain", user_id=7)
+            await create_file(async_session, f"bulk-{i}.txt", "text/plain", user_id=user.id)
             for i in range(5)
         ]
         for f in files:
@@ -170,11 +206,18 @@ class TestFileRepository:
 
     @pytest.mark.asyncio
     async def test_duplicate_filename_different_users(self, async_session):
+        # Create two different users for the foreign key relationships
+        user1 = User(email="test100@example.com", hashed_password="hashed", is_active=True)
+        user2 = User(email="test101@example.com", hashed_password="hashed", is_active=True)
+        async_session.add(user1)
+        async_session.add(user2)
+        await async_session.flush()
+        
         file1 = await create_file(
-            async_session, "shared.txt", "text/plain", user_id=100
+            async_session, "shared.txt", "text/plain", user_id=user1.id
         )
         file2 = await create_file(
-            async_session, "shared.txt", "text/plain", user_id=101
+            async_session, "shared.txt", "text/plain", user_id=user2.id
         )
         assert file1.filename == file2.filename
         assert file1.user_id != file2.user_id
@@ -209,7 +252,12 @@ class TestFileRepository:
 
     @pytest.mark.asyncio
     async def test_delete_file_case_insensitive(self, async_session):
-        await create_file(async_session, "CaseTest.txt", "text/plain", user_id=13)
+        # Create a user first for the foreign key relationship
+        user = User(email="test13@example.com", hashed_password="hashed", is_active=True)
+        async_session.add(user)
+        await async_session.flush()
+        
+        await create_file(async_session, "CaseTest.txt", "text/plain", user_id=user.id)
         deleted = await delete_file(async_session, "casetest.txt")
         assert deleted in (True, False)
 
@@ -221,9 +269,13 @@ class TestFileRepository:
 
     @pytest.mark.asyncio
     async def test_list_files_offset_beyond_total(self, async_session):
-        user_id = 14
-        await create_file(async_session, "off1.txt", "text/plain", user_id=user_id)
-        files, total = await list_files(async_session, user_id, offset=100)
+        # Create a user first for the foreign key relationship
+        user = User(email="test14@example.com", hashed_password="hashed", is_active=True)
+        async_session.add(user)
+        await async_session.flush()
+        
+        await create_file(async_session, "off1.txt", "text/plain", user_id=user.id)
+        files, total = await list_files(async_session, user.id, offset=100)
         assert files == []
         assert total == 1
 
