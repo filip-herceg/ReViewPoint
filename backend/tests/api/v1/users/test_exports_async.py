@@ -30,6 +30,10 @@ class TestUserExportsAsync(ExportEndpointTestTemplate):
         # Disable authentication to bypass JWT validation and database lookup issues
         override_env_vars({"REVIEWPOINT_AUTH_ENABLED": "false"})
         
+        # Clear settings cache to pick up new environment variables
+        from src.core.config import get_settings
+        get_settings.cache_clear()
+        
         # Mock the list_users function at the point where it's imported in the exports module
         async def mock_list_users(session):
             # Return mock user data
@@ -62,6 +66,10 @@ class TestUserExportsAsync(ExportEndpointTestTemplate):
     async def test_export_users_full_csv(self, async_client: AsyncClient, override_env_vars, monkeypatch):
         # Disable authentication to bypass JWT validation and database lookup issues
         override_env_vars({"REVIEWPOINT_AUTH_ENABLED": "false"})
+        
+        # Clear settings cache to pick up new environment variables
+        from src.core.config import get_settings
+        get_settings.cache_clear()
         
         # Mock the list_users function at the point where it's imported in the exports module
         async def mock_list_users(session):

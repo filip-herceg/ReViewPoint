@@ -79,10 +79,8 @@ def main():
     # Check old files are removed
     print("\n🧹 Old Files Cleanup:")
     old_files = [
-        "conftest_fast.py",
         "pytest_fast.ini", 
-        "fast_test_templates.py",
-        "run_fast_tests.py"
+        "fast_test_templates.py"
     ]
     
     for old_file in old_files:

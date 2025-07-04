@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Fast test runner that handles conftest switching.
+Clean fast test runner that uses environment variables instead of file swapping.
 
-By default, this runner uses the fast test environment (SQLite in-memory) and runs ALL tests,
+This runner sets up the fast test environment (SQLite in-memory) and runs ALL tests,
 including those marked as slow. The focus is on providing a complete test suite
 with faster setup, not necessarily faster individual tests.
 
@@ -10,17 +10,14 @@ Use --fast-only flag to skip slow tests and run only the fast subset.
 """
 
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 
 def main():
-    """Run fast tests with proper conftest switching."""
+    """Run fast tests using unified conftest with environment variables."""
     backend_dir = Path(__file__).parent
-    tests_dir = backend_dir / "tests"
-    fast_conftest = backend_dir / "testing" / "environments" / "fast" / "conftest.py"
     
     # Check if --fast-only flag is present
     args = sys.argv[1:]
@@ -28,63 +25,48 @@ def main():
     if use_fast_only:
         args.remove("--fast-only")  # Remove our custom flag
     
-    # Paths for conftest files
-    original_conftest = tests_dir / "conftest.py"
-    backup_conftest = tests_dir / "conftest_full.py"
-    fast_conftest_target = tests_dir / "conftest.py"
-    
     # Set up environment for fast tests
     env = os.environ.copy()
     
     # Get log level from environment variable, default to INFO
     test_log_level = env.get("REVIEWPOINT_TEST_LOG_LEVEL", "INFO")
     
+    # Set fast test environment variables
     env.update({
         "FAST_TESTS": "1",
         "REVIEWPOINT_ENVIRONMENT": "test",
         "REVIEWPOINT_LOG_LEVEL": "WARNING",
         "REVIEWPOINT_DB_URL": "sqlite+aiosqlite:///:memory:",
+        "REVIEWPOINT_JWT_SECRET_KEY": "fasttestsecret123",
+        "REVIEWPOINT_JWT_SECRET": "fasttestsecret123",
+        "REVIEWPOINT_API_KEY_ENABLED": "false",
+        "REVIEWPOINT_AUTH_ENABLED": "true",
+        "REVIEWPOINT_API_KEY": "testkey",
         "PYTHONPATH": str(backend_dir / "src"),
     })
     
-    try:
-        # Backup original conftest if it exists
-        if original_conftest.exists():
-            shutil.move(str(original_conftest), str(backup_conftest))
+    # Run pytest with fast configuration
+    cmd = [
+        sys.executable, "-m", "pytest",
+        "--tb=short",
+        "--disable-warnings",
+        "-p", "no:cacheprovider",
+        f"--log-cli-level={test_log_level}",
+    ]
+    
+    # Add --fast flag only if --fast-only was specified
+    if use_fast_only:
+        cmd.append("--fast")
         
-        # Copy fast conftest to tests directory
-        shutil.copy2(str(fast_conftest), str(fast_conftest_target))
-        
-        # Run pytest with fast configuration
-        cmd = [
-            sys.executable, "-m", "pytest",
-            "--tb=short",
-            "--disable-warnings",
-            "-p", "no:cacheprovider",
-            f"--log-cli-level={test_log_level}",
-        ]
-        
-        # Add --fast flag only if --fast-only was specified
-        if use_fast_only:
-            cmd.append("--fast")
-            
-        cmd.extend(args)  # Add remaining arguments
-        
-        if not args:
-            cmd.append("tests/")
-        
-        test_type = "fast-only tests" if use_fast_only else "all tests"
-        print(f"Running {test_type}: {' '.join(cmd)}")
-        result = subprocess.run(cmd, cwd=backend_dir, env=env)
-        return result.returncode
-        
-    finally:
-        # Restore original conftest
-        if fast_conftest_target.exists():
-            fast_conftest_target.unlink()
-        
-        if backup_conftest.exists():
-            shutil.move(str(backup_conftest), str(original_conftest))
+    cmd.extend(args)  # Add remaining arguments
+    
+    if not args:
+        cmd.append("tests/")
+    
+    test_type = "fast-only tests" if use_fast_only else "all tests (fast mode)"
+    print(f"Running {test_type}: {' '.join(cmd)}")
+    result = subprocess.run(cmd, cwd=backend_dir, env=env)
+    return result.returncode
 
 
 if __name__ == "__main__":

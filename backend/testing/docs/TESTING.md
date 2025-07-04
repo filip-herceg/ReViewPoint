@@ -305,19 +305,17 @@ The fast test suite behavior has been updated for better development workflow:
 
 ### File Organization Updates
 
-The old scattered files have been organized:
+The old scattered files have been consolidated into a unified conftest approach:
 
-- ❌ `conftest_fast.py` → ✅ `testing/fast/conftest.py`
+- ❌ `conftest_fast.py` → ✅ Unified `tests/conftest.py` with conditional logic
+- ❌ `testing/environments/fast/` → ✅ Functionality merged into main conftest
 - ❌ `pytest_fast.ini` → ✅ `testing/fast/pytest.ini`  
 - ❌ `fast_test_templates.py` → ✅ `testing/fast/templates.py`
-- ✅ `run-fast-tests.py` enhanced with new options
+- ✅ `run-fast-tests.py` enhanced with environment variable setup
 
-**Migration Steps:**
+**Migration Completed:**
 
-1. Update your workflow:
-   - **For complete test coverage**: Use `hatch run fast:test` (NEW default)
-   - **For maximum speed**: Use `hatch run fast:fast-only` (old behavior)
-2. Import templates from new location: `from testing.fast.templates import FastAPITestCase`
+The new unified approach uses a single `tests/conftest.py` file that conditionally switches between fast (SQLite in-memory) and slow (PostgreSQL container) test modes based on the `FAST_TESTS` environment variable. This eliminates the old file-swapping mechanism and provides a more maintainable solution.
 3. Update CI/CD scripts if needed to use the new command structure
 
 ## Logging Configuration

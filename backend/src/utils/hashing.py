@@ -8,13 +8,15 @@ from passlib.context import CryptContext
 # bcrypt context for password hashing
 from src.core.config import get_settings
 
-settings = get_settings()
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto",
-    bcrypt__rounds=getattr(settings, "BCRYPT_ROUNDS", 12),  # Configurable rounds
-    bcrypt__ident=getattr(settings, "BCRYPT_IDENT", "2b"),  # Configurable identifier
-)
+def _get_pwd_context() -> CryptContext:
+    """Get password context with current settings."""
+    settings = get_settings()
+    return CryptContext(
+        schemes=["bcrypt"],
+        deprecated="auto",
+        bcrypt__rounds=getattr(settings, "BCRYPT_ROUNDS", 12),  # Configurable rounds
+        bcrypt__ident=getattr(settings, "BCRYPT_IDENT", "2b"),  # Configurable identifier
+    )
 
 
 def hash_password(password: str) -> str:
@@ -27,7 +29,7 @@ def hash_password(password: str) -> str:
     """
     # Never log or expose the plain password
     logger.debug("Hashing password (input not logged)")
-    return pwd_context.hash(password)
+    return _get_pwd_context().hash(password)
 
 
 def verify_password(plain: str, hashed: str) -> bool:
@@ -41,4 +43,4 @@ def verify_password(plain: str, hashed: str) -> bool:
     """
     # Never log or expose the plain password
     logger.debug("Verifying password (input not logged)")
-    return pwd_context.verify(plain, hashed)
+    return _get_pwd_context().verify(plain, hashed)

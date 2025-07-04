@@ -15,6 +15,10 @@ class TestUserExports(ExportEndpointTestTemplate):
         # Disable authentication to bypass JWT validation and database lookup issues
         override_env_vars({"REVIEWPOINT_AUTH_ENABLED": "false"})
         
+        # Clear the settings cache to ensure the new auth setting takes effect
+        from src.core.config import clear_settings_cache
+        clear_settings_cache()
+        
         # Mock the list_users function at the point where it's imported in the exports module
         async def mock_list_users(session):
             # Return mock user data
@@ -46,6 +50,10 @@ class TestUserExports(ExportEndpointTestTemplate):
             "REVIEWPOINT_AUTH_ENABLED": "false",
             "REVIEWPOINT_FEATURE_USERS_EXPORT_FULL": "true"
         })
+        
+        # Clear the settings cache to ensure the new auth setting takes effect
+        from src.core.config import clear_settings_cache
+        clear_settings_cache()
         
         # Mock the list_users function at the point where it's imported in the exports module
         async def mock_list_users(session):
@@ -138,6 +146,10 @@ class TestUserExports(ExportEndpointTestTemplate):
         # Disable authentication to bypass JWT validation and database lookup issues
         override_env_vars({"REVIEWPOINT_AUTH_ENABLED": "false"})
         
+        # Clear settings cache to pick up new environment variables
+        from src.core.config import get_settings
+        get_settings.cache_clear()
+        
         # Mock the list_users function to avoid async database issues
         async def mock_list_users(session, **kwargs):
             from src.models.user import User
@@ -175,6 +187,10 @@ class TestUserExports(ExportEndpointTestTemplate):
         # Disable authentication to bypass JWT validation and database lookup issues
         override_env_vars({"REVIEWPOINT_AUTH_ENABLED": "false"})
         
+        # Clear settings cache to pick up new environment variables
+        from src.core.config import get_settings
+        get_settings.cache_clear()
+        
         # Mock the list_users function to avoid async database issues
         async def mock_list_users(session, **kwargs):
             from src.models.user import User
@@ -210,6 +226,10 @@ class TestUserExports(ExportEndpointTestTemplate):
         # Disable authentication to bypass JWT validation and database lookup issues
         override_env_vars({"REVIEWPOINT_AUTH_ENABLED": "false"})
         
+        # Clear settings cache to pick up new environment variables
+        from src.core.config import get_settings
+        get_settings.cache_clear()
+        
         # Mock the list_users function to return empty results
         async def mock_list_users(session, **kwargs):
             return [], 0
@@ -231,6 +251,10 @@ class TestUserExports(ExportEndpointTestTemplate):
     def test_export_users_csv_content_disposition(self, override_env_vars, client: TestClient, monkeypatch):
         # Disable authentication to bypass JWT validation and database lookup issues
         override_env_vars({"REVIEWPOINT_AUTH_ENABLED": "false"})
+        
+        # Clear settings cache to pick up new environment variables
+        from src.core.config import get_settings
+        get_settings.cache_clear()
         
         # Mock the list_users function to avoid async database issues
         async def mock_list_users(session, **kwargs):
@@ -258,6 +282,10 @@ class TestUserExports(ExportEndpointTestTemplate):
     def test_export_users_csv_unsupported_format(self, override_env_vars, client: TestClient, monkeypatch):
         # Disable authentication to bypass JWT validation and database lookup issues
         override_env_vars({"REVIEWPOINT_AUTH_ENABLED": "false"})
+        
+        # Clear settings cache to pick up new environment variables
+        from src.core.config import get_settings
+        get_settings.cache_clear()
         
         # Mock the list_users function to avoid async database issues
         async def mock_list_users(session, **kwargs):
@@ -296,6 +324,10 @@ class TestUserExports(ExportEndpointTestTemplate):
     def test_export_users_csv_missing_api_key(self, override_env_vars, client: TestClient, monkeypatch):
         # Disable authentication to bypass JWT validation and database lookup issues
         override_env_vars({"REVIEWPOINT_AUTH_ENABLED": "false"})
+        
+        # Clear settings cache to pick up new environment variables
+        from src.core.config import get_settings
+        get_settings.cache_clear()
         
         # Mock the list_users function to avoid async database issues
         async def mock_list_users(session, **kwargs):
@@ -362,6 +394,10 @@ class TestUserExports(ExportEndpointTestTemplate):
             "REVIEWPOINT_FEATURE_USERS_EXPORT_FULL": "true",
             "REVIEWPOINT_AUTH_ENABLED": "false"
         })
+        
+        # Clear settings cache to pick up new environment variables
+        from src.core.config import get_settings
+        get_settings.cache_clear()
         
         # With auth disabled, we can use any token - the security module will return a default admin payload
         headers = {"Authorization": "Bearer any_token"}  # Missing X-API-Key intentionally
@@ -434,6 +470,10 @@ class TestUserExportsFeatureFlags(ExportEndpointTestTemplate):
             "REVIEWPOINT_API_KEY_ENABLED": "true",
             "REVIEWPOINT_API_KEY": "nottherightkey"
         })
+        
+        # Clear settings cache to pick up new environment variables
+        from src.core.config import get_settings
+        get_settings.cache_clear()
         headers = self.get_auth_header(client)
         headers["X-API-Key"] = "wrongkey"
         resp = client.get("/api/v1/users/export", headers=headers)
