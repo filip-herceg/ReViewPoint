@@ -106,13 +106,13 @@ class TestDatabase(DatabaseTestTemplate):
     def test_simulate_db_disconnect(self) -> None:
         """Test simulating a database disconnect."""
         import os
+        import pytest
+        import asyncio
         if os.environ.get("FAST_TESTS") == "1":
-            import pytest
             pytest.skip("Simulate DB disconnect is not supported in fast (SQLite in-memory) mode.")
         self.simulate_db_disconnect(self.AsyncSessionLocal)
         with pytest.raises(Exception):
-            import asyncio
-            asyncio.run(self.assert_healthcheck_ok(self.db_healthcheck))
+            asyncio.run(self.db_healthcheck())
 
     def test_simulate_db_latency(self) -> None:
         """Test simulating database latency."""
@@ -126,8 +126,8 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_file_fk_constraint(self):
         import os
+        import pytest
         if os.environ.get("FAST_TESTS") == "1":
-            import pytest
             pytest.skip("SQLite in-memory does not reliably enforce foreign key constraints for this test.")
         # Should fail: user_id does not exist
         from sqlalchemy.exc import IntegrityError
@@ -142,8 +142,11 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_cascade_delete_user_files(self):
         import os
+        import pytest
+        # Check if using SQLite backend
+        if hasattr(self, 'engine') and 'sqlite' in str(self.engine.url):
+            pytest.skip("SQLite in-memory does not reliably support ON DELETE CASCADE for this test.")
         if os.environ.get("FAST_TESTS") == "1":
-            import pytest
             pytest.skip("SQLite in-memory does not reliably support ON DELETE CASCADE for this test.")
         # Insert user and file, delete user, file should be deleted if cascade is enabled
         user = self.User(email="cascade@example.com", hashed_password="pw")
@@ -170,7 +173,8 @@ class TestDatabase(DatabaseTestTemplate):
         await self.assert_db_integrity_error(self.AsyncSessionLocal, self.User, USER_DATA)
     def test_indexes_exist(self):
         import os
-        if os.environ.get("FAST_TESTS") == "1":
+        # Check if using SQLite backend or FAST_TESTS mode - both require async engine handling
+        if os.environ.get("FAST_TESTS") == "1" or (hasattr(self, 'engine') and 'sqlite' in str(self.engine.url)):
             import asyncio
             from sqlalchemy import inspect
             async def check_indexes():
