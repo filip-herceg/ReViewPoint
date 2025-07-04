@@ -658,10 +658,20 @@ def override_env_vars(monkeypatch: pytest.MonkeyPatch, set_remaining_env_vars: N
     Fixture to override environment variables for a single test.
     Usage: override_env_vars({"VAR1": "value1", "VAR2": "value2"})
     Ensures required defaults are set first, then applies overrides.
+    Also clears settings cache to ensure new values are picked up.
     """
     def _override(vars: dict[str, str]) -> None:
         for k, v in vars.items():
             monkeypatch.setenv(k, v)
+        
+        # Clear settings cache to ensure new environment variables are picked up
+        try:
+            import sys
+            sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+            from src.core.config import clear_settings_cache
+            clear_settings_cache()
+        except Exception as e:
+            logger.warning(f"Could not clear settings cache in override_env_vars: {e}")
     return _override
 
 
