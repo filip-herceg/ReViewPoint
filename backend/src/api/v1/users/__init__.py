@@ -7,7 +7,7 @@ from .exports import router as exports_router
 from .test_only_router import router as test_only_router
 
 all_routers = [
-    exports_router,     # Put specific routes first
-    core_router,        # Put parameterized routes last  
+    exports_router,  # Put specific routes first
+    core_router,  # Put parameterized routes last
     test_only_router,
 ]

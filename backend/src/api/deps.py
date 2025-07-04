@@ -16,12 +16,16 @@ All dependencies use loguru for error and event logging, follow security best pr
 
 import contextvars
 import importlib
-import os
 import time
 import uuid
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Awaitable, Callable
 from functools import lru_cache, wraps
-from typing import Any
+from typing import (
+    Final,
+    Literal,
+    TypedDict,
+    TypeVar,
+)
 
 from fastapi import Depends, Header, HTTPException, Query, Request, Security, status
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
@@ -38,24 +42,29 @@ from src.repositories.user import get_user_by_id
 from src.services.user import UserService
 from src.utils.http_error import http_error
 
-REQUEST_ID_HEADER = "X-Request-ID"
+REQUEST_ID_HEADER: Final[str] = "X-Request-ID"
+
 
 # Context variable to store request ID per request
-request_id_ctx_var: contextvars.ContextVar[str | None] = contextvars.ContextVar(
+request_id_ctx_var: Final[contextvars.ContextVar[str | None]] = contextvars.ContextVar(
     "request_id", default=None
 )
-current_user_id_ctx_var: contextvars.ContextVar[int | None] = contextvars.ContextVar(
-    "user_id", default=None
+current_user_id_ctx_var: Final[contextvars.ContextVar[int | None]] = (
+    contextvars.ContextVar("user_id", default=None)
 )
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
-api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+oauth2_scheme: Final[OAuth2PasswordBearer] = OAuth2PasswordBearer(
+    tokenUrl="/api/v1/auth/login"
+)
+api_key_header: Final[APIKeyHeader] = APIKeyHeader(name="X-API-Key", auto_error=False)
 
-MAX_LIMIT = 100
+MAX_LIMIT: Final[int] = 100
 
 
 def _get_dev_admin_user() -> User:
-    """Return a development admin user when auth is disabled."""
+    """
+    Return a development admin user when auth is disabled.
+    """
     return User(
         id=0,
         email="dev@example.com",
@@ -77,11 +86,30 @@ def _check_user_is_valid(user: User | None) -> bool:
 
 
 # --- Dependency Registry ---
+
+K = TypeVar("K")
+V = TypeVar("V")
+
+
+class DependencyEntry(TypedDict, total=False):
+    factory: Callable[[], object]
+    singleton: bool
+    cache_ttl: float | None
+    instance: object | None
+    last_access: float | None
+
+
 class DependencyRegistry:
-    _instances = {}
+    _instances: dict[str, DependencyEntry] = {}
 
     @classmethod
-    def register(cls, key, factory, singleton=True, cache_ttl=None):
+    def register(
+        cls,
+        key: str,
+        factory: Callable[[], object],
+        singleton: bool = True,
+        cache_ttl: float | None = None,
+    ) -> None:
         cls._instances[key] = {
             "factory": factory,
             "singleton": singleton,
@@ -91,21 +119,33 @@ class DependencyRegistry:
         }
 
     @classmethod
-    def get(cls, key):
+    def get(cls, key: str) -> object:
         if key not in cls._instances:
             raise KeyError(f"Dependency {key} not registered")
-        entry = cls._instances[key]
-        if not entry["singleton"] or entry["instance"] is None:
-            entry["instance"] = entry["factory"]()
-        if entry["cache_ttl"] and entry["last_access"]:
-            now = time.time()
-            if now - entry["last_access"] > entry["cache_ttl"]:
-                entry["instance"] = entry["factory"]()
+        entry: DependencyEntry = cls._instances[key]
+        # Use .get() with defaults for all optional keys
+
+        singleton: bool = entry.get("singleton", True)
+        instance: object | None = entry.get("instance", None)
+        factory: Callable[[], object] | None = entry.get("factory")
+        if factory is None:
+            raise RuntimeError(f"Dependency entry for '{key}' is missing a factory.")
+        cache_ttl: float | None = entry.get("cache_ttl", None)
+        last_access: float | None = entry.get("last_access", None)
+
+        if not singleton or instance is None:
+            instance = factory()
+            entry["instance"] = instance
+        if cache_ttl is not None and last_access is not None:
+            now: float = time.time()
+            if now - last_access > cache_ttl:
+                instance = factory()
+                entry["instance"] = instance
         entry["last_access"] = time.time()
-        return entry["instance"]
+        return entry.get("instance")
 
 
-registry = DependencyRegistry()
+registry: Final[DependencyRegistry] = DependencyRegistry()
 registry.register("user_service", lambda: importlib.import_module("src.services.user"))
 registry.register("user_repository", lambda: user_repository)
 registry.register(
@@ -134,60 +174,80 @@ registry.register(
 )
 
 
-def get_user_service():
+def get_user_service() -> UserService:
     return UserService()
 
 
-def get_user_repository() -> Any:
+def get_user_repository_func() -> object:
     return registry.get("user_repository")
 
 
-def get_blacklist_token() -> Any:
-    return registry.get("blacklist_token")
+def get_blacklist_token() -> Callable[..., Awaitable[None]]:
+    return registry.get("blacklist_token")  # type: ignore[no-any-return]
 
 
-def get_user_action_limiter() -> Any:
-    return registry.get("user_action_limiter")
+def get_user_action_limiter() -> Callable[..., Awaitable[None]]:
+    return registry.get("user_action_limiter")  # type: ignore[no-any-return]
 
 
-def get_validate_email() -> Any:
-    return registry.get("validate_email")
+def get_validate_email() -> Callable[[str], bool]:
+    return registry.get("validate_email")  # type: ignore[no-any-return]
 
 
-def get_password_validation_error() -> Any:
-    return registry.get("password_validation_error")
+def get_password_validation_error() -> Callable[[str], str | None]:
+    return registry.get("password_validation_error")  # type: ignore[no-any-return]
 
 
-def get_async_refresh_access_token() -> Any:
+def get_async_refresh_access_token() -> (
+    Callable[[AsyncSession, str], Awaitable[object]]
+):
+    async_refresh_access_token: Callable[[AsyncSession, str, str, str], Awaitable[object]] = registry.get("async_refresh_access_token")  # type: ignore[no-any-return]
 
-    async_refresh_access_token = registry.get("async_refresh_access_token")
-
-    async def wrapper(session, token):
+    async def wrapper(session: AsyncSession, token: str) -> object:
         settings = get_settings()
+        jwt_secret_key: str | None = settings.jwt_secret_key
+        jwt_algorithm: str | None = settings.jwt_algorithm
+        if jwt_secret_key is None or jwt_algorithm is None:
+            raise RuntimeError("JWT secret key and algorithm must be set in settings.")
         return await async_refresh_access_token(
             session,
             token,
-            settings.jwt_secret_key,
-            settings.jwt_algorithm,
+            jwt_secret_key,
+            jwt_algorithm,
         )
 
     return wrapper
 
 
 # --- Generic Service Provider ---
-def get_service(module_path: str) -> Any:
+
+
+def get_service(module_path: str) -> object:
     return importlib.import_module(module_path)
 
 
 # --- Feature Flags ---
-def get_feature_flags():
+
+
+from typing import Protocol
+
+
+class FeatureFlagsProtocol(Protocol):
+    def is_enabled(self, feature_name: str) -> bool: ...
+
+
+def get_feature_flags() -> FeatureFlagsProtocol:
     from src.core.feature_flags import FeatureFlags
 
     return FeatureFlags()
 
 
-def require_feature(feature_name: str):
-    async def dependency(flags=Depends(get_feature_flags)):
+def require_feature(
+    feature_name: str,
+) -> Callable[[FeatureFlagsProtocol], Awaitable[bool]]:
+    async def dependency(
+        flags: FeatureFlagsProtocol = Depends(get_feature_flags),
+    ) -> bool:
         if not flags.is_enabled(feature_name):
             http_error(
                 404,
@@ -201,43 +261,65 @@ def require_feature(feature_name: str):
 
 
 # --- Health Check System ---
+
+
 class HealthCheck:
-    _checks = {}
+    _checks: dict[str, Callable[[], bool | Awaitable[bool]]] = {}
 
     @classmethod
-    def register(cls, name, check_func):
+    def register(
+        cls, name: str, check_func: Callable[[], bool | Awaitable[bool]]
+    ) -> None:
         cls._checks[name] = check_func
 
     @classmethod
-    async def check_all(cls):
-        results = {}
+    @classmethod
+    async def check_all(cls) -> dict[str, dict[str, str | bool]]:
+        results: dict[str, dict[str, str | bool]] = {}
         for name, check_func in cls._checks.items():
             try:
-                is_healthy = (
-                    await check_func()
-                    if callable(getattr(check_func, "__await__", None))
-                    else check_func()
-                )
+                result: bool | Awaitable[bool] = check_func()
+                is_healthy: bool
+                if isinstance(result, bool):
+                    is_healthy = result
+                elif hasattr(result, "__await__"):
+                    is_healthy = await result  # type: ignore
+                else:
+                    raise RuntimeError(
+                        f"Health check '{name}' did not return bool or Awaitable[bool]"
+                    )
                 results[name] = {"status": "healthy" if is_healthy else "unhealthy"}
-            except Exception as e:
-                results[name] = {"status": "error", "message": str(e)}
+            except Exception as exc:
+                results[name] = {"status": "error", "message": str(exc)}
         return results
 
 
 # Example health check registration (add more as needed)
+
 HealthCheck.register("database", lambda: True)  # Replace with real DB check
 
 
 # --- Dependency Metrics ---
-dependency_metrics = {}
 
 
-def measure_dependency(func):
+class DependencyMetric(TypedDict):
+    count: int
+    errors: int
+    total_time: float
+
+
+dependency_metrics: dict[str, DependencyMetric] = {}
+
+
+def measure_dependency(
+    func: Callable[..., Awaitable[object]],
+) -> Callable[..., Awaitable[object]]:
     @wraps(func)
-    async def wrapper(*args, **kwargs):
-        start = time.time()
+    async def wrapper(*args: object, **kwargs: object) -> object:
+        start: float = time.time()
+        status: Literal["success", "error"] = "success"
         try:
-            result = (
+            result: object = (
                 await func(*args, **kwargs)
                 if callable(getattr(func, "__await__", None))
                 else func(*args, **kwargs)
@@ -247,10 +329,10 @@ def measure_dependency(func):
             status = "error"
             raise
         finally:
-            duration = time.time() - start
-            name = func.__name__
+            duration: float = time.time() - start
+            name: str = func.__name__
             if name not in dependency_metrics:
-                dependency_metrics[name] = {"count": 0, "errors": 0, "total_time": 0}
+                dependency_metrics[name] = {"count": 0, "errors": 0, "total_time": 0.0}
             dependency_metrics[name]["count"] += 1
             dependency_metrics[name]["total_time"] += duration
             if status == "error":
@@ -261,15 +343,21 @@ def measure_dependency(func):
 
 
 # --- Dynamic Config Reloader ---
-def get_refreshable_settings():
+
+
+def get_refreshable_settings() -> object:
     class RefreshableSettings:
-        def __init__(self):
-            self._last_refresh = 0
-            self._refresh_interval = 60
+        _last_refresh: float
+        _refresh_interval: float
+        _settings: object | None
+
+        def __init__(self) -> None:
+            self._last_refresh = 0.0
+            self._refresh_interval = 60.0
             self._settings = None
 
-        def _reload_if_needed(self):
-            now = time.time()
+        def _reload_if_needed(self) -> None:
+            now: float = time.time()
             if (
                 now - self._last_refresh > self._refresh_interval
                 or self._settings is None
@@ -282,14 +370,18 @@ def get_refreshable_settings():
                 self._settings = src.core.config.settings
                 self._last_refresh = now
 
-        def __getattr__(self, name):
+        def __getattr__(self, name: str) -> object:
             self._reload_if_needed()
+            if self._settings is None:
+                raise AttributeError("Settings not loaded")
             return getattr(self._settings, name)
 
     return RefreshableSettings()
 
 
 # --- Pagination ---
+
+
 class PaginationParams:
     """
     Standardized pagination parameters for API endpoints.
@@ -303,13 +395,18 @@ class PaginationParams:
         items = repo.list(offset=params.offset, limit=params.limit)
     """
 
-    def __init__(self, offset: int = 0, limit: int = 20):
-        self.offset = offset
-        self.limit = limit
+    offset: int
+    limit: int
+
+    def __init__(self, offset: int = 0, limit: int = 20) -> None:
+        self.offset: int = offset
+        self.limit: int = limit
 
 
 # PaginationParams and pagination_params already log errors for invalid input (no sensitive data).
 # Add info log for successful pagination param usage.
+
+
 def pagination_params(
     offset: int = Query(0, ge=0, description="Number of items to skip (offset)"),
     limit: int = Query(
@@ -564,14 +661,16 @@ async def validate_api_key(
         bool: True if the API key is valid, False otherwise.
     """
     settings = get_settings()
-    
+
     if not settings.api_key_enabled:
         # API key validation is disabled, always return True
         return True
 
     # If API key validation is enabled but no key provided
     if not api_key:
-        logger.warning("API key validation is enabled but no API key provided in request")
+        logger.warning(
+            "API key validation is enabled but no API key provided in request"
+        )
         return False
 
     # Get the configured API key from settings
@@ -598,7 +697,7 @@ async def require_api_key(
         _ = Depends(require_api_key)
     """
     validation_result = await validate_api_key(api_key)
-    
+
     if not validation_result:
         http_error(
             status.HTTP_401_UNAUTHORIZED,
@@ -641,8 +740,8 @@ def require_api_key_for_exports(
     Dependency to validate API key for export endpoints based on global settings.
     If REVIEWPOINT_API_KEY_ENABLED is true, this requires a valid API key.
     If REVIEWPOINT_API_KEY_ENABLED is false, this function does nothing and allows access.
-    
-    NOTE: This function is deprecated. Use get_current_user_with_export_api_key instead 
+
+    NOTE: This function is deprecated. Use get_current_user_with_export_api_key instead
     which handles both JWT and API key validation in one dependency.
 
     Parameters:
@@ -653,14 +752,16 @@ def require_api_key_for_exports(
         _ = Depends(require_api_key_for_exports)
     """
     settings = get_settings()
-    
+
     # If API key validation is disabled globally, allow access
     if not settings.api_key_enabled:
         return
-    
+
     # API key validation is enabled, so require it
     if not api_key:
-        logger.warning("Export endpoint accessed without API key when API key validation is enabled")
+        logger.warning(
+            "Export endpoint accessed without API key when API key validation is enabled"
+        )
         http_error(
             status.HTTP_401_UNAUTHORIZED,
             "API key required for export endpoints",
@@ -696,14 +797,14 @@ async def get_current_user_with_export_api_key(
 ) -> User | None:
     """
     Authentication dependency for export endpoints that respects global API key settings.
-    
+
     When REVIEWPOINT_AUTH_ENABLED is false:
         - Returns development admin user regardless of token validity
-        
+
     When REVIEWPOINT_AUTH_ENABLED is true and REVIEWPOINT_API_KEY_ENABLED is true:
         - Requires both valid JWT token and API key
         - Returns the authenticated User
-        
+
     When REVIEWPOINT_AUTH_ENABLED is true and REVIEWPOINT_API_KEY_ENABLED is false:
         - Only requires JWT token (if provided)
         - If JWT token is provided, validates it and returns User
@@ -711,15 +812,15 @@ async def get_current_user_with_export_api_key(
         - If no JWT token is provided, returns None (unauthenticated access allowed)
     """
     settings = get_settings()
-    
+
     # Check if authentication is disabled globally
     if not settings.auth_enabled:
         logger.warning("Authentication is DISABLED! Returning development admin user.")
         return _get_dev_admin_user()
-    
+
     # Check JWT token first (regardless of API key setting)
     authorization = request.headers.get("Authorization")
-    
+
     if authorization:
         # If Authorization header is provided, validate it
         try:
@@ -740,15 +841,17 @@ async def get_current_user_with_export_api_key(
                 {"endpoint": "export"},
             )
             return None  # This line will never be reached due to http_error, but helps with type checking
-        
+
         # Validate JWT token - always do full validation when auth is enabled
         current_user = await get_current_user(token, session)
-        
+
         # If API key validation is enabled, also check API key
         if settings.api_key_enabled:
             api_key = request.headers.get("X-API-Key")
             if not api_key:
-                logger.warning("Export endpoint accessed without API key when API key validation is enabled")
+                logger.warning(
+                    "Export endpoint accessed without API key when API key validation is enabled"
+                )
                 http_error(
                     status.HTTP_401_UNAUTHORIZED,
                     "API key required for export endpoints",
@@ -759,7 +862,9 @@ async def get_current_user_with_export_api_key(
             # Get the configured API key from settings
             configured_api_key = settings.api_key
             if not configured_api_key:
-                logger.warning("API key validation required but no API key is configured")
+                logger.warning(
+                    "API key validation required but no API key is configured"
+                )
                 http_error(
                     status.HTTP_401_UNAUTHORIZED,
                     "API key validation is not properly configured",
@@ -776,7 +881,7 @@ async def get_current_user_with_export_api_key(
                     logger.warning,
                     {"endpoint": "export"},
                 )
-        
+
         return current_user
     else:
         # No Authorization header provided
@@ -793,4 +898,4 @@ async def get_current_user_with_export_api_key(
             return None
 
 
-get_user_repository = lru_cache()(get_user_repository)
+get_user_repository: Callable[[], object] = lru_cache()(get_user_repository_func)

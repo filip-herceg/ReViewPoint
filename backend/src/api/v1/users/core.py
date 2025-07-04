@@ -3,6 +3,8 @@ User CRUD endpoints: create, list, get, update, delete.
 """
 
 import traceback
+from collections.abc import Sequence
+from typing import Any, Final
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Response, status
 from loguru import logger
@@ -28,7 +30,7 @@ from src.services.user import (
 from src.utils.errors import ValidationError as CustomValidationError
 from src.utils.http_error import http_error
 
-router = APIRouter()
+router: Final[APIRouter] = APIRouter()
 
 
 @router.post(
@@ -46,6 +48,13 @@ async def create_user(
     session: AsyncSession = Depends(get_async_session),
     user_service: UserService = Depends(get_user_service),
 ) -> UserResponse:
+    """
+    Create a new user.
+    Raises:
+        HTTPException: If user already exists, data is invalid, or unexpected error occurs.
+    """
+    # db_user is likely an ORM User, not UserProfile, so we use Any and map to UserResponse
+    db_user: Any
     try:
         db_user = await user_service.register_user(
             session,
@@ -63,9 +72,10 @@ async def create_user(
         # Idempotent: fetch and return the existing user
         from src.repositories.user import list_users
 
+        users: Sequence[Any]
         users, _ = await list_users(session, email=user.email, limit=1)
         if users:
-            existing_user = users[0]
+            existing_user: Any = users[0]
             logger.info(
                 "user_exists_idempotent",
                 extra={"user_id": existing_user.id, "email": existing_user.email},
@@ -98,20 +108,37 @@ async def list_users(
     params: PaginationParams = Depends(pagination_params),
     email: str | None = Query(None, description="Filter by email"),
     name: str | None = Query(None, description="Filter by name"),
-    created_after: str | None = Query(None, description="Filter by created_after datetime"),
+    created_after: str | None = Query(
+        None, description="Filter by created_after datetime"
+    ),
     session: AsyncSession = Depends(get_async_session),
     user_service: UserService = Depends(get_user_service),
     current_user: UserResponse = Depends(require_admin),
-):
+) -> UserListResponse:
+    """
+    List users with optional filters.
+    Raises:
+        HTTPException: If an unexpected error occurs.
+    """
+    created_after_dt: Any | None = (
+        None  # parse_flexible_datetime returns datetime, but type not imported here
+    )
+    # Parse created_after if provided
+    if created_after:
+        from src.utils.datetime import parse_flexible_datetime
+
+        created_after_dt = parse_flexible_datetime(created_after)
+
+    users: Sequence[Any]
+    total: int
     try:
-        # Parse created_after if provided
-        created_after_dt = None
-        if created_after:
-            from src.utils.datetime import parse_flexible_datetime
-            created_after_dt = parse_flexible_datetime(created_after)
-            
         users, total = await user_service.list_users(
-            session, offset=params.offset, limit=params.limit, email=email, name=name, created_after=created_after_dt
+            session,
+            offset=params.offset,
+            limit=params.limit,
+            email=email,
+            name=name,
+            created_after=created_after_dt,
         )
         logger.info(
             "users_listed",
@@ -157,9 +184,14 @@ async def get_user_by_id(
     session: AsyncSession = Depends(get_async_session),
     user_service: UserService = Depends(get_user_service),
     current_user: UserResponse = Depends(require_admin),
-):
+) -> UserResponse:
+    """
+    Get user by ID.
+    Raises:
+        HTTPException: If user not found or unexpected error occurs.
+    """
     try:
-        user = await user_service.get_user_by_id(session, user_id)
+        user: Any = await user_service.get_user_by_id(session, user_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
         # Explicitly map ORM user to UserResponse
@@ -172,11 +204,13 @@ async def get_user_by_id(
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
-    except HTTPException:
-        raise
+    except HTTPException as exc:
+        raise exc
     except Exception as e:
         logger.error(f"Unexpected error in get_user_by_id: {e}")
         raise HTTPException(status_code=500, detail="Unexpected error.")
+    # Defensive: function must always return UserResponse or raise
+    raise HTTPException(status_code=500, detail="Unreachable code in get_user_by_id")
 
 
 @router.put(
@@ -191,8 +225,13 @@ async def update_user(
     user_service: UserService = Depends(get_user_service),
     current_user: UserResponse = Depends(require_admin),
 ) -> UserResponse:
+    """
+    Update user information.
+    Raises:
+        HTTPException: If user not found, email exists, invalid data, or unexpected error occurs.
+    """
     try:
-        updated_user = await user_service.update_user(
+        updated_user: Any = await user_service.update_user(
             session, user_id, user.model_dump()
         )
         logger.info("user_updated", extra={"user_id": user_id})
@@ -201,12 +240,15 @@ async def update_user(
         )
     except UserNotFoundError as e:
         http_error(404, "User not found.", logger.warning, {"user_id": user_id}, e)
+        raise HTTPException(status_code=404, detail="User not found.")
     except UserAlreadyExistsError as e:
         http_error(
             409, "Email already exists.", logger.warning, {"email": user.email}, e
         )
+        raise HTTPException(status_code=409, detail="Email already exists.")
     except InvalidDataError as e:
         http_error(400, "Invalid user data.", logger.warning, {"user_id": user_id}, e)
+        raise HTTPException(status_code=400, detail="Invalid user data.")
     except Exception as e:
         http_error(
             500,
@@ -215,6 +257,12 @@ async def update_user(
             {"user_id": user_id, "error": str(e)},
             e,
         )
+        raise HTTPException(status_code=500, detail="Unexpected error.")
+    # Defensive: function must always return UserResponse or raise
+    raise HTTPException(status_code=500, detail="Unreachable code in update_user")
+
+
+from typing import Literal
 
 
 @router.delete(
@@ -228,12 +276,19 @@ async def delete_user(
     user_service: UserService = Depends(),
     current_user: UserResponse = Depends(require_admin),
 ) -> Response:
+    """
+    Delete user by ID.
+    Raises:
+        HTTPException: If user not found or unexpected error occurs.
+    """
+    STATUS_NO_CONTENT: Literal[204] = 204
     try:
-        await user_service.delete_user(session, user_id)
+        result: None = await user_service.delete_user(session, user_id)
         logger.info("user_deleted", extra={"user_id": user_id})
-        return Response(status_code=204)
+        return Response(status_code=STATUS_NO_CONTENT)
     except UserNotFoundError as e:
         http_error(404, "User not found.", logger.warning, {"user_id": user_id}, e)
+        raise HTTPException(status_code=404, detail="User not found.")
     except Exception as e:
         http_error(
             500,
@@ -242,3 +297,6 @@ async def delete_user(
             {"user_id": user_id, "error": str(e)},
             e,
         )
+        raise HTTPException(status_code=500, detail="Unexpected error.")
+    # Defensive: function must always return Response or raise
+    raise HTTPException(status_code=500, detail="Unreachable code in delete_user")

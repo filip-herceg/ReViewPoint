@@ -476,19 +476,24 @@ class TestAuthFeatureFlags(AuthEndpointTestTemplate):
                     "name": "Flag",
                 },
             )
-            self.assert_status(resp, (201,))  # Registration should succeed when API keys are disabled
+            self.assert_status(
+                resp, (201,)
+            )  # Registration should succeed when API keys are disabled
 
     def test_api_key_wrong(self):
         # Override environment variables for this test
-        self.override_env_vars({
-            "REVIEWPOINT_API_KEY": "nottherightkey",
-            "REVIEWPOINT_API_KEY_ENABLED": "true"
-        })
-        
+        self.override_env_vars(
+            {
+                "REVIEWPOINT_API_KEY": "nottherightkey",
+                "REVIEWPOINT_API_KEY_ENABLED": "true",
+            }
+        )
+
         # Clear settings cache to pick up new environment variables
         from src.core.config import clear_settings_cache
+
         clear_settings_cache()
-        
+
         transport = ASGITransport(app=self.test_app)
 
         async def run():
@@ -508,4 +513,5 @@ class TestAuthFeatureFlags(AuthEndpointTestTemplate):
                 self.assert_status(resp, (401, 403))
 
         import asyncio
+
         asyncio.run(run())

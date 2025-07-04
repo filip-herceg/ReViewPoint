@@ -1,7 +1,8 @@
 import platform
 import sys
 import time
-from typing import Any
+from collections.abc import Callable
+from typing import Final, Literal, TypedDict, cast
 
 from fastapi import APIRouter, Depends, Response, status
 
@@ -9,29 +10,68 @@ from src.api.deps import get_request_id, require_api_key, require_feature
 from src.core.database import engine
 from src.core.events import db_healthcheck
 
-router = APIRouter(tags=["Health"])
 
-APP_START_TIME = time.time()
+class PoolStatsDict(TypedDict, total=False):
+    size: int | None
+    checkedin: int | None
+    checkedout: int | None
+    overflow: int | None
+    awaiting: int | None
 
 
-def get_pool_stats() -> dict[str, Any]:
-    stats: dict[str, Any] = {}
+class DBStatusDict(TypedDict, total=False):
+    ok: bool
+    error: str | None
+    pool: PoolStatsDict
+
+
+class VersionsDict(TypedDict):
+    python: str
+    fastapi: str | None
+    sqlalchemy: str | None
+
+
+class HealthResponseDict(TypedDict, total=False):
+    status: Literal["ok", "error"]
+    db: DBStatusDict
+    uptime: float
+    response_time: float
+    versions: VersionsDict
+    detail: str | None
+
+
+class MetricsResponse(Response):
+    media_type: Final[str] = "text/plain"
+
+
+router: Final[APIRouter] = APIRouter(tags=["Health"])
+APP_START_TIME: Final[float] = time.time()
+
+
+def get_pool_stats() -> PoolStatsDict:
+    """
+    Returns statistics about the database connection pool.
+    Returns:
+        PoolStatsDict: Dictionary with pool statistics.
+    Raises:
+        Exception: If engine initialization fails or pool attributes are inaccessible.
+    """
+    stats: PoolStatsDict = {}
     try:
-        # Ensure engine is initialized before accessing pool
         from src.core.database import ensure_engine_initialized
+
         ensure_engine_initialized()
-        
-        pool = getattr(engine, "pool", None)
-        if pool:
-            for attr in ["size", "checkedin", "checkedout", "overflow", "awaiting"]:
-                val = getattr(pool, attr, None)
+        pool: object | None = getattr(engine, "pool", None)
+        if pool is not None:
+            for attr in ("size", "checkedin", "checkedout", "overflow", "awaiting"):
+                val: Callable[[], int] | int | None | None = getattr(pool, attr, None)
                 if callable(val):
                     try:
-                        stats[attr] = val()
+                        stats[attr] = val()  # type: ignore[call-arg]
                     except Exception:
                         stats[attr] = None
                 else:
-                    stats[attr] = val
+                    stats[attr] = cast(int | None, val)
     except Exception:
         # If engine initialization fails, return empty stats
         pass
@@ -191,16 +231,19 @@ async def health_check(
     request_id: str = Depends(get_request_id),
     feature_flag_ok: bool = Depends(require_feature("health:read")),
     _api_key: None = Depends(require_api_key),
-) -> dict[str, Any]:
+) -> HealthResponseDict:
     """
     Returns API and database health status.
     - **response**: FastAPI response object (for headers)
     - **request_id**: Request ID for tracing
     - **feature_flag_ok**: Feature flag enforcement for health endpoint
-    Returns a dict with status, db, uptime, response_time, and versions.
+    Returns:
+        HealthResponseDict: Dict with status, db, uptime, response_time, and versions.
+    Raises:
+        Exception: If database health check fails.
     """
-    start = time.monotonic()
-    db_ok = True
+    start: float = time.monotonic()
+    db_ok: bool = True
     db_error: str | None = None
     try:
         await db_healthcheck()
@@ -208,21 +251,20 @@ async def health_check(
         db_ok = False
         db_error = str(exc)
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
-    duration = time.monotonic() - start
+    duration: float = time.monotonic() - start
     response.headers["X-Health-Response-Time"] = f"{duration:.4f}s"
-    uptime = time.time() - APP_START_TIME
-    pool_stats = get_pool_stats()
-    # Check dependency versions at runtime for monkeypatching compatibility
-    fastapi_mod = sys.modules.get("fastapi")
-    sqlalchemy_mod = sys.modules.get("sqlalchemy")
-    versions = {
+    uptime: float = time.time() - APP_START_TIME
+    pool_stats: PoolStatsDict = get_pool_stats()
+    fastapi_mod: object | None = sys.modules.get("fastapi")
+    sqlalchemy_mod: object | None = sys.modules.get("sqlalchemy")
+    versions: VersionsDict = {
         "python": platform.python_version(),
         "fastapi": getattr(fastapi_mod, "__version__", None) if fastapi_mod else None,
         "sqlalchemy": (
             getattr(sqlalchemy_mod, "__version__", None) if sqlalchemy_mod else None
         ),
     }
-    health: dict[str, Any] = {
+    health: HealthResponseDict = {
         "status": "ok" if db_ok else "error",
         "db": {"ok": db_ok, "error": db_error, "pool": pool_stats},
         "uptime": uptime,
@@ -356,9 +398,14 @@ async def health_check(
     },
 )
 def metrics() -> Response:
-    pool_stats = get_pool_stats()
-    uptime = time.time() - APP_START_TIME
-    lines = [
+    """
+    Returns Prometheus-style metrics for uptime and database connection pool.
+    Returns:
+        Response: FastAPI Response with Prometheus metrics as plain text.
+    """
+    pool_stats: PoolStatsDict = get_pool_stats()
+    uptime: float = time.time() - APP_START_TIME
+    lines: list[str] = [
         f"app_uptime_seconds {uptime}",
         f"db_pool_size {pool_stats.get('size', 0)}",
         f"db_pool_checkedin {pool_stats.get('checkedin', 0)}",

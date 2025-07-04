@@ -1,54 +1,78 @@
+"""
+Strict static typing for file utility functions.
+"""
+
 import re
+from typing import Final, Literal, TypeAlias, TypedDict
+
+# Type aliases for stricter typing
+Filename: TypeAlias = str
+SanitizedFilename: TypeAlias = str
 
 
-def sanitize_filename(filename: str) -> str:
+# TypedDict for future extensibility (if you want to return more info)
+class SanitizedResult(TypedDict):
+    sanitized: SanitizedFilename
+    original: Filename
+
+
+# Strict typing constants
+_PATH_SEPARATORS: Final[tuple[Literal["/"], Literal["\\"]]] = ("/", "\\")
+_DANGEROUS_COMPONENTS: Final[tuple[Literal[".."], Literal["."]]] = ("..", ".")
+_INVALID_CHARS_PATTERN: Final[Literal[r'[\\/*?:"<>|]']] = r'[\\/*?:"<>|]'
+
+
+def sanitize_filename(filename: Filename) -> SanitizedFilename:
     """
     Sanitizes a filename to prevent path traversal attacks.
 
     Args:
-        filename: The original filename
+        filename: Filename (str) to sanitize
 
     Returns:
-        A sanitized filename with no path components
+        SanitizedFilename (str) with no path components
 
     Examples:
         >>> sanitize_filename("../etc/passwd")
         'etc_passwd'
         >>> sanitize_filename("file.txt")
         'file.txt'
+
+    Raises:
+        None
     """
     if not filename:
-        return "unnamed_file"
+        unnamed: Final[SanitizedFilename] = "unnamed_file"
+        return unnamed
 
-    # Split into path components, remove empty and dangerous ones
-    parts = [p for p in re.split(r"[\\/]+", filename) if p and p not in ("..", ".")]
+    parts: list[Filename] = [
+        p for p in re.split(r"[\\/]+", filename) if p and p not in _DANGEROUS_COMPONENTS
+    ]
     if not parts:
-        return "_"
-    # Join with underscores to preserve all info, but prevent traversal
-    safe_name = "_".join(parts)
-    # Replace any problematic characters
-    safe_name = re.sub(r'[\\/*?:"<>|]', "_", safe_name)
-    # Remove any remaining '..' just in case
+        empty: Final[SanitizedFilename] = "_"
+        return empty
+    safe_name: SanitizedFilename = "_".join(parts)
+    safe_name = re.sub(_INVALID_CHARS_PATTERN, "_", safe_name)
     safe_name = safe_name.replace("..", "_")
     return safe_name
 
 
-def is_safe_filename(filename: str) -> bool:
+def is_safe_filename(filename: Filename) -> Literal[True, False]:
     """
     Checks if a filename is safe (no path traversal).
 
     Args:
-        filename: The filename to check
+        filename: Filename (str) to check
 
     Returns:
-        True if the filename is safe, False otherwise
+        Literal[True] if the filename is safe, Literal[False] otherwise
     """
-    if not filename or not isinstance(filename, str):
+    if not isinstance(filename, str) or not filename:
         return False
     # Path traversal detection
-    if ".." in filename or "/" in filename or "\\" in filename:
+    if any(sep in filename for sep in _PATH_SEPARATORS) or ".." in filename:
         return False
     # Check for other potentially dangerous characters
-    if re.search(r'[*?:"<>|]', filename):
+    if re.search(_INVALID_CHARS_PATTERN, filename):
         return False
     return True

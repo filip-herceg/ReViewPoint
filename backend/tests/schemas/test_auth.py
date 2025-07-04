@@ -20,8 +20,9 @@ class TestAuthSchemas(AuthEndpointTestTemplate):
             ("not-an-email", "password123", "Test User"),
             ("user@example.com", "short", "Test User"),
             # Name is optional in UserRegisterRequest, so this should actually pass
-            pytest.param("user@example.com", "password123", None, 
-                      id="name_is_optional"),
+            pytest.param(
+                "user@example.com", "password123", None, id="name_is_optional"
+            ),
         ],
     )
     def test_user_register_request_invalid(self, email, password, name):
@@ -90,15 +91,15 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
     def create_fresh_app(self):
         """Create a fresh FastAPI app with current environment variables"""
         from src.core.config import clear_settings_cache
-        from src.main import create_app
         from src.core.database import get_async_session
-        
+        from src.main import create_app
+
         # Clear settings cache to pick up new environment variables
         clear_settings_cache()
-        
+
         # Create a fresh app with the new environment variables
         fresh_app = create_app()
-        
+
         # Override get_async_session to yield the test session
         async def _override_get_async_session():
             yield self.async_session
@@ -118,7 +119,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:register",
             }
         )
-        
+
         fresh_app = self.create_fresh_app()
         transport = ASGITransport(app=fresh_app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -149,7 +150,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:login",
             }
         )
-        
+
         fresh_app = self.create_fresh_app()
         transport = ASGITransport(app=fresh_app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
@@ -186,7 +187,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:logout",
             }
         )
-        
+
         fresh_app = self.create_fresh_app()
         import uuid
 
@@ -209,7 +210,9 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             assert resp2.json()["message"] == "Logged out successfully."
 
     @pytest.mark.asyncio
-    @pytest.mark.skip_if_fast_tests("Refresh token tests not reliable in fast test mode")
+    @pytest.mark.skip_if_fast_tests(
+        "Refresh token tests not reliable in fast test mode"
+    )
     async def test_refresh_token_success(self):
         from httpx import ASGITransport, AsyncClient
 
@@ -221,7 +224,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:refresh_token",
             }
         )
-        
+
         fresh_app = self.create_fresh_app()
         import uuid
 
@@ -260,7 +263,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:request_password_reset",
             }
         )
-        
+
         fresh_app = self.create_fresh_app()
         import uuid
 
@@ -294,7 +297,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:logout",
             }
         )
-        
+
         fresh_app = self.create_fresh_app()
         import uuid
 
@@ -327,7 +330,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:logout",
             }
         )
-        
+
         fresh_app = self.create_fresh_app()
         import uuid
 
@@ -360,7 +363,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:refresh_token",
             }
         )
-        
+
         fresh_app = self.create_fresh_app()
         transport = ASGITransport(app=fresh_app)
 
@@ -410,7 +413,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:refresh_token",
             }
         )
-        
+
         fresh_app = self.create_fresh_app()
 
         transport = ASGITransport(app=fresh_app)
@@ -461,7 +464,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:refresh_token",
             }
         )
-        
+
         fresh_app = self.create_fresh_app()
         transport = ASGITransport(app=fresh_app)
 
@@ -498,7 +501,9 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
         fresh_app.dependency_overrides = {}
 
     @pytest.mark.asyncio
-    @pytest.mark.skip_if_fast_tests("Refresh token tests not reliable in fast test mode")
+    @pytest.mark.skip_if_fast_tests(
+        "Refresh token tests not reliable in fast test mode"
+    )
     async def test_refresh_token_unexpected_error(self):
         from httpx import ASGITransport, AsyncClient
 
@@ -512,7 +517,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:refresh_token",
             }
         )
-        
+
         fresh_app = self.create_fresh_app()
 
         transport = ASGITransport(app=fresh_app)
@@ -564,7 +569,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURES": "auth:reset_password",
             }
         )
-        
+
         fresh_app = self.create_fresh_app()
         # All config-dependent imports must be inside the test method
         import uuid

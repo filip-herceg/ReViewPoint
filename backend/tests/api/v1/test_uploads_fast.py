@@ -3,7 +3,7 @@ Fast optimized upload endpoint tests using sync pattern.
 Minimizes auth overhead and DB setup for maximum speed.
 Uses the same pattern as working sync tests.
 """
-import pytest
+
 from fastapi.testclient import TestClient
 
 from tests.test_templates import ExportEndpointTestTemplate
@@ -31,9 +31,11 @@ class TestUploadsFast(ExportEndpointTestTemplate):
         headers = self.get_auth_header(client)
         file_content = b"fast test upload"
         files = {"file": ("fast_test.txt", file_content, "text/plain")}
-        
+
         # Test authenticated upload
-        resp = self.safe_request(client.post, UPLOAD_ENDPOINT, files=files, headers=headers)
+        resp = self.safe_request(
+            client.post, UPLOAD_ENDPOINT, files=files, headers=headers
+        )
         self.assert_status(resp, (201, 409))
         if resp.status_code == 201:
             data = resp.json()
@@ -51,7 +53,9 @@ class TestUploadsFast(ExportEndpointTestTemplate):
         headers = self.get_auth_header(client)
         file_content = b"bad name"
         files = {"file": ("../bad.txt", file_content, "text/plain")}
-        resp = self.safe_request(client.post, UPLOAD_ENDPOINT, files=files, headers=headers)
+        resp = self.safe_request(
+            client.post, UPLOAD_ENDPOINT, files=files, headers=headers
+        )
         self.assert_status(resp, 400)
 
     def test_get_file_info(self, client: TestClient):
@@ -61,9 +65,11 @@ class TestUploadsFast(ExportEndpointTestTemplate):
         file_content = b"info test file"
         files = {"file": ("info_test.txt", file_content, "text/plain")}
         self.safe_request(client.post, UPLOAD_ENDPOINT, files=files, headers=headers)
-        
+
         # Get file info
-        resp = self.safe_request(client.get, f"{UPLOAD_ENDPOINT}/info_test.txt", headers=headers)
+        resp = self.safe_request(
+            client.get, f"{UPLOAD_ENDPOINT}/info_test.txt", headers=headers
+        )
         self.assert_status(resp, 200)
         data = resp.json()
         assert data["filename"] == "info_test.txt"
@@ -75,9 +81,11 @@ class TestUploadsFast(ExportEndpointTestTemplate):
         file_content = b"delete test file"
         files = {"file": ("delete_test.txt", file_content, "text/plain")}
         self.safe_request(client.post, UPLOAD_ENDPOINT, files=files, headers=headers)
-        
+
         # Delete the file
-        resp = self.safe_request(client.delete, f"{UPLOAD_ENDPOINT}/delete_test.txt", headers=headers)
+        resp = self.safe_request(
+            client.delete, f"{UPLOAD_ENDPOINT}/delete_test.txt", headers=headers
+        )
         self.assert_status(resp, (204, 404))
 
     def test_list_files(self, client: TestClient):

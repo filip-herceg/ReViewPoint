@@ -3,10 +3,11 @@ Upload endpoints tests converted to async pattern with performance optimizations
 Uses AsyncClient with dependency overrides for ultra-fast test execution.
 """
 
+import uuid
+
 import pytest
 import pytest_asyncio
-import uuid
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 
 from tests.test_templates import ExportEndpointTestTemplate
 
@@ -21,7 +22,7 @@ EXPORT_TEST_ENDPOINT = "/api/v1/uploads/export-test"
 def create_mock_admin_user():
     """Create a mock admin user for dependency injection - fastest possible auth."""
     from src.services.user import UserRole
-    
+
     # Create a simple mock user object with the minimum required attributes
     class MockUser:
         def __init__(self):
@@ -32,7 +33,7 @@ def create_mock_admin_user():
             self.is_active = True
             self.is_deleted = False
             self.hashed_password = "mock_hash"
-    
+
     return MockUser()
 
 
@@ -42,7 +43,7 @@ async def fast_admin_client(test_app, async_session):
     from src.api.deps import get_current_user
     from src.core.security import create_access_token
     from src.models.user import User
-    
+
     # Create a real user in the database with unique email
     unique_email = f"test_admin_{uuid.uuid4().hex[:8]}@example.com"
     real_user = User(
@@ -50,22 +51,22 @@ async def fast_admin_client(test_app, async_session):
         name="Test Admin",
         hashed_password="hashed_password",  # Not used in tests
         is_active=True,
-        is_admin=True
+        is_admin=True,
     )
     async_session.add(real_user)
     await async_session.commit()
     await async_session.refresh(real_user)
-    
+
     # Override the auth dependency to return real user
     def override_get_current_user():
         return real_user
-    
+
     test_app.dependency_overrides[get_current_user] = override_get_current_user
-    
+
     # Create a proper JWT token with the real user ID
     token_payload = {"sub": str(real_user.id), "role": "admin"}
     valid_token = create_access_token(token_payload)
-    
+
     try:
         transport = ASGITransport(app=test_app)
         async with AsyncClient(
@@ -92,7 +93,7 @@ async def fast_anon_client(test_app):
 
 
 class TestUploadsAsync(ExportEndpointTestTemplate):
-    
+
     @pytest.mark.asyncio
     async def test_uploads_router_registered(self, fast_anon_client: AsyncClient):
         resp = await fast_anon_client.get(ROOT_TEST_ENDPOINT)
@@ -132,7 +133,9 @@ class TestUploadsAsync(ExportEndpointTestTemplate):
         assert resp.headers["content-type"] == "text/csv; charset=utf-8"
 
     @pytest.mark.asyncio
-    async def test_export_files_csv_unauthenticated(self, fast_anon_client: AsyncClient):
+    async def test_export_files_csv_unauthenticated(
+        self, fast_anon_client: AsyncClient
+    ):
         resp = await fast_anon_client.get(EXPORT_ENDPOINT)
         self.assert_status(resp, (401, 403))
 

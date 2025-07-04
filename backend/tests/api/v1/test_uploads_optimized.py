@@ -2,9 +2,11 @@
 Optimized async upload endpoint tests using fast JWT pattern.
 Uses direct JWT token creation for maximum speed and reliability.
 """
+
+import uuid
+
 import pytest
 import pytest_asyncio
-import uuid
 from httpx import ASGITransport, AsyncClient
 
 from tests.test_templates import ExportEndpointTestTemplate
@@ -34,7 +36,7 @@ async def admin_user_setup(test_app, async_session):
     from src.api.deps import get_current_user
     from src.core.security import create_access_token
     from src.models.user import User
-    
+
     # Create a real admin user in the database with unique email
     unique_email = f"optimized_admin_{uuid.uuid4().hex[:8]}@example.com"
     real_user = User(
@@ -42,24 +44,24 @@ async def admin_user_setup(test_app, async_session):
         name="Optimized Test Admin",
         hashed_password="hashed_password",  # Not used in tests
         is_active=True,
-        is_admin=True
+        is_admin=True,
     )
     async_session.add(real_user)
     await async_session.commit()
     await async_session.refresh(real_user)
-    
+
     # Override the auth dependency to return real user
     def override_get_current_user():
         return real_user
-    
+
     test_app.dependency_overrides[get_current_user] = override_get_current_user
-    
+
     # Create a proper JWT token with the real user ID
     token_payload = {"sub": str(real_user.id), "role": "admin"}
     valid_token = create_access_token(token_payload)
-    
+
     headers = {"Authorization": f"Bearer {valid_token}", "X-API-Key": "testkey"}
-    
+
     try:
         yield headers
     finally:
@@ -70,7 +72,7 @@ async def admin_user_setup(test_app, async_session):
 def create_admin_headers() -> dict[str, str]:
     """Create headers with admin JWT token directly - much faster than full auth flow."""
     from src.core.security import create_access_token
-    
+
     # Use a fixed UUID for testing - this won't require database lookup
     # in most test scenarios since we override the dependency
     fixed_user_id = "12345678-1234-5678-9abc-123456789012"
@@ -92,12 +94,14 @@ class TestUploadsAsync(ExportEndpointTestTemplate):
         assert data["router"] == "uploads"
 
     @pytest.mark.asyncio
-    async def test_upload_file_authenticated(self, async_client: AsyncClient, admin_user_setup):
+    async def test_upload_file_authenticated(
+        self, async_client: AsyncClient, admin_user_setup
+    ):
         """Test file upload with authentication."""
         headers = admin_user_setup
         file_content = b"async test upload"
         files = {"file": ("async_test.txt", file_content, "text/plain")}
-        
+
         resp = await async_client.post(UPLOAD_ENDPOINT, files=files, headers=headers)
         self.assert_status(resp, (201, 409))
         if resp.status_code == 201:
@@ -113,7 +117,9 @@ class TestUploadsAsync(ExportEndpointTestTemplate):
         self.assert_status(resp, (401, 403))
 
     @pytest.mark.asyncio
-    async def test_upload_file_invalid_filename(self, async_client: AsyncClient, admin_user_setup):
+    async def test_upload_file_invalid_filename(
+        self, async_client: AsyncClient, admin_user_setup
+    ):
         """Test upload with invalid filename fails."""
         headers = admin_user_setup
         file_content = b"bad name"
@@ -129,9 +135,11 @@ class TestUploadsAsync(ExportEndpointTestTemplate):
         file_content = b"info test file"
         files = {"file": ("info_async.txt", file_content, "text/plain")}
         await async_client.post(UPLOAD_ENDPOINT, files=files, headers=headers)
-        
+
         # Get file info
-        resp = await async_client.get(f"{UPLOAD_ENDPOINT}/info_async.txt", headers=headers)
+        resp = await async_client.get(
+            f"{UPLOAD_ENDPOINT}/info_async.txt", headers=headers
+        )
         self.assert_status(resp, 200)
         data = resp.json()
         assert data["filename"] == "info_async.txt"
@@ -144,9 +152,11 @@ class TestUploadsAsync(ExportEndpointTestTemplate):
         file_content = b"delete test file"
         files = {"file": ("delete_async.txt", file_content, "text/plain")}
         await async_client.post(UPLOAD_ENDPOINT, files=files, headers=headers)
-        
+
         # Delete the file
-        resp = await async_client.delete(f"{UPLOAD_ENDPOINT}/delete_async.txt", headers=headers)
+        resp = await async_client.delete(
+            f"{UPLOAD_ENDPOINT}/delete_async.txt", headers=headers
+        )
         self.assert_status(resp, (204, 404))
 
     @pytest.mark.asyncio
@@ -159,7 +169,9 @@ class TestUploadsAsync(ExportEndpointTestTemplate):
         assert "files" in data
 
     @pytest.mark.asyncio
-    async def test_export_files_csv_authenticated(self, async_client: AsyncClient, admin_user_setup):
+    async def test_export_files_csv_authenticated(
+        self, async_client: AsyncClient, admin_user_setup
+    ):
         """Test CSV export with authentication."""
         headers = admin_user_setup
         resp = await async_client.get(EXPORT_ENDPOINT, headers=headers)

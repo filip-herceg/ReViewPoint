@@ -20,8 +20,10 @@ class TestFileRepository:
         user = User(email="test@example.com", hashed_password="hashed", is_active=True)
         async_session.add(user)
         await async_session.flush()
-        
-        file = await create_file(async_session, "test.txt", "text/plain", user_id=user.id)
+
+        file = await create_file(
+            async_session, "test.txt", "text/plain", user_id=user.id
+        )
         assert file.filename == "test.txt"
         assert file.content_type == "text/plain"
         assert file.user_id == user.id
@@ -32,7 +34,7 @@ class TestFileRepository:
         user = User(email="test2@example.com", hashed_password="hashed", is_active=True)
         async_session.add(user)
         await async_session.flush()
-        
+
         with pytest.raises(ValidationError):
             await create_file(async_session, "", "text/plain", user_id=user.id)
 
@@ -42,7 +44,7 @@ class TestFileRepository:
         user = User(email="test3@example.com", hashed_password="hashed", is_active=True)
         async_session.add(user)
         await async_session.flush()
-        
+
         await create_file(async_session, "findme.txt", "text/plain", user_id=user.id)
         file = await get_file_by_filename(async_session, "findme.txt")
         assert file is not None
@@ -59,7 +61,7 @@ class TestFileRepository:
         user = User(email="test4@example.com", hashed_password="hashed", is_active=True)
         async_session.add(user)
         await async_session.flush()
-        
+
         await create_file(async_session, "todelete.txt", "text/plain", user_id=user.id)
         deleted = await delete_file(async_session, "todelete.txt")
         assert deleted is True
@@ -72,7 +74,9 @@ class TestFileRepository:
         assert deleted is False
 
     @pytest.mark.asyncio
-    @pytest.mark.requires_real_db("Duplicate filename constraint test not applicable in SQLite in-memory mode")
+    @pytest.mark.requires_real_db(
+        "Duplicate filename constraint test not applicable in SQLite in-memory mode"
+    )
     async def test_duplicate_filename_same_user(self, async_session):
         # Skip for SQLite in-memory mode - no unique constraint on filename+user_id exists
         await create_file(async_session, "dup.txt", "text/plain", user_id=4)
@@ -86,7 +90,7 @@ class TestFileRepository:
         user = User(email="test5@example.com", hashed_password="hashed", is_active=True)
         async_session.add(user)
         await async_session.flush()
-        
+
         long_filename = "a" * 255
         long_content_type = "b" * 128
         file = await create_file(
@@ -101,7 +105,7 @@ class TestFileRepository:
         user = User(email="test6@example.com", hashed_password="hashed", is_active=True)
         async_session.add(user)
         await async_session.flush()
-        
+
         file = await create_file(
             async_session, "файл!@#.txt", "application/x-спец", user_id=user.id
         )
@@ -109,7 +113,9 @@ class TestFileRepository:
         assert "спец" in file.content_type
 
     @pytest.mark.asyncio
-    @pytest.mark.requires_real_db("SQLite in-memory does not reliably enforce foreign key constraints for this test.")
+    @pytest.mark.requires_real_db(
+        "SQLite in-memory does not reliably enforce foreign key constraints for this test."
+    )
     async def test_create_file_missing_user(self, async_session):
         # Skip for SQLite in-memory mode - foreign key constraints not reliably enforced
         with pytest.raises(IntegrityError):
@@ -122,9 +128,11 @@ class TestFileRepository:
         user = User(email="test7@example.com", hashed_password="hashed", is_active=True)
         async_session.add(user)
         await async_session.flush()
-        
+
         files = [
-            await create_file(async_session, f"bulk-{i}.txt", "text/plain", user_id=user.id)
+            await create_file(
+                async_session, f"bulk-{i}.txt", "text/plain", user_id=user.id
+            )
             for i in range(5)
         ]
         for f in files:
@@ -134,9 +142,11 @@ class TestFileRepository:
             assert deleted is True
 
     @pytest.mark.asyncio
-    @pytest.mark.requires_real_db("SQLite in-memory does not reliably preserve timezone information for this test.")
+    @pytest.mark.requires_real_db(
+        "SQLite in-memory does not reliably preserve timezone information for this test."
+    )
     async def test_list_files_pagination_and_search(self, async_session):
-        # Skip for SQLite in-memory mode - timezone handling inconsistencies  
+        # Skip for SQLite in-memory mode - timezone handling inconsistencies
         user_id = 8
         now = datetime.now(UTC)
         for i in range(10):
@@ -156,9 +166,11 @@ class TestFileRepository:
         assert all(f.created_at >= now - timedelta(days=5) for f in files)
 
     @pytest.mark.asyncio
-    @pytest.mark.requires_real_db("SQLite in-memory does not reliably preserve timezone information for this test.")
+    @pytest.mark.requires_real_db(
+        "SQLite in-memory does not reliably preserve timezone information for this test."
+    )
     async def test_list_files_sorting(self, async_session):
-        # Skip for SQLite in-memory mode - timezone handling inconsistencies  
+        # Skip for SQLite in-memory mode - timezone handling inconsistencies
         user_id = 9
         now = datetime.now(UTC)
         for i in range(3):
@@ -178,7 +190,9 @@ class TestFileRepository:
         created_ats = [f.created_at for f in files]
         assert created_ats == sorted(created_ats, reverse=True)
 
-    @pytest.mark.requires_real_db("Transaction rollback test not supported in SQLite in-memory mode")
+    @pytest.mark.requires_real_db(
+        "Transaction rollback test not supported in SQLite in-memory mode"
+    )
     @pytest.mark.asyncio
     async def test_transactional_rollback_create_file(self, async_session):
         # Check if we're already in a transaction
@@ -200,19 +214,23 @@ class TestFileRepository:
                 )
             finally:
                 await trans.rollback()
-        
+
         file = await get_file_by_filename(async_session, "rollbackfile.txt")
         assert file is None
 
     @pytest.mark.asyncio
     async def test_duplicate_filename_different_users(self, async_session):
         # Create two different users for the foreign key relationships
-        user1 = User(email="test100@example.com", hashed_password="hashed", is_active=True)
-        user2 = User(email="test101@example.com", hashed_password="hashed", is_active=True)
+        user1 = User(
+            email="test100@example.com", hashed_password="hashed", is_active=True
+        )
+        user2 = User(
+            email="test101@example.com", hashed_password="hashed", is_active=True
+        )
         async_session.add(user1)
         async_session.add(user2)
         await async_session.flush()
-        
+
         file1 = await create_file(
             async_session, "shared.txt", "text/plain", user_id=user1.id
         )
@@ -232,7 +250,9 @@ class TestFileRepository:
         with pytest.raises(Exception):
             await create_file(async_session, "badct3.txt", 123, user_id=11)  # type: ignore
 
-    @pytest.mark.skip(reason="File repository does not currently validate filename type")
+    @pytest.mark.skip(
+        reason="File repository does not currently validate filename type"
+    )
     @pytest.mark.asyncio
     async def test_invalid_filename_type(self, async_session):
         with pytest.raises(Exception):
@@ -253,10 +273,12 @@ class TestFileRepository:
     @pytest.mark.asyncio
     async def test_delete_file_case_insensitive(self, async_session):
         # Create a user first for the foreign key relationship
-        user = User(email="test13@example.com", hashed_password="hashed", is_active=True)
+        user = User(
+            email="test13@example.com", hashed_password="hashed", is_active=True
+        )
         async_session.add(user)
         await async_session.flush()
-        
+
         await create_file(async_session, "CaseTest.txt", "text/plain", user_id=user.id)
         deleted = await delete_file(async_session, "casetest.txt")
         assert deleted in (True, False)
@@ -270,16 +292,20 @@ class TestFileRepository:
     @pytest.mark.asyncio
     async def test_list_files_offset_beyond_total(self, async_session):
         # Create a user first for the foreign key relationship
-        user = User(email="test14@example.com", hashed_password="hashed", is_active=True)
+        user = User(
+            email="test14@example.com", hashed_password="hashed", is_active=True
+        )
         async_session.add(user)
         await async_session.flush()
-        
+
         await create_file(async_session, "off1.txt", "text/plain", user_id=user.id)
         files, total = await list_files(async_session, user.id, offset=100)
         assert files == []
         assert total == 1
 
-    @pytest.mark.requires_real_db("SQLite in-memory does not reliably enforce unique constraints for this test.")
+    @pytest.mark.requires_real_db(
+        "SQLite in-memory does not reliably enforce unique constraints for this test."
+    )
     @pytest.mark.asyncio
     async def test_rollback_after_integrity_error(self, async_session):
         await create_file(async_session, "rollbackdup.txt", "text/plain", user_id=15)
@@ -293,7 +319,9 @@ class TestFileRepository:
         )
         assert file.filename == "rollbackok.txt"
 
-    @pytest.mark.requires_real_db("SQLite in-memory does not reliably enforce unique constraints for this test.")
+    @pytest.mark.requires_real_db(
+        "SQLite in-memory does not reliably enforce unique constraints for this test."
+    )
     @pytest.mark.asyncio
     async def test_simulated_concurrent_creation(self, async_session):
         user_id = 16

@@ -128,6 +128,7 @@ class TestUserDB(AsyncModelTestTemplate):
             assert u.id is not None
         await self.truncate_table("users")
         from sqlalchemy import text
+
         result = await self.async_session.execute(text("SELECT COUNT(*) FROM users"))
         count = result.scalar()
         assert count == 0
@@ -135,6 +136,7 @@ class TestUserDB(AsyncModelTestTemplate):
     @pytest.mark.asyncio
     async def test_transactional_rollback(self):
         from sqlalchemy import text
+
         user = User(email="rollback@example.com", hashed_password="pw", is_active=True)
 
         async def op():

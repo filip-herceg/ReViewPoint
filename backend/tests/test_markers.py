@@ -6,25 +6,25 @@ conditionally based on the test environment, rather than being skipped in all en
 """
 
 import os
+
 import pytest
-from typing import Optional
 
 
-def skip_if_fast_tests(reason: Optional[str] = None):
+def skip_if_fast_tests(reason: str | None = None):
     """
     Skip this test only when running in fast test mode (FAST_TESTS=1).
-    
+
     Unlike pytest.skip(), this allows the test to run normally in the regular test environment.
-    
+
     Args:
         reason: Optional reason for skipping the test
-        
+
     Usage:
         @skip_if_fast_tests("SQLite in-memory does not support this feature")
         def test_something():
             # This test will be skipped only in fast mode
             pass
-            
+
         # Or inside a test function:
         def test_something():
             skip_if_fast_tests("Feature not available in fast mode")
@@ -35,15 +35,15 @@ def skip_if_fast_tests(reason: Optional[str] = None):
         pytest.skip(reason or default_reason)
 
 
-def skip_if_not_fast_tests(reason: Optional[str] = None):
+def skip_if_not_fast_tests(reason: str | None = None):
     """
     Skip this test only when NOT running in fast test mode.
-    
+
     Useful for tests that are specific to the fast test environment.
-    
+
     Args:
         reason: Optional reason for skipping the test
-        
+
     Usage:
         @skip_if_not_fast_tests("This test is specific to fast test mode")
         def test_fast_mode_feature():
@@ -55,48 +55,53 @@ def skip_if_not_fast_tests(reason: Optional[str] = None):
         pytest.skip(reason or default_reason)
 
 
-def requires_real_db(reason: Optional[str] = None):
+def requires_real_db(reason: str | None = None):
     """
     Skip this test when running with in-memory SQLite (fast test mode).
-    
+
     This is an alias for skip_if_fast_tests with a more descriptive name.
-    
+
     Args:
         reason: Optional reason for skipping the test
-        
+
     Usage:
         @requires_real_db("Test requires PostgreSQL features")
         def test_postgres_feature():
             # This test will be skipped in fast mode
             pass
     """
-    skip_if_fast_tests(reason or "Test requires real database features not available in SQLite in-memory")
+    skip_if_fast_tests(
+        reason
+        or "Test requires real database features not available in SQLite in-memory"
+    )
 
 
-def requires_timing_precision(reason: Optional[str] = None):
+def requires_timing_precision(reason: str | None = None):
     """
     Skip this test when running in fast test mode due to timing issues.
-    
+
     Args:
         reason: Optional reason for skipping the test
-        
+
     Usage:
         @requires_timing_precision("Test relies on precise timing")
         def test_ttl_expiry():
             # This test will be skipped in fast mode
             pass
     """
-    skip_if_fast_tests(reason or "Test requires precise timing not reliable in fast test mode")
+    skip_if_fast_tests(
+        reason or "Test requires precise timing not reliable in fast test mode"
+    )
 
 
-def skip_if_missing_feature(feature_name: str, reason: Optional[str] = None):
+def skip_if_missing_feature(feature_name: str, reason: str | None = None):
     """
     Skip this test if a specific feature is not available.
-    
+
     Args:
         feature_name: Name of the feature/dependency to check
         reason: Optional reason for skipping the test
-        
+
     Usage:
         @skip_if_missing_feature("openapi_schema_validator", "Package not installed")
         def test_openapi_validation():

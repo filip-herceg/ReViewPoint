@@ -1,6 +1,15 @@
+import asyncio
+import csv
 import logging
+from collections.abc import Iterator, Mapping, Sequence
 from datetime import datetime
-from typing import Any
+from io import StringIO
+from typing import (
+    Final,
+    Literal,
+    TypedDict,
+    cast,
+)
 
 from fastapi import (
     APIRouter,
@@ -15,6 +24,7 @@ from fastapi import (
 from fastapi import (
     File as FastAPIFile,  # Renamed to avoid conflict
 )
+from fastapi.responses import StreamingResponse
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -40,13 +50,24 @@ from src.repositories.file import (
     list_files as repo_list_files,
 )
 from src.utils.datetime import parse_flexible_datetime
-from src.utils.http_error import http_error
+from src.utils.file import is_safe_filename, sanitize_filename
+from src.utils.http_error import ExtraLogInfo, http_error
 
-# Type alias for the File DB model to be used as a return type
-FileInDB = DBFile
+# --- TypedDicts for strict typing ---
 
-# Create a completely new router to ensure correct route registration order
-router = APIRouter(prefix="/uploads", tags=["File"])
+
+class FileDict(TypedDict, total=False):
+    filename: str
+    url: str
+
+
+# --- Constants ---
+
+
+ROUTER_PREFIX: Final[Literal["/uploads"]] = "/uploads"
+ROUTER_TAGS: Final[Sequence[Literal["File"]]] = ("File",)
+FileInDB: type = DBFile
+router: APIRouter = APIRouter(prefix=ROUTER_PREFIX, tags=list(ROUTER_TAGS))
 
 # ----------------------------------------
 # DATA MODELS - MUST BE DEFINED BEFORE ROUTES
@@ -56,8 +77,7 @@ router = APIRouter(prefix="/uploads", tags=["File"])
 class FileUploadResponse(BaseModel):
     filename: str
     url: str
-
-    model_config = ConfigDict(
+    model_config: ConfigDict = ConfigDict(
         json_schema_extra={
             "example": {"filename": "document.pdf", "url": "/uploads/document.pdf"}
         }
@@ -65,19 +85,16 @@ class FileUploadResponse(BaseModel):
 
 
 class FileListResponse(BaseModel):
-    files: list[dict[str, Any]]  # Allow any dict structure for each file
+    files: Sequence[FileDict]
     total: int
-
-    model_config = ConfigDict(
+    model_config: ConfigDict = ConfigDict(
         json_schema_extra={
             "examples": [
                 {
                     "files": [
                         {"filename": "document.pdf", "url": "/uploads/document.pdf"},
                         {"filename": "image.jpg", "url": "/uploads/image.jpg"},
-                        {
-                            "filename": "only_filename.pdf"
-                        },  # Example with partial fields
+                        {"filename": "only_filename.pdf"},
                     ],
                     "total": 3,
                 }
@@ -87,14 +104,15 @@ class FileListResponse(BaseModel):
 
 
 # Response models
+
+
 class FileResponse(BaseModel):
     filename: str
     url: str
     content_type: str | None = None
     size: int | None = None
     created_at: datetime | None = None
-
-    model_config = ConfigDict(
+    model_config: ConfigDict = ConfigDict(
         json_schema_extra={
             "example": {
                 "filename": "document.pdf",
@@ -108,12 +126,23 @@ class FileResponse(BaseModel):
 
 
 def ensure_nonempty_filename(file: UploadFile = FastAPIFile(...)) -> UploadFile:
+    """
+    Ensures the uploaded file has a non-empty filename.
+    Raises:
+        HTTPException: If the filename is empty.
+    """
     if not file.filename:
-        http_error(400, "Invalid file.", logger.warning, {"filename": file.filename})
+        http_error(
+            400,
+            "Invalid file.",
+            logger.warning,
+            cast(ExtraLogInfo, {"filename": str(file.filename)}),
+        )
     return file
 
 
-logging.warning("Creating uploads router with export routes first")
+_log_msg_router: Final[str] = "Creating uploads router with export routes first"
+logging.warning(_log_msg_router)
 
 # ----------------------------------------
 # IMPORTANT: DIAGNOSTIC ROUTES FIRST
@@ -151,9 +180,13 @@ logging.warning("Creating uploads router with export routes first")
         }
     },
 )
-async def root_test() -> dict[str, str]:
-    logging.warning("UPLOADS ROOT-TEST CALLED")
+def _root_test_response() -> Mapping[str, str]:
     return {"status": "uploads root test", "router": "uploads"}
+
+
+async def root_test() -> Mapping[str, str]:
+    logging.warning("UPLOADS ROOT-TEST CALLED")
+    return _root_test_response()
 
 
 @router.get(
@@ -180,9 +213,13 @@ async def root_test() -> dict[str, str]:
         }
     },
 )
-async def test_alive() -> dict[str, str]:
-    logging.warning("UPLOADS TEST-ALIVE CALLED")
+def _test_alive_response() -> Mapping[str, str]:
     return {"status": "alive"}
+
+
+async def test_alive() -> Mapping[str, str]:
+    logging.warning("UPLOADS TEST-ALIVE CALLED")
+    return _test_alive_response()
 
 
 @router.get(
@@ -207,9 +244,13 @@ async def test_alive() -> dict[str, str]:
         }
     },
 )
-async def export_alive() -> dict[str, str]:
-    logging.warning("UPLOADS EXPORT-ALIVE CALLED")
+def _export_alive_response() -> Mapping[str, str]:
     return {"status": "uploads export alive"}
+
+
+async def export_alive() -> Mapping[str, str]:
+    logging.warning("UPLOADS EXPORT-ALIVE CALLED")
+    return _export_alive_response()
 
 
 @router.get(
@@ -240,7 +281,7 @@ async def export_alive() -> dict[str, str]:
 )
 async def export_test(
     current_user: User | None = Depends(get_current_user),
-) -> dict[str, str]:
+) -> Mapping[str, str]:
     logging.warning(
         f"UPLOADS EXPORT-TEST CALLED with user_id={current_user.id if current_user else 'None'}"
     )
@@ -371,11 +412,15 @@ async def export_test(
 )
 async def export_files_csv(
     session: AsyncSession = Depends(get_async_session),
-    current_user: Any = Depends(get_current_user),
-    params: Any = Depends(pagination_params),
+    current_user: User = Depends(get_current_user),
+    params: object = Depends(pagination_params),
     q: str | None = Query(None, description="Search by filename (partial match)"),
-    sort: str = Query("created_at", description="Sort by field: created_at, filename"),
-    order: str = Query("desc", description="Sort order: asc or desc"),
+    sort: Literal["created_at", "filename"] = Query(
+        "created_at", description="Sort by field: created_at, filename"
+    ),
+    order: Literal["desc", "asc"] = Query(
+        "desc", description="Sort order: asc or desc"
+    ),
     fields: str | None = Query(
         None,
         description="Comma-separated list of fields to include in response (e.g. filename,url)",
@@ -383,57 +428,90 @@ async def export_files_csv(
     created_before: str | None = Query(
         None,
         description="Filter files created before this datetime (ISO 8601, e.g. 2024-01-01T00:00:00Z)",
-        examples=["2024-01-01T00:00:00Z", "2025-06-20T00:11:21.676185+00:00"],
     ),
     created_after: str | None = Query(
         None,
         description="Filter files created after this datetime (ISO 8601, e.g. 2024-01-01T00:00:00Z)",
-        examples=["2024-01-01T00:00:00Z", "2025-06-20T00:11:21.676185+00:00"],
     ),
     request_id: str = Depends(get_request_id),
     feature_flag_ok: bool = Depends(require_feature("uploads:export")),
     api_key_ok: None = Depends(require_api_key),
-) -> Response:
-    logging.warning(
-        f"UPLOADS EXPORT CALLED with user_id={current_user.id if current_user else 'None'}"
+) -> StreamingResponse:
+    """
+    Export the list of uploaded files as a CSV file.
+    Raises:
+        HTTPException: If date parsing fails.
+    """
+    logging.info(
+        f"UPLOADS EXPORT CALLED with user_id={getattr(current_user, 'id', None)}"
     )
 
-    from src.repositories.file import list_files as repo_list_files
+    def _generate_csv(files: Sequence[DBFile], columns: Sequence[str]) -> Iterator[str]:
+        output: StringIO = StringIO()
+        writer = csv.writer(output)  # type: ignore[var-annotated]
+        writer.writerow(columns)
+        for f in files:
+            row: list[str] = []
+            if "filename" in columns:
+                row.append(f.filename)
+            if "url" in columns:
+                row.append(f"/uploads/{f.filename}")
+            writer.writerow(row)
+        yield output.getvalue()
 
+    created_after_dt: datetime | None
+    created_before_dt: datetime | None
     try:
         created_after_dt = (
             parse_flexible_datetime(created_after) if created_after else None
         )
     except ValueError as e:
         logger.error(f"Invalid created_after: {e}")
-        http_error(422, str(e), logger.error, {"created_after": created_after}, e)
+        http_error(
+            422,
+            str(e),
+            logger.error,
+            cast(ExtraLogInfo, {"created_after": created_after or ""}),
+            e,
+        )
     try:
         created_before_dt = (
             parse_flexible_datetime(created_before) if created_before else None
         )
     except ValueError as e:
         logger.error(f"Invalid created_before: {e}")
-        http_error(422, str(e), logger.error, {"created_before": created_before}, e)
-    files, _ = await repo_list_files(
+        http_error(
+            422,
+            str(e),
+            logger.error,
+            cast(ExtraLogInfo, {"created_before": created_before or ""}),
+            e,
+        )
+    files: Sequence[DBFile]
+    _total: int
+    files, _total = await repo_list_files(
         session,
-        user_id=current_user.id,
-        offset=params.offset,
-        limit=params.limit,
+        current_user.id,
+        offset=getattr(params, "offset", 0),
+        limit=getattr(params, "limit", 10000),  # Large limit for export
         q=q,
         sort=sort,
         order=order,
         created_after=created_after_dt,
         created_before=created_before_dt,
     )
-    import csv
-    from io import StringIO
-
-    output = StringIO()
-    writer = csv.writer(output)
-    writer.writerow(["filename", "url"])
-    for f in files:
-        writer.writerow([f.filename, f"/uploads/{f.filename}"])
-    return Response(content=output.getvalue(), media_type="text/csv")
+    columns: list[str] = ["filename", "url"]
+    if fields:
+        requested: list[str] = [
+            f.strip() for f in fields.split(",") if f.strip() in columns
+        ]
+        if requested:
+            columns = requested
+    return StreamingResponse(
+        _generate_csv(files, columns),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=uploads_export.csv"},
+    )
 
 
 # ----------------------------------------
@@ -584,52 +662,57 @@ async def upload_file(
         ..., description="The file to upload. Must be a valid file type."
     ),
     session: AsyncSession = Depends(get_async_session),
-    current_user: Any = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     request_id: str = Depends(get_request_id),
     feature_flag_ok: bool = Depends(require_feature("uploads:upload")),
     api_key_ok: None = Depends(require_api_key),
+    # type: ignore[return]
 ) -> FileUploadResponse:
+    """
+    Uploads a file and returns its filename and URL.
+    Raises:
+        HTTPException: If file is invalid or upload fails.
+    """
     if not file.filename:
-        http_error(400, "Invalid file.", logger.warning, {"filename": file.filename})
+        http_error(
+            400,
+            "Invalid file.",
+            logger.warning,
+            cast(ExtraLogInfo, {"filename": str(file.filename)}),
+        )
 
-    # Check for path traversal attempts
-    from src.utils.file import is_safe_filename, sanitize_filename
-
-    if not is_safe_filename(file.filename):
+    filename_str: str = file.filename if file.filename is not None else ""
+    if not is_safe_filename(filename_str):
         http_error(
             400,
             "Invalid filename. Path traversal attempts are not allowed.",
             logger.warning,
-            {"filename": file.filename},
+            cast(ExtraLogInfo, {"filename": filename_str}),
         )
 
-    # Sanitize the filename to ensure safety
-    safe_filename = sanitize_filename(file.filename)
-
-    # Update the filename in the UploadFile object
-    original_filename = file.filename
+    safe_filename: str = sanitize_filename(filename_str)
+    original_filename: str = filename_str
     file.filename = safe_filename
 
-    # Log if the filename was changed
     if original_filename != safe_filename:
         logging.warning(
             f"Filename sanitized from '{original_filename}' to '{safe_filename}'"
-        )  # Retry logic for concurrent transactions
-    max_retries = 3
-    last_exception = None
+        )
+
+    max_retries: Final[int] = 3
+    last_exception: Exception | None = None
 
     for attempt in range(max_retries):
         try:
             # Create a new session for each attempt to avoid SQLAlchemy IllegalStateChangeError
             async with session.begin_nested():
-                db_file = await create_file(
+                db_file: DBFile = await create_file(
                     session,
                     file.filename,
                     file.content_type or "application/octet-stream",
                     user_id=current_user.id,
                 )
 
-            # If we got here, the nested transaction succeeded
             await session.commit()
             return FileUploadResponse(
                 filename=db_file.filename, url=f"/uploads/{db_file.filename}"
@@ -640,56 +723,70 @@ async def upload_file(
                 await session.rollback()
             except Exception as rollback_error:
                 logging.error(f"Error during session rollback: {rollback_error}")
-            error_str = str(e).lower()
+            error_str: str = str(e).lower()
 
-            # Check for database lock or constraint errors that might be retryable
             if attempt < max_retries - 1 and (
                 "database is locked" in error_str
                 or "unique constraint failed" in error_str
                 or "illegal state change" in error_str
             ):
-                # Wait a bit before retrying with exponential backoff
-                import asyncio
-
-                wait_time = 0.1 * (2**attempt)
+                wait_time: float = 0.1 * (2**attempt)
                 await asyncio.sleep(wait_time)
                 continue
 
-            # If it's a unique constraint error on the final attempt
             if "unique constraint failed" in error_str:
                 http_error(
                     409,
                     "File with same name already exists or concurrent upload conflict",
                     logger.warning,
-                    {"filename": file.filename},
+                    cast(
+                        ExtraLogInfo,
+                        {
+                            "filename": (
+                                file.filename if file.filename is not None else ""
+                            )
+                        },
+                    ),
                     e,
                 )
 
-            # Log the error
             logging.error(f"Failed to upload file on attempt {attempt+1}: {str(e)}")
 
-    # If we exhausted all retries, raise an error with the last exception
     if last_exception:
         if "illegal state change" in str(last_exception).lower():
             http_error(
                 500,
                 "Database concurrency conflict. Please try again.",
                 logger.error,
-                {"filename": file.filename},
+                cast(
+                    ExtraLogInfo,
+                    {"filename": file.filename if file.filename is not None else ""},
+                ),
                 last_exception,
             )
         http_error(
             500,
             f"Failed to upload file: {str(last_exception)}",
             logger.error,
-            {"filename": file.filename},
+            cast(
+                ExtraLogInfo,
+                {"filename": file.filename if file.filename is not None else ""},
+            ),
             last_exception,
         )
     http_error(
         500,
         "Failed to upload file after multiple retries",
         logger.error,
-        {"filename": file.filename},
+        cast(
+            ExtraLogInfo,
+            {"filename": file.filename if file.filename is not None else ""},
+        ),
+    )
+
+    # Defensive: static type checkers require a return, but this is unreachable
+    raise RuntimeError(
+        "Unreachable: all code paths in upload_file should raise or return"
     )
 
 
@@ -763,13 +860,24 @@ async def get_file(
     filename: str = Path(..., description="The name of the file to retrieve."),
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(get_current_user),
-) -> FileUploadResponse:  # Fix return type to match actual return value
+) -> FileUploadResponse:
+    """
+    Retrieves metadata for an uploaded file by filename.
+    Raises:
+        HTTPException: If file is not found.
+    """
     logging.warning(f"GET FILE BY FILENAME CALLED: {filename}")
-    db_file = await get_file_by_filename(session, filename)
-    if not db_file:
-        http_error(404, "File not found.", logger.warning, {"filename": filename})
+    db_file: DBFile | None = await get_file_by_filename(session, filename)
+    if db_file is None:
+        http_error(
+            404,
+            "File not found.",
+            logger.warning,
+            cast(ExtraLogInfo, {"filename": filename}),
+        )
     return FileUploadResponse(
-        filename=db_file.filename, url=f"/uploads/{db_file.filename}"
+        filename=getattr(db_file, "filename", filename),
+        url=f"/uploads/{getattr(db_file, 'filename', filename)}",
     )
 
 
@@ -833,10 +941,20 @@ async def delete_file_by_filename(
     request_id: str = Depends(get_request_id),
     feature_flag_ok: bool = Depends(require_feature("uploads:delete")),
     api_key_ok: None = Depends(require_api_key),
-) -> Response:  # Change return type to match actual returned value
-    db_file = await delete_file(session, filename)
+) -> Response:
+    """
+    Deletes an uploaded file by filename.
+    Raises:
+        HTTPException: If file is not found.
+    """
+    db_file: bool = await delete_file(session, filename)
     if not db_file:
-        http_error(404, "File not found.", logger.warning, {"filename": filename})
+        http_error(
+            404,
+            "File not found.",
+            logger.warning,
+            cast(ExtraLogInfo, {"filename": filename}),
+        )
     await session.commit()  # Explicitly commit the transaction
     return Response(status_code=204)
 
@@ -853,6 +971,9 @@ async def delete_file_by_filename(
     include_in_schema=False,
 )
 async def catch_all_uploads(path: str, request: Request) -> Response:
+    """
+    Catch-all route for uploads. Always returns status 418.
+    """
     logging.warning(f"UPLOADS CATCH-ALL: path={path}, method={request.method}")
     return Response(content=f"uploads catch-all: {path}", status_code=418)
 
@@ -911,9 +1032,9 @@ async def catch_all_uploads(path: str, request: Request) -> Response:
     },
 )
 async def list_files(
-    params: Any = Depends(pagination_params),
+    params: object = Depends(pagination_params),
     session: AsyncSession = Depends(get_async_session),
-    current_user: Any = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     request_id: str = Depends(get_request_id),
     feature_flag_ok: bool = Depends(require_feature("uploads:list")),
     api_key_ok: None = Depends(require_api_key),
@@ -921,8 +1042,12 @@ async def list_files(
     fields: str | None = Query(
         None, description="Comma-separated list of fields to include"
     ),
-    sort: str = Query("created_at", description="Field to sort by"),
-    order: str = Query("desc", description="Sort order (asc or desc)"),
+    sort: Literal["created_at", "filename"] = Query(
+        "created_at", description="Field to sort by"
+    ),
+    order: Literal["desc", "asc"] = Query(
+        "desc", description="Sort order (asc or desc)"
+    ),
     created_after: str | None = Query(
         None, description="Filter by creation date (ISO format)"
     ),
@@ -932,20 +1057,22 @@ async def list_files(
 ) -> FileListResponse:
     """
     List all uploaded files with pagination and filtering options.
+    Raises:
+        HTTPException: If date parsing fails.
     """
-    # Parse datetime filters if provided
-    created_after_dt = None
-    created_before_dt = None
+    created_after_dt: datetime | None = None
+    created_before_dt: datetime | None = None
     if created_after:
         created_after_dt = parse_flexible_datetime(created_after)
     if created_before:
         created_before_dt = parse_flexible_datetime(created_before)
-    # Get files from database
+    files: Sequence[DBFile]
+    total: int
     files, total = await repo_list_files(
         session,
         current_user.id,
-        offset=params.offset,
-        limit=params.limit,
+        offset=getattr(params, "offset", 0),
+        limit=getattr(params, "limit", 100),
         q=q,
         sort=sort,
         order=order,
@@ -953,20 +1080,21 @@ async def list_files(
         created_before=created_before_dt,
     )
 
-    # Process field selection
-    selected_fields = None
+    selected_fields: Sequence[str] | None = None
     if fields:
         selected_fields = [f.strip() for f in fields.split(",")]
 
-    # Convert DB models to response models
-    file_responses = []
+    file_responses: list[FileDict] = []
     for file in files:
-        file_data = {"filename": file.filename, "url": f"/uploads/{file.filename}"}
-
-        # If specific fields were requested, filter the response
+        file_data: FileDict = {
+            "filename": file.filename,
+            "url": f"/uploads/{file.filename}",
+        }
         if selected_fields:
-            file_data = {k: v for k, v in file_data.items() if k in selected_fields}
-
+            # Use cast to FileDict for type safety
+            file_data = cast(
+                FileDict, {k: v for k, v in file_data.items() if k in selected_fields}
+            )
         file_responses.append(file_data)
 
     return FileListResponse(files=file_responses, total=total)

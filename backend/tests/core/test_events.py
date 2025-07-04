@@ -83,26 +83,28 @@ class TestEvents(EventTestTemplate):
         self.patch_settings(events, DummySettings())
         # Mock the engine.dispose method to raise an exception
         from unittest.mock import AsyncMock
+
         mock_engine = AsyncMock()
         mock_engine.dispose.side_effect = Exception("dispose fail")
         monkeypatch.setattr("src.core.database.engine", mock_engine)
-        
+
         with self.caplog.at_level("ERROR"):
             with pytest.raises(RuntimeError) as excinfo:
                 await events.on_shutdown()
         assert "dispose fail" in str(excinfo.value)
         self.assert_caplog_contains("Shutdown error", level="ERROR")
-        
+
         # "Shutdown complete." is logged via loguru, not through caplog
         # Try multiple times to get the logs as there might be a timing issue
         import time
+
         logs = ""
         for _ in range(5):  # Try up to 5 times
             logs = self.get_loguru_text()
             if "Shutdown complete." in logs:
                 break
             time.sleep(0.1)  # Small delay between attempts
-        
+
         # If still not found, just check that we got the error handling right
         # The "Shutdown complete." message should be there due to the finally block
         if "Shutdown complete." not in logs:

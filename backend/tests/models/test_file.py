@@ -66,7 +66,9 @@ class TestFileModel(AsyncModelTestTemplate):
         assert db_file.user_id == user.id
 
     @pytest.mark.asyncio
-    @pytest.mark.requires_real_db("SQLite in-memory does not reliably enforce foreign key constraints for this test.")
+    @pytest.mark.requires_real_db(
+        "SQLite in-memory does not reliably enforce foreign key constraints for this test."
+    )
     async def test_file_integrity_error_missing_user(self):
         file = File(filename="bad.txt", content_type="text/plain", user_id=999999)
         await self.assert_integrity_error(file)
@@ -86,6 +88,7 @@ class TestFileModel(AsyncModelTestTemplate):
             assert f.id is not None
         await self.truncate_table("files")
         from sqlalchemy import text
+
         result = await self.async_session.execute(text("SELECT COUNT(*) FROM files"))
         count = result.scalar()
         assert count == 0
@@ -103,6 +106,7 @@ class TestFileModel(AsyncModelTestTemplate):
 
         await self.run_in_transaction(op)
         from sqlalchemy import text
+
         result = await self.async_session.execute(
             text("SELECT COUNT(*) FROM files WHERE filename = 'rollback.txt'")
         )
@@ -119,7 +123,9 @@ class TestFileModel(AsyncModelTestTemplate):
         await self.seed_db([file])
         self.assert_repr(file, "File")
 
-    @pytest.mark.skip(reason="File model does not currently validate content_type is non-empty")
+    @pytest.mark.skip(
+        reason="File model does not currently validate content_type is non-empty"
+    )
     @pytest.mark.asyncio
     async def test_file_invalid_content_type(self):
         user = User(

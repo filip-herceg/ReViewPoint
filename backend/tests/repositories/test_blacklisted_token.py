@@ -69,7 +69,9 @@ class TestBlacklistedTokenRepository:
             assert await is_token_blacklisted(async_session, jti) is True
 
     @pytest.mark.asyncio
-    @pytest.mark.requires_real_db("Transaction rollback test not supported in SQLite in-memory mode")
+    @pytest.mark.requires_real_db(
+        "Transaction rollback test not supported in SQLite in-memory mode"
+    )
     async def test_transactional_rollback_blacklist(self, async_session):
         # Skip for SQLite in-memory mode - transaction rollback doesn't work reliably
         # when repository functions commit immediately

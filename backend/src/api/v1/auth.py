@@ -1,6 +1,6 @@
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Mapping
 from datetime import UTC, datetime
-from typing import Any
+from typing import Final, TypedDict, cast
 
 from fastapi import APIRouter, Body, Depends, Request, status
 from jose import jwt
@@ -43,14 +43,149 @@ from src.services.user import (
 )
 from src.utils.http_error import http_error
 
-router = APIRouter(prefix="/auth", tags=["Auth"])
+# =============================
+# TypedDicts and Constants
+# =============================
 
 
-# Shared async helper for rate limiting
+class LogExtraDict(TypedDict, total=False):
+    email: str
+    limiter_key: str
+    action: str
+    error: str
+    error_type: str
+    user_id: int
+    token_length: int
+    token: str
+    token_prefix: str
+    traceback: str
+
+
+REGISTER_SUMMARY: Final[str] = "Register a new user"
+REGISTER_DESCRIPTION: Final[
+    str
+] = """
+Registers a new user account and returns a JWT access token.
+
+**Steps:**
+1. User submits registration data (email, password, name).
+2. System validates input and checks for duplicate email.
+3. On success, a new user is created and a JWT access token is returned.
+
+**Notes:**
+- Duplicate emails are not allowed.
+- Password must meet security requirements.
+- Rate limiting is applied to prevent abuse.
+"""
+
+LOGIN_SUMMARY: Final[str] = "User login"
+LOGIN_DESCRIPTION: Final[
+    str
+] = """
+Authenticates a user and returns a JWT access token.
+
+**Steps:**
+1. User submits email and password.
+2. System validates credentials and rate limits attempts.
+3. On success, a JWT access token is returned.
+
+**Notes:**
+- Invalid credentials or too many attempts will result in errors.
+- Use the returned token for authenticated requests.
+"""
+
+LOGOUT_SUMMARY: Final[str] = "Logout user"
+LOGOUT_DESCRIPTION: Final[
+    str
+] = """
+Logs out the current user and blacklists the access token.
+
+**Steps:**
+1. User sends a logout request with a valid access token.
+2. System blacklists the token and ends the session.
+
+**Notes:**
+- Blacklisted tokens cannot be reused.
+- Rate limiting is applied to prevent abuse.
+"""
+
+REFRESH_SUMMARY: Final[str] = "Refresh JWT access token"
+REFRESH_DESCRIPTION: Final[
+    str
+] = """
+Refreshes the JWT access token using a valid refresh token.
+
+**Steps:**
+1. User provides a valid refresh token.
+2. System validates the token and issues a new access token.
+
+**Notes:**
+- Expired or blacklisted tokens will be rejected.
+- Rate limiting is applied to prevent abuse.
+"""
+
+PWRESET_REQUEST_SUMMARY: Final[str] = "Request password reset"
+PWRESET_REQUEST_DESCRIPTION: Final[
+    str
+] = """
+Initiates a password reset flow.
+
+**Steps:**
+1. User submits email via this endpoint.
+2. System sends a password reset link to the email if it exists.
+3. User clicks the link and is directed to the reset form.
+4. User completes the process via `/reset-password`.
+
+**Notes:**
+- For security, this endpoint always returns a success message, even if the email is not registered.
+- Rate limiting is applied to prevent abuse.
+"""
+
+PWRESET_SUMMARY: Final[str] = "Reset password"
+PWRESET_DESCRIPTION: Final[
+    str
+] = """
+Completes the password reset flow using a valid reset token.
+
+**Steps:**
+1. User receives a reset link from `/request-password-reset`.
+2. User submits the token and new password to this endpoint.
+3. System validates the token and updates the password.
+
+**Notes:**
+- The token must be valid and not expired.
+- Rate limiting is applied to prevent abuse.
+"""
+
+ME_SUMMARY: Final[str] = "Get current user profile"
+ME_DESCRIPTION: Final[
+    str
+] = """
+Returns the profile information of the currently authenticated user.
+
+**How it works:**
+- Requires a valid JWT Bearer token.
+- Returns user ID, email, name, bio, avatar, and timestamps.
+"""
+
+router: Final[APIRouter] = APIRouter(prefix="/auth", tags=["Auth"])
+
+
+class UserActionLimiterProtocol:
+    async def is_allowed(self, key: str) -> bool: ...
+
+
 async def check_rate_limit(
-    user_action_limiter, limiter_key: str, log_extra: dict, action: str = "action"
-):
-    allowed = await user_action_limiter.is_allowed(limiter_key)
+    user_action_limiter: UserActionLimiterProtocol,
+    limiter_key: str,
+    log_extra: Mapping[str, object],
+    action: str = "action",
+) -> None:
+    """
+    Checks if the action is allowed by the rate limiter.
+    Raises HTTP 429 if not allowed.
+    """
+    allowed: bool = await user_action_limiter.is_allowed(limiter_key)
     if not allowed:
         http_error(
             429,
@@ -60,31 +195,41 @@ async def check_rate_limit(
         )
 
 
-# Common dependency group for endpoints
-def common_auth_deps(feature: str):
-    return [
-        Depends(get_request_id),
-        Depends(require_feature(feature)),
-        Depends(require_api_key),
-    ]
+def common_auth_deps(feature: str) -> tuple[object, object, object]:
+    """
+    Returns a tuple of common dependencies for auth endpoints.
+    """
+    from fastapi import Depends as FastAPIDepends
+
+    return (
+        FastAPIDepends(get_request_id),
+        FastAPIDepends(require_feature(feature)),
+        FastAPIDepends(require_api_key),
+    )
 
 
-# Reusable async dependency for rate limiting
+def rate_limit(action: str, key_func: Callable[[Request], str] | None = None) -> object:
+    """
+    Returns a dependency for rate limiting.
+    """
 
-
-def rate_limit(action: str, key_func=None):
     async def dependency(
         request: Request,
-        user_action_limiter: Any = Depends(get_user_action_limiter),
-    ):
-        # Compute limiter key
-        if key_func:
+        user_action_limiter: UserActionLimiterProtocol = Depends(
+            get_user_action_limiter
+        ),
+    ) -> None:
+        key: str
+        if key_func is not None:
             key = key_func(request)
         else:
-            # Default: use user id or IP if available
-            user = request.state.user if hasattr(request.state, "user") else None
-            key = f"{action}:{getattr(user, 'id', request.client.host)}"
-        allowed = await user_action_limiter.is_allowed(key)
+            user: User | None = getattr(request.state, "user", None)
+            client_host: str = (
+                request.client.host if request.client is not None else "unknown"
+            )
+            user_id_or_host: str = str(getattr(user, "id", client_host))
+            key = f"{action}:{user_id_or_host}"
+        allowed: bool = await user_action_limiter.is_allowed(key)
         if not allowed:
             http_error(
                 429,
@@ -105,20 +250,8 @@ def rate_limit(action: str, key_func=None):
     "/register",
     response_model=AuthResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Register a new user",
-    description="""
-    Registers a new user account and returns a JWT access token.
-
-    **Steps:**
-    1. User submits registration data (email, password, name).
-    2. System validates input and checks for duplicate email.
-    3. On success, a new user is created and a JWT access token is returned.
-
-    **Notes:**
-    - Duplicate emails are not allowed.
-    - Password must meet security requirements.
-    - Rate limiting is applied to prevent abuse.
-    """,
+    summary=REGISTER_SUMMARY,
+    description=REGISTER_DESCRIPTION,
     dependencies=[
         Depends(get_request_id),
         Depends(require_feature("auth:register")),
@@ -141,8 +274,15 @@ async def register(
     ),
     session: AsyncSession = Depends(get_async_session),
     user_service: UserService = Depends(get_user_service),
-    user_action_limiter: Any = Depends(get_user_action_limiter),
+    user_action_limiter: UserActionLimiterProtocol = Depends(get_user_action_limiter),
 ) -> AuthResponse:
+    """
+    Registers a new user account and returns a JWT access token.
+    Raises:
+        UserAlreadyExistsError: If the user already exists.
+        InvalidDataError: If registration data is invalid.
+        Exception: For unexpected errors.
+    """
     await check_rate_limit(
         user_action_limiter,
         f"register:{data.email}",
@@ -154,7 +294,9 @@ async def register(
     )
     logger.debug(f"Registration payload: {data}")
     try:
-        user = await user_service.register_user(session, data.model_dump())
+        user: User = await user_service.register_user(session, data.model_dump())
+        access_token: str
+        refresh_token: str
         access_token, refresh_token = await user_service.authenticate_user(
             session, data.email, data.password
         )
@@ -175,7 +317,7 @@ async def register(
     except Exception as e:
         import traceback
 
-        tb = traceback.format_exc()
+        tb: str = traceback.format_exc()
         logger.error(f"Registration failed for {data.email}: {e}\nTraceback: {tb}")
         http_error(
             400,
@@ -190,19 +332,8 @@ async def register(
 @router.post(
     "/login",
     response_model=AuthResponse,
-    summary="User login",
-    description="""
-    Authenticates a user and returns a JWT access token.
-
-    **Steps:**
-    1. User submits email and password.
-    2. System validates credentials and rate limits attempts.
-    3. On success, a JWT access token is returned.
-
-    **Notes:**
-    - Invalid credentials or too many attempts will result in errors.
-    - Use the returned token for authenticated requests.
-    """,
+    summary=LOGIN_SUMMARY,
+    description=LOGIN_DESCRIPTION,
     dependencies=[
         Depends(get_request_id),
         Depends(require_feature("auth:login")),
@@ -213,8 +344,15 @@ async def login(
     data: UserLoginRequest,
     session: AsyncSession = Depends(get_async_session),
     user_service: UserService = Depends(get_user_service),
-    user_action_limiter: Any = Depends(get_user_action_limiter),
+    user_action_limiter: UserActionLimiterProtocol = Depends(get_user_action_limiter),
 ) -> AuthResponse:
+    """
+    Authenticates a user and returns a JWT access token.
+    Raises:
+        UserNotFoundError: If user is not found.
+        ValidationError: If credentials are invalid.
+        Exception: For unexpected errors.
+    """
     await check_rate_limit(
         user_action_limiter,
         f"login:{data.email}",
@@ -223,6 +361,8 @@ async def login(
     )
     logger.info(f"User login attempt: {data.email}")
     try:
+        access_token: str
+        refresh_token: str
         access_token, refresh_token = await user_service.authenticate_user(
             session, data.email, data.password
         )
@@ -254,18 +394,8 @@ async def login(
 @router.post(
     "/logout",
     response_model=MessageResponse,
-    summary="Logout user",
-    description="""
-    Logs out the current user and blacklists the access token.
-
-    **Steps:**
-    1. User sends a logout request with a valid access token.
-    2. System blacklists the token and ends the session.
-
-    **Notes:**
-    - Blacklisted tokens cannot be reused.
-    - Rate limiting is applied to prevent abuse.
-    """,
+    summary=LOGOUT_SUMMARY,
+    description=LOGOUT_DESCRIPTION,
     dependencies=[
         Depends(get_request_id),
         Depends(require_feature("auth:logout")),
@@ -281,34 +411,39 @@ async def logout(
         get_blacklist_token
     ),
 ) -> MessageResponse:
+    """
+    Logs out the current user and blacklists the access token.
+    Raises:
+        Exception: If token is invalid or expired.
+    """
     logger.info("logout_attempt", extra={"user_id": current_user.id})
-    auth_header = request.headers.get("authorization") if request else None
-    if auth_header and auth_header.lower().startswith("bearer "):
-        token = auth_header.split(" ", 1)[1]
+    auth_header: str | None = request.headers.get("authorization") if request else None
+    if auth_header is not None and auth_header.lower().startswith("bearer "):
+        token: str = auth_header.split(" ", 1)[1]
         try:
             settings = get_settings()
             if not settings.jwt_secret_key:
                 raise ValueError("JWT secret key is not configured.")
-            payload = jwt.decode(
+            payload: Mapping[str, object] = jwt.decode(
                 token, str(settings.jwt_secret_key), algorithms=[settings.jwt_algorithm]
             )
-            jti = payload.get("jti") or token
-            exp = payload.get("exp")
-            if exp:
-                expires_at = datetime.fromtimestamp(exp, tz=UTC)
+            jti: str = cast(str, payload.get("jti") or token)
+            exp: int | None = cast(int | None, payload.get("exp"))
+            if exp is not None:
+                expires_at: datetime = datetime.fromtimestamp(exp, tz=UTC)
                 await blacklist_token(session, jti, expires_at)
                 logger.info(
                     "logout_token_blacklisted", extra={"user_id": current_user.id}
                 )
         except Exception as e:
             logger.error(
-                "logout_token_blacklist_error", 
+                "logout_token_blacklist_error",
                 extra={
-                    "error": str(e), 
+                    "error": str(e),
                     "error_type": type(e).__name__,
                     "user_id": current_user.id,
-                    "token_length": len(token) if token else 0
-                }
+                    "token_length": len(token) if token else 0,
+                },
             )
             http_error(
                 401, "Invalid or expired token.", logger.warning, {"error": str(e)}
@@ -326,18 +461,8 @@ async def logout(
 @router.post(
     "/refresh-token",
     response_model=AuthResponse,
-    summary="Refresh JWT access token",
-    description="""
-    Refreshes the JWT access token using a valid refresh token.
-
-    **Steps:**
-    1. User provides a valid refresh token.
-    2. System validates the token and issues a new access token.
-
-    **Notes:**
-    - Expired or blacklisted tokens will be rejected.
-    - Rate limiting is applied to prevent abuse.
-    """,
+    summary=REFRESH_SUMMARY,
+    description=REFRESH_DESCRIPTION,
     dependencies=[
         Depends(get_request_id),
         Depends(require_feature("auth:refresh_token")),
@@ -345,7 +470,7 @@ async def logout(
     ],
 )
 async def refresh_token(
-    body: dict[str, Any] = Body(...),
+    body: Mapping[str, object] = Body(...),
     session: AsyncSession = Depends(get_async_session),
     async_refresh_access_token: Callable[[AsyncSession, str], Awaitable[str]] = Depends(
         get_async_refresh_access_token
@@ -353,14 +478,18 @@ async def refresh_token(
 ) -> AuthResponse:
     """
     Accepts either {"token": ...} or {"refresh_token": ...} for compatibility with tests.
+    Raises:
+        RefreshTokenRateLimitError: If too many attempts.
+        RefreshTokenBlacklistedError: If token is blacklisted.
+        RefreshTokenError: If token is invalid.
+        ValueError: If token is missing or invalid.
     """
-    token_val = body.get("token") or body.get("refresh_token")
+    token_val: object | None = body.get("token") or body.get("refresh_token")
     if not isinstance(token_val, str):
         http_error(422, "Missing refresh token.", logger.warning, {})
-    assert isinstance(token_val, str)
-    token = token_val  # type: str
+    token: str = token_val if isinstance(token_val, str) else ""
     try:
-        new_token = await async_refresh_access_token(session, token)
+        new_token: str = await async_refresh_access_token(session, token)
         logger.info("refresh_success", extra={"token": token})
         return AuthResponse(access_token=new_token, refresh_token=token)
     except RefreshTokenRateLimitError:
@@ -378,8 +507,15 @@ async def refresh_token(
         http_error(
             401, "Invalid or expired refresh token.", logger.warning, {"token": token}
         )
-    except (ValueError, Exception) as e:
-        # Treat ValueError (from verify_refresh_token) as 401 Unauthorized
+    except ValueError as e:
+        http_error(
+            401,
+            "Invalid or expired refresh token.",
+            logger.warning,
+            {"token": token, "error": str(e)},
+            e,
+        )
+    except Exception as e:
         http_error(
             401,
             "Invalid or expired refresh token.",
@@ -398,20 +534,8 @@ async def refresh_token(
 @router.post(
     "/request-password-reset",
     response_model=MessageResponse,
-    summary="Request password reset",
-    description="""
-    Initiates a password reset flow.
-
-    **Steps:**
-    1. User submits email via this endpoint.
-    2. System sends a password reset link to the email if it exists.
-    3. User clicks the link and is directed to the reset form.
-    4. User completes the process via `/reset-password`.
-
-    **Notes:**
-    - For security, this endpoint always returns a success message, even if the email is not registered.
-    - Rate limiting is applied to prevent abuse.
-    """,
+    summary=PWRESET_REQUEST_SUMMARY,
+    description=PWRESET_REQUEST_DESCRIPTION,
     dependencies=[
         Depends(get_request_id),
         Depends(require_feature("auth:request_password_reset")),
@@ -422,9 +546,14 @@ async def request_password_reset(
     data: PasswordResetRequest,
     session: AsyncSession = Depends(get_async_session),
     user_service: UserService = Depends(get_user_service),
-    user_action_limiter: Any = Depends(get_user_action_limiter),
+    user_action_limiter: UserActionLimiterProtocol = Depends(get_user_action_limiter),
     validate_email: Callable[[str], bool] = Depends(get_validate_email),
 ) -> MessageResponse:
+    """
+    Initiates a password reset flow.
+    Raises:
+        Exception: For unexpected errors.
+    """
     await check_rate_limit(
         user_action_limiter,
         f"pwreset:{data.email}",
@@ -446,19 +575,8 @@ async def request_password_reset(
 @router.post(
     "/reset-password",
     response_model=MessageResponse,
-    summary="Reset password",
-    description="""
-    Completes the password reset flow using a valid reset token.
-
-    **Steps:**
-    1. User receives a reset link from `/request-password-reset`.
-    2. User submits the token and new password to this endpoint.
-    3. System validates the token and updates the password.
-
-    **Notes:**
-    - The token must be valid and not expired.
-    - Rate limiting is applied to prevent abuse.
-    """,
+    summary=PWRESET_SUMMARY,
+    description=PWRESET_DESCRIPTION,
     dependencies=[
         Depends(get_request_id),
         Depends(require_feature("auth:reset_password")),
@@ -473,8 +591,14 @@ async def reset_password(
         get_password_validation_error
     ),
 ) -> MessageResponse:
-    pw_error = get_password_validation_error(data.new_password)
-    if pw_error:
+    """
+    Completes the password reset flow using a valid reset token.
+    Raises:
+        ValidationError: If password is invalid.
+        Exception: For unexpected errors.
+    """
+    pw_error: str | None = get_password_validation_error(data.new_password)
+    if pw_error is not None:
         http_error(400, pw_error, logger.warning, {"token_prefix": data.token[:8]})
     logger.info(f"Password reset confirm attempt: {data.token[:8]}")
     try:
@@ -508,14 +632,8 @@ async def reset_password(
 @router.get(
     "/me",
     response_model=UserProfile,
-    summary="Get current user profile",
-    description="""
-    Returns the profile information of the currently authenticated user.
-
-    **How it works:**
-    - Requires a valid JWT Bearer token.
-    - Returns user ID, email, name, bio, avatar, and timestamps.
-    """,
+    summary=ME_SUMMARY,
+    description=ME_DESCRIPTION,
     dependencies=[
         Depends(get_request_id),
         Depends(require_feature("auth:me")),
@@ -529,8 +647,7 @@ async def get_me(
     Returns the profile information of the currently authenticated user.
     """
     logger.info("Get current user info", extra={"user_id": current_user.id})
-    # Convert SQLAlchemy User ORM object to dict for Pydantic validation
-    user_dict = {
+    user_dict: dict[str, object] = {
         "id": current_user.id,
         "email": current_user.email,
         "name": current_user.name,

@@ -1,6 +1,7 @@
 """Test to verify the fast testing setup works correctly."""
 
 import os
+
 import pytest
 
 
@@ -9,7 +10,7 @@ def test_fast_test_environment():
     """Test that fast test environment variables are set correctly (only in fast mode)."""
     if os.environ.get("FAST_TESTS") != "1":
         pytest.skip("This test only runs in fast test mode")
-    
+
     assert os.environ.get("FAST_TESTS") == "1"
     assert os.environ.get("REVIEWPOINT_ENVIRONMENT") == "test"
     assert "sqlite" in os.environ.get("REVIEWPOINT_DB_URL", "")

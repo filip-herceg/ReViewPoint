@@ -148,7 +148,9 @@ class TestMainApp(MainAppTestTemplate):
 
     def test_swagger_favicon_content_type(self):
         from fastapi.testclient import TestClient
+
         from src.main import create_app
+
         client = TestClient(create_app())
         resp = self.safe_request(client.get, "/static/favicon.ico")
         self.assert_status(resp, 200)

@@ -27,7 +27,9 @@ class TestUploads(ExportEndpointTestTemplate):
         headers = self.get_auth_header(client)
         file_content = b"authenticated upload"
         files = {"file": ("auth.txt", file_content, "text/plain")}
-        resp = self.safe_request(client.post, UPLOAD_ENDPOINT, files=files, headers=headers)
+        resp = self.safe_request(
+            client.post, UPLOAD_ENDPOINT, files=files, headers=headers
+        )
         self.assert_status(resp, (201, 409))
         if resp.status_code == 201:
             data = resp.json()
@@ -44,7 +46,9 @@ class TestUploads(ExportEndpointTestTemplate):
         headers = self.get_auth_header(client)
         file_content = b"bad name"
         files = {"file": ("../bad.txt", file_content, "text/plain")}
-        resp = self.safe_request(client.post, UPLOAD_ENDPOINT, files=files, headers=headers)
+        resp = self.safe_request(
+            client.post, UPLOAD_ENDPOINT, files=files, headers=headers
+        )
         self.assert_status(resp, 400)
         assert (
             "path traversal" in resp.text.lower()
@@ -55,14 +59,18 @@ class TestUploads(ExportEndpointTestTemplate):
         headers = self.get_auth_header(client)
         file_content = b"0" * 20_000_000
         files = {"file": ("large.txt", file_content, "text/plain")}
-        resp = self.safe_request(client.post, UPLOAD_ENDPOINT, files=files, headers=headers)
+        resp = self.safe_request(
+            client.post, UPLOAD_ENDPOINT, files=files, headers=headers
+        )
         self.assert_status(resp, (201, 409, 413))
 
     def test_upload_file_unsupported_type(self, client: TestClient):
         headers = self.get_auth_header(client)
         file_content = b"%PDF-1.4 fake pdf"
         files = {"file": ("file.exe", file_content, "application/octet-stream")}
-        resp = self.safe_request(client.post, UPLOAD_ENDPOINT, files=files, headers=headers)
+        resp = self.safe_request(
+            client.post, UPLOAD_ENDPOINT, files=files, headers=headers
+        )
         self.assert_status(resp, (201, 409, 415))
 
     def test_get_file_info_authenticated(self, client: TestClient):
@@ -70,7 +78,9 @@ class TestUploads(ExportEndpointTestTemplate):
         file_content = b"info file"
         files = {"file": ("info.txt", file_content, "text/plain")}
         self.safe_request(client.post, UPLOAD_ENDPOINT, files=files, headers=headers)
-        resp = self.safe_request(client.get, f"{UPLOAD_ENDPOINT}/info.txt", headers=headers)
+        resp = self.safe_request(
+            client.get, f"{UPLOAD_ENDPOINT}/info.txt", headers=headers
+        )
         self.assert_status(resp, 200)
         data = resp.json()
         assert data["filename"] == "info.txt"
@@ -85,7 +95,9 @@ class TestUploads(ExportEndpointTestTemplate):
         file_content = b"delete me"
         files = {"file": ("delete.txt", file_content, "text/plain")}
         self.safe_request(client.post, UPLOAD_ENDPOINT, files=files, headers=headers)
-        resp = self.safe_request(client.delete, f"{UPLOAD_ENDPOINT}/delete.txt", headers=headers)
+        resp = self.safe_request(
+            client.delete, f"{UPLOAD_ENDPOINT}/delete.txt", headers=headers
+        )
         self.assert_status(resp, (204, 404))
 
     def test_delete_file_unauthenticated(self, client: TestClient):
@@ -109,7 +121,11 @@ class TestUploads(ExportEndpointTestTemplate):
         file_content = b"searchable content"
         files = {"file": ("searchable.txt", file_content, "text/plain")}
         self.safe_request(client.post, UPLOAD_ENDPOINT, files=files, headers=headers)
-        resp = self.safe_request(client.get, f"{UPLOAD_ENDPOINT}?q=searchable&fields=filename", headers=headers)
+        resp = self.safe_request(
+            client.get,
+            f"{UPLOAD_ENDPOINT}?q=searchable&fields=filename",
+            headers=headers,
+        )
         self.assert_status(resp, 200)
         data = resp.json()
         assert any(f["filename"] == "searchable.txt" for f in data["files"])
@@ -118,7 +134,9 @@ class TestUploads(ExportEndpointTestTemplate):
 
     def test_list_files_with_sort_and_order(self, client: TestClient):
         headers = self.get_auth_header(client)
-        resp = self.safe_request(client.get, f"{UPLOAD_ENDPOINT}?sort=filename&order=asc", headers=headers)
+        resp = self.safe_request(
+            client.get, f"{UPLOAD_ENDPOINT}?sort=filename&order=asc", headers=headers
+        )
         self.assert_status(resp, 200)
         data = resp.json()
         filenames = [f["filename"] for f in data["files"]]
@@ -134,9 +152,15 @@ class TestUploads(ExportEndpointTestTemplate):
             .replace(tzinfo=None)
             .isoformat(timespec="microseconds")
         )
-        resp = self.safe_request(client.get, f"{UPLOAD_ENDPOINT}?created_before={now}", headers=headers)
+        resp = self.safe_request(
+            client.get, f"{UPLOAD_ENDPOINT}?created_before={now}", headers=headers
+        )
         self.assert_status(resp, 200)
-        resp = self.safe_request(client.get, f"{UPLOAD_ENDPOINT}?created_after=2000-01-01T00:00:00", headers=headers)
+        resp = self.safe_request(
+            client.get,
+            f"{UPLOAD_ENDPOINT}?created_after=2000-01-01T00:00:00",
+            headers=headers,
+        )
         self.assert_status(resp, 200)
 
     def test_export_files_csv_authenticated(self, client: TestClient):
@@ -176,7 +200,9 @@ class TestUploadsFeatureFlags(ExportEndpointTestTemplate):
         headers = self.get_auth_header(client)
         file_content = b"disabled upload"
         files = {"file": ("disabled.txt", file_content, "text/plain")}
-        resp = self.safe_request(client.post, "/api/v1/uploads", files=files, headers=headers)
+        resp = self.safe_request(
+            client.post, "/api/v1/uploads", files=files, headers=headers
+        )
         self.assert_status(resp, (404, 403, 501))
 
     def test_uploads_upload_feature_disabled(self, client: TestClient):
@@ -184,13 +210,17 @@ class TestUploadsFeatureFlags(ExportEndpointTestTemplate):
         headers = self.get_auth_header(client)
         file_content = b"disabled upload"
         files = {"file": ("disabled2.txt", file_content, "text/plain")}
-        resp = self.safe_request(client.post, "/api/v1/uploads", files=files, headers=headers)
+        resp = self.safe_request(
+            client.post, "/api/v1/uploads", files=files, headers=headers
+        )
         self.assert_status(resp, (404, 403, 501))
 
     def test_uploads_delete_feature_disabled(self, client: TestClient):
         self.override_env_vars({"REVIEWPOINT_FEATURE_UPLOADS_DELETE": "false"})
         headers = self.get_auth_header(client)
-        resp = self.safe_request(client.delete, "/api/v1/uploads/delete.txt", headers=headers)
+        resp = self.safe_request(
+            client.delete, "/api/v1/uploads/delete.txt", headers=headers
+        )
         self.assert_status(resp, (404, 403, 501))
 
     def test_uploads_list_feature_disabled(self, client: TestClient):
@@ -213,8 +243,9 @@ class TestUploadsFeatureFlags(ExportEndpointTestTemplate):
 
     def test_api_key_wrong(self, request):
         import os
+
         import pytest
-        
+
         # Use appropriate fixture based on environment
         if os.environ.get("FAST_TESTS") == "1":
             # Fast test environment - use client_with_api_key fixture
@@ -225,13 +256,15 @@ class TestUploadsFeatureFlags(ExportEndpointTestTemplate):
         else:
             # Regular test environment - use regular client with env override
             client = request.getfixturevalue("client")
-            self.override_env_vars({
-                "REVIEWPOINT_API_KEY_ENABLED": "true",  # Enable API key auth
-                "REVIEWPOINT_API_KEY": "nottherightkey",
-                "REVIEWPOINT_FEATURE_UPLOADS": "true",
-                "REVIEWPOINT_FEATURE_UPLOADS_LIST": "true"
-            })
-        
+            self.override_env_vars(
+                {
+                    "REVIEWPOINT_API_KEY_ENABLED": "true",  # Enable API key auth
+                    "REVIEWPOINT_API_KEY": "nottherightkey",
+                    "REVIEWPOINT_FEATURE_UPLOADS": "true",
+                    "REVIEWPOINT_FEATURE_UPLOADS_LIST": "true",
+                }
+            )
+
         headers = self.get_auth_header(client)
         headers["X-API-Key"] = "wrongkey"
         resp = self.safe_request(client.get, "/api/v1/uploads", headers=headers)

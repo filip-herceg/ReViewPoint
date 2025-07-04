@@ -23,7 +23,9 @@ class BaseAPITest:
             return func(*args, **kwargs)
         except Exception as e:
             import pytest
+
             pytest.xfail(f"Connection/DB error: {e}")
+
     """
     Base class for API endpoint tests.
     Provides common utility methods for API tests.
@@ -31,9 +33,7 @@ class BaseAPITest:
     """
 
     @pytest.fixture(autouse=True)
-    def _setup_base_fixtures(
-        self, override_env_vars, loguru_list_sink
-    ):
+    def _setup_base_fixtures(self, override_env_vars, loguru_list_sink):
         self.override_env_vars = override_env_vars
         self.loguru_list_sink = loguru_list_sink
         pass
@@ -145,9 +145,7 @@ class CRUDTestTemplate(BaseAPITest):
     create_payload: dict = {}
     update_payload: dict = {}
 
-    def test_create(
-        self, client: TestClient, loguru_list_sink: list[str]
-    ):
+    def test_create(self, client: TestClient, loguru_list_sink: list[str]):
         """
         Test creating a resource via POST. Captures logs for assertion if needed.
         """
@@ -161,9 +159,7 @@ class CRUDTestTemplate(BaseAPITest):
         assert "id" in data
         return data
 
-    def test_read(
-        self, client: TestClient, loguru_list_sink: list[str]
-    ):
+    def test_read(self, client: TestClient, loguru_list_sink: list[str]):
         """
         Test reading a resource via GET after creation. Captures logs for assertion if needed.
         """
@@ -175,9 +171,7 @@ class CRUDTestTemplate(BaseAPITest):
         data = resp.json()
         assert data["id"] == created["id"]
 
-    def test_update(
-        self, client: TestClient, loguru_list_sink: list[str]
-    ):
+    def test_update(self, client: TestClient, loguru_list_sink: list[str]):
         """
         Test updating a resource via PUT. Captures logs for assertion if needed.
         """
@@ -189,9 +183,7 @@ class CRUDTestTemplate(BaseAPITest):
         )
         assert resp.status_code in (200, 204)
 
-    def test_delete(
-        self, client: TestClient, loguru_list_sink: list[str]
-    ):
+    def test_delete(self, client: TestClient, loguru_list_sink: list[str]):
         """
         Test deleting a resource via DELETE. Captures logs for assertion if needed.
         """
@@ -272,9 +264,7 @@ class LogCaptureTestTemplate(BaseAPITest):
     """
 
     @pytest.fixture(autouse=True)
-    def _setup_env_and_logs(
-        self, loguru_list_sink, override_env_vars
-    ):
+    def _setup_env_and_logs(self, loguru_list_sink, override_env_vars):
         self.loguru_list_sink = loguru_list_sink
         self.override_env_vars = override_env_vars
         pass
@@ -329,7 +319,7 @@ class AuthUnitTestTemplate(BaseAPITest):
         """
         Patch a config/settings attribute and restore after test.
         Usage: self.patch_setting(settings, 'auth_enabled', False)
-        
+
         Special case: If patching a module's 'settings' attribute and the module
         doesn't have one (uses get_settings() instead), patch get_settings function.
         """
@@ -441,20 +431,21 @@ class HealthEndpointTestTemplate(BaseAPITest):
 
 
 class DatabaseTestTemplate(BaseAPITest):
-    @staticmethod 
+    @staticmethod
     async def _enable_sqlite_fk(engine):
         # Enable SQLite foreign key enforcement for async engines
         if "sqlite" in str(engine.url):
             # For async SQLite engines, we need to enable FK on each connection
             from sqlalchemy import text
+
             async with engine.begin() as conn:
                 await conn.execute(text("PRAGMA foreign_keys=ON"))
+
     """
     Template for async database/session/engine/healthcheck tests.
     Provides self.override_env_vars and self.monkeypatch for env/patching, and async helpers.
     Inherit from this for all DB-related tests.
     """
-
 
     # The _setup_db_env_function fixture is now provided in conftest.py and will set
     # self.override_env_vars, self.monkeypatch, self.loguru_list_sink, self.engine automatically.
@@ -467,6 +458,7 @@ class DatabaseTestTemplate(BaseAPITest):
         Assumes tables are already created by the test fixture.
         """
         from sqlalchemy.ext.asyncio import AsyncSession
+
         await self._enable_sqlite_fk(self.engine)
         return AsyncSession(self.engine, expire_on_commit=False)
 
@@ -502,7 +494,7 @@ class DatabaseTestTemplate(BaseAPITest):
                 session = s
                 assert isinstance(session, session_type)
             assert session is not None
-        except Exception as e:
+        except Exception:
             # If we get connection-related errors during async context cleanup,
             # still check that we got a valid session during the context
             if session is not None and isinstance(session, session_type):
@@ -530,7 +522,7 @@ class DatabaseTestTemplate(BaseAPITest):
             result = await session.execute(text("SELECT 1"))
             assert result is not None
         except Exception as e:
-            # If we get an unexpected error (like connection issues), 
+            # If we get an unexpected error (like connection issues),
             # still try to rollback but don't fail the test
             try:
                 await session.rollback()
@@ -549,9 +541,11 @@ class DatabaseTestTemplate(BaseAPITest):
 
         async with session_factory() as session:
             async with session.bind.begin() as conn:
+
                 def get_tables(sync_conn):
                     inspector = inspect(sync_conn)
                     return inspector.get_table_names()
+
                 tables = await conn.run_sync(get_tables)
             assert table_name in tables, f"Table '{table_name}' does not exist"
 
@@ -590,15 +584,21 @@ class DatabaseTestTemplate(BaseAPITest):
 
     def simulate_db_disconnect(self, session_factory):
         # Patch the session/engine to raise on connect (works for async/SQLite)
+
         from sqlalchemy.exc import OperationalError
-        import sys
+
         # Patch both AsyncSession and sync Session for robustness
         def raise_disconnect(*a, **kw):
             raise OperationalError("Simulated disconnect", None, None)
-        self.patch_var(f"{session_factory.__module__}.AsyncSession.__init__", raise_disconnect)
+
+        self.patch_var(
+            f"{session_factory.__module__}.AsyncSession.__init__", raise_disconnect
+        )
         # Also patch sync Session if present
         try:
-            self.patch_var(f"{session_factory.__module__}.Session.__init__", raise_disconnect)
+            self.patch_var(
+                f"{session_factory.__module__}.Session.__init__", raise_disconnect
+            )
         except Exception:
             pass
 
@@ -625,22 +625,25 @@ class DatabaseTestTemplate(BaseAPITest):
     # --- Migration Helpers ---
     def assert_migration_applied(self, session_factory, table_name=None, version=None):
         # Checks for table or migration version presence
-        from sqlalchemy import inspect
         import asyncio
+
+        from sqlalchemy import inspect
 
         async def _check():
             async with session_factory() as session:
                 async with session.bind.begin() as conn:
+
                     def check_tables(sync_conn):
                         inspector = inspect(sync_conn)
                         result = {}
                         if table_name:
                             tables = inspector.get_table_names()
-                            result['tables'] = tables
+                            result["tables"] = tables
                         return result
+
                     result = await conn.run_sync(check_tables)
                     if table_name:
-                        tables = result['tables']
+                        tables = result["tables"]
                         assert (
                             table_name in tables
                         ), f"Table '{table_name}' not found after migration"
@@ -649,14 +652,19 @@ class DatabaseTestTemplate(BaseAPITest):
                             "SELECT version_num FROM alembic_version"
                         )
                         found = [row[0] for row in versions]
-                        assert version in found, f"Migration version {version} not applied"
+                        assert (
+                            version in found
+                        ), f"Migration version {version} not applied"
 
         asyncio.run(_check())
 
-    @pytest.mark.requires_real_db("Alembic migrations are not supported in fast (SQLite in-memory) mode.")
+    @pytest.mark.requires_real_db(
+        "Alembic migrations are not supported in fast (SQLite in-memory) mode."
+    )
     def run_migration(self, command="upgrade head"):
         # Run Alembic migration command
         import subprocess
+
         result = subprocess.run(
             ["alembic"] + command.split(), capture_output=True, text=True
         )
@@ -702,6 +710,7 @@ class DatabaseTestTemplate(BaseAPITest):
 
     async def truncate_tables(self, session_factory, tables):
         from sqlalchemy import text
+
         async with session_factory() as session:
             # Detect SQLite and use DELETE FROM instead of TRUNCATE
             if str(session.bind.url).startswith("sqlite"):
@@ -778,9 +787,11 @@ class EventTestTemplate:
             # Try to patch the settings attribute directly
             self.monkeypatch.setattr(target_module, "settings", settings_obj)
         except AttributeError:
-            # If the module doesn't have a settings attribute, 
+            # If the module doesn't have a settings attribute,
             # mock the get_settings function in src.core.config
-            self.monkeypatch.setattr("src.core.config.get_settings", lambda: settings_obj)
+            self.monkeypatch.setattr(
+                "src.core.config.get_settings", lambda: settings_obj
+            )
 
     def get_loguru_text(self):
         return self.log_file.read_text()

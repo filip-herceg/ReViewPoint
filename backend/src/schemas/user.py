@@ -1,4 +1,5 @@
-from typing import Any
+from collections.abc import Mapping, Sequence
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -9,8 +10,8 @@ class UserProfile(BaseModel):
     name: str | None = None
     bio: str | None = None
     avatar_url: str | None = None
-    created_at: Any | None = None
-    updated_at: Any | None = None
+    created_at: str | None = None  # Use str for ISO datetime, or datetime if available
+    updated_at: str | None = None
 
     model_config = ConfigDict(extra="forbid")
 
@@ -23,7 +24,9 @@ class UserProfileUpdate(BaseModel):
 
 
 class UserPreferences(BaseModel):
-    theme: str | None = Field(None, description="UI theme, e.g. 'dark' or 'light'")
+    theme: Literal["dark", "light"] | None = Field(
+        None, description="UI theme, e.g. 'dark' or 'light'"
+    )
     locale: str | None = Field(None, description="User locale, e.g. 'en', 'fr'")
     # Add more preference fields as needed
 
@@ -31,7 +34,7 @@ class UserPreferences(BaseModel):
 
 
 class UserPreferencesUpdate(BaseModel):
-    preferences: dict[str, Any]
+    preferences: Mapping[str, object]  # Use object for arbitrary values, not Any
 
 
 class UserAvatarResponse(BaseModel):
@@ -63,7 +66,7 @@ class UserCreateRequest(BaseModel):
 
 # --- User List Response Schema ---
 class UserListResponse(BaseModel):
-    users: list[UserProfile]  # Use direct reference for Pydantic v2
+    users: Sequence[UserProfile]
     total: int
 
 

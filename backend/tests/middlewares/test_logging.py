@@ -67,11 +67,11 @@ def safe_request(func, *args, **kwargs):
         return func(*args, **kwargs)
     except Exception as e:
         import pytest
+
         pytest.xfail(f"Connection/HTTP error: {e}")
 
-def test_request_id_generation(
-    client: TestClient, loguru_list_sink: list[str]
-) -> None:
+
+def test_request_id_generation(client: TestClient, loguru_list_sink: list[str]) -> None:
     """Test that a request ID is generated for each request."""
     response = safe_request(client.get, "/test")
 
@@ -103,9 +103,7 @@ def test_custom_request_id_header(
     assert "Response GET /test completed with status 200" in logs
 
 
-def test_error_logging(
-    client: TestClient, loguru_list_sink: list[str]
-) -> None:
+def test_error_logging(client: TestClient, loguru_list_sink: list[str]) -> None:
     """Test that errors are properly logged with request context."""
     import pytest
 
@@ -132,9 +130,7 @@ def test_request_id_propagation_to_other_middleware(client: TestClient) -> None:
     )
 
 
-def test_performance_logging(
-    client: TestClient, loguru_list_sink: list[str]
-) -> None:
+def test_performance_logging(client: TestClient, loguru_list_sink: list[str]) -> None:
     """Test that request performance is logged."""
     safe_request(client.get, "/test")
 
@@ -155,8 +151,7 @@ def test_sensitive_query_param_filtering(
 ) -> None:
     """Test that sensitive query parameters are filtered from loguru logs."""
     response = safe_request(
-        client.get,
-        "/test?email=foo@example.com&password=supersecret&token=abc123"
+        client.get, "/test?email=foo@example.com&password=supersecret&token=abc123"
     )
     assert response.status_code == 200
     # Only check loguru middleware logs, not httpx/std logging

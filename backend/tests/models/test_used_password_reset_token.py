@@ -1,8 +1,8 @@
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 
 from src.models.used_password_reset_token import UsedPasswordResetToken
 from tests.test_templates import AsyncModelTestTemplate, ModelUnitTestTemplate
@@ -118,9 +118,7 @@ class TestUsedPasswordResetTokenDB(AsyncModelTestTemplate):
     async def test_integrity_error_empty_nonce(self):
         """Test that empty nonce raises a validation error"""
         with pytest.raises(ValueError, match="nonce must be a non-empty string"):
-            UsedPasswordResetToken(
-                email="a@b.com", nonce="", used_at=datetime.now(UTC)
-            )
+            UsedPasswordResetToken(email="a@b.com", nonce="", used_at=datetime.now(UTC))
         await self.async_session.rollback()
 
     @pytest.mark.asyncio
@@ -154,7 +152,9 @@ class TestUsedPasswordResetTokenDB(AsyncModelTestTemplate):
 
         await self.run_in_transaction(op)
         result = await self.async_session.execute(
-            text("SELECT COUNT(*) FROM used_password_reset_tokens WHERE email = 'rollback@ex.com'")
+            text(
+                "SELECT COUNT(*) FROM used_password_reset_tokens WHERE email = 'rollback@ex.com'"
+            )
         )
         count = result.scalar()
         assert count == 0
@@ -214,7 +214,9 @@ class TestUsedPasswordResetTokenDB(AsyncModelTestTemplate):
         assert allowed in (True, False)  # Document behavior
 
     @pytest.mark.asyncio
-    @pytest.mark.requires_real_db("SQLite in-memory does not reliably preserve timezone information for this test.")
+    @pytest.mark.requires_real_db(
+        "SQLite in-memory does not reliably preserve timezone information for this test."
+    )
     async def test_default_used_at_db(self):
         token = UsedPasswordResetToken(
             email="defaultdb@ex.com",

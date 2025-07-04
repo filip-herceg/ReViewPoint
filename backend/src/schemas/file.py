@@ -1,10 +1,19 @@
 from datetime import datetime
+from typing import Final
 
 from pydantic import BaseModel, Field
 
 
 class FileSchema(BaseModel):
-    """Schema for file metadata used in API requests and responses."""
+    """Schema for file metadata used in API requests and responses.
+
+    Attributes:
+        id (int): Unique identifier for the file.
+        filename (str): Name of the file.
+        content_type (str): MIME type of the file.
+        user_id (int): ID of the user who owns the file.
+        created_at (datetime): Timestamp when the file was created.
+    """
 
     id: int = Field(..., description="Unique identifier for the file")
     filename: str = Field(..., max_length=255, description="Name of the file")
@@ -13,4 +22,4 @@ class FileSchema(BaseModel):
     created_at: datetime = Field(..., description="Timestamp when the file was created")
 
     class Config:
-        orm_mode = True
+        orm_mode: Final[bool] = True

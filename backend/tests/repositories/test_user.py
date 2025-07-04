@@ -1,54 +1,60 @@
-from datetime import UTC, datetime, timedelta
 import json
+from datetime import UTC, datetime, timedelta
+from unittest.mock import AsyncMock, patch
+
 import pytest
 from sqlalchemy import text
-from unittest.mock import patch, AsyncMock, MagicMock
 
 from src.models.file import File
+from src.models.user import User
 from src.repositories.user import (
-    create_user_with_validation,
-    filter_users_by_status,
-    get_user_by_id,
-    get_user_with_files,
-    get_users_by_ids,
-    list_users,
-    list_users_paginated,
-    search_users_by_name_or_email,
-    # Adding imports for all untested functions
-    safe_get_user_by_id,
-    sensitive_user_action,
-    get_users_created_within,
-    count_users,
-    get_active_users,
-    get_inactive_users,
-    get_users_by_custom_field,
-    bulk_create_users,
-    bulk_update_users,
-    bulk_delete_users,
-    soft_delete_user,
-    restore_user,
-    upsert_user,
-    partial_update_user,
-    user_exists,
-    is_email_unique,
-    change_user_password,
-    audit_log_user_change,
+    anonymize_user,
     assign_role_to_user,
-    revoke_role_from_user,
+    audit_log_user_change,
+    bulk_create_users,
+    bulk_delete_users,
+    bulk_update_users,
+    change_user_password,
+    count_users,
+    create_user_with_validation,
     db_session_context,
     db_transaction,
+    deactivate_user,
     export_users_to_csv,
     export_users_to_json,
-    import_users_from_dicts,
-    deactivate_user,
-    reactivate_user,
-    update_last_login,
-    anonymize_user,
-    user_signups_per_month,
     filter_users_by_role,
+    filter_users_by_status,
+    get_active_users,
+    get_inactive_users,
+    get_user_by_id,
+    get_user_with_files,
+    get_users_by_custom_field,
+    get_users_by_ids,
+    get_users_created_within,
+    import_users_from_dicts,
+    is_email_unique,
+    list_users,
+    list_users_paginated,
+    partial_update_user,
+    reactivate_user,
+    restore_user,
+    revoke_role_from_user,
+    # Adding imports for all untested functions
+    safe_get_user_by_id,
+    search_users_by_name_or_email,
+    sensitive_user_action,
+    soft_delete_user,
+    update_last_login,
+    upsert_user,
+    user_exists,
+    user_signups_per_month,
 )
-from src.utils.errors import UserAlreadyExistsError, ValidationError, UserNotFoundError, RateLimitExceededError
-from src.models.user import User
+from src.utils.errors import (
+    RateLimitExceededError,
+    UserAlreadyExistsError,
+    UserNotFoundError,
+    ValidationError,
+)
 
 
 class TestUserRepository:
@@ -253,7 +259,7 @@ class TestUserRepository:
             async_session, "daterange@example.com", "Password123!"
         )
         await async_session.commit()
-        
+
         start = datetime.now(UTC) - timedelta(hours=1)
         end = datetime.now(UTC) + timedelta(hours=1)
         found = await get_users_created_within(async_session, start, end)
@@ -264,7 +270,7 @@ class TestUserRepository:
         # Clean up first
         await async_session.execute(text("DELETE FROM users"))
         await async_session.commit()
-        
+
         user1 = await create_user_with_validation(
             async_session, "count1@example.com", "Password123!"
         )
@@ -273,13 +279,13 @@ class TestUserRepository:
         )
         user2.is_active = False
         await async_session.commit()
-        
+
         total_count = await count_users(async_session)
         assert total_count == 2
-        
+
         active_count = await count_users(async_session, is_active=True)
         assert active_count == 1
-        
+
         inactive_count = await count_users(async_session, is_active=False)
         assert inactive_count == 1
 
@@ -293,10 +299,10 @@ class TestUserRepository:
         )
         user2.is_active = False
         await async_session.commit()
-        
+
         active_users = await get_active_users(async_session)
         inactive_users = await get_inactive_users(async_session)
-        
+
         assert user1 in active_users
         assert user2 in inactive_users
 
@@ -325,12 +331,12 @@ class TestUserRepository:
             async_session, "bulkupdate2@example.com", "Password123!"
         )
         await async_session.commit()
-        
+
         count = await bulk_update_users(
             async_session, [user1.id, user2.id], {"is_active": False}
         )
         assert count == 2
-        
+
         # Refresh and check
         await async_session.refresh(user1)
         await async_session.refresh(user2)
@@ -341,7 +347,7 @@ class TestUserRepository:
     async def test_bulk_update_users_empty(self, async_session):
         count = await bulk_update_users(async_session, [], {"is_active": False})
         assert count == 0
-        
+
         count = await bulk_update_users(async_session, [1, 2], {})
         assert count == 0
 
@@ -354,10 +360,10 @@ class TestUserRepository:
             async_session, "bulkdelete2@example.com", "Password123!"
         )
         await async_session.commit()
-        
+
         count = await bulk_delete_users(async_session, [user1.id, user2.id])
         assert count == 2
-        
+
         # Check users are deleted
         found1 = await get_user_by_id(async_session, user1.id)
         found2 = await get_user_by_id(async_session, user2.id)
@@ -375,13 +381,13 @@ class TestUserRepository:
             async_session, "softdelete@example.com", "Password123!"
         )
         await async_session.commit()
-        
+
         result = await soft_delete_user(async_session, user.id)
         assert result is True
-        
+
         await async_session.refresh(user)
         assert user.is_deleted is True
-        
+
         # Try to soft delete again (should return False)
         result = await soft_delete_user(async_session, user.id)
         assert result is False
@@ -398,13 +404,13 @@ class TestUserRepository:
         )
         user.is_deleted = True
         await async_session.commit()
-        
+
         result = await restore_user(async_session, user.id)
         assert result is True
-        
+
         await async_session.refresh(user)
         assert user.is_deleted is False
-        
+
         # Try to restore again (should return False)
         result = await restore_user(async_session, user.id)
         assert result is False
@@ -418,18 +424,16 @@ class TestUserRepository:
     async def test_upsert_user(self, async_session):
         # Test insert
         user = await upsert_user(
-            async_session, 
-            "upsert@example.com", 
-            {"hashed_password": "hash123", "is_active": True}
+            async_session,
+            "upsert@example.com",
+            {"hashed_password": "hash123", "is_active": True},
         )
         assert user.email == "upsert@example.com"
         assert user.is_active is True
-        
+
         # Test update
         user2 = await upsert_user(
-            async_session,
-            "upsert@example.com",
-            {"name": "Updated Name"}
+            async_session, "upsert@example.com", {"name": "Updated Name"}
         )
         assert user2.id == user.id
         assert user2.name == "Updated Name"
@@ -438,7 +442,7 @@ class TestUserRepository:
     async def test_upsert_user_invalid_email(self, async_session):
         with pytest.raises(ValidationError):
             await upsert_user(async_session, "invalid-email", {})
-        
+
         with pytest.raises(ValidationError):
             await upsert_user(async_session, "", {})
 
@@ -448,7 +452,7 @@ class TestUserRepository:
             async_session, "partialupdate@example.com", "Password123!"
         )
         await async_session.commit()
-        
+
         updated = await partial_update_user(
             async_session, user.id, {"name": "New Name", "bio": "New bio"}
         )
@@ -467,7 +471,7 @@ class TestUserRepository:
             async_session, "exists@example.com", "Password123!"
         )
         await async_session.commit()
-        
+
         assert await user_exists(async_session, user.id) is True
         assert await user_exists(async_session, 999999) is False
 
@@ -477,17 +481,20 @@ class TestUserRepository:
             async_session, "unique@example.com", "Password123!"
         )
         await async_session.commit()
-        
+
         # Email is not unique (already exists)
         assert await is_email_unique(async_session, "unique@example.com") is False
-        
+
         # Email is unique (doesn't exist)
         assert await is_email_unique(async_session, "newunique@example.com") is True
-        
+
         # Email is unique when excluding the user that has it
-        assert await is_email_unique(
-            async_session, "unique@example.com", exclude_user_id=user.id
-        ) is True
+        assert (
+            await is_email_unique(
+                async_session, "unique@example.com", exclude_user_id=user.id
+            )
+            is True
+        )
 
     @pytest.mark.asyncio
     async def test_change_user_password(self, async_session):
@@ -495,10 +502,10 @@ class TestUserRepository:
             async_session, "changepass@example.com", "Password123!"
         )
         await async_session.commit()
-        
+
         result = await change_user_password(async_session, user.id, "newhash123")
         assert result is True
-        
+
         await async_session.refresh(user)
         assert user.hashed_password == "newhash123"
 
@@ -527,19 +534,19 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_db_session_context(self):
         # Mock the AsyncSessionLocal import within the function
-        with patch('src.core.database.AsyncSessionLocal') as mock_session_local:
+        with patch("src.core.database.AsyncSessionLocal") as mock_session_local:
             mock_session = AsyncMock()
             mock_session.close = AsyncMock()
-            
+
             # Create a proper async context manager mock
             mock_cm = AsyncMock()
             mock_cm.__aenter__ = AsyncMock(return_value=mock_session)
             mock_cm.__aexit__ = AsyncMock(return_value=None)
             mock_session_local.return_value = mock_cm
-            
+
             async with db_session_context() as session:
                 assert session == mock_session
-            
+
             # Verify the session's close method was called
             mock_session.close.assert_called_once()
 
@@ -549,12 +556,12 @@ class TestUserRepository:
         begin_mock = AsyncMock()
         begin_mock.__aenter__ = AsyncMock()
         begin_mock.__aexit__ = AsyncMock()
-        
-        with patch.object(async_session, 'begin', return_value=begin_mock):
+
+        with patch.object(async_session, "begin", return_value=begin_mock):
             async with db_transaction(async_session):
                 # This should work without error
                 pass
-            
+
             # Verify begin was called on the session
             async_session.begin.assert_called_once()
 
@@ -566,7 +573,7 @@ class TestUserRepository:
         file = File(filename="testfile.txt", content_type="text/plain", user_id=user.id)
         async_session.add(file)
         await async_session.commit()
-        
+
         found = await get_user_with_files(async_session, user.id)
         assert found is not None
         assert any(f.filename == "testfile.txt" for f in found.files)
@@ -582,7 +589,7 @@ class TestUserRepository:
             async_session, "export@example.com", "Password123!"
         )
         await async_session.commit()
-        
+
         csv_data = await export_users_to_csv(async_session)
         assert "export@example.com" in csv_data
         assert "id,email,is_active" in csv_data
@@ -593,7 +600,7 @@ class TestUserRepository:
             async_session, "exportjson@example.com", "Password123!"
         )
         await async_session.commit()
-        
+
         json_data = await export_users_to_json(async_session)
         data = json.loads(json_data)
         assert isinstance(data, list)
@@ -602,10 +609,18 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_import_users_from_dicts(self, async_session):
         user_dicts = [
-            {"email": "import1@example.com", "hashed_password": "hash1", "is_active": True},
-            {"email": "import2@example.com", "hashed_password": "hash2", "is_active": True},
+            {
+                "email": "import1@example.com",
+                "hashed_password": "hash1",
+                "is_active": True,
+            },
+            {
+                "email": "import2@example.com",
+                "hashed_password": "hash2",
+                "is_active": True,
+            },
         ]
-        
+
         users = await import_users_from_dicts(async_session, user_dicts)
         assert len(users) == 2
         assert users[0].email == "import1@example.com"
@@ -617,13 +632,13 @@ class TestUserRepository:
             async_session, "deactivate@example.com", "Password123!"
         )
         await async_session.commit()
-        
+
         result = await deactivate_user(async_session, user.id)
         assert result is True
-        
+
         await async_session.refresh(user)
         assert user.is_active is False
-        
+
         # Try to deactivate again (should return False)
         result = await deactivate_user(async_session, user.id)
         assert result is False
@@ -640,13 +655,13 @@ class TestUserRepository:
         )
         user.is_active = False
         await async_session.commit()
-        
+
         result = await reactivate_user(async_session, user.id)
         assert result is True
-        
+
         await async_session.refresh(user)
         assert user.is_active is True
-        
+
         # Try to reactivate again (should return False)
         result = await reactivate_user(async_session, user.id)
         assert result is False
@@ -662,14 +677,14 @@ class TestUserRepository:
             async_session, "lastlogin@example.com", "Password123!"
         )
         await async_session.commit()
-        
+
         # Test with default time
         result = await update_last_login(async_session, user.id)
         assert result is True
-        
+
         await async_session.refresh(user)
         assert user.last_login_at is not None
-        
+
         # Test with specific time
         specific_time = datetime.now(UTC)
         result = await update_last_login(async_session, user.id, specific_time)
@@ -686,10 +701,10 @@ class TestUserRepository:
             async_session, "anonymize@example.com", "Password123!"
         )
         await async_session.commit()
-        
+
         result = await anonymize_user(async_session, user.id)
         assert result is True
-        
+
         await async_session.refresh(user)
         assert user.email.startswith("anon_")
         assert user.hashed_password == ""
@@ -709,7 +724,7 @@ class TestUserRepository:
         )
         user.is_deleted = True
         await async_session.commit()
-        
+
         result = await anonymize_user(async_session, user.id)
         assert result is False
 
@@ -722,12 +737,12 @@ class TestUserRepository:
         user2 = await create_user_with_validation(
             async_session, "signup2@example.com", "Password123!"
         )
-        
+
         # Set created_at to January and February 2024
         user1.created_at = datetime(2024, 1, 15)
         user2.created_at = datetime(2024, 2, 15)
         await async_session.commit()
-        
+
         stats = await user_signups_per_month(async_session, 2024)
         assert isinstance(stats, dict)
         assert len(stats) == 12  # All 12 months
@@ -741,12 +756,15 @@ class TestUserRepository:
             async_session, "sensitive@example.com", "Password123!"
         )
         await async_session.commit()
-        
+
         # Mock the rate limiter to allow the action (async mock)
         async def mock_is_allowed(*args, **kwargs):
             return True
-            
-        with patch('src.repositories.user.user_action_limiter.is_allowed', side_effect=mock_is_allowed):
+
+        with patch(
+            "src.repositories.user.user_action_limiter.is_allowed",
+            side_effect=mock_is_allowed,
+        ):
             # Should not raise an error
             await sensitive_user_action(async_session, user.id, "test_action")
 
@@ -756,12 +774,15 @@ class TestUserRepository:
             async_session, "ratelimited@example.com", "Password123!"
         )
         await async_session.commit()
-        
+
         # Mock the rate limiter to deny the action (async mock)
         async def mock_is_not_allowed(*args, **kwargs):
             return False
-            
-        with patch('src.repositories.user.user_action_limiter.is_allowed', side_effect=mock_is_not_allowed):
+
+        with patch(
+            "src.repositories.user.user_action_limiter.is_allowed",
+            side_effect=mock_is_not_allowed,
+        ):
             with pytest.raises(RateLimitExceededError):
                 await sensitive_user_action(async_session, user.id, "test_action")
 
@@ -773,7 +794,7 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_create_user_with_validation_rollback_on_error(self, async_session):
         # Mock the commit to raise an exception
-        with patch.object(async_session, 'commit', side_effect=Exception("DB Error")):
+        with patch.object(async_session, "commit", side_effect=Exception("DB Error")):
             with pytest.raises(Exception):
                 await create_user_with_validation(
                     async_session, "error@example.com", "Password123!"
@@ -784,8 +805,8 @@ class TestUserRepository:
         users = [
             User(email="bulk1@example.com", hashed_password="hash1", is_active=True),
         ]
-        
+
         # Mock commit to raise an exception
-        with patch.object(async_session, 'commit', side_effect=Exception("DB Error")):
+        with patch.object(async_session, "commit", side_effect=Exception("DB Error")):
             with pytest.raises(Exception):
                 await bulk_create_users(async_session, users)
