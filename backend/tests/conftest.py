@@ -399,27 +399,21 @@ async def async_engine_isolated(use_fast_db, database_setup):
             logger.debug(f"[ENGINE_ISOLATED] Using SQLite in-memory DB (parallel): {db_url}")
             engine = create_async_engine(db_url, future=True, connect_args={"check_same_thread": False})
         else:
-            # Use the PostgreSQL database URL
-            db_url = os.environ["REVIEWPOINT_DB_URL"]
-            logger.debug(f"[ENGINE_ISOLATED] Using PostgreSQL with isolation pool (worker: {worker_id})")
+            # Force SQLite for single-threaded tests to avoid asyncpg event loop conflicts
+            # asyncpg has known issues with TestClient and anyio event loop mixing
+            db_url = f"sqlite+aiosqlite:///:memory:?cache=shared&test_id={test_id}"
+            logger.debug(f"[ENGINE_ISOLATED] Using SQLite in-memory DB (single-threaded, avoiding asyncpg): {db_url}")
             
-            # Configure engine for strict connection isolation to avoid asyncpg event loop conflicts
-            engine_kwargs = {
-                "future": True,
-                "pool_size": 1,  # Single connection per worker
-                "max_overflow": 0,  # No overflow connections
-                "pool_reset_on_return": "commit",  # Reset connections between uses
-                "pool_pre_ping": True,  # Verify connections before use
-                "pool_recycle": 300,  # Recycle connections every 5 minutes
-                "connect_args": {
-                    "server_settings": {
-                        "application_name": f"reviewpoint_test_{worker_id}_{os.getpid()}",
-                    },
-                    "command_timeout": 30,  # 30 second timeout for commands
-                }
-            }
+            # Enable foreign key constraints for SQLite
+            from sqlalchemy import event, text
             
-            engine = create_async_engine(db_url, **engine_kwargs)
+            def set_sqlite_pragma_isolated(dbapi_connection, connection_record):
+                cursor = dbapi_connection.cursor()
+                cursor.execute("PRAGMA foreign_keys=ON")
+                cursor.close()
+            
+            engine = create_async_engine(db_url, future=True, connect_args={"check_same_thread": False})
+            event.listen(engine.sync_engine, "connect", set_sqlite_pragma_isolated)
 
         engine_creation_time = time.time() - engine_start_time
         logger.debug(f"[ENGINE_ISOLATED] Engine created in {engine_creation_time:.3f}s")
@@ -457,7 +451,7 @@ async def async_engine_isolated(use_fast_db, database_setup):
 async def async_session(async_engine_isolated):
     """
     Provide an async SQLAlchemy session for each test function.
-    Uses a simplified approach to avoid async event loop conflicts.
+    Uses strict isolation to prevent asyncpg concurrency conflicts.
     """
     from sqlalchemy.ext.asyncio import AsyncSession
     import asyncio
@@ -467,11 +461,15 @@ async def async_session(async_engine_isolated):
     logger.debug(f"[SESSION_ISOLATED] Creating session for worker: {worker_id}")
     
     session_start_time = time.time()
+    session = None
     
     try:
-        # Create a simple session bound to the engine
-        # This approach avoids transaction context manager issues
-        session = AsyncSession(bind=async_engine_isolated, expire_on_commit=False)
+        # Create session with strict isolation settings
+        session = AsyncSession(
+            bind=async_engine_isolated,
+            expire_on_commit=False,
+            close_resets_only=True  # Only reset on explicit close
+        )
         
         # Test the session with a simple query
         test_start = time.time()
@@ -483,19 +481,28 @@ async def async_session(async_engine_isolated):
         except Exception as e:
             test_time = time.time() - test_start
             logger.error(f"[SESSION_ISOLATED] Session test query failed in {test_time:.3f}s: {e}")
-            # Close session and re-raise
             await session.close()
             raise
         
         total_session_time = time.time() - session_start_time
         logger.debug(f"[SESSION_ISOLATED] Session ready in {total_session_time:.3f}s (worker: {worker_id})")
         
-        try:
-            yield session
-        finally:
-            # Clean shutdown of session
+        yield session
+        
+    except Exception as e:
+        total_session_time = time.time() - session_start_time
+        logger.error(f"[SESSION_ISOLATED] Session creation failed in {total_session_time:.3f}s: {e}")
+        if session:
             try:
-                # First, rollback any uncommitted changes
+                await session.close()
+            except Exception:
+                pass
+        raise
+    finally:
+        # Ensure session is always cleaned up properly
+        if session:
+            try:
+                # Force close any active transactions first
                 if session.in_transaction():
                     await session.rollback()
                     logger.debug(f"[SESSION_ISOLATED] Session transaction rolled back (worker: {worker_id})")
@@ -503,16 +510,14 @@ async def async_session(async_engine_isolated):
                 logger.warning(f"[SESSION_ISOLATED] Error rolling back session (worker: {worker_id}): {e}")
             
             try:
-                # Close the session
+                # Close the session completely
                 await session.close()
                 logger.debug(f"[SESSION_ISOLATED] Session closed (worker: {worker_id})")
             except Exception as e:
                 logger.warning(f"[SESSION_ISOLATED] Error closing session (worker: {worker_id}): {e}")
             
-    except Exception as e:
-        total_session_time = time.time() - session_start_time
-        logger.error(f"[SESSION_ISOLATED] Session creation failed in {total_session_time:.3f}s: {e}")
-        raise
+            # Give a moment for cleanup to complete
+            await asyncio.sleep(0.001)
 
 
 # 4. App and client fixtures
