@@ -1,0 +1,11 @@
+
+
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Change to repo root
+cd "$(dirname -- "$0")/.."
+
+# Use npm scripts for cross-platform compatibility
+npm run frontend:lint
+npm run frontend:format

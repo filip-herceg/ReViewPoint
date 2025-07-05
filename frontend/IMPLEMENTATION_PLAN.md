@@ -7,7 +7,17 @@
 
 ---
 
-## 📋 **Übersicht & Ziele**
+## � Progress Update [2025-07-05]
+
+- Husky is now set up in the monorepo root (`.git` in `ReViewPoint/`).
+- Pre-commit hook runs lint and format in `frontend/` via pnpm, as required for a monorepo.
+- No Node.js or package.json is needed in the root for frontend-only tooling, but Husky does require a minimal root package.json (now present).
+- All Git hooks are managed from the root and delegate to frontend scripts.
+- This setup is robust, cross-platform, and works for all contributors.
+
+---
+
+## �📋 **Übersicht & Ziele**
 
 ### **Hauptziele:**
 
@@ -76,13 +86,13 @@ Deployment:
 Build Tool:       Vite 5+ (mit Module Federation für Microfrontends)
 Framework:        React 18+ + TypeScript 5+ (mit React Server Components)
 State Management: Zustand + TanStack Query v5
-UI Library:       shadcn/ui v2 + TailwindCSS v4
+UI Library:       shadcn v2 + TailwindCSS v4
 Forms:            React Hook Form + Zod (Validation)
 HTTP Client:      Axios (für TanStack Query)
 Router:           React Router v7
 File Upload:      React Dropzone + Uppy.js
 PDF Viewer:       react-pdf oder PDF.js
-Icons:            Lucide React (konsistent mit shadcn/ui)
+Icons:            Lucide React (konsistent mit shadcn)
 Testing:          Vitest + React Testing Library + Playwright
 Package Manager:  pnpm v9
 Linting:          Biome (ESLint + Prettier Ersatz)
@@ -102,7 +112,7 @@ frontend/
 │   └── manifest.json
 ├── src/
 │   ├── components/          # Wiederverwendbare UI-Komponenten
-│   │   ├── ui/             # shadcn/ui Komponenten
+│   │   ├── ui/             # shadcn Komponenten
 │   │   ├── forms/          # Formular-Komponenten
 │   │   ├── layout/         # Layout-Komponenten (Header, Sidebar, etc.)
 │   │   └── features/       # Feature-spezifische Komponenten
@@ -193,75 +203,41 @@ Quick Wins Archive:
 #### **Tasks (Phase 1):**
 
 - [ ] **1.1** Vite + React + TypeScript Setup
-  - [ ] `npm create vite@latest frontend -- --template react-ts`
-  - [ ] pnpm Installation und Konfiguration
-  - [ ] Basis-Dependencies installieren
-- [ ] **1.2** TailwindCSS + shadcn/ui Integration
-  - [ ] TailwindCSS Installation und Konfiguration
-  - [ ] shadcn/ui Setup mit CLI
-  - [ ] Basis-Komponenten importieren (Button, Input, Card)
+  - [x] `npm create vite@latest frontend -- --template react-ts`
+  - [x] pnpm Installation und Konfiguration
+  - [x] Basis-Dependencies installieren
+- [ ] **1.2** TailwindCSS + shadcn Integration
+  - [x] TailwindCSS Installation und Konfiguration
+  - [x] shadcn Setup mit CLI
+  - [x] Basis-Komponenten importieren (Button, Input, Card)
 - [ ] **1.3** Entwicklungsumgebung
-  - [ ] Biome Setup (ESLint + Prettier Alternative)
-  - [ ] VS Code Konfiguration (.vscode/settings.json)
-  - [ ] Git Hooks Setup (pre-commit)
+  - [x] Biome Setup (ESLint + Prettier Alternative)
+  - [x] VS Code Konfiguration (.vscode/settings.json)
+  - [x] Git Hooks Setup (pre-commit)
 - [ ] **1.4** Testing Foundation
-  - [ ] Vitest Konfiguration
-  - [ ] React Testing Library Setup
-  - [ ] Playwright Installation
+  - [x] Vitest Konfiguration
+  - [x] React Testing Library Setup
+  - [x] Playwright Installation
 
 **📝 Notizen Phase 1:**
 
 ```text
-[Datum] - [Status] - [Notiz]
-[2025-07-05] - 🔄 Started - Setup begonnen
+[2025-07-05] - ✅ Phase 1 Complete - Project setup and foundation established
+- All core tooling, dependencies, and scripts are in place
+- Testing, linting, formatting, and E2E setup is robust and non-interactive
+- Shared test utilities and .gitignore for frontend are established
 
 Lessons Learned:
-- 
+- Centralizing test utilities and ignoring frontend artifacts early prevents future tech debt
+- Monorepo Husky and pnpm setup is reliable for all contributors
+- Explicit .gitignore sections for frontend avoid accidental commits
 
 Blockers:
-- 
+- None. All planned setup tasks completed without major issues
 
 Next Steps:
-- 
-```
-
----
-
-### **Phase 2.5: Environment & Configuration** ⏳ Status: `⏸️ Wartend`
-
-**Geschätzter Aufwand:** 1 Tag  
-**Priorität:** 🔴 Kritisch  
-**Abhängigkeiten:** Phase 2 Complete
-
-#### **Tasks (Phase 2.5):**
-
-- [ ] **2.5.1** Environment Configuration
-  - [ ] .env Files für dev/staging/prod
-  - [ ] Environment Type Definitions
-  - [ ] API Base URL Configuration
-  - [ ] Feature Flags Setup
-- [ ] **2.5.2** Error Monitoring Setup
-  - [ ] Error Boundary Implementation
-  - [ ] Console Error Tracking
-  - [ ] User Feedback System
-- [ ] **2.5.3** Performance Setup
-  - [ ] Bundle Analyzer Configuration
-  - [ ] Performance Monitoring
-  - [ ] Lazy Loading Strategy
-
-**📝 Notizen Phase 2.5:**
-
-```text
-[Datum] - [Status] - [Notiz]
-
-Lessons Learned:
-- 
-
-Blockers:
-- 
-
-Next Steps:
-- 
+- Begin Phase 2: Core Architecture & State Management
+- Scaffold Zustand store, API integration, and routing foundation
 ```
 
 ---
@@ -308,6 +284,28 @@ Next Steps:
 ```
 
 ---
+
+### **Phase 2.5: Environment & Configuration** ⏳ Status: `⏸️ Wartend`
+
+**Geschätzter Aufwand:** 1 Tag  
+**Priorität:** 🔴 Kritisch  
+**Abhängigkeiten:** Phase 2 Complete
+
+#### **Tasks (Phase 2.5):**
+
+- [ ] **2.5.1** Environment Configuration
+  - [ ] .env Files für dev/staging/prod
+  - [ ] Environment Type Definitions
+  - [ ] API Base URL Configuration
+  - [ ] Feature Flags Setup
+- [ ] **2.5.2** Error Monitoring Setup
+  - [ ] Error Boundary Implementation
+  - [ ] Console Error Tracking
+  - [ ] User Feedback System
+- [ ] **2.5.3** Performance Setup
+  - [ ] Bundle Analyzer Configuration
+  - [ ] Performance Monitoring
+  - [ ] Lazy Loading Strategy
 
 ### **Phase 3: Authentication System** ⏳ Status: `⏸️ Wartend`
 
@@ -730,7 +728,7 @@ pnpm analyze
 - [React 18 Docs](https://react.dev/)
 - [Vite Guide](https://vitejs.dev/guide/)
 - [TailwindCSS Docs](https://tailwindcss.com/docs)
-- [shadcn/ui Components](https://ui.shadcn.com/)
+- [shadcn Components](https://ui.shadcn.com/)
 - [Zustand Guide](https://github.com/pmndrs/zustand)
 - [TanStack Query](https://tanstack.com/query/latest)
 

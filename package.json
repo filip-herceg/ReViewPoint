@@ -1,0 +1,23 @@
+{
+  "name": "reviewpoint-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ReViewPoint - PDF Review System",
+  "type": "module",
+  "scripts": {
+    "prepare": "husky install",
+    "frontend:lint": "cd frontend && pnpm run lint",
+    "frontend:format": "cd frontend && pnpm run format",
+    "frontend:test": "cd frontend && pnpm run test:run"
+  },
+  "devDependencies": {
+    "husky": "^8.0.3"
+  },
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
