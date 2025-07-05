@@ -154,21 +154,33 @@ frontend/
 **📝 Notizen Phase 0.5:**
 
 ```text
-[Datum] - [Status] - [Notiz]
+[2025-07-05] - 🟢 Docs & Plan Updated - PHASE_0.5_SETUP.md created and improved with:
+- HSTS and X-Content-Type-Options added to CSP section
+- RSC section now recommends monitoring Vite/React releases
+- Analytics section now includes GDPR/privacy compliance notes
 
 Lessons Learned:
-- 
+- Modern security and observability require explicit privacy and compliance notes
+- RSC support in Vite is still experimental, so keep monitoring
 
 Blockers:
-- 
+- None for documentation phase
 
 Next Steps:
-- 
+- Proceed with technical setup and automation for Phase 0.5
 
 Quick Wins Archive:
 - Bundle Size Budget: 250KB initial, 1MB total
 - Core Web Vitals Targets: LCP <2.5s, FID <100ms, CLS <0.1
 - Security Headers: CSP, HSTS, X-Content-Type-Options
+
+[2025-07-05] - ✅ Phase 0.5 Technical Setup Complete
+- All dependencies updated and installed with pnpm
+- Vite, React, Module Federation, CSP, bundle analyzer, and visualizer plugins configured in vite.config.ts
+- Sentry, web-vitals (v5+ API), and Plausible analytics integrated in src/main.tsx and src/analytics.ts
+- Security audit run; 9 dev-only vulnerabilities documented in PHASE_0.5_SETUP.md (no impact on production)
+- All steps documented in PHASE_0.5_SETUP.md for reproducibility
+- Ready to mark Phase 0.5 tasks as complete and proceed to Phase 1
 ```
 
 ---
