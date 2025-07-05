@@ -5,14 +5,12 @@
   "description": "ReViewPoint - PDF Review System",
   "type": "module",
   "scripts": {
-    "prepare": "husky install",
+    "prepare": "",
     "frontend:lint": "cd frontend && pnpm run lint",
     "frontend:format": "cd frontend && pnpm run format",
     "frontend:test": "cd frontend && pnpm run test:run"
   },
-  "devDependencies": {
-    "husky": "^8.0.3"
-  },
+  "devDependencies": {},
   "workspaces": [
     "frontend",
     "backend"

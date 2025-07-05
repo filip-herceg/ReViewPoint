@@ -24,36 +24,13 @@ git config --global core.autocrlf input
 After cloning the repository:
 
 ```bash
-# Install dependencies and set up Husky hooks
+# Install dependencies
 pnpm install
-
-# This will automatically run "husky install" via the prepare script
 ```
 
-## Git Hooks (Husky)
+## Git Hooks
 
-This repository uses Husky for pre-commit hooks that:
-
-- Run ESLint on frontend code
-- Format code with Biome
-- Ensure code quality before commits
-
-### Troubleshooting Git Hooks
-
-If you get "cannot spawn .husky/pre-commit" error:
-
-1. **Ensure proper setup**: Run `pnpm install` in the root directory
-2. **Check Git configuration**: Verify `git config core.hooksPath` returns `.husky`
-3. **Line endings**: The `.gitattributes` file ensures proper line endings
-4. **Reinstall hooks**: Run `npx husky install` if needed
-
-### For Windows Users
-
-If you're using PowerShell or Command Prompt and hooks still fail:
-
-- Git for Windows should handle shell script execution automatically
-- Ensure Git for Windows is properly installed with Git Bash
-- The hooks use npm scripts for cross-platform compatibility
+This project no longer uses Husky or pre-commit Git hooks. Please run linting and formatting manually before committing.
 
 ## Development Workflow
 
@@ -69,4 +46,3 @@ If you're using PowerShell or Command Prompt and hooks still fail:
 - `frontend/` - React frontend application
 - `backend/` - Python FastAPI backend
 - `docs/` - Documentation
-- `.husky/` - Git hooks configuration
