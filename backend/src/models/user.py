@@ -8,14 +8,12 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from sqlalchemy import JSON, Boolean, DateTime, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, WriteOnlyMapped, mapped_column, relationship
 
 from src.models.base import BaseModel
 
 if TYPE_CHECKING:
     from .file import File
-
-    files: Sequence[File]
 
 
 class User(BaseModel):
@@ -42,10 +40,10 @@ class User(BaseModel):
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     # created_at, updated_at inherited from BaseModel
 
-    # The type: ignore is not allowed, so we use the most accurate type possible for SQLAlchemy relationships.
-    files: Any = relationship(
+    # Use WriteOnlyMapped for the relationship to avoid typing issues
+    files: WriteOnlyMapped[File] = relationship(
         "File", back_populates="user"
-    )  # SQLAlchemy returns a dynamic collection; Any is required here.
+    )
 
     @property
     def role(self: User) -> Literal["admin", "user"]:

@@ -1,5 +1,6 @@
 from datetime import UTC, datetime, timedelta
-from typing import cast
+from typing import Final, cast
+from collections.abc import Mapping
 
 import pytest
 from jose import jwt
@@ -10,28 +11,44 @@ from tests.test_templates import SecurityUnitTestTemplate
 
 
 class TestSecurity(SecurityUnitTestTemplate):
-    def test_jwt_token_creation(self):
+    # Test data as typed constants
+    _TEST_USER_ID: Final[str] = "1"
+    _TEST_EMAIL: Final[str] = "test@example.com"
+    _TEST_USER_ID_2: Final[str] = "42"
+    _TEST_EMAIL_2: Final[str] = "testuser@example.com"
+    _TEST_JTI: Final[str] = "test-jwt-id-123456789"
+    _EXPIRED_USER_ID: Final[str] = "expired"
+    _FAKE_SECRET: Final[str] = "not_the_real_secret"
+    _TOKEN_EXPIRY_MINUTES: Final[int] = 30
+    _TEST_PASSWORD: Final[str] = "TestPassword123!"
+
+    def test_jwt_token_creation(self) -> None:
+        """Test JWT token creation with basic user data."""
         settings = get_settings()
-        data = {"sub": "1", "email": "test@example.com"}
-        token = create_access_token(data=data)
+        data: Mapping[str, str] = {"sub": self._TEST_USER_ID, "email": self._TEST_EMAIL}
+        token: str = create_access_token(data=data)
         self.assert_jwt_claims(
             token=token,
             secret=cast(str, settings.jwt_secret_key),
             algorithm=settings.jwt_algorithm,
-            expected_claims={"sub": "1", "email": "test@example.com"},
+            expected_claims={"sub": self._TEST_USER_ID, "email": self._TEST_EMAIL},
         )
 
     @pytest.mark.jwt
-    def test_manual_jwt_token(self):
+    def test_manual_jwt_token(self) -> None:
+        """Test manual JWT token creation with full payload."""
         settings = get_settings()
-        payload = {
-            "sub": "42",
-            "email": "testuser@example.com",
-            "exp": int((datetime.now(UTC) + timedelta(minutes=30)).timestamp()),
-            "iat": int(datetime.now(UTC).timestamp()),
-            "jti": "test-jwt-id-123456789",
+        current_time: datetime = datetime.now(UTC)
+        expiry_time: datetime = current_time + timedelta(minutes=self._TOKEN_EXPIRY_MINUTES)
+        
+        payload: dict[str, str | int] = {
+            "sub": self._TEST_USER_ID_2,
+            "email": self._TEST_EMAIL_2,
+            "exp": int(expiry_time.timestamp()),
+            "iat": int(current_time.timestamp()),
+            "jti": self._TEST_JTI,
         }
-        token = jwt.encode(
+        token: str = jwt.encode(
             payload,
             cast(str, settings.jwt_secret_key),
             algorithm=settings.jwt_algorithm,
@@ -41,20 +58,25 @@ class TestSecurity(SecurityUnitTestTemplate):
             secret=cast(str, settings.jwt_secret_key),
             algorithm=settings.jwt_algorithm,
             expected_claims={
-                "sub": "42",
-                "email": "testuser@example.com",
-                "jti": "test-jwt-id-123456789",
+                "sub": self._TEST_USER_ID_2,
+                "email": self._TEST_EMAIL_2,
+                "jti": self._TEST_JTI,
             },
         )
 
-    def test_jwt_expired(self):
+    def test_jwt_expired(self) -> None:
+        """Test JWT token expiration handling."""
         settings = get_settings()
-        payload = {
-            "sub": "expired",
-            "exp": int((datetime.now(UTC) - timedelta(seconds=1)).timestamp()),
-            "iat": int((datetime.now(UTC) - timedelta(minutes=1)).timestamp()),
+        current_time: datetime = datetime.now(UTC)
+        expired_time: datetime = current_time - timedelta(seconds=1)
+        issued_time: datetime = current_time - timedelta(minutes=1)
+        
+        payload: dict[str, str | int] = {
+            "sub": self._EXPIRED_USER_ID,
+            "exp": int(expired_time.timestamp()),
+            "iat": int(issued_time.timestamp()),
         }
-        token = jwt.encode(
+        token: str = jwt.encode(
             payload,
             cast(str, settings.jwt_secret_key),
             algorithm=settings.jwt_algorithm,
@@ -65,24 +87,28 @@ class TestSecurity(SecurityUnitTestTemplate):
             algorithm=settings.jwt_algorithm,
         )
 
-    def test_jwt_invalid_signature(self):
+    def test_jwt_invalid_signature(self) -> None:
+        """Test JWT token with invalid signature."""
         settings = get_settings()
-        data = {"sub": "1", "email": "test@example.com"}
-        token = create_access_token(data=data)
+        data: Mapping[str, str] = {"sub": self._TEST_USER_ID, "email": self._TEST_EMAIL}
+        token: str = create_access_token(data=data)
         self.assert_jwt_invalid(
             token=token,
-            secret="not_the_real_secret",
+            secret=self._FAKE_SECRET,
             algorithm=settings.jwt_algorithm,
         )
 
-    def test_patch_jwt_secret(self):
+    def test_patch_jwt_secret(self) -> None:
+        """Test patching JWT secret and verifying token becomes invalid."""
         settings = get_settings()
-        # Patch the secret and check that a valid token now fails
-        data = {"sub": "1", "email": "test@example.com"}
-        token = create_access_token(data=data)
-        self.patch_jwt_secret("not_the_real_secret")
+        # Create a token with the original secret
+        data: Mapping[str, str] = {"sub": self._TEST_USER_ID, "email": self._TEST_EMAIL}
+        token: str = create_access_token(data=data)
+        
+        # Patch the secret and check that the valid token now fails
+        self.patch_jwt_secret(self._FAKE_SECRET)
         self.assert_jwt_invalid(
             token=token,
-            secret="not_the_real_secret",
+            secret=self._FAKE_SECRET,
             algorithm=settings.jwt_algorithm,
         )

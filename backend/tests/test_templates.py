@@ -1183,7 +1183,7 @@ class AlembicEnvTestTemplate:
     Provides helpers for patching alembic context, asserting migration calls, and error assertions.
     """
 
-    def patch_alembic_context(self, monkeypatch, context_mod):
+    def patch_alembic_context(self, monkeypatch: Any, context_mod: Any) -> None:
         import sys
         import types
 
@@ -1198,16 +1198,16 @@ class AlembicEnvTestTemplate:
             types.SimpleNamespace(context=context_mod),
         )
 
-    def assert_called_once(self, mock_obj, msg=None):
+    def assert_called_once(self, mock_obj: Any, msg: str | None = None) -> None:
         assert mock_obj.called, msg or "Expected mock to be called"
         assert mock_obj.call_count == 1, (
             msg or f"Expected mock to be called once, got {mock_obj.call_count}"
         )
 
-    def assert_not_called(self, mock_obj, msg=None):
+    def assert_not_called(self, mock_obj: Any, msg: str | None = None) -> None:
         assert not mock_obj.called, msg or "Expected mock to not be called"
 
-    def assert_raises(self, exc_type, func, *args, match=None, **kwargs):
+    def assert_raises(self, exc_type: type[BaseException], func: Any, *args: Any, match: str | None = None, **kwargs: Any) -> None:
         import pytest
 
         if match:
@@ -1217,10 +1217,10 @@ class AlembicEnvTestTemplate:
             with pytest.raises(exc_type):
                 func(*args, **kwargs)
 
-    def assert_true(self, expr, msg=None):
+    def assert_true(self, expr: Any, msg: str | None = None) -> None:
         assert expr, msg or f"Expected expression to be True, got {expr}"
 
-    def assert_is_instance(self, obj, cls, msg=None):
+    def assert_is_instance(self, obj: Any, cls: type[Any], msg: str | None = None) -> None:
         assert isinstance(obj, cls), (
             msg or f"Expected {obj!r} to be instance of {cls!r}, got {type(obj)}"
         )

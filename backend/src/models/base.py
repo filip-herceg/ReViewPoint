@@ -1,8 +1,9 @@
 from collections.abc import Mapping
+from datetime import datetime
 from typing import Any, Final, cast
 
 from sqlalchemy import DateTime, Integer, func
-from sqlalchemy.orm import DeclarativeBase, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 class Base(DeclarativeBase):
@@ -18,13 +19,13 @@ class Base(DeclarativeBase):
 
 class BaseModel(Base):
     __abstract__: Final[bool] = True
-    id: Any = mapped_column(
+    id: Mapped[int] = mapped_column(
         Integer, primary_key=True, autoincrement=True
-    )  # SQLAlchemy sets type dynamically
-    created_at: Any = mapped_column(
+    )
+    created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=func.now(), nullable=False
     )
-    updated_at: Any = mapped_column(
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=func.now(), onupdate=func.now(), nullable=False
     )
 
