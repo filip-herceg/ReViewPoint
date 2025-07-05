@@ -147,19 +147,19 @@ frontend/
 
 #### **Tasks (Phase 0.5):**
 
-- [ ] **0.5.1** Architecture Quick Wins
-  - [ ] Vite Module Federation Setup evaluieren (für spätere Microfrontend-Migration)
-  - [ ] React Server Components Strategie evaluieren (für Performance)
-  - [ ] Bundle Size Budget festlegen (<250KB initial, <1MB total)
-  - [ ] Core Web Vitals Targets definieren (LCP <2.5s, FID <100ms, CLS <0.1)
-- [ ] **0.5.2** Security Foundation
-  - [ ] Content Security Policy (CSP) Header konfigurieren
-  - [ ] DOMPurify für XSS-Schutz einrichten
-  - [ ] Dependency Security Audit (npm audit / pnpm audit)
-- [ ] **0.5.3** Observability Setup
-  - [ ] Sentry Integration für Error Tracking
-  - [ ] Web Vitals Library für Performance Monitoring
-  - [ ] Basic Analytics Setup (Vercel Analytics / Plausible)
+- [x] **0.5.1** Architecture Quick Wins
+  - [x] Vite Module Federation Setup evaluieren (für spätere Microfrontend-Migration)
+  - [x] React Server Components Strategie evaluieren (für Performance)
+  - [x] Bundle Size Budget festlegen (<250KB initial, <1MB total)
+  - [x] Core Web Vitals Targets definieren (LCP <2.5s, FID <100ms, CLS <0.1)
+- [x] **0.5.2** Security Foundation
+  - [x] Content Security Policy (CSP) Header konfigurieren
+  - [x] DOMPurify für XSS-Schutz einrichten
+  - [x] Dependency Security Audit (npm audit / pnpm audit)
+- [x] **0.5.3** Observability Setup
+  - [x] Sentry Integration für Error Tracking
+  - [x] Web Vitals Library für Performance Monitoring
+  - [x] Basic Analytics Setup (Vercel Analytics / Plausible)
 
 **📝 Notizen Phase 0.5:**
 
@@ -226,11 +226,13 @@ Quick Wins Archive:
 - All core tooling, dependencies, and scripts are in place
 - Testing, linting, formatting, and E2E setup is robust and non-interactive
 - Shared test utilities and .gitignore for frontend are established
+- Implemented, then removed Husky because of Windows-Developer incompatibility
 
 Lessons Learned:
 - Centralizing test utilities and ignoring frontend artifacts early prevents future tech debt
 - Monorepo Husky and pnpm setup is reliable for all contributors
 - Explicit .gitignore sections for frontend avoid accidental commits
+- Husky is horrible to use with Windows users
 
 Blockers:
 - None. All planned setup tasks completed without major issues
@@ -250,10 +252,10 @@ Next Steps:
 
 #### **Tasks (Phase 2):**
 
-- [ ] **2.1** Zustand Store Setup
-  - [ ] Authentication Store (User, Token, Login/Logout)
-  - [ ] Upload Store (File Status, Progress, History)
-  - [ ] UI Store (Theme, Sidebar State, Notifications)
+- [x] **2.1** Zustand Store Setup
+  - [x] Authentication Store (User, Token, Login/Logout)
+  - [x] Upload Store (File Status, Progress, History)
+  - [x] UI Store (Theme, Sidebar State, Notifications)
 - [ ] **2.2** API Integration Foundation
   - [ ] Axios Client mit Interceptors (Auth, Error Handling)
   - [ ] TanStack Query Setup und Configuration  
@@ -271,16 +273,29 @@ Next Steps:
 **📝 Notizen Phase 2:**
 
 ```text
-[Datum] - [Status] - [Notiz]
+[2025-07-05] - ✅ Phase 2.1 Zustand Store Setup Complete
+- Zustand installed and modularized into `authStore.ts`, `uploadStore.ts`, and `uiStore.ts` in `src/lib/store/`.
+- Authentication store manages user/token/login/logout, fully unit tested.
+- Upload store manages file status, progress, history, and async CRUD actions (with loading/error state), fully unit, integration, and async tested.
+- UI store manages theme, sidebar, notifications, fully unit tested.
+- Absolute imports configured and used throughout.
+- All store logic is robust, idiomatic, and maintainable.
+
+Additional Achievements:
+- Centralized API utility (`src/lib/api/api.ts`) for authentication and upload CRUD, fully tested.
+- Upload management UI (`UploadList`, `UploadForm`) with edit/delete actions, all states handled, and component tests.
+- Project structure cleaned and redundant files removed.
+- All tests (unit, integration, async, component) are passing.
 
 Lessons Learned:
-- 
+- Modular Zustand stores and a centralized API utility enable rapid, robust feature development.
+- Early investment in test coverage and absolute imports pays off in maintainability and confidence.
 
 Blockers:
-- 
+- None for Phase 2.1. Ready for further API integration, routing, and UI expansion.
 
 Next Steps:
-- 
+- Proceed to Phase 2.2 (API Integration Foundation) and 2.3 (Routing & Navigation).
 ```
 
 ---

@@ -5,7 +5,14 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import csp from 'vite-plugin-csp';
 
 
+import { resolve } from 'path';
+
 export default defineConfig({
+    resolve: {
+        alias: {
+            '@': resolve(__dirname, 'src'),
+        },
+    },
     plugins: [
         react(),
         federation({
