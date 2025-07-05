@@ -1,0 +1,14 @@
+{
+  "editor.formatOnSave": true,
+  // "editor.defaultFormatter": "@biomejs.biome", // Uncomment if VS Code extension is installed
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "always"
+  },
+  "files.eol": "\n",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "typescript.format.enable": false,
+  "javascript.format.enable": false,
+  "eslint.enable": false,
+  "prettier.enable": false
+}
