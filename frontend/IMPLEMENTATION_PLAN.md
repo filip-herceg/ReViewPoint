@@ -1,9 +1,9 @@
 # 🚀 Frontend Implementation Plan - ReViewPoint
 
-**Projektstatus:** 🔄 In Planung  
-**Start Datum:** 2025-07-05  
-**Ziel-Launch:** TBD  
-**Verantwortlich:** [Name eintragen]
+**Project Status:** 🔄 In Planning  
+**Start Date:** 2025-07-05  
+**Target Launch:** TBD  
+**Responsible:** [Enter Name]
 
 ---
 
@@ -17,42 +17,42 @@
 
 ---
 
-## �📋 **Übersicht & Ziele**
+## 📋 **Overview & Goals**
 
-### **Hauptziele:**
+### **Main Goals:**
 
-- [ ] Moderne React-Frontend-Anwendung mit TypeScript
-- [ ] Nahtlose Integration mit bestehendem FastAPI Backend
-- [ ] PDF-Upload und Review-System
-- [ ] Benutzerauthentifizierung und Rollenverwaltung
-- [ ] Responsive, moderne UI mit Dark/Light Mode
-- [ ] Hohe Testabdeckung (>80%)
+- [ ] Modern React Frontend Application with TypeScript
+- [ ] Seamless Integration with existing FastAPI Backend
+- [ ] PDF Upload and Review System
+- [ ] User Authentication and Role Management
+- [ ] Responsive, modern UI with Dark/Light Mode
+- [ ] High Test Coverage (>80%)
 
 ---
 
 ## 🎯 **2025 Trend Integration & Future-Proofing**
 
-### **Implementierte 2025 Best Practices:**
+### **Implemented 2025 Best Practices:**
 
-- ✅ **React Server Components** - Evaluiert für Performance-Optimierung
-- ✅ **Microfrontend Readiness** - Vite Module Federation vorbereitet
-- ✅ **Modern Security** - CSP, XSS-Schutz, Dependency Audits
-- ✅ **WCAG 2.1 AA** - Vollständige Accessibility-Compliance
+- ✅ **React Server Components** - Evaluated for Performance Optimization
+- ✅ **Microfrontend Readiness** - Vite Module Federation prepared
+- ✅ **Modern Security** - CSP, XSS Protection, Dependency Audits
+- ✅ **WCAG 2.1 AA** - Complete Accessibility Compliance
 - ✅ **Core Web Vitals** - Performance Budget & Monitoring
 - ✅ **Modern Observability** - Sentry, Web Vitals, Analytics
-- ✅ **AI Integration Ready** - Struktur für zukünftige AI-Features
+- ✅ **AI Integration Ready** - Structure for future AI Features
 
-### **Skalierungs-Roadmap:**
+### **Scaling Roadmap:**
 
 ```text
 Q2 2025: MVP Launch
-- Single-Spa Architektur
+- Single-Spa Architecture
 - Basic Performance Monitoring
 - Essential Security Features
 
 Q3 2025: Scale-Up
 - Microfrontend Migration (Optional)
-- React Server Components (wenn Next.js)
+- React Server Components (if Next.js)
 - Advanced Analytics & A/B Testing
 
 Q4 2025: Enterprise Ready
@@ -64,7 +64,7 @@ Q4 2025: Enterprise Ready
 ### **Technology Decision Tree:**
 
 ```text
-Start: Single-Page Application (SPA) mit React
+Start: Single-Page Application (SPA) with React
 ├── Small Team (<5 devs) → Monolith SPA
 ├── Growing Team (5-15 devs) → Module Federation
 └── Large Team (>15 devs) → Full Microfrontends
@@ -83,27 +83,27 @@ Deployment:
 ---ack (2025 Best Practices):**
 
 ```text
-Build Tool:       Vite 5+ (mit Module Federation für Microfrontends)
-Framework:        React 18+ + TypeScript 5+ (mit React Server Components)
+Build Tool:       Vite 5+ (with Module Federation for Microfrontends)
+Framework:        React 18+ + TypeScript 5+ (with React Server Components)
 State Management: Zustand + TanStack Query v5
 UI Library:       shadcn v2 + TailwindCSS v4
 Forms:            React Hook Form + Zod (Validation)
-HTTP Client:      Axios (für TanStack Query)
+HTTP Client:      Axios (for TanStack Query)
 Router:           React Router v7
 File Upload:      React Dropzone + Uppy.js
-PDF Viewer:       react-pdf oder PDF.js
-Icons:            Lucide React (konsistent mit shadcn)
+PDF Viewer:       react-pdf or PDF.js
+Icons:            Lucide React (consistent with shadcn)
 Testing:          Vitest + React Testing Library + Playwright
 Package Manager:  pnpm v9
-Linting:          Biome (ESLint + Prettier Ersatz)
-Security:         DOMPurify (XSS-Schutz), Helmet (CSP)
+Linting:          Biome (ESLint + Prettier Replacement)
+Security:         DOMPurify (XSS Protection), Helmet (CSP)
 Performance:      Web Vitals Library, Lighthouse CI
 Observability:    Sentry (Error Tracking), Vercel Analytics
 ```
 
 ---
 
-## 🗂️ **Projektstruktur**
+## 🗂️ **Project Structure**
 
 ```text
 frontend/
@@ -111,57 +111,57 @@ frontend/
 │   ├── favicon.ico
 │   └── manifest.json
 ├── src/
-│   ├── components/          # Wiederverwendbare UI-Komponenten
-│   │   ├── ui/             # shadcn Komponenten
-│   │   ├── forms/          # Formular-Komponenten
-│   │   ├── layout/         # Layout-Komponenten (Header, Sidebar, etc.)
-│   │   └── features/       # Feature-spezifische Komponenten
-│   ├── pages/              # Route-basierte Seiten-Komponenten
+│   ├── components/          # Reusable UI Components
+│   │   ├── ui/             # shadcn Components
+│   │   ├── forms/          # Form Components
+│   │   ├── layout/         # Layout Components (Header, Sidebar, etc.)
+│   │   └── features/       # Feature-specific Components
+│   ├── pages/              # Route-based Page Components
 │   │   ├── auth/           # Login, Register, etc.
-│   │   ├── dashboard/      # Dashboard und Overview
-│   │   ├── uploads/        # Upload und File Management
-│   │   └── reviews/        # Review und Analysis
+│   │   ├── dashboard/      # Dashboard and Overview
+│   │   ├── uploads/        # Upload and File Management
+│   │   └── reviews/        # Review and Analysis
 │   ├── hooks/              # Custom React Hooks
-│   ├── lib/                # Utilities und Konfiguration
+│   ├── lib/                # Utilities and Configuration
 │   │   ├── api/            # API Client (Axios + TanStack Query)
 │   │   ├── auth/           # Authentication Logic
-│   │   ├── utils/          # Helper Funktionen
+│   │   ├── utils/          # Helper Functions
 │   │   └── store/          # Zustand Store Configuration
-│   ├── styles/             # Globale Styles und Themes
-│   ├── types/              # TypeScript Type Definitionen
-│   └── tests/              # Test Utilities und Setup
-├── docs/                   # Komponentendokumentation
+│   ├── styles/             # Global Styles and Themes
+│   ├── types/              # TypeScript Type Definitions
+│   └── tests/              # Test Utilities and Setup
+├── docs/                   # Component Documentation
 ├── e2e/                    # End-to-End Tests (Playwright)
 └── coverage/               # Test Coverage Reports
 ```
 
 ---
 
-## 📊 **Implementierung - Phase Planning**
+## 📊 **Implementation - Phase Planning**
 
-### **Phase 0.5: Quick Setup & Architecture Evaluation** ⏳ Status: `🔄 Geplant`
+### **Phase 0.5: Quick Setup & Architecture Evaluation** ⏳ Status: `🔄 Planned`
 
-**Geschätzter Aufwand:** 0.5 Tage  
-**Priorität:** 🔴 Kritisch  
-**Abhängigkeiten:** Keine
+**Estimated Effort:** 0.5 days  
+**Priority:** 🔴 Critical  
+**Dependencies:** None
 
 #### **Tasks (Phase 0.5):**
 
 - [x] **0.5.1** Architecture Quick Wins
-  - [x] Vite Module Federation Setup evaluieren (für spätere Microfrontend-Migration)
-  - [x] React Server Components Strategie evaluieren (für Performance)
-  - [x] Bundle Size Budget festlegen (<250KB initial, <1MB total)
-  - [x] Core Web Vitals Targets definieren (LCP <2.5s, FID <100ms, CLS <0.1)
+  - [x] Evaluate Vite Module Federation Setup (for future Microfrontend Migration)
+  - [x] Evaluate React Server Components Strategy (for Performance)
+  - [x] Set Bundle Size Budget (<250KB initial, <1MB total)
+  - [x] Define Core Web Vitals Targets (LCP <2.5s, FID <100ms, CLS <0.1)
 - [x] **0.5.2** Security Foundation
-  - [x] Content Security Policy (CSP) Header konfigurieren
-  - [x] DOMPurify für XSS-Schutz einrichten
+  - [x] Configure Content Security Policy (CSP) Headers
+  - [x] Set up DOMPurify for XSS Protection
   - [x] Dependency Security Audit (npm audit / pnpm audit)
 - [x] **0.5.3** Observability Setup
-  - [x] Sentry Integration für Error Tracking
-  - [x] Web Vitals Library für Performance Monitoring
+  - [x] Sentry Integration for Error Tracking
+  - [x] Web Vitals Library for Performance Monitoring
   - [x] Basic Analytics Setup (Vercel Analytics / Plausible)
 
-**📝 Notizen Phase 0.5:**
+**📝 Phase 0.5 Notes:**
 
 ```text
 [2025-07-05] - 🟢 Docs & Plan Updated - PHASE_0.5_SETUP.md created and improved with:
@@ -195,38 +195,38 @@ Quick Wins Archive:
 
 ---
 
-### **Phase 1: Project Setup & Foundation** ⏳ Status: `🔄 Geplant`
+### **Phase 1: Project Setup & Foundation** ⏳ Status: `🔄 Planned`
 
-**Geschätzter Aufwand:** 1-2 Tage  
-**Priorität:** 🔴 Kritisch
+**Estimated Effort:** 1-2 days  
+**Priority:** 🔴 Critical
 
 #### **Tasks (Phase 1):**
 
 - [ ] **1.1** Vite + React + TypeScript Setup
   - [x] `npm create vite@latest frontend -- --template react-ts`
-  - [x] pnpm Installation und Konfiguration
-  - [x] Basis-Dependencies installieren
+  - [x] pnpm installation and configuration
+  - [x] Install base dependencies
 - [ ] **1.2** TailwindCSS + shadcn Integration
-  - [x] TailwindCSS Installation und Konfiguration
-  - [x] shadcn Setup mit CLI
-  - [x] Basis-Komponenten importieren (Button, Input, Card)
+  - [x] TailwindCSS installation and configuration
+  - [x] shadcn setup with CLI
+  - [x] Import base components (Button, Input, Card)
 - [ ] **1.3** Entwicklungsumgebung
-  - [x] Biome Setup (ESLint + Prettier Alternative)
-  - [x] VS Code Konfiguration (.vscode/settings.json)
-  - [x] Git Hooks Setup (pre-commit)
+  - [x] Biome setup (ESLint + Prettier alternative)
+  - [x] VS Code configuration (.vscode/settings.json)
+  - [x] Git hooks setup (pre-commit)
 - [ ] **1.4** Testing Foundation
-  - [x] Vitest Konfiguration
-  - [x] React Testing Library Setup
-  - [x] Playwright Installation
+  - [x] Vitest configuration
+  - [x] React Testing Library setup
+  - [x] Playwright installation
 
-**📝 Notizen Phase 1:**
+**📝 Phase 1 Notes:**
 
 ```text
 [2025-07-05] - ✅ Phase 1 Complete - Project setup and foundation established
 - All core tooling, dependencies, and scripts are in place
 - Testing, linting, formatting, and E2E setup is robust and non-interactive
 - Shared test utilities and .gitignore for frontend are established
-- Implemented, then removed Husky because of Windows-Developer incompatibility
+- Implemented, then removed Husky because of Windows developer incompatibility
 
 Lessons Learned:
 - Centralizing test utilities and ignoring frontend artifacts early prevents future tech debt
@@ -246,9 +246,9 @@ Next Steps:
 
 ### **Phase 2: Core Architecture & State Management** ⏳ Status: `⏸️ Wartend`
 
-**Geschätzter Aufwand:** 2-3 Tage  
-**Priorität:** 🔴 Kritisch  
-**Abhängigkeiten:** Phase 1 Complete
+**Estimated Effort:** 2-3 days  
+**Priority:** 🔴 Critical  
+**Dependencies:** Phase 1 Complete
 
 #### **Tasks (Phase 2):**
 
@@ -257,20 +257,20 @@ Next Steps:
   - [x] Upload Store (File Status, Progress, History)
   - [x] UI Store (Theme, Sidebar State, Notifications)
 - [ ] **2.2** API Integration Foundation
-  - [ ] Axios Client mit Interceptors (Auth, Error Handling)
-  - [ ] TanStack Query Setup und Configuration  
-  - [ ] Error Handling Strategien (Network, 4xx, 5xx)
-  - [ ] TypeScript Interfaces für Backend APIs
-  - [ ] API Response/Request Type Generation
-  - [ ] JWT Token Refresh Logic
-  - [ ] WebSocket Connection (für Real-time Updates)
+  - [x] Axios client with interceptors (auth, error handling)
+  - [x] TanStack Query setup and configuration  
+  - [x] Error handling strategies (network, 4xx, 5xx)
+  - [ ] TypeScript interfaces for backend APIs
+  - [ ] API response/request type generation
+  - [ ] JWT token refresh logic
+  - [ ] WebSocket connection (for real-time updates)
 - [ ] **2.3** Routing & Navigation
   - [ ] React Router v7 Setup
   - [ ] Protected Routes (Auth Guards)
-  - [ ] Route-basierte Code Splitting
-  - [ ] Breadcrumb Navigation
+  - [ ] Route-based code splitting
+  - [ ] Breadcrumb navigation
 
-**📝 Notizen Phase 2:**
+**📝 Phase 2 Notes:**
 
 ```text
 [2025-07-05] - ✅ Phase 2.1 Zustand Store Setup Complete
@@ -280,6 +280,12 @@ Next Steps:
 - UI store manages theme, sidebar, notifications, fully unit tested.
 - Absolute imports configured and used throughout.
 - All store logic is robust, idiomatic, and maintainable.
+
+[2025-07-07] - ✅ Phase 2.2 API Integration Foundation (Partial Complete)
+- Axios client with interceptors (auth, error handling) - COMPLETED
+- TanStack Query setup and configuration - COMPLETED
+- Error handling strategies (network, 4xx, 5xx) - COMPLETED
+- Remaining tasks: TypeScript interfaces, API type generation, JWT token refresh logic, WebSocket connection
 
 Additional Achievements:
 - Centralized API utility (`src/lib/api/api.ts`) for authentication and upload CRUD, fully tested.
@@ -295,21 +301,22 @@ Blockers:
 - None for Phase 2.1. Ready for further API integration, routing, and UI expansion.
 
 Next Steps:
-- Proceed to Phase 2.2 (API Integration Foundation) and 2.3 (Routing & Navigation).
+- Complete remaining Phase 2.2 tasks (TypeScript interfaces, API type generation, JWT token refresh logic, WebSocket connection)
+- Proceed to Phase 2.3 (Routing & Navigation).
 ```
 
 ---
 
 ### **Phase 2.5: Environment & Configuration** ⏳ Status: `⏸️ Wartend`
 
-**Geschätzter Aufwand:** 1 Tag  
-**Priorität:** 🔴 Kritisch  
-**Abhängigkeiten:** Phase 2 Complete
+**Estimated Effort:** 1 day  
+**Priority:** 🔴 Critical  
+**Dependencies:** Phase 2 Complete
 
 #### **Tasks (Phase 2.5):**
 
 - [ ] **2.5.1** Environment Configuration
-  - [ ] .env Files für dev/staging/prod
+  - [ ] .env files for dev/staging/prod
   - [ ] Environment Type Definitions
   - [ ] API Base URL Configuration
   - [ ] Feature Flags Setup
@@ -331,24 +338,24 @@ Next Steps:
 #### **Tasks (Phase 3):**
 
 - [ ] **3.1** Login/Register Pages
-  - [ ] Login Form mit Validation (React Hook Form + Zod)
-  - [ ] Register Form mit Email Verification
+  - [ ] Login form with validation (React Hook Form + Zod)
+  - [ ] Register form with email verification
   - [ ] Password Reset Flow
   - [ ] Form Error Handling
 - [ ] **3.2** Authentication Logic
   - [ ] JWT Token Management (Storage, Refresh)
-  - [ ] Auto-Logout bei expired Tokens
-  - [ ] Remember Me Funktionalität
+  - [ ] Auto-logout on expired tokens
+  - [ ] Remember Me functionality
   - [ ] User Session Management
 - [ ] **3.3** Protected Components
   - [ ] AuthGuard HOC/Component
   - [ ] Role-based Access Control
   - [ ] Conditional Rendering based on Auth Status
 
-**📝 Notizen Phase 3:**
+**📝 Phase 3 Notes:**
 
 ```text
-[Datum] - [Status] - [Notiz]
+[Date] - [Status] - [Note]
 
 Lessons Learned:
 - 
@@ -364,9 +371,9 @@ Next Steps:
 
 ### **Phase 4: Core UI Components** ⏳ Status: `⏸️ Wartend`
 
-**Geschätzter Aufwand:** 3-4 Tage  
-**Priorität:** 🟠 Hoch  
-**Abhängigkeiten:** Phase 1 Complete
+**Estimated Effort:** 3-4 days  
+**Priority:** 🟠 High  
+**Dependencies:** Phase 1 Complete
 
 #### **Tasks (Phase 4):**
 
@@ -376,27 +383,27 @@ Next Steps:
   - [ ] Dark/Light Theme Toggle
   - [ ] User Menu & Avatar
 - [ ] **4.2** Form Components
-  - [ ] FileUpload Component (Drag & Drop für PDFs)
+  - [ ] FileUpload component (drag & drop for PDFs)
   - [ ] Form Validation Messages
   - [ ] Progress Indicators
   - [ ] Success/Error States
 - [ ] **4.3** Data Display Components
-  - [ ] Data Tables (für Upload History)
-  - [ ] Card Components (für Reviews)
+  - [ ] Data tables (for upload history)
+  - [ ] Card components (for reviews)
   - [ ] Modal/Dialog Components
   - [ ] Notification System (Toasts)
 - [ ] **4.4** Accessibility & Performance Components
-  - [ ] Focus Trap für Modals
-  - [ ] Skip Links für Keyboard Navigation
-  - [ ] ARIA Live Regions für Dynamic Content
+  - [ ] Focus trap for modals
+  - [ ] Skip links for keyboard navigation
+  - [ ] ARIA live regions for dynamic content
   - [ ] Error Boundary Components
-  - [ ] Lazy Loading Components (React.lazy + Suspense)
-  - [ ] Virtualized Lists für große Datenmengen
+  - [ ] Lazy loading components (React.lazy + Suspense)
+  - [ ] Virtualized lists for large data sets
 
-**📝 Notizen Phase 4:**
+**📝 Phase 4 Notes:**
 
 ```text
-[Datum] - [Status] - [Notiz]
+[Date] - [Status] - [Note]
 
 Lessons Learned:
 - 
@@ -420,24 +427,24 @@ Next Steps:
 
 - [ ] **5.1** File Upload Interface
   - [ ] Drag & Drop PDF Upload
-  - [ ] Upload Progress mit Chunks
+  - [ ] Upload progress with chunks
   - [ ] File Validation (Size, Type)
   - [ ] Multiple File Support
 - [ ] **5.2** File Management Dashboard
   - [ ] Upload History Table
   - [ ] File Status Tracking
-  - [ ] Download/View Funktionen
-  - [ ] Delete/Archive Optionen
-- [ ] **5.3** Integration mit Backend
+  - [ ] Download/view functions
+  - [ ] Delete/archive options
+- [ ] **5.3** Integration with backend
   - [ ] Upload API Calls
   - [ ] Progress Tracking
   - [ ] Error Recovery
   - [ ] Background Upload (Service Worker?)
 
-**📝 Notizen Phase 5:**
+**📝 Phase 5 Notes:**
 
 ```text
-[Datum] - [Status] - [Notiz]
+[Date] - [Status] - [Note]
 
 Lessons Learned:
 - 
@@ -453,30 +460,30 @@ Next Steps:
 
 ### **Phase 6: Review & Analysis Interface** ⏳ Status: `⏸️ Wartend`
 
-**Geschätzter Aufwand:** 3-4 Tage  
-**Priorität:** 🟡 Mittel  
-**Abhängigkeiten:** Phase 5 Complete
+**Estimated Effort:** 3-4 days  
+**Priority:** 🟡 Medium  
+**Dependencies:** Phase 5 Complete
 
 #### **Tasks (Phase 6):**
 
 - [ ] **6.1** Review Dashboard
-  - [ ] Übersicht über Analysis Results
-  - [ ] Module-spezifische Anzeigen
-  - [ ] Score Visualisierung
-  - [ ] Feedback Darstellung
+  - [ ] Overview of analysis results
+  - [ ] Module-specific displays
+  - [ ] Score visualization
+  - [ ] Feedback display
 - [ ] **6.2** PDF Viewer Integration
-  - [ ] In-Browser PDF Anzeige
-  - [ ] Highlighting von analysierten Bereichen
-  - [ ] Side-by-Side View (PDF + Results)
+  - [ ] In-browser PDF display
+  - [ ] Highlighting of analyzed sections
+  - [ ] Side-by-side view (PDF + results)
 - [ ] **6.3** LLM Results Display
-  - [ ] Structured Feedback Anzeige
+  - [ ] Structured feedback display
   - [ ] Improvement Suggestions
   - [ ] Export Funktionen (PDF, JSON)
 
-**📝 Notizen Phase 6:**
+**📝 Phase 6 Notes:**
 
 ```text
-[Datum] - [Status] - [Notiz]
+[Date] - [Status] - [Note]
 
 Lessons Learned:
 - 
@@ -492,9 +499,9 @@ Next Steps:
 
 ### **Phase 7: Testing & Quality Assurance** ⏳ Status: `⏸️ Wartend`
 
-**Geschätzter Aufwand:** 3-4 Tage  
-**Priorität:** 🟡 Mittel  
-**Abhängigkeiten:** Alle Features Complete
+**Estimated Effort:** 3-4 days  
+**Priority:** 🟡 Medium  
+**Dependencies:** All features complete
 
 #### **Tasks (Phase 7):**
 
@@ -524,10 +531,10 @@ Next Steps:
   - [ ] Visual Regression Testing (Percy/Chromatic)
   - [ ] Performance Regression Testing
 
-**📝 Notizen Phase 7:**
+**📝 Phase 7 Notes:**
 
 ```text
-[Datum] - [Status] - [Notiz]
+[Date] - [Status] - [Note]
 
 Lessons Learned:
 - 
@@ -543,31 +550,31 @@ Next Steps:
 
 ### **Phase 8: Polish & Deployment** ⏳ Status: `⏸️ Wartend`
 
-**Geschätzter Aufwand:** 2-3 Tage  
-**Priorität:** 🟢 Niedrig  
-**Abhängigkeiten:** Phase 7 Complete
+**Estimated Effort:** 2-3 days  
+**Priority:** 🟢 Low  
+**Dependencies:** Phase 7 Complete
 
 #### **Tasks:**
 
 - [ ] **8.1** UI/UX Polish
-  - [ ] Loading States überall
+  - [ ] Loading states everywhere
   - [ ] Error Boundaries
   - [ ] Empty States
-  - [ ] Responsive Design Feintuning
+  - [ ] Responsive design fine-tuning
 - [ ] **8.2** Production Build
   - [ ] Bundle Optimization
   - [ ] Asset Compression
-  - [ ] Environment Konfiguration
+  - [ ] Environment configuration
 - [ ] **8.3** Documentation
   - [ ] Component Storybook
   - [ ] API Documentation
   - [ ] Deployment Guide
   - [ ] User Manual
 
-**📝 Notizen Phase 8:**
+**📝 Phase 8 Notes:**
 
 ```text
-[Datum] - [Status] - [Notiz]
+[Date] - [Status] - [Note]
 
 Lessons Learned:
 - 
@@ -581,12 +588,12 @@ Next Steps:
 
 ---
 
-## 🎯 **Wichtige Designprinzipien**
+## 🎯 **Key Design Principles**
 
 ### **1. API Integration Guidelines:**
 
 ```typescript
-// Konsistente Fehlerbehandlung
+// Consistent error handling
 const useApiCall = (endpoint: string) => {
   return useQuery({
     queryKey: [endpoint],
@@ -603,7 +610,7 @@ const useApiCall = (endpoint: string) => {
 ### **2. Component Design Guidelines:**
 
 ```typescript
-// Konsistente Props-Struktur
+// Consistent props structure
 interface ComponentProps {
   children?: React.ReactNode;
   className?: string;
@@ -617,7 +624,7 @@ interface ComponentProps {
 ### **3. State Management Patterns:**
 
 ```typescript
-// Zustand Store Struktur
+// Zustand store structure
 interface AppState {
   // UI State
   theme: 'light' | 'dark';
@@ -635,18 +642,18 @@ interface AppState {
 
 ---
 
-## ⚠️ **Kritische Erfolgsfaktoren**
+## ⚠️ **Critical Success Factors**
 
 ### **Must-Have Features:**
 
-1. ✅ **Sichere Authentifizierung** - JWT mit Auto-Refresh
-2. ✅ **Robuster File Upload** - Chunked Upload mit Progress
-3. ✅ **Responsive Design** - Mobile-First Approach
-4. ✅ **Error Handling** - Graceful Degradation
-5. ✅ **Performance** - Code Splitting, Lazy Loading
-6. ✅ **Security** - XSS Protection, Content Security Policy
-7. ✅ **Accessibility** - WCAG 2.1 AA Compliance
-8. ✅ **SEO** - Meta Tags, Open Graph
+1. ✅ **Secure authentication** - JWT with auto-refresh
+2. ✅ **Robust file upload** - Chunked upload with progress
+3. ✅ **Responsive design** - Mobile-first approach
+4. ✅ **Error handling** - Graceful degradation
+5. ✅ **Performance** - Code splitting, lazy loading
+6. ✅ **Security** - XSS protection, content security policy
+7. ✅ **Accessibility** - WCAG 2.1 AA compliance
+8. ✅ **SEO** - Meta tags, Open Graph
 
 ### **Performance Targets:**
 
@@ -667,7 +674,7 @@ interface AppState {
 
 ## 📈 **Progress Tracking**
 
-### **Gesamtfortschritt:**
+### **Overall Progress:**
 
 ```text
 Phase 1 (Setup):           ⬜ 0% Complete
@@ -679,30 +686,30 @@ Phase 6 (Review):          ⬜ 0% Complete
 Phase 7 (Testing):         ⬜ 0% Complete
 Phase 8 (Polish):          ⬜ 0% Complete
 
-Gesamt: ⬜⬜⬜⬜⬜⬜⬜⬜ 0/8 (0%)
+Total: ⬜⬜⬜⬜⬜⬜⬜⬜ 0/8 (0%)
 ```
 
-### **Wöchentliche Reviews:**
+### **Weekly Reviews:**
 
 ```text
-Woche 1 (2025-07-05 bis 2025-07-11):
-- Ziele: Phase 1 + Start Phase 2
-- Erreicht: [Eintragen nach Woche]
-- Blockers: [Eintragen]
-- Nächste Woche: [Eintragen]
+Week 1 (2025-07-05 to 2025-07-11):
+- Goals: Phase 1 + Start Phase 2
+- Achieved: [Fill in after week]
+- Blockers: [Fill in]
+- Next week: [Fill in]
 
-Woche 2 (2025-07-12 bis 2025-07-18):
-- Ziele: 
-- Erreicht: 
+Week 2 (2025-07-12 to 2025-07-18):
+- Goals: 
+- Achieved: 
 - Blockers: 
-- Nächste Woche: 
+- Next week: 
 ```
 
 ---
 
 ## 🔧 **Tools & Scripts**
 
-### **Entwicklung:**
+### **Development:**
 
 ```bash
 # Development Server
@@ -736,9 +743,9 @@ pnpm analyze
 
 ---
 
-## 📚 **Ressourcen & Links**
+## 📚 **Resources & Links**
 
-### **Dokumentation:**
+### **Documentation:**
 
 - [React 18 Docs](https://react.dev/)
 - [Vite Guide](https://vitejs.dev/guide/)
@@ -758,26 +765,26 @@ pnpm analyze
 ## 📝 **Daily Standup Template**
 
 text
-Datum: [YYYY-MM-DD]
-Entwickler: [Name]
+Date: [YYYY-MM-DD]
+Developer: [Name]
 
-Gestern erledigt:
+Completed yesterday:
 
 - [ ] Task 1
 - [ ] Task 2
 
-Heute geplant:  
+Planned today:  
 
 - [ ] Task 1
 - [ ] Task 2
 
 Blockers:
 
-- [None / Beschreibung]
+- [None / Description]
 
-Notizen:
+Notes:
 
-- [Wichtige Erkenntnisse, Links, etc.]
+- [Important findings, links, etc.]
 
 ```text
 
@@ -785,59 +792,59 @@ Notizen:
 
 ## 🎉 **Milestone Celebrations**
 
-- [ ] **Phase 1 Complete** - Setup und Fundament steht! 🎯
-- [ ] **Phase 3 Complete** - Authentifizierung funktioniert! 🔐
-- [ ] **Phase 5 Complete** - Upload System läuft! 📤
-- [ ] **MVP Complete** - Erstes funktionierendes System! 🚀
-- [ ] **Testing Complete** - Qualität sichergestellt! ✅
-- [ ] **Production Launch** - Live im Internet! 🌐
+- [ ] **Phase 1 Complete** - Setup and foundation established! 🎯
+- [ ] **Phase 3 Complete** - Authentication works! 🔐
+- [ ] **Phase 5 Complete** - Upload system running! 📤
+- [ ] **MVP Complete** - First working system! 🚀
+- [ ] **Testing Complete** - Quality assured! ✅
+- [ ] **Production Launch** - Live on the internet! 🌐
 
 ---
 
-**Letztes Update:** 2025-01-16 (Finale Optimierung nach 2025 Best Practices Research)  
-**Nächstes Review:** 2025-01-23  
+**Last update:** 2025-01-16 (Final optimization after 2025 Best Practices research)  
+**Next review:** 2025-01-23  
 **Version:** 2.0.0
 
 ---
 
-## 📋 **Change Log & Optimierungen**
+## 📋 **Change Log & Optimizations**
 
 ### **Version 2.0.0 (2025-01-16) - 2025 Best Practices Integration:**
 
-✅ **Architektur-Modernisierung:**
+✅ **Architecture Modernization:**
 
-- React Server Components (RSC) Strategie hinzugefügt
-- Microfrontend Preparation mit Vite Module Federation
-- Performance Budget mit Core Web Vitals Targets
+- React Server Components (RSC) strategy added
+- Microfrontend preparation with Vite Module Federation
+- Performance budget with Core Web Vitals targets
 
 ✅ **Security & Compliance:**
 
-- Content Security Policy (CSP) Integration
-- XSS/CSRF Schutz mit DOMPurify
-- WCAG 2.1 AA Accessibility Standards
-- Automated Dependency Security Audits
+- Content Security Policy (CSP) integration
+- XSS/CSRF protection with DOMPurify
+- WCAG 2.1 AA accessibility standards
+- Automated dependency security audits
 
 ✅ **Observability & Monitoring:**
 
-- Sentry Error Tracking Integration
-- Real User Monitoring (RUM) mit Web Vitals
-- Performance Budget Validation
-- Visual Regression Testing
+- Sentry error tracking integration
+- Real User Monitoring (RUM) with Web Vitals
+- Performance budget validation
+- Visual regression testing
 
 ✅ **Developer Experience:**
 
-- Phase 0.5 "Quick Setup" für sofortige Optimierungen
-- Extended Testing Phase mit Security & Performance Tests
-- Modern Development Toolchain (Biome, pnpm v9)
+- Phase 0.5 "Quick Setup" for immediate optimizations
+- Extended testing phase with security & performance tests
+- Modern development toolchain (Biome, pnpm v9)
 
 ✅ **Future-Proofing:**
 
-- Technology Decision Tree für Skalierung
-- AI Integration Readiness
-- Microfrontend Migration Path
+- Technology decision tree for scaling
+- AI integration readiness
+- Microfrontend migration path
 
-### **Nächste Optimierung (Q2 2025):**
+### **Next Optimization (Q2 2025):**
 
-- React 19 Concurrent Features Integration
-- Streaming Server-Side Rendering Evaluation
-- Progressive Web App (PWA) Features
+- React 19 concurrent features integration
+- Streaming server-side rendering evaluation
+- Progressive Web App (PWA) features

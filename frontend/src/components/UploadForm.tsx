@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import { useUploadStore } from '@/lib/store/uploadStore'
+import { getErrorMessage } from '@/lib/utils/errorHandling'
 
 const initialState = { name: '', status: 'pending', progress: 0 }
 
 const UploadForm: React.FC = () => {
     const [form, setForm] = useState(initialState)
     const { createUpload, loading, error } = useUploadStore()
+    const [localError, setLocalError] = useState<string | null>(null)
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value })
@@ -13,15 +15,21 @@ const UploadForm: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        await createUpload({ ...form, status: 'pending', progress: 0 })
-        setForm(initialState)
+        setLocalError(null)
+        try {
+            await createUpload({ ...form, status: 'pending', progress: 0 })
+            setForm(initialState)
+        } catch (err) {
+            setLocalError(getErrorMessage(err))
+        }
     }
 
     return (
         <form onSubmit={handleSubmit} className="mb-4 space-y-2">
             <div>
-                <label className="block mb-1 font-medium">File Name</label>
+                <label htmlFor="upload-name" className="block mb-1 font-medium">File Name</label>
                 <input
+                    id="upload-name"
                     name="name"
                     value={form.name}
                     onChange={handleChange}
@@ -36,7 +44,8 @@ const UploadForm: React.FC = () => {
             >
                 {loading ? 'Uploading...' : 'Add Upload'}
             </button>
-            {error && <div className="text-red-600">Error: {error}</div>}
+            {error && <div className="text-red-600">Error: {getErrorMessage(error)}</div>}
+            {localError && <div className="text-red-600">Error: {localError}</div>}
         </form>
     )
 }

@@ -1,6 +1,7 @@
 export default {
   plugins: {
-    tailwindcss: {},
+    '@tailwindcss/postcss': {},
+    '@csstools/postcss-progressive-custom-properties': {},
     autoprefixer: {},
   },
 };
