@@ -40,13 +40,11 @@ def run_migrations_offline() -> None:
     import alembic.context
 
     logger.info("Starting offline migrations")
-    config_file: str | None = cast(str | None, alembic.context.config.config_file_name)
+    config_file = alembic.context.config.config_file_name
     if config_file is not None:
         fileConfig(config_file)
         logger.debug(f"Loaded logging config from {config_file}")
-    url: str | None = cast(
-        str | None, alembic.context.config.get_main_option("sqlalchemy.url")
-    )
+    url = alembic.context.config.get_main_option("sqlalchemy.url")
     if url is None:
         logger.error("No sqlalchemy.url provided for offline migration")
         raise ValueError("No sqlalchemy.url provided for offline migration")
@@ -74,13 +72,11 @@ def run_migrations_online(engine_from_config: EngineFromConfigType) -> None:
     import alembic.context
 
     logger.info("Starting online migrations")
-    config_file: str | None = cast(str | None, alembic.context.config.config_file_name)
+    config_file = alembic.context.config.config_file_name
     if config_file is not None:
         fileConfig(config_file)
         logger.debug(f"Loaded logging config from {config_file}")
-    url: str | None = cast(
-        str | None, alembic.context.config.get_main_option("sqlalchemy.url")
-    )
+    url = alembic.context.config.get_main_option("sqlalchemy.url")
     if url is None:
         logger.error("No sqlalchemy.url provided for online migration")
         raise ValueError("No sqlalchemy.url provided for online migration")

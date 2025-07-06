@@ -17,8 +17,8 @@ class File(BaseModel):
     SQLAlchemy model for a file uploaded by a user.
     """
 
-    __tablename__: ClassVar[str] = "files"
-    __table_args__: ClassVar[tuple[Index, ...]] = (
+    __tablename__ = "files"
+    __table_args__ = (
         Index("ix_files_user_id", "user_id"),
     )
 

@@ -3,11 +3,38 @@ import pytest
 from tests.test_templates import AuthEndpointTestTemplate
 
 
-class TestAuthSchemas(AuthEndpointTestTemplate):
-    def test_user_register_request_valid(self):
-        from src.schemas.auth import UserRegisterRequest
 
-        req = UserRegisterRequest(
+from typing import Final, Optional, Literal, TypedDict, Callable, Generator, Any
+from collections.abc import Sequence, AsyncGenerator
+from fastapi import FastAPI
+import pytest
+
+from tests.test_templates import AuthEndpointTestTemplate
+
+class UserRegisterRequestDict(TypedDict, total=False):
+    email: str
+    password: str
+    name: Optional[str]
+
+class AuthResponseDict(TypedDict):
+    access_token: str
+    refresh_token: str
+    token_type: str
+
+class MessageResponseDict(TypedDict):
+    message: str
+
+class PasswordResetConfirmRequestDict(TypedDict):
+    token: str
+    new_password: str
+
+class TestAuthSchemas(AuthEndpointTestTemplate):
+    def test_user_register_request_valid(self: "TestAuthSchemas") -> None:
+        """
+        Verifies that UserRegisterRequest accepts valid input and sets all fields correctly.
+        """
+        from src.schemas.auth import UserRegisterRequest
+        req: UserRegisterRequest = UserRegisterRequest(
             email="user@example.com", password="password123", name="Test User"
         )
         assert req.email == "user@example.com"
@@ -19,96 +46,104 @@ class TestAuthSchemas(AuthEndpointTestTemplate):
         [
             ("not-an-email", "password123", "Test User"),
             ("user@example.com", "short", "Test User"),
-            # Name is optional in UserRegisterRequest, so this should actually pass
             pytest.param(
                 "user@example.com", "password123", None, id="name_is_optional"
             ),
         ],
     )
-    def test_user_register_request_invalid(self, email, password, name):
+    def test_user_register_request_invalid(
+        self: "TestAuthSchemas", email: str, password: str, name: Optional[str]
+    ) -> None:
+        """
+        Verifies that UserRegisterRequest raises ValidationError for invalid input, except when name is None (optional).
+        """
         from pydantic import ValidationError
-
         from src.schemas.auth import UserRegisterRequest
-
-        # Special case for name=None since it's optional
         if email == "user@example.com" and password == "password123" and name is None:
-            # This should pass validation since name is optional
-            req = UserRegisterRequest(email=email, password=password, name=name)
+            req: UserRegisterRequest = UserRegisterRequest(email=email, password=password, name=name)
             assert req.email == email
             assert req.password == password
             assert req.name is None
         else:
-            # All other test cases should fail validation
             with pytest.raises(ValidationError):
                 UserRegisterRequest(email=email, password=password, name=name)
 
-    def test_user_login_request_valid(self):
+    def test_user_login_request_valid(self: "TestAuthSchemas") -> None:
+        """
+        Verifies that UserLoginRequest accepts valid input and sets all fields correctly.
+        """
         from src.schemas.auth import UserLoginRequest
-
-        req = UserLoginRequest(email="user@example.com", password="password123")
+        req: UserLoginRequest = UserLoginRequest(email="user@example.com", password="password123")
         assert req.email == "user@example.com"
         assert req.password == "password123"
 
-    def test_password_reset_request_valid(self):
+    def test_password_reset_request_valid(self: "TestAuthSchemas") -> None:
+        """
+        Verifies that PasswordResetRequest accepts valid input and sets the email field correctly.
+        """
         from src.schemas.auth import PasswordResetRequest
-
-        req = PasswordResetRequest(email="user@example.com")
+        req: PasswordResetRequest = PasswordResetRequest(email="user@example.com")
         assert req.email == "user@example.com"
 
-    def test_password_reset_confirm_request_valid(self):
+    def test_password_reset_confirm_request_valid(self: "TestAuthSchemas") -> None:
+        """
+        Verifies that PasswordResetConfirmRequest accepts valid input and sets all fields correctly.
+        """
         from src.schemas.auth import PasswordResetConfirmRequest
-
-        req = PasswordResetConfirmRequest(
+        req: PasswordResetConfirmRequest = PasswordResetConfirmRequest(
             token="sometoken", new_password="newpassword123"
         )
         assert req.token == "sometoken"
         assert req.new_password == "newpassword123"
 
-    def test_password_reset_confirm_request_short_password(self):
+    def test_password_reset_confirm_request_short_password(self: "TestAuthSchemas") -> None:
+        """
+        Verifies that PasswordResetConfirmRequest raises ValidationError for a too-short password.
+        """
         from pydantic import ValidationError
-
         from src.schemas.auth import PasswordResetConfirmRequest
-
         with pytest.raises(ValidationError):
             PasswordResetConfirmRequest(token="t", new_password="short")
 
-    def test_auth_response(self):
+    def test_auth_response(self: "TestAuthSchemas") -> None:
+        """
+        Verifies that AuthResponse sets all fields correctly.
+        """
         from src.schemas.auth import AuthResponse
-
-        resp = AuthResponse(access_token="abc123", refresh_token="def456")
+        resp: AuthResponse = AuthResponse(access_token="abc123", refresh_token="def456")
         assert resp.access_token == "abc123"
         assert resp.refresh_token == "def456"
         assert resp.token_type == "bearer"
 
-    def test_message_response(self):
+    def test_message_response(self: "TestAuthSchemas") -> None:
+        """
+        Verifies that MessageResponse sets the message field correctly.
+        """
         from src.schemas.auth import MessageResponse
-
-        resp = MessageResponse(message="ok")
+        resp: MessageResponse = MessageResponse(message="ok")
         assert resp.message == "ok"
 
 
 class TestAuthEndpoints(AuthEndpointTestTemplate):
-    def create_fresh_app(self):
-        """Create a fresh FastAPI app with current environment variables"""
-        from src.core.config import clear_settings_cache
+    def create_fresh_app(self: "TestAuthEndpoints") -> FastAPI:
+        """
+        Create a fresh FastAPI app with current environment variables and override the async session dependency.
+        """
         from src.core.database import get_async_session
         from src.main import create_app
+        from fastapi import FastAPI
 
-        # Clear settings cache to pick up new environment variables
-        clear_settings_cache()
+        # Don't clear settings cache here - override_env_vars already did it after setting env vars
+        fresh_app: FastAPI = create_app()
 
-        # Create a fresh app with the new environment variables
-        fresh_app = create_app()
-
-        # Override get_async_session to yield the test session
-        async def _override_get_async_session():
+        async def _override_get_async_session() -> AsyncGenerator[object, None]:
             yield self.async_session
 
         fresh_app.dependency_overrides[get_async_session] = _override_get_async_session
         return fresh_app
 
     @pytest.mark.asyncio
-    async def test_register_success(self):
+    async def test_register_success(self: "TestAuthEndpoints") -> None:
         from httpx import ASGITransport, AsyncClient
 
         self.override_env_vars(
@@ -139,7 +174,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             assert "refresh_token" in data
 
     @pytest.mark.asyncio
-    async def test_login_success(self):
+    async def test_login_success(self: "TestAuthEndpoints") -> None:
         from httpx import ASGITransport, AsyncClient
 
         self.override_env_vars(
@@ -176,7 +211,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             assert "refresh_token" in data
 
     @pytest.mark.asyncio
-    async def test_logout_success(self):
+    async def test_logout_success(self: "TestAuthEndpoints") -> None:
         from httpx import ASGITransport, AsyncClient
 
         self.override_env_vars(
@@ -213,7 +248,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
     @pytest.mark.skip_if_fast_tests(
         "Refresh token tests not reliable in fast test mode"
     )
-    async def test_refresh_token_success(self):
+    async def test_refresh_token_success(self: "TestAuthEndpoints") -> None:
         from httpx import ASGITransport, AsyncClient
 
         self.override_env_vars(
@@ -252,7 +287,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             assert "access_token" in resp2.json()
 
     @pytest.mark.asyncio
-    async def test_password_reset_request_success(self):
+    async def test_password_reset_request_success(self: "TestAuthEndpoints") -> None:
         from httpx import ASGITransport, AsyncClient
 
         self.override_env_vars(
@@ -286,7 +321,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             assert "message" in resp.json()
 
     @pytest.mark.asyncio
-    async def test_logout_with_invalid_token(self):
+    async def test_logout_with_invalid_token(self: "TestAuthEndpoints") -> None:
         from httpx import ASGITransport, AsyncClient
 
         self.override_env_vars(
@@ -319,7 +354,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             assert resp.json()["detail"] == "Invalid token"
 
     @pytest.mark.asyncio
-    async def test_logout_without_authorization_header(self):
+    async def test_logout_without_authorization_header(self: "TestAuthEndpoints") -> None:
         from httpx import ASGITransport, AsyncClient
 
         self.override_env_vars(
@@ -349,7 +384,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             assert resp.json()["detail"] == "Not authenticated"
 
     @pytest.mark.asyncio
-    async def test_refresh_token_blacklisted(self):
+    async def test_refresh_token_blacklisted(self: "TestAuthEndpoints") -> None:
         from httpx import ASGITransport, AsyncClient
 
         from src.api.deps import get_async_refresh_access_token
@@ -399,7 +434,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
         fresh_app.dependency_overrides = {}
 
     @pytest.mark.asyncio
-    async def test_refresh_token_rate_limited(self):
+    async def test_refresh_token_rate_limited(self: "TestAuthEndpoints") -> None:
         from httpx import ASGITransport, AsyncClient
 
         from src.api.deps import get_async_refresh_access_token
@@ -450,7 +485,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
         fresh_app.dependency_overrides = {}
 
     @pytest.mark.asyncio
-    async def test_refresh_token_decode_error(self):
+    async def test_refresh_token_decode_error(self: "TestAuthEndpoints") -> None:
         from httpx import ASGITransport, AsyncClient
 
         from src.api.deps import get_async_refresh_access_token
@@ -504,7 +539,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
     @pytest.mark.skip_if_fast_tests(
         "Refresh token tests not reliable in fast test mode"
     )
-    async def test_refresh_token_unexpected_error(self):
+    async def test_refresh_token_unexpected_error(self: "TestAuthEndpoints") -> None:
         from httpx import ASGITransport, AsyncClient
 
         from src.api.deps import get_async_refresh_access_token
@@ -557,7 +592,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
         fresh_app.dependency_overrides = {}
 
     @pytest.mark.asyncio
-    async def test_password_reset_confirm_success_branch(self):
+    async def test_password_reset_confirm_success_branch(self: "TestAuthEndpoints") -> None:
         """
         Test the password reset confirm endpoint (success branch) using only in-method imports and the test template.
         """

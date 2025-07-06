@@ -7,10 +7,6 @@ EMAIL_REGEX_PATTERN: Final[str] = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
 EMAIL_REGEX: Final[Pattern[str]] = re.compile(EMAIL_REGEX_PATTERN)
 
 
-@overload
-def validate_email(email: str) -> Literal[True]: ...
-@overload
-def validate_email(email: str) -> Literal[False]: ...
 def validate_email(email: str) -> bool:
     """
     Simple email format validation.
@@ -25,10 +21,6 @@ def validate_email(email: str) -> bool:
     return result
 
 
-@overload
-def validate_password(password: str, min_length: int = 8) -> Literal[True]: ...
-@overload
-def validate_password(password: str, min_length: int = 8) -> Literal[False]: ...
 def validate_password(password: str, min_length: int = 8) -> bool:
     """
     Basic password validation: min length, at least one digit, one letter.

@@ -18,15 +18,15 @@ import time
 import uuid
 from collections.abc import Awaitable, Callable, Sequence
 from contextvars import ContextVar, Token
-from typing import (
-    Final,
-    cast,
-)
+from typing import TYPE_CHECKING, Any, Final, cast
 
 from fastapi import Request, Response
-from loguru import Logger, logger
+from loguru import logger
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
+
+if TYPE_CHECKING:
+    from loguru._logger import Logger
 
 # Define sensitive fields as a module-level constant for clarity and efficiency
 SENSITIVE_FIELDS: Final[frozenset[str]] = frozenset(
@@ -51,7 +51,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
     """Middleware for logging HTTP requests with unique request IDs."""
 
     exclude_paths: Sequence[str]
-    logger: Logger
+    logger: "Logger"
     header_name: str
 
     def __init__(
@@ -59,7 +59,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         app: ASGIApp,
         *,
         exclude_paths: Sequence[str] | None = None,
-        logger_instance: Logger | None = None,
+        logger_instance: "Logger | None" = None,
         header_name: str = "X-Request-ID",
     ) -> None:
         """Initialize the middleware.
@@ -87,7 +87,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         if logger_instance is not None:
             self.logger = logger_instance
         else:
-            self.logger = cast(Logger, logger.bind(component="middleware.request"))
+            self.logger = cast("Logger", logger.bind(component="middleware.request"))
         self.header_name: str = header_name
 
     async def dispatch(
@@ -122,7 +122,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         # Generate or extract request ID
         request_id: str = request.headers.get(self.header_name, str(uuid.uuid4()))
         # Set the request ID in the context variable for this request/response cycle
-        token: Token = request_id_var.set(request_id)
+        token: Token[str | None] = request_id_var.set(request_id)
 
         # Prepare request details for logging
         start_time: float = time.time()
@@ -132,14 +132,14 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             for k, v in request.query_params.multi_items()
         ]
         filtered_query_str: str = "&".join(f"{k}={v}" for k, v in filtered_query)
-        log_extra: dict[str, str] = {
+        log_extra: dict[str, Any] = {
             "request_id": request_id,
             "method": request.method,
             "path": request.url.path,
             "query": filtered_query_str,
         }
 
-        self.logger.bind(**log_extra).info(
+        cast("Logger", self.logger.bind(**log_extra)).info(  # type: ignore[no-untyped-call]
             f"Request {request.method} {request.url.path} | query: {filtered_query_str}"
         )
         try:
@@ -151,11 +151,11 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             process_time_ms: int = round(process_time * 1000)
 
             # Log the response
-            self.logger.bind(
+            cast("Logger", self.logger.bind(
                 **log_extra,
                 status_code=response.status_code,
                 process_time_ms=process_time_ms,
-            ).info(
+            )).info(  # type: ignore[no-untyped-call]
                 f"Response {request.method} {request.url.path} completed with status {response.status_code} in {process_time_ms}ms | query: {filtered_query_str}"
             )
 
@@ -165,14 +165,14 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 
         except Exception as exc:
             # Log exceptions with request context
-            process_time: float = time.time() - start_time
-            process_time_ms: int = round(process_time * 1000)
+            error_process_time: float = time.time() - start_time
+            error_process_time_ms: int = round(error_process_time * 1000)
 
-            self.logger.bind(
+            cast("Logger", self.logger.bind(
                 **log_extra,
                 error=str(exc),
-                process_time_ms=process_time_ms,
-            ).exception(
+                process_time_ms=error_process_time_ms,
+            )).exception(  # type: ignore[no-untyped-call]
                 f"Error processing request {request.method} {request.url.path}: {exc}"
             )
             raise
