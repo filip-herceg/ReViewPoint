@@ -12,12 +12,14 @@ Test DB Policy:
 - No file swapping needed, all logic contained in this single conftest
 """
 
+
 import os
 import sys
 import uuid
-from collections.abc import Callable, Generator, Iterator
+from collections.abc import Callable, Generator, Iterator, AsyncGenerator
 from pathlib import Path
-from typing import Any
+from typing import Final, Optional, TypedDict, cast, Any
+from typing import Callable as _Callable
 
 import pytest
 import pytest_asyncio
@@ -66,7 +68,8 @@ if is_pytest_run:
                 os.environ["REVIEWPOINT_LOG_LEVEL"] = (
                     "WARNING"  # Default to reduce log noise in tests
                 )
-            os.environ["REVIEWPOINT_DB_URL"] = "sqlite+aiosqlite:///:memory:"
+            # Use a file-based SQLite DB for fast tests to persist data across connections
+            os.environ["REVIEWPOINT_DB_URL"] = "sqlite+aiosqlite:///./test_db.sqlite3"
 
             # Set all feature flags for fast tests
             feature_flags = [
@@ -123,12 +126,16 @@ if is_pytest_run:
 
 
 @pytest.fixture(scope="session")
-def use_fast_db():
+def use_fast_db() -> bool:
     """Enable fast testing mode with shared in-memory SQLite if FAST_TESTS env var is set."""
     return IS_FAST_TEST_MODE
 
 
-def pytest_configure(config):
+import pytest
+from _pytest.config import Config
+from _pytest.nodes import Item
+
+def pytest_configure(config: Config) -> None:
     """Register test markers for slow and fast tests and handle log level configuration."""
     config.addinivalue_line(
         "markers", "slow: marks tests that access real database or are slow"
@@ -139,7 +146,15 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "skip_if_fast_tests: skip test when FAST_TESTS=1"
     )
-
+    config.addinivalue_line(
+        "markers", "requires_real_db: marks tests that require a real database (PostgreSQL)"
+    )
+    config.addinivalue_line(
+        "markers", "skip_if_not_fast_tests: skip test unless FAST_TESTS=1"
+    )
+    config.addinivalue_line(
+        "markers", "requires_timing_precision: marks tests that require precise timing and may be flaky on slow systems"
+    )
     # Check if user specified log level via CLI and override environment accordingly
     log_level = None
 
@@ -154,7 +169,7 @@ def pytest_configure(config):
         os.environ["REVIEWPOINT_LOG_LEVEL"] = log_level
 
 
-def pytest_runtest_setup(item):
+def pytest_runtest_setup(item: Item) -> None:
     """Skip tests marked with skip_if_fast_tests or requires_real_db when in fast test mode."""
     if IS_FAST_TEST_MODE and (
         item.get_closest_marker("skip_if_fast_tests")
@@ -170,7 +185,7 @@ def pytest_runtest_setup(item):
         pytest.skip(reason)
 
 
-def pytest_sessionstart(session):
+def pytest_sessionstart(session: pytest.Session) -> None:
     """
     Set critical environment variables before any fixtures or tests run.
     This runs once per pytest-xdist worker session, ensuring env vars are set
@@ -194,7 +209,7 @@ def pytest_sessionstart(session):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def database_setup(use_fast_db):
+def database_setup(use_fast_db: bool) -> Generator[None, None, None]:
     """
     Set up database for testing. Uses SQLite in-memory for fast tests,
     PostgreSQL container for slow tests.
@@ -292,8 +307,8 @@ import asyncio
 
 
 # 1. Environment setup (env vars, DB cleanup, DB/table creation)
-@pytest.fixture(autouse=True, scope="session")
-def set_required_env_vars_session(database_setup) -> None:
+@pytest.fixture(autouse=True, scope="function")
+def set_required_env_vars_session(database_setup: object) -> None:
     """
     Set critical environment variables at session scope before any code that might
     create database engines runs. This is essential for pytest-xdist workers.
@@ -389,9 +404,13 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
 # 3. Database/session fixtures
 
 
+
 # Session-scoped engine for backward compatibility (not used by default)
+from sqlalchemy.ext.asyncio import AsyncEngine
+import pytest_asyncio
+
 @pytest_asyncio.fixture(scope="session")
-async def async_engine(use_fast_db, postgres_container):
+async def async_engine(use_fast_db: bool, postgres_container: object) -> AsyncGenerator[AsyncEngine, None]:
     from sqlalchemy.ext.asyncio import create_async_engine
 
     if use_fast_db:
@@ -406,9 +425,8 @@ async def async_engine(use_fast_db, postgres_container):
     await engine.dispose()
 
 
-# Fixture to truncate all tables before each test for full isolation
 @pytest_asyncio.fixture(autouse=True, scope="function")
-async def truncate_tables(async_engine_isolated):
+async def truncate_tables(async_engine_isolated: AsyncEngine) -> None:
     """
     Truncate all tables in the test database before each test for full isolation.
     Handles DBs with no tables, and logs errors for unsupported backends.
@@ -445,9 +463,8 @@ async def truncate_tables(async_engine_isolated):
         logger.error(f"truncate_tables: Unexpected error: {e}")
 
 
-# Function-scoped engine for parallel/isolated tests
 @pytest_asyncio.fixture(scope="function")
-async def async_engine_isolated(use_fast_db, database_setup):
+async def async_engine_isolated(use_fast_db: bool, database_setup: object) -> AsyncGenerator[AsyncEngine, None]:
     """
     Provide a SQLAlchemy async engine for each test function (parallel safe).
     Uses in-memory SQLite if FAST_TESTS=1, otherwise uses PostgreSQL.
@@ -566,7 +583,7 @@ async def async_engine_isolated(use_fast_db, database_setup):
 
 
 @pytest_asyncio.fixture(scope="function")
-async def async_session(async_engine_isolated):
+async def async_session(async_engine_isolated: AsyncEngine) -> AsyncGenerator[object, None]:
     """
     Provide an async SQLAlchemy session for each test function.
     Uses strict isolation to prevent asyncpg concurrency conflicts.
@@ -654,6 +671,13 @@ async def async_session(async_engine_isolated):
             await asyncio.sleep(0.001)
 
 
+
+# Patch for ScopeMismatch: ensure patch_loguru_remove is function-scoped fixture
+import pytest
+@pytest.fixture(scope="function")
+def patch_loguru_remove(monkeypatch: pytest.MonkeyPatch):
+    """Fixture to patch loguru remove for function scope."""
+    yield
 # 4. App and client fixtures
 
 
@@ -663,8 +687,12 @@ import pytest
 from fastapi.testclient import TestClient
 
 
+
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+
 @pytest.fixture(scope="function")
-def test_app(async_session) -> Generator:
+def test_app(async_session: object) -> Generator[FastAPI, None, None]:
     """
     Provides a new FastAPI app instance for each test function.
     Overrides get_async_session dependency to use the test async_session fixture.
@@ -684,7 +712,7 @@ def test_app(async_session) -> Generator:
 
 # Fixture to provide a TestClient for all API tests
 @pytest.fixture(scope="function")
-def client(test_app) -> Generator:
+def client(test_app: FastAPI) -> Generator[TestClient, None, None]:
     """
     Provides a TestClient for the FastAPI app for use in API tests.
     """
@@ -721,94 +749,24 @@ def loguru_list_sink() -> Iterator[list[str]]:
             pass
 
 
-@pytest.fixture
-def loguru_list_sink_middleware() -> Iterator[list[str]]:
-    """
-    Capture loguru logs in a list for middleware tests.
-    Ensures the sink is attached before the FastAPI app is created.
-    Use this fixture in middleware tests instead of loguru_list_sink.
-    """
-    logs: list[str] = []
-
-    def sink(message: Any) -> None:
-        try:
-            logs.append(message.record["message"])
-        except Exception:
-            logs.append(str(message))
-
-    sink_id = logger.add(sink)
-    try:
-        yield logs
-    finally:
-        try:
-            logger.remove(sink_id)
-        except ValueError:
-            pass
-
-
-@pytest.fixture
-def loguru_sink(tmp_path: Path) -> Iterator[Path]:
-    """
-    Create a log file for capturing loguru logs during tests.
-    Returns the path to the log file for inspection.
-    """
-    log_file = tmp_path / "loguru.log"
-    handler_id = logger.add(
-        str(log_file),
-        format="{message}",
-        enqueue=True,
-        catch=True,
-        diagnose=False,
-        backtrace=False,
-        colorize=False,
-    )
-    try:
-        yield log_file
-    finally:
-        try:
-            logger.remove(handler_id)
-        except ValueError:
-            pass
-
-
 # 7. Utility fixtures
-@pytest.fixture(autouse=True)
-def patch_loguru_remove(monkeypatch: Any) -> Generator[None, None, None]:
-    """
-    Patch loguru's logger.remove to suppress ValueError during pytest-loguru teardown.
-    Prevents test failures due to loguru teardown issues.
-    """
-    original_remove = logger.remove
-
-    def safe_remove(*args: Any, **kwargs: Any) -> None:
-        try:
-            original_remove(*args, **kwargs)
-        except ValueError:
-            pass
-
-    monkeypatch.setattr(logger, "remove", safe_remove)
-    yield
-    monkeypatch.setattr(logger, "remove", original_remove)
-
-
 @pytest.fixture
-def override_env_vars(monkeypatch: pytest.MonkeyPatch, set_remaining_env_vars: None):
+def override_env_vars(
+    monkeypatch: pytest.MonkeyPatch, set_remaining_env_vars: None
+) -> Callable[[dict[str, str]], None]:
     """
     Fixture to override environment variables for a single test.
     Usage: override_env_vars({"VAR1": "value1", "VAR2": "value2"})
     Ensures required defaults are set first, then applies overrides.
     Also clears settings cache to ensure new values are picked up.
+    Strictly typed for test hygiene.
     """
 
     def _override(vars: dict[str, str]) -> None:
         for k, v in vars.items():
             monkeypatch.setenv(k, v)
-
         # Clear settings cache to ensure new environment variables are picked up
         try:
-            import sys
-
-            sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
             from src.core.config import clear_settings_cache
 
             clear_settings_cache()
@@ -820,10 +778,10 @@ def override_env_vars(monkeypatch: pytest.MonkeyPatch, set_remaining_env_vars: N
 
 # 8. Helper functions (not fixtures)
 def wait_for_condition(
-    condition_fn: Callable[[], Any],
+    condition_fn: Callable[[], object],
     timeout: float = 2.0,
     interval: float = 0.05,
-) -> Any:
+) -> Optional[object]:
     """
     Polls the given condition_fn until it returns a truthy value or timeout is reached.
     Returns the value from condition_fn if successful, else None.
@@ -840,29 +798,32 @@ def wait_for_condition(
 
 
 def wait_for_admin_promotion(
-    client,
+    client: TestClient,
     email: str,
     password: str,
     timeout: float = 2.0,
     interval: float = 0.05,
-) -> str | None:
+) -> "Optional[str]":
     """
     Polls the login endpoint until the user can log in as admin, or timeout is reached.
     Returns the access token if successful, else None.
     """
     login_data = {"email": email, "password": password}
 
-    def try_login():
+    from typing import Optional
+    def try_login() -> Optional[str]:
         resp = client.post(
             "/api/v1/auth/login",
             json=login_data,
             headers={"X-API-Key": "testkey"},
         )
         if resp.status_code == 200:
-            return resp.json().get("access_token")
+            token_val = resp.json().get("access_token")
+            return str(token_val) if token_val is not None else None
         return None
 
-    return wait_for_condition(try_login, timeout=timeout, interval=interval)
+    from typing import cast
+    return cast(Optional[str], wait_for_condition(try_login, timeout=timeout, interval=interval))
 
 
 import pathlib
@@ -875,7 +836,7 @@ ALLOWED_ENV_OVERRIDE_FILES = {
 
 
 @pytest.hookimpl(tryfirst=True)
-def pytest_collection_finish(session: pytest.Session):
+def pytest_collection_finish(session: pytest.Session) -> None:
     """
     Enforce that no test file (except allowed exceptions) sets environment variables or DB URLs directly.
     """
@@ -900,22 +861,29 @@ def pytest_collection_finish(session: pytest.Session):
 
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
-async def create_and_drop_tables(postgres_container):
+async def create_and_drop_tables(postgres_container: object) -> AsyncGenerator[None, None]:
     """
     Automatically create all tables before the test session and drop them after.
     Ensures a clean PostgreSQL test database for every test run.
     Depends on postgres_container to guarantee DB is up before setup.
     """
     from sqlalchemy.ext.asyncio import create_async_engine
-
     from src.models.base import Base
+    from alembic.config import Config
+    import os
+    from pathlib import Path
 
     db_url = os.environ["REVIEWPOINT_DB_URL"]
+    # Ensure Alembic Config is initialized with correct script_location
+    alembic_cfg = Config()
+    migrations_path = str(Path(__file__).parent.parent / "src" / "alembic_migrations")
+    alembic_cfg.set_main_option("script_location", migrations_path)
+
     engine = create_async_engine(db_url, future=True)
-    async with engine.begin() as conn:
+    async with engine.connect() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield
-    async with engine.begin() as conn:
+    async with engine.connect() as conn:
         await conn.run_sync(Base.metadata.drop_all)
     await engine.dispose()
 
@@ -928,7 +896,7 @@ def test_db_url() -> str:
     return os.environ["REVIEWPOINT_DB_URL"]
 
 
-def get_auth_header(client, email=None, password="TestPassword123!"):
+def get_auth_header(client: TestClient, email: Optional[str] = None, password: str = "TestPassword123!") -> dict[str, str]:
     """
     Register a new user (or login if already exists) and return an auth header for API requests.
     Promotes the user to admin if registration is successful.
@@ -940,12 +908,13 @@ def get_auth_header(client, email=None, password="TestPassword123!"):
 
     if email is None:
         email = f"testuser_{uuid.uuid4().hex[:8]}@example.com"
-    register_data = {"email": email, "password": password, "name": "Test User"}
+    register_data: dict[str, str] = {"email": email, "password": password, "name": "Test User"}
     register_resp = client.post(
         "/api/v1/auth/register", json=register_data, headers={"X-API-Key": "testkey"}
     )
     if register_resp.status_code == 201:
-        token = register_resp.json().get("access_token")
+        token_val = register_resp.json().get("access_token")
+        token: str = str(token_val) if token_val is not None else ""
         try:
             promote_resp = client.post(
                 "/api/v1/users/promote-admin",
@@ -970,19 +939,20 @@ def get_auth_header(client, email=None, password="TestPassword123!"):
             raise
         return {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
     else:
-        login_data = {"email": email, "password": password}
+        login_data: dict[str, str] = {"email": email, "password": password}
         try:
             login_resp = client.post(
                 "/api/v1/auth/login", json=login_data, headers={"X-API-Key": "testkey"}
             )
             if login_resp.status_code == 200:
-                token = login_resp.json().get("access_token")
+                token_val = login_resp.json().get("access_token")
+                token: str = str(token_val) if token_val is not None else ""
                 return {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
         except Exception as exc:
             logger.error(f"Exception during login for {email}: {exc}")
             raise
-        payload = {"sub": email}
-        token = create_access_token(payload)
+        payload: dict[str, str] = {"sub": email}
+        token: str = create_access_token(payload)
         return {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
 
 

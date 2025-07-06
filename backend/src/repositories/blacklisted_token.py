@@ -20,7 +20,7 @@ async def blacklist_token(
     """
     token: Final[BlacklistedToken] = BlacklistedToken(jti=jti, expires_at=expires_at)
     session.add(token)
-    await session.commit()
+    # Do not commit here; let the caller control the transaction boundary.
 
 
 async def is_token_blacklisted(session: AsyncSession, jti: str) -> bool:

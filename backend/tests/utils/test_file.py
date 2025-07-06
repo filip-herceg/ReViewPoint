@@ -1,9 +1,13 @@
 from src.utils import file as file_utils
 from tests.test_templates import UtilityUnitTestTemplate
+from typing import Final
 
 
 class TestFileUtils(UtilityUnitTestTemplate):
-    def test_sanitize_filename_basic(self):
+    def test_sanitize_filename_basic(self) -> None:
+        """
+        Test that sanitize_filename returns safe filenames for common cases.
+        """
         self.assert_equal(file_utils.sanitize_filename("file.txt"), "file.txt")
         self.assert_equal(file_utils.sanitize_filename("../etc/passwd"), "etc_passwd")
         self.assert_equal(
@@ -21,7 +25,10 @@ class TestFileUtils(UtilityUnitTestTemplate):
         )
         self.assert_equal(file_utils.sanitize_filename(""), "unnamed_file")
 
-    def test_sanitize_filename_edge_cases(self):
+    def test_sanitize_filename_edge_cases(self) -> None:
+        """
+        Test sanitize_filename with edge cases and dangerous input.
+        """
         # Only dangerous chars
         self.assert_equal(file_utils.sanitize_filename(".."), "_")
         self.assert_equal(file_utils.sanitize_filename("..\\..\\.."), "_")
@@ -39,7 +46,10 @@ class TestFileUtils(UtilityUnitTestTemplate):
             file_utils.sanitize_filename("fílè nâmé.txt"), "fílè nâmé.txt"
         )
 
-    def test_is_safe_filename_basic(self):
+    def test_is_safe_filename_basic(self) -> None:
+        """
+        Test is_safe_filename for common safe and unsafe filenames.
+        """
         self.assert_is_true(file_utils.is_safe_filename("file.txt"))
         self.assert_is_true(file_utils.is_safe_filename("file_name.txt"))
         self.assert_is_true(file_utils.is_safe_filename("fílè.txt"))
@@ -55,7 +65,10 @@ class TestFileUtils(UtilityUnitTestTemplate):
         self.assert_predicate_true(file_utils.is_safe_filename, "file.txt")
         self.assert_predicate_false(file_utils.is_safe_filename, "../etc/passwd")
 
-    def test_is_safe_filename_edge_cases(self):
+    def test_is_safe_filename_edge_cases(self) -> None:
+        """
+        Test is_safe_filename with edge cases and dangerous input.
+        """
         # Only dangerous chars
         self.assert_is_false(file_utils.is_safe_filename(".."))
         self.assert_is_false(file_utils.is_safe_filename("..\\..\\.."))

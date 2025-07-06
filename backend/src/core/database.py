@@ -55,11 +55,24 @@ def _log_engine_pool_state(engine: AsyncEngine, context: str) -> None:
         pool = engine.pool
         worker_id, process_id, _ = _log_worker_info()
         logger.info(f"[DB_POOL_STATE] {context} - Worker: {worker_id}")
-        logger.info(f"[DB_POOL_STATE] Pool size: {pool.size()}")
-        logger.info(f"[DB_POOL_STATE] Checked out: {pool.checkedout()}")
-        logger.info(f"[DB_POOL_STATE] Checked in: {pool.checkedin()}")
-        logger.info(f"[DB_POOL_STATE] Overflow: {pool.overflow()}")
-        logger.info(f"[DB_POOL_STATE] Invalid: {pool.invalidated()}")
+        def safe_call(attr: str) -> object:
+            method = getattr(pool, attr, None)
+            if callable(method):
+                try:
+                    return method()
+                except Exception:
+                    return "N/A"
+            return "N/A"
+        pool_size = safe_call('size')
+        checked_out = safe_call('checkedout')
+        checked_in = safe_call('checkedin')
+        overflow = safe_call('overflow')
+        invalidated = safe_call('invalidated')
+        logger.info(f"[DB_POOL_STATE] Pool size: {pool_size}")
+        logger.info(f"[DB_POOL_STATE] Checked out: {checked_out}")
+        logger.info(f"[DB_POOL_STATE] Checked in: {checked_in}")
+        logger.info(f"[DB_POOL_STATE] Overflow: {overflow}")
+        logger.info(f"[DB_POOL_STATE] Invalid: {invalidated}")
         # Log connection URL (sanitized)
         db_url: str = str(engine.url)
         sanitized_url: str = db_url.split("@")[1] if "@" in db_url else db_url
@@ -122,7 +135,7 @@ def get_engine_and_sessionmaker() -> (
                     f"[DB_ENGINE_CREATE] Using standard pool settings: size={engine_kwargs['pool_size']}, overflow={engine_kwargs['max_overflow']}"
                 )
         elif url_obj.drivername.startswith("sqlite"):
-            connect_args: dict[str, object] = engine_kwargs.get("connect_args", {})
+            connect_args = engine_kwargs.get("connect_args", {})
             if not isinstance(connect_args, dict):
                 connect_args = {}
             connect_args["check_same_thread"] = False
@@ -206,13 +219,6 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
             raise
     session: AsyncSession | None = None
     try:
-        # Log pre-session pool state
-        if hasattr(AsyncSessionLocal, "bind") and getattr(
-            AsyncSessionLocal, "bind", None
-        ):
-            _log_engine_pool_state(
-                AsyncSessionLocal.bind, f"Before session #{session_count}"
-            )
         session_creation_start: float = time.time()
         session = AsyncSessionLocal()  # type: ignore[call-arg]
         session_creation_time: float = time.time() - session_creation_start
@@ -284,15 +290,7 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
                 logger.error(
                     f"[DB_SESSION] Session #{session_count} close failed: {close_error}"
                 )
-        # Log post-session pool state
-        if (
-            AsyncSessionLocal
-            and hasattr(AsyncSessionLocal, "bind")
-            and getattr(AsyncSessionLocal, "bind", None)
-        ):
-            _log_engine_pool_state(
-                AsyncSessionLocal.bind, f"After session #{session_count}"
-            )
+        # No post-session pool state logging (removed invalid AsyncSessionLocal.bind usage)
 
 
 async def db_healthcheck() -> bool:
@@ -354,11 +352,11 @@ class ConnectionDebugInfo(TypedDict, total=False):
     connection_failures: int
     engine_initialized: bool
     sessionmaker_initialized: bool
-    pool_size: int
-    pool_checked_out: int
-    pool_checked_in: int
-    pool_overflow: int
-    pool_invalidated: int
+    pool_size: int | None
+    pool_checked_out: int | None
+    pool_checked_in: int | None
+    pool_overflow: int | None
+    pool_invalidated: int | None
     pool_error: str
 
 
@@ -383,15 +381,20 @@ def get_connection_debug_info() -> ConnectionDebugInfo:
     if engine:
         try:
             pool = engine.pool
-            info.update(
-                {
-                    "pool_size": pool.size(),
-                    "pool_checked_out": pool.checkedout(),
-                    "pool_checked_in": pool.checkedin(),
-                    "pool_overflow": pool.overflow(),
-                    "pool_invalidated": pool.invalidated(),
-                }
-            )
+            def safe_call(attr: str) -> int | None:
+                val = getattr(pool, attr, None)
+                if callable(val):
+                    try:
+                        result = val()
+                        return int(result) if isinstance(result, int) else None
+                    except Exception:
+                        return None
+                return None
+            info["pool_size"] = safe_call("size")
+            info["pool_checked_out"] = safe_call("checkedout")
+            info["pool_checked_in"] = safe_call("checkedin")
+            info["pool_overflow"] = safe_call("overflow")
+            info["pool_invalidated"] = safe_call("invalidated")
         except Exception as exc:
             info["pool_error"] = str(exc)
     return info

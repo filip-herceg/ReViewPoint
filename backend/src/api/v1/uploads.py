@@ -673,6 +673,20 @@ async def upload_file(
     Raises:
         HTTPException: If file is invalid or upload fails.
     """
+
+    # Enforce a maximum upload size (e.g., 5MB)
+    MAX_UPLOAD_SIZE = 5 * 1024 * 1024  # 5MB
+    file.file.seek(0, 2)  # Seek to end
+    file_size = file.file.tell()
+    file.file.seek(0)
+    if file_size > MAX_UPLOAD_SIZE:
+        http_error(
+            413,
+            f"File size exceeds limit of {MAX_UPLOAD_SIZE // (1024*1024)}MB.",
+            logger.warning,
+            cast(ExtraLogInfo, {"filename": str(file.filename), "size": file_size}),
+        )
+
     if not file.filename:
         http_error(
             400,

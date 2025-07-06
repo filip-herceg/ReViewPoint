@@ -5,41 +5,46 @@ Pytest plugin to enforce 1:1 mapping between backend source files and test files
 - Reports missing, extra, or multiply-mapped files as pytest warnings/errors.
 """
 
+
 import os
 import pathlib
-
 import pytest
+from typing import Final, Optional, Callable, Any
+from collections.abc import Generator
 
-SRC_ROOT = pathlib.Path(__file__).parents[2] / "src"
-TESTS_ROOT = pathlib.Path(__file__).parents[1]
+SRC_ROOT: Final[pathlib.Path] = pathlib.Path(__file__).parents[2] / "src"
+TESTS_ROOT: Final[pathlib.Path] = pathlib.Path(__file__).parents[1]
 
-IGNORED_FILES = {"__init__.py", "__about__.py"}
-IGNORED_TEST_FILES = {"__init__.py"}
+IGNORED_FILES: Final[set[str]] = {"__init__.py", "__about__.py"}
+IGNORED_TEST_FILES: Final[set[str]] = {"__init__.py"}
 
 # List of (src_name, test_name) tuples to permanently exclude from mapping check
-EXCLUDED_MAPPINGS = [
+EXCLUDED_MAPPINGS: Final[list[tuple[str, str]]] = [
     ("config.py", "conftest.py"),
     ("mapping_checker.py", "mapping_checker.py"),  # Exclude plugin itself at any level
     # Add more (src, test) pairs here as needed
 ]
 
 
-def src_to_test_path(src_path: pathlib.Path) -> pathlib.Path | None:
+
+def src_to_test_path(src_path: pathlib.Path) -> Optional[pathlib.Path]:
     """Given a src file path, return the expected test file path."""
-    rel = src_path.relative_to(SRC_ROOT)
+    rel: pathlib.Path = src_path.relative_to(SRC_ROOT)
     if rel.name in IGNORED_FILES:
         return None
-    test_name = f"test_{rel.name}" if not rel.name.startswith("test_") else rel.name
+    test_name: str = f"test_{rel.name}" if not rel.name.startswith("test_") else rel.name
     return TESTS_ROOT / rel.parent / test_name
 
 
-def test_to_src_path(test_path: pathlib.Path) -> pathlib.Path | None:
+
+def test_to_src_path(test_path: pathlib.Path) -> Optional[pathlib.Path]:
     """Given a test file path, return the expected src file path."""
-    rel = test_path.relative_to(TESTS_ROOT)
+    rel: pathlib.Path = test_path.relative_to(TESTS_ROOT)
     if rel.name in IGNORED_TEST_FILES:
         return None
-    src_name = rel.name[5:] if rel.name.startswith("test_") else rel.name
+    src_name: str = rel.name[5:] if rel.name.startswith("test_") else rel.name
     return SRC_ROOT / rel.parent / src_name
+
 
 
 def collect_py_files(root: pathlib.Path, ignored: set[str]) -> set[pathlib.Path]:
@@ -64,18 +69,29 @@ def collect_py_files(root: pathlib.Path, ignored: set[str]) -> set[pathlib.Path]
     }
 
 
+
 class MappingCheckResult:
-    def __init__(self) -> None:
-        self.missing_tests: list[tuple[pathlib.Path, pathlib.Path]] = []
-        self.missing_sources: list[tuple[pathlib.Path, pathlib.Path]] = []
-        self.multiply_mapped: list[pathlib.Path] = []
-        self.src_files: int = 0
-        self.test_files: int = 0
-        self.checked: bool = False
+    """Result container for mapping check between source and test files."""
+    missing_tests: list[tuple[pathlib.Path, pathlib.Path]]
+    missing_sources: list[tuple[pathlib.Path, pathlib.Path]]
+    multiply_mapped: list[pathlib.Path]
+    src_files: int
+    test_files: int
+    checked: bool
+
+    def __init__(self: "MappingCheckResult") -> None:
+        self.missing_tests = []
+        self.missing_sources = []
+        self.multiply_mapped = []
+        self.src_files = 0
+        self.test_files = 0
+        self.checked = False
+
 
 
 def pytest_sessionstart(session: pytest.Session) -> None:
-    result = MappingCheckResult()
+    """Pytest hook: check 1:1 mapping between source and test files at session start."""
+    result: MappingCheckResult = MappingCheckResult()
     src_files: set[pathlib.Path] = collect_py_files(SRC_ROOT, IGNORED_FILES)
     test_files: set[pathlib.Path] = collect_py_files(TESTS_ROOT, IGNORED_TEST_FILES)
     result.src_files = len(src_files)
@@ -86,7 +102,7 @@ def pytest_sessionstart(session: pytest.Session) -> None:
 
     # Check src -> test
     for src in src_files:
-        test = src_to_test_path(src)
+        test: Optional[pathlib.Path] = src_to_test_path(src)
         if test is not None:
             src_to_test[src] = test
             if not test.exists():
@@ -94,31 +110,33 @@ def pytest_sessionstart(session: pytest.Session) -> None:
 
     # Check test -> src
     for test in test_files:
-        src = test_to_src_path(test)
-        if src is not None:
-            test_to_src[test] = src
-            if not src.exists():
-                result.missing_sources.append((test, src))
+        src_path: Optional[pathlib.Path] = test_to_src_path(test)
+        if src_path is not None:
+            test_to_src[test] = src_path
+            if not src_path.exists():
+                result.missing_sources.append((test, src_path))
 
     # Check for multiply-mapped (should not happen with strict naming)
-    test_targets = list(src_to_test.values())
+    test_targets: list[pathlib.Path] = list(src_to_test.values())
     if len(test_targets) != len(set(test_targets)):
         from collections import Counter
-
-        c = Counter(test_targets)
+        c: Counter[pathlib.Path] = Counter(test_targets)
         for t, count in c.items():
             if count > 1:
                 result.multiply_mapped.append(t)
 
     result.checked = True
-    session.config._mapping_check_result = result
+    # Attach result to config using setattr to avoid type errors
+    setattr(session.config, "_mapping_check_result", result)
     # Do not print or exit here; summary will be shown at the end.
+
 
 
 def pytest_terminal_summary(
     terminalreporter: "pytest.TerminalReporter", exitstatus: int, config: object
 ) -> None:
-    result = getattr(config, "_mapping_check_result", None)
+    """Pytest hook: print summary of 1:1 mapping check between source and test files."""
+    result: Optional[MappingCheckResult] = getattr(config, "_mapping_check_result", None)
     if not result or not result.checked:
         return
     term = terminalreporter
@@ -142,16 +160,16 @@ def pytest_terminal_summary(
     def is_excluded(src: pathlib.Path, test: pathlib.Path) -> bool:
         return (src.name, test.name) in EXCLUDED_MAPPINGS
 
-    missing_tests = [
+    missing_tests: list[tuple[pathlib.Path, pathlib.Path]] = [
         (src, test) for src, test in result.missing_tests if not is_excluded(src, test)
     ]
-    missing_sources = [
+    missing_sources: list[tuple[pathlib.Path, pathlib.Path]] = [
         (test, src)
         for test, src in result.missing_sources
         if not is_excluded(src, test)
     ]
     # Remove test files from missing_sources if their name is in any test name in EXCLUDED_MAPPINGS
-    excluded_test_names = {test for _, test in EXCLUDED_MAPPINGS}
+    excluded_test_names: set[str] = {test for _, test in EXCLUDED_MAPPINGS}
     missing_sources = [
         (test, src)
         for test, src in missing_sources
@@ -167,12 +185,14 @@ def pytest_terminal_summary(
     )
 
     def paint_path(path: pathlib.Path, root: pathlib.Path) -> str:
-        rel = path.relative_to(root)
-        parts = rel.parts
+        rel: pathlib.Path = path.relative_to(root)
+        parts: tuple[str, ...] = rel.parts
         if len(parts) > 1:
             return os.path.join(*parts[:-1]) + os.sep + color(parts[-1], "red")
-        else:
+        elif len(parts) == 1:
             return color(parts[-1], "red")
+        else:
+            return color(str(rel), "red")
 
     if missing_tests or missing_sources or result.multiply_mapped:
         # Use default pytest section separator (let pytest handle width and color)

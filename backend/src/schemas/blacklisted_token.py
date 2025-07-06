@@ -18,4 +18,4 @@ class BlacklistedTokenSchema(BaseModel):
     expires_at: datetime
     created_at: datetime | None = None
 
-    model_config: Final[ConfigDict] = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True)

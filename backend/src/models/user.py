@@ -21,7 +21,7 @@ class User(BaseModel):
     User model.
     """
 
-    __tablename__: ClassVar[Literal["users"]] = "users"
+    __tablename__ = "users"
 
     email: Mapped[str] = mapped_column(
         String(255), unique=True, nullable=False, index=True
@@ -42,7 +42,7 @@ class User(BaseModel):
 
     # Use WriteOnlyMapped for the relationship to avoid typing issues
     files: WriteOnlyMapped[File] = relationship(
-        "File", back_populates="user"
+        "File", back_populates="user", passive_deletes=True
     )
 
     @property

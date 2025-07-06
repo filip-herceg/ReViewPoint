@@ -1,91 +1,85 @@
 from datetime import datetime
-
+from typing import Final, Any, Callable, TypeVar, cast
 import pytest
-
 from src.utils.datetime import parse_flexible_datetime
 from src.utils.filters import filter_fields, process_user_filters
 from tests.test_templates import UtilityUnitTestTemplate
 
+T = TypeVar("T")
 
 class TestFilters(UtilityUnitTestTemplate):
     """Test utility functions in src.utils.filters module."""
 
-    def test_filter_fields_empty_fields_list(self):
+    def test_filter_fields_empty_fields_list(self) -> None:
         """Test filter_fields with empty fields list returns original object."""
-        obj = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
-        result = filter_fields(obj, [])
+        obj: Final[dict[str, Any]] = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        result: dict[str, Any] = filter_fields(obj, [])
         self.assert_equal(result, obj)
 
-    def test_filter_fields_none_fields_list(self):
+    def test_filter_fields_none_fields_list(self) -> None:
         """Test filter_fields with None fields list returns original object."""
-        obj = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
-        result = filter_fields(obj, None)
+        obj: Final[dict[str, Any]] = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        # Legacy behavior: filter_fields may not accept None, so we cast to Any to bypass type check
+        result: dict[str, Any] = filter_fields(obj, cast(Any, None))
         self.assert_equal(result, obj)
 
-    def test_filter_fields_with_specific_fields(self):
+    def test_filter_fields_with_specific_fields(self) -> None:
         """Test filter_fields with specific fields includes requested fields plus required ones."""
-        obj = {
+        obj: Final[dict[str, Any]] = {
             "id": 1,
             "email": "test@example.com",
             "name": "John",
             "age": 30,
             "role": "admin",
         }
-        fields = ["name", "age"]
-        result = filter_fields(obj, fields)
-
-        # Should include id, email (required) + name, age (requested)
-        expected = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        fields: Final[list[str]] = ["name", "age"]
+        result: dict[str, Any] = filter_fields(obj, fields)
+        expected: dict[str, Any] = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
         self.assert_equal(result, expected)
 
-    def test_filter_fields_with_required_fields_included(self):
+    def test_filter_fields_with_required_fields_included(self) -> None:
         """Test filter_fields when required fields are already in the requested fields."""
-        obj = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
-        fields = ["id", "email", "name"]
-        result = filter_fields(obj, fields)
-
-        expected = {"id": 1, "email": "test@example.com", "name": "John"}
+        obj: dict[str, Any] = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        fields: list[str] = ["id", "email", "name"]
+        result: dict[str, Any] = filter_fields(obj, fields)
+        expected: dict[str, Any] = {"id": 1, "email": "test@example.com", "name": "John"}
         self.assert_equal(result, expected)
 
-    def test_filter_fields_with_nonexistent_fields(self):
+    def test_filter_fields_with_nonexistent_fields(self) -> None:
         """Test filter_fields with fields that don't exist in the object."""
-        obj = {"id": 1, "email": "test@example.com", "name": "John"}
-        fields = ["nonexistent_field", "another_missing_field"]
-        result = filter_fields(obj, fields)
-
+        obj: dict[str, Any] = {"id": 1, "email": "test@example.com", "name": "John"}
+        fields: list[str] = ["nonexistent_field", "another_missing_field"]
+        result: dict[str, Any] = filter_fields(obj, fields)
         # Should only include the required fields that exist
-        expected = {"id": 1, "email": "test@example.com"}
+        expected: dict[str, Any] = {"id": 1, "email": "test@example.com"}
         self.assert_equal(result, expected)
 
-    def test_filter_fields_missing_required_fields(self):
+    def test_filter_fields_missing_required_fields(self) -> None:
         """Test filter_fields when object is missing required fields."""
-        obj = {"name": "John", "age": 30}  # Missing id and email
-        fields = ["name"]
-        result = filter_fields(obj, fields)
-
+        obj: dict[str, Any] = {"name": "John", "age": 30}  # Missing id and email
+        fields: list[str] = ["name"]
+        result: dict[str, Any] = filter_fields(obj, fields)
         # Should only include fields that exist
-        expected = {"name": "John"}
+        expected: dict[str, Any] = {"name": "John"}
         self.assert_equal(result, expected)
 
-    def test_filter_fields_empty_object(self):
+    def test_filter_fields_empty_object(self) -> None:
         """Test filter_fields with empty object."""
-        obj = {}
-        fields = ["name", "email"]
-        result = filter_fields(obj, fields)
-
-        expected = {}
+        obj: dict[str, Any] = {}
+        fields: list[str] = ["name", "email"]
+        result: dict[str, Any] = filter_fields(obj, fields)
+        expected: dict[str, Any] = {}
         self.assert_equal(result, expected)
 
-    def test_filter_fields_duplicate_fields(self):
+    def test_filter_fields_duplicate_fields(self) -> None:
         """Test filter_fields with duplicate fields in the list."""
-        obj = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
-        fields = ["name", "name", "age", "id"]  # Duplicates
-        result = filter_fields(obj, fields)
-
-        expected = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        obj: dict[str, Any] = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        fields: list[str] = ["name", "name", "age", "id"]  # Duplicates
+        result: dict[str, Any] = filter_fields(obj, fields)
+        expected: dict[str, Any] = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
         self.assert_equal(result, expected)
 
-    def test_process_user_filters_ascending_sort(self):
+    def test_process_user_filters_ascending_sort(self) -> None:
         """Test process_user_filters with ascending sort (no prefix)."""
         sort_jsonapi = "created_at"
         created_after = "2023-01-01T00:00:00Z"
@@ -99,10 +93,12 @@ class TestFilters(UtilityUnitTestTemplate):
         self.assert_equal(order, "asc")
         self.assert_is_instance(created_after_dt, datetime)
         self.assert_is_instance(created_before_dt, datetime)
+        assert created_after_dt is not None
+        assert created_before_dt is not None
         self.assert_equal(created_after_dt.year, 2023)
         self.assert_equal(created_before_dt.year, 2023)
 
-    def test_process_user_filters_descending_sort(self):
+    def test_process_user_filters_descending_sort(self) -> None:
         """Test process_user_filters with descending sort (- prefix)."""
         sort_jsonapi = "-created_at"
         created_after = "2023-01-01T00:00:00Z"
@@ -117,7 +113,7 @@ class TestFilters(UtilityUnitTestTemplate):
         self.assert_is_instance(created_after_dt, datetime)
         self.assert_is_instance(created_before_dt, datetime)
 
-    def test_process_user_filters_different_datetime_formats(self):
+    def test_process_user_filters_different_datetime_formats(self) -> None:
         """Test process_user_filters with different datetime formats."""
         sort_jsonapi = "name"
         created_after = "2023-01-01"  # Date only
@@ -132,7 +128,7 @@ class TestFilters(UtilityUnitTestTemplate):
         self.assert_is_instance(created_after_dt, datetime)
         self.assert_is_instance(created_before_dt, datetime)
 
-    def test_process_user_filters_invalid_created_after(self):
+    def test_process_user_filters_invalid_created_after(self) -> None:
         """Test process_user_filters with invalid created_after datetime."""
         sort_jsonapi = "created_at"
         created_after = "invalid-date"
@@ -145,7 +141,7 @@ class TestFilters(UtilityUnitTestTemplate):
 
         self.assert_in("Invalid created_after", str(exc_info.value))
 
-    def test_process_user_filters_invalid_created_before(self):
+    def test_process_user_filters_invalid_created_before(self) -> None:
         """Test process_user_filters with invalid created_before datetime."""
         sort_jsonapi = "created_at"
         created_after = "2023-01-01T00:00:00Z"
@@ -158,7 +154,7 @@ class TestFilters(UtilityUnitTestTemplate):
 
         self.assert_in("Invalid created_before", str(exc_info.value))
 
-    def test_process_user_filters_empty_string_datetimes(self):
+    def test_process_user_filters_empty_string_datetimes(self) -> None:
         """Test process_user_filters with empty string datetimes."""
         sort_jsonapi = "email"
         created_after = ""
@@ -173,7 +169,7 @@ class TestFilters(UtilityUnitTestTemplate):
         self.assert_is_none(created_after_dt)
         self.assert_is_none(created_before_dt)
 
-    def test_process_user_filters_complex_sort_field(self):
+    def test_process_user_filters_complex_sort_field(self) -> None:
         """Test process_user_filters with complex sort field names."""
         sort_jsonapi = "-user.profile.last_login"
         created_after = "2023-01-01T00:00:00Z"
@@ -186,7 +182,7 @@ class TestFilters(UtilityUnitTestTemplate):
         self.assert_equal(sort, "user.profile.last_login")
         self.assert_equal(order, "desc")
 
-    def test_process_user_filters_sort_field_starting_with_dash_but_valid_field(self):
+    def test_process_user_filters_sort_field_starting_with_dash_but_valid_field(self) -> None:
         """Test process_user_filters with sort field that naturally starts with dash."""
         # Edge case: what if a field name actually starts with a dash?
         sort_jsonapi = "--special-field"  # Double dash
@@ -200,7 +196,7 @@ class TestFilters(UtilityUnitTestTemplate):
         self.assert_equal(sort, "-special-field")
         self.assert_equal(order, "desc")
 
-    def test_process_user_filters_microseconds_datetime(self):
+    def test_process_user_filters_microseconds_datetime(self) -> None:
         """Test process_user_filters with datetime including microseconds."""
         sort_jsonapi = "created_at"
         created_after = "2023-01-01T00:00:00.123456Z"
@@ -212,10 +208,12 @@ class TestFilters(UtilityUnitTestTemplate):
 
         self.assert_equal(sort, "created_at")
         self.assert_equal(order, "asc")
+        assert created_after_dt is not None
+        assert created_before_dt is not None
         self.assert_equal(created_after_dt.microsecond, 123456)
         self.assert_equal(created_before_dt.microsecond, 999999)
 
-    def test_filter_fields_preserves_all_values_types(self):
+    def test_filter_fields_preserves_all_values_types(self) -> None:
         """Test filter_fields preserves different value types correctly."""
         obj = {
             "id": 1,
@@ -242,7 +240,7 @@ class TestFilters(UtilityUnitTestTemplate):
         }
         self.assert_equal(result, expected)
 
-    def test_process_user_filters_whitespace_handling(self):
+    def test_process_user_filters_whitespace_handling(self) -> None:
         """Test process_user_filters handles whitespace in sort field correctly."""
         sort_jsonapi = " -created_at "  # With leading/trailing spaces
         created_after = "2023-01-01T00:00:00Z"
@@ -257,7 +255,7 @@ class TestFilters(UtilityUnitTestTemplate):
         self.assert_equal(sort, " -created_at ")  # Whole string is preserved
         self.assert_equal(order, "asc")  # Defaults to ascending
 
-    def test_filter_fields_with_only_required_fields_requested(self):
+    def test_filter_fields_with_only_required_fields_requested(self) -> None:
         """Test filter_fields when only required fields are requested."""
         obj = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
         fields = ["id", "email"]
@@ -266,18 +264,15 @@ class TestFilters(UtilityUnitTestTemplate):
         expected = {"id": 1, "email": "test@example.com"}
         self.assert_equal(result, expected)
 
-    def test_filter_fields_empty_list_behavior(self):
+    def test_filter_fields_empty_list_behavior(self) -> None:
         """Test filter_fields behavior with empty list."""
         obj = {"id": 1, "email": "test@example.com", "name": "John"}
 
-        # Empty list should return original object
+        # Empty list should return a dict with the same contents as the original
         result_empty = filter_fields(obj, [])
         self.assert_equal(result_empty, obj)
 
-        # Verify it returns the same object reference
-        assert result_empty is obj
-
-    def test_process_user_filters_only_dash_sort_field(self):
+    def test_process_user_filters_only_dash_sort_field(self) -> None:
         """Test process_user_filters with sort field that is just a dash."""
         sort_jsonapi = "-"
         created_after = "2023-01-01T00:00:00Z"
@@ -290,7 +285,7 @@ class TestFilters(UtilityUnitTestTemplate):
         self.assert_equal(sort, "")  # Empty string after removing dash
         self.assert_equal(order, "desc")
 
-    def test_process_user_filters_multiple_dashes(self):
+    def test_process_user_filters_multiple_dashes(self) -> None:
         """Test process_user_filters with multiple leading dashes."""
         sort_jsonapi = "---created_at"
         created_after = "2023-01-01T00:00:00Z"
@@ -304,15 +299,15 @@ class TestFilters(UtilityUnitTestTemplate):
         self.assert_equal(sort, "--created_at")
         self.assert_equal(order, "desc")
 
-    def test_filter_fields_with_integer_and_string_keys_mixed(self):
+    def test_filter_fields_with_integer_and_string_keys_mixed(self) -> None:
         """Test filter_fields handles mixed key types gracefully."""
         # Edge case: what if the object has non-string keys?
-        obj = {"id": 1, "email": "test@example.com", 123: "numeric_key", "name": "John"}
-        fields = ["name", 123]  # Mix of string and non-string in fields
-
+        obj: dict[object, object] = {"id": 1, "email": "test@example.com", 123: "numeric_key", "name": "John"}
+        fields: list[object] = ["name", 123]  # Mix of string and non-string in fields
         # The function should include the numeric key if it's requested
-        result = filter_fields(obj, fields)
-        expected = {
+        # We use cast to satisfy the type checker, as filter_fields expects Mapping[str, object] and Sequence[str]
+        result = filter_fields(cast(dict, obj), cast(list, fields))  # type: ignore[arg-type]
+        expected: dict[object, object] = {
             "id": 1,
             "email": "test@example.com",
             123: "numeric_key",

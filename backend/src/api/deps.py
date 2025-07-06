@@ -179,7 +179,7 @@ def get_user_service() -> UserService:
 
 
 def get_user_repository_func() -> object:
-    return registry.get("user_repository")
+    return registry.get("user_repository")  # type: ignore[no-any-return]
 
 
 def get_blacklist_token() -> Callable[..., Awaitable[None]]:
@@ -223,7 +223,7 @@ def get_async_refresh_access_token() -> (
 
 
 def get_service(module_path: str) -> object:
-    return importlib.import_module(module_path)
+    return importlib.import_module(module_path)  # type: ignore[no-any-return]
 
 
 # --- Feature Flags ---

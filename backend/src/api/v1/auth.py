@@ -653,7 +653,7 @@ async def get_me(
         "name": current_user.name,
         "bio": current_user.bio,
         "avatar_url": current_user.avatar_url,
-        "created_at": current_user.created_at,
-        "updated_at": current_user.updated_at,
+        "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
+        "updated_at": current_user.updated_at.isoformat() if current_user.updated_at else None,
     }
     return UserProfile.model_validate(user_dict)

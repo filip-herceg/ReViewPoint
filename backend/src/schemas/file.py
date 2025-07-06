@@ -1,7 +1,8 @@
+
 from datetime import datetime
 from typing import Final
-
 from pydantic import BaseModel, Field
+from pydantic import ConfigDict
 
 
 class FileSchema(BaseModel):
@@ -21,5 +22,4 @@ class FileSchema(BaseModel):
     user_id: int = Field(..., description="ID of the user who owns the file")
     created_at: datetime = Field(..., description="Timestamp when the file was created")
 
-    class Config:
-        orm_mode: Final[bool] = True
+    model_config = ConfigDict(from_attributes=True)

@@ -116,7 +116,7 @@ async def authenticate_user(
             "Authentication is DISABLED! Returning dev token for any credentials.",
             email=email,
         )
-        access_token: str = create_access_token(
+        dev_access_token: str = create_access_token(
             {
                 "sub": "dev-user",
                 "user_id": "dev-user",
@@ -125,23 +125,24 @@ async def authenticate_user(
                 "is_authenticated": True,
             }
         )
-        jti: str = str(uuid.uuid4())
-        exp: int = int((datetime.now(UTC) + timedelta(days=7)).timestamp())
-        refresh_token: str = create_refresh_token(
+        dev_jti: str = str(uuid.uuid4())
+        dev_exp: int = int((datetime.now(UTC) + timedelta(days=7)).timestamp())
+        dev_refresh_token: str = create_refresh_token(
             {
                 "sub": "dev-user",
                 "user_id": "dev-user",
                 "email": email,
                 "role": "admin",
                 "is_authenticated": True,
-                "jti": jti,
-                "exp": exp,
+                "jti": dev_jti,
+                "exp": dev_exp,
             }
         )
         logger.debug(
-            f"Refresh token payload at creation: {{'sub': 'dev-user', 'user_id': 'dev-user', 'email': '{email}', 'role': 'admin', 'is_authenticated': True, 'jti': '{jti}', 'exp': {exp}}}"
+            f"Refresh token payload at creation: {{'sub': 'dev-user', 'user_id': 'dev-user', 'email': '{email}', 'role': 'admin', 'is_authenticated': True, 'jti': '{dev_jti}', 'exp': {dev_exp}}}"
         )
-        return access_token, refresh_token
+        return dev_access_token, dev_refresh_token
+
     # Fetch user by email
     result = await session.execute(user_repo.select(User).where(User.email == email))
     user: User | None = result.scalar_one_or_none()
@@ -155,7 +156,7 @@ async def authenticate_user(
     await user_repo.update_last_login(session, user.id)
     logger.info("User authenticated successfully", user_id=user.id, email=user.email)
     # Create JWT tokens
-    access_token: str = create_access_token(
+    user_access_token: str = create_access_token(
         {
             "sub": str(user.id),
             "user_id": str(user.id),
@@ -167,9 +168,9 @@ async def authenticate_user(
             ),
         }
     )
-    jti: str = str(uuid.uuid4())
-    exp: int = int((datetime.now(UTC) + timedelta(days=7)).timestamp())
-    refresh_token: str = create_refresh_token(
+    user_jti: str = str(uuid.uuid4())
+    user_exp: int = int((datetime.now(UTC) + timedelta(days=7)).timestamp())
+    user_refresh_token: str = create_refresh_token(
         {
             "sub": str(user.id),
             "user_id": str(user.id),
@@ -179,14 +180,14 @@ async def authenticate_user(
                 if hasattr(user, "role")
                 else ("admin" if getattr(user, "is_admin", False) else "user")
             ),
-            "jti": jti,
-            "exp": exp,
+            "jti": user_jti,
+            "exp": user_exp,
         }
     )
     logger.debug(
-        f"Refresh token payload at creation: {{'sub': str(user.id), 'user_id': str(user.id), 'email': user.email, 'jti': '{jti}', 'exp': {exp}}}"
+        f"Refresh token payload at creation: {{'sub': '{user.id}', 'user_id': '{user.id}', 'email': '{user.email}', 'role': '{user.role}', 'jti': '{user_jti}', 'exp': {user_exp}}}"
     )
-    return access_token, refresh_token
+    return user_access_token, user_refresh_token
 
 
 async def logout_user(session: AsyncSession, user_id: int) -> None:
@@ -403,8 +404,8 @@ async def get_user_profile(session: AsyncSession, user_id: int) -> UserProfile:
         name=user.name,
         bio=user.bio,
         avatar_url=user.avatar_url,
-        created_at=user.created_at,
-        updated_at=user.updated_at,
+        created_at=user.created_at.isoformat() if user.created_at else None,
+        updated_at=user.updated_at.isoformat() if user.updated_at else None,
     )
 
 

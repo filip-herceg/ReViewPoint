@@ -1,5 +1,6 @@
+
 from datetime import datetime
-from typing import Literal
+from typing import Literal, Any
 
 import sqlalchemy
 from sqlalchemy import func, select
@@ -10,7 +11,8 @@ from src.utils.errors import ValidationError
 
 
 async def get_file_by_filename(session: AsyncSession, filename: str) -> File | None:
-    result: sqlalchemy.engine.Result = await session.execute(
+    from typing import Any
+    result: sqlalchemy.engine.Result[Any] = await session.execute(
         select(File).where(File.filename == filename)
     )
     return result.scalar_one_or_none()
@@ -74,7 +76,7 @@ async def list_files(
     Raises:
         Exception: If the database operation fails.
     """
-    stmt: sqlalchemy.sql.Select = select(File).where(File.user_id == user_id)
+    stmt: sqlalchemy.sql.Select[Any] = select(File).where(File.user_id == user_id)
     if q is not None:
         stmt = stmt.where(File.filename.ilike(f"%{q}%"))
     if created_after is not None:
@@ -82,13 +84,13 @@ async def list_files(
     if created_before is not None:
         stmt = stmt.where(File.created_at <= created_before)
     if sort in ("created_at", "filename"):
-        col: sqlalchemy.sql.ColumnElement = getattr(File, sort)
+        col: sqlalchemy.sql.ColumnElement[Any] = getattr(File, sort)
         if order == "desc":
             col = col.desc()
         else:
             col = col.asc()
         stmt = stmt.order_by(col)
-    count_stmt: sqlalchemy.sql.Select = select(func.count()).select_from(
+    count_stmt: sqlalchemy.sql.Select[Any] = select(func.count()).select_from(
         stmt.subquery()
     )
     total: int = (await session.execute(count_stmt)).scalar_one()
