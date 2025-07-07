@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import federation from '@originjs/vite-plugin-federation';
 import { visualizer } from 'rollup-plugin-visualizer';
 import csp from 'vite-plugin-csp';
-
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 import { resolve } from 'path';
 
@@ -15,6 +15,7 @@ export default defineConfig({
     },
     plugins: [
         react(),
+        tsconfigPaths(), // Add tsconfigPaths plugin for alias resolution
         federation({
             name: 'app',
             filename: 'remoteEntry.js',
@@ -31,6 +32,5 @@ export default defineConfig({
                 'object-src': ["none"],
             }
         }),
-        // Bundle analyzer removed: use visualizer for bundle analysis
     ]
 });

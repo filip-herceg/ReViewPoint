@@ -1,12 +1,4 @@
 {
 	"version": "2.0.0",
-	"tasks": [
-		{
-			"type": "shell",
-			"label": "Run Frontend Tests",
-			"command": "pnpm test",
-			"args": [],
-			"isBackground": false
-		}
-	]
+	"tasks": []
 }

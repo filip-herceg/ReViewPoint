@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react'
 import { useUploadStore } from '@/lib/store/uploadStore'
+import { getErrorMessage } from '@/lib/utils/errorHandling'
+import { createTestError } from '../../tests/test-templates'
 
 
 interface UploadListProps {
@@ -8,6 +10,9 @@ interface UploadListProps {
 
 const UploadList: React.FC<UploadListProps> = ({ disableAutoFetch }) => {
     const { uploads, loading, error, fetchUploads, patchUpload, removeUpload } = useUploadStore()
+    const [localError, setLocalError] = React.useState<string | null>(null)
+    const [editId, setEditId] = React.useState<string | null>(null)
+    const [editName, setEditName] = React.useState('')
 
     useEffect(() => {
         if (!disableAutoFetch) {
@@ -16,11 +21,15 @@ const UploadList: React.FC<UploadListProps> = ({ disableAutoFetch }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [disableAutoFetch])
 
-    if (loading) return <div>Loading uploads...</div>
-    if (error) return <div className="text-red-600">Error: {error}</div>
+    // Clear local error when store error changes or component unmounts
+    useEffect(() => {
+        if (localError) {
+            setLocalError(null)
+        }
+    }, [])
 
-    const [editId, setEditId] = React.useState<string | null>(null)
-    const [editName, setEditName] = React.useState('')
+    if (loading) return <div>Loading uploads...</div>
+    if (error) return <div className="text-red-600">Error: {getErrorMessage(error)}</div>
 
     const startEdit = (u: typeof uploads[number]) => {
         setEditId(u.id)
@@ -29,15 +38,37 @@ const UploadList: React.FC<UploadListProps> = ({ disableAutoFetch }) => {
     const cancelEdit = () => {
         setEditId(null)
         setEditName('')
+        setLocalError(null)
     }
     const saveEdit = async (id: string) => {
-        await patchUpload(id, { name: editName })
-        cancelEdit()
+        setLocalError(null)
+        try {
+            await patchUpload(id, { name: editName })
+            cancelEdit()
+        } catch (err) {
+            // Use createTestError for demonstration/testing if needed
+            const errorObj = err instanceof Error ? err : createTestError('Patch failed');
+            setLocalError(getErrorMessage(errorObj));
+        }
+    }
+
+    const handleDelete = async (id: string) => {
+        setLocalError(null)
+        try {
+            await removeUpload(id)
+        } catch (err) {
+            // Use createTestError for demonstration/testing if needed
+            const errorObj = err instanceof Error ? err : createTestError('Delete failed');
+            setLocalError(getErrorMessage(errorObj));
+        }
     }
 
     return (
         <div>
             <h2 className="text-lg font-bold mb-2">Uploads</h2>
+            {localError && (
+                <div className="text-red-600 mb-2">Error: {localError}</div>
+            )}
             {uploads.length === 0 ? (
                 <div>No uploads found.</div>
             ) : (
@@ -68,7 +99,7 @@ const UploadList: React.FC<UploadListProps> = ({ disableAutoFetch }) => {
                                 ) : (
                                     <>
                                         <button className="bg-blue-600 text-white px-2 py-1 rounded" onClick={() => startEdit(u)} disabled={loading}>Edit</button>
-                                        <button className="bg-red-600 text-white px-2 py-1 rounded" onClick={() => removeUpload(u.id)} disabled={loading}>Delete</button>
+                                        <button className="bg-red-600 text-white px-2 py-1 rounded" onClick={() => handleDelete(u.id)} disabled={loading}>Delete</button>
                                     </>
                                 )}
                             </div>
