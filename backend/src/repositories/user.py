@@ -89,7 +89,7 @@ async def create_user_with_validation(
     from src.utils.hashing import hash_password
 
     hashed: str = hash_password(password)
-    user = User(email=email, hashed_password=hashed, is_active=True)  # type: ignore[arg-type]
+    user = User(email=email, hashed_password=hashed, is_active=True)
     if name is not None:
         user.name = name
     session.add(user)
@@ -191,9 +191,9 @@ async def list_users(
         col = getattr(User, sort)
         # mypy: col is InstrumentedAttribute[Any, Any], so .desc()/.asc() is fine
         if order == "desc":
-            col = col.desc()  # type: ignore[attr-defined]
+            col = col.desc()
         else:
-            col = col.asc()  # type: ignore[attr-defined]
+            col = col.asc()
         stmt = stmt.order_by(col)
     count_stmt = select(func.count()).select_from(stmt.subquery())
     total = (await session.execute(count_stmt)).scalar_one()
@@ -392,7 +392,7 @@ async def upsert_user(
             if hasattr(user, key):
                 setattr(user, key, value)
     else:
-        user = User(email=email, **defaults)  # type: ignore[arg-type]
+        user = User(email=email, **defaults)
         session.add(user)
     try:
         await session.commit()
@@ -626,7 +626,7 @@ async def import_users_from_dicts(
     Raises:
         Exception: On DB commit failure.
     """
-    users: list[User] = [User(**d) for d in user_dicts]  # type: ignore[arg-type]
+    users: list[User] = [User(**d) for d in user_dicts]
     session.add_all(users)
     try:
         await session.commit()

@@ -4,7 +4,7 @@ User CRUD endpoints: create, list, get, update, delete.
 
 import traceback
 from collections.abc import Sequence
-from typing import Any, Final
+from typing import Any, Final, cast
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Response, status
 from loguru import logger
@@ -28,7 +28,7 @@ from src.services.user import (
     UserService,
 )
 from src.utils.errors import ValidationError as CustomValidationError
-from src.utils.http_error import http_error
+from src.utils.http_error import ExtraLogInfo, http_error
 
 router: Final[APIRouter] = APIRouter()
 
@@ -129,44 +129,38 @@ async def list_users(
 
         created_after_dt = parse_flexible_datetime(created_after)
 
-    users: Sequence[Any]
-    total: int
-    try:
-        users, total = await user_service.list_users(
-            session,
-            offset=params.offset,
-            limit=params.limit,
-            email=email,
-            name=name,
-            created_after=created_after_dt,
-        )
-        logger.info(
-            "users_listed",
-            extra={
-                "offset": params.offset,
-                "limit": params.limit,
-                "email": email,
-                "name": name,
-            },
-        )
-        return UserListResponse(
-            users=[
-                UserResponse(
-                    id=u.id,
-                    email=u.email,
-                    name=u.name,
-                    bio=u.bio,
-                    avatar_url=u.avatar_url,
-                    created_at=u.created_at,
-                    updated_at=u.updated_at,
-                )
-                for u in users
-            ],
-            total=total,
-        )
-    except Exception as e:
-        logger.error(f"Unexpected error in list_users: {e}\n{traceback.format_exc()}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+    users = await user_service.list_users(
+        session,
+        offset=params.offset,
+        limit=params.limit,
+        email=email,
+        name=name,
+        created_after=created_after_dt,
+    )
+    logger.info(
+        "users_listed",
+        extra={
+            "offset": params.offset,
+            "limit": params.limit,
+            "email": email,
+            "name": name,
+        },
+    )
+    return UserListResponse(
+        users=[
+            UserResponse(
+                id=u.id,
+                email=u.email,
+                name=u.name,
+                bio=u.bio,
+                avatar_url=u.avatar_url,
+                created_at=u.created_at.isoformat() if u.created_at else None,
+                updated_at=u.updated_at.isoformat() if u.updated_at else None,
+            )
+            for u in users
+        ],
+        total=len(users),
+    )
 
 
 @router.get(
@@ -239,30 +233,27 @@ async def update_user(
             id=updated_user.id, email=updated_user.email, name=updated_user.name
         )
     except UserNotFoundError as e:
-        http_error(404, "User not found.", logger.warning, {"user_id": user_id}, e)
+        http_error(404, "User not found.", logger.warning, cast(ExtraLogInfo, {"user_id": user_id}), e)
         raise HTTPException(status_code=404, detail="User not found.")
     except UserAlreadyExistsError as e:
         http_error(
-            409, "Email already exists.", logger.warning, {"email": user.email}, e
+            409, "Email already exists.", logger.warning, cast(ExtraLogInfo, {"email": user.email}), e
         )
         raise HTTPException(status_code=409, detail="Email already exists.")
     except InvalidDataError as e:
-        http_error(400, "Invalid user data.", logger.warning, {"user_id": user_id}, e)
+        http_error(400, "Invalid user data.", logger.warning, cast(ExtraLogInfo, {"user_id": user_id}), e)
         raise HTTPException(status_code=400, detail="Invalid user data.")
     except Exception as e:
         http_error(
             500,
             "Unexpected error.",
             logger.error,
-            {"user_id": user_id, "error": str(e)},
+            cast(ExtraLogInfo, {"user_id": user_id, "error": str(e)}),
             e,
         )
         raise HTTPException(status_code=500, detail="Unexpected error.")
     # Defensive: function must always return UserResponse or raise
     raise HTTPException(status_code=500, detail="Unreachable code in update_user")
-
-
-from typing import Literal
 
 
 @router.delete(
@@ -281,20 +272,20 @@ async def delete_user(
     Raises:
         HTTPException: If user not found or unexpected error occurs.
     """
-    STATUS_NO_CONTENT: Literal[204] = 204
+    STATUS_NO_CONTENT = 204
     try:
         result: None = await user_service.delete_user(session, user_id)
         logger.info("user_deleted", extra={"user_id": user_id})
         return Response(status_code=STATUS_NO_CONTENT)
     except UserNotFoundError as e:
-        http_error(404, "User not found.", logger.warning, {"user_id": user_id}, e)
+        http_error(404, "User not found.", logger.warning, cast(ExtraLogInfo, {"user_id": user_id}), e)
         raise HTTPException(status_code=404, detail="User not found.")
     except Exception as e:
         http_error(
             500,
             "Unexpected error.",
             logger.error,
-            {"user_id": user_id, "error": str(e)},
+            cast(ExtraLogInfo, {"user_id": user_id, "error": str(e)}),
             e,
         )
         raise HTTPException(status_code=500, detail="Unexpected error.")

@@ -64,7 +64,7 @@ async def export_users_csv(
     # Generate CSV
 
     output: StringIO = StringIO()
-    writer: Callable[[Sequence[str]], int] = csv.writer(output).writerow  # type: ignore[assignment]
+    writer: Callable[[Sequence[str]], int] = csv.writer(output).writerow
     csv_writer = csv.writer(output)
     csv_writer.writerow(["id", "email", "name"])
 

@@ -98,7 +98,7 @@ class ExampleUploadResponseDict(TypedDict):
 class OperationDict(TypedDict, total=False):
     tags: Sequence[str]
     security: Sequence[Mapping[str, Sequence[str]]]
-    responses: dict[str, dict]
+    responses: dict[str, dict[str, object]]
 
 
 class PathItemDict(TypedDict):
@@ -107,9 +107,9 @@ class PathItemDict(TypedDict):
 
 
 class OpenAPISchemaDict(TypedDict, total=False):
-    info: dict
+    info: dict[str, object]
     servers: Sequence[ServerDict]
-    components: dict
+    components: dict[str, object]
     security: Sequence[Mapping[str, Sequence[str]]]
     tags: Sequence[TagDict]
     paths: dict[str, dict[str, OperationDict]]
@@ -175,7 +175,7 @@ def setup_openapi(app: FastAPI) -> None:
             # FastAPI expects openapi_schema to be dict[str, Any] | None
             return cast(dict[str, object], self.openapi_schema)
 
-        openapi_schema: dict[str, object] = original_openapi()  # type: ignore
+        openapi_schema: dict[str, object] = original_openapi()
 
         logger.info("OpenAPI schema generated successfully")
 

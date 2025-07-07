@@ -15,7 +15,7 @@ from src.utils.file import sanitize_filename, is_safe_filename
 class UploadService:
     """Service for handling file uploads and management."""
     
-    def __init__(self):
+    def __init__(self) -> None:
         self.settings = get_settings()
         self.upload_dir = Path(self.settings.upload_dir)
         self.upload_dir.mkdir(parents=True, exist_ok=True)
@@ -59,7 +59,7 @@ class UploadService:
             session=session,
             filename=stored_filename,
             content_type=file.content_type or "application/octet-stream",
-            user_id=user_id
+            user_id=int(user_id)
         )
         
         return file_record
@@ -87,7 +87,7 @@ class UploadService:
             pass  # Continue even if file deletion fails
         
         # Delete from database
-        return await delete_file_by_filename(session, filename)
+        return await delete_file(session, filename)
     
     def get_file_path(self, filename: str) -> Path:
         """Get the full path to a file."""

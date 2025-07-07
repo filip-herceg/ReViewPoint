@@ -165,7 +165,7 @@ def get_engine_and_sessionmaker() -> (
         _log_engine_pool_state(engine, f"After creation #{creation_count}")
         return engine, AsyncSessionLocal
     except Exception as exc:
-        creation_time: float = time.time() - start_time
+        creation_time = time.time() - start_time
         logger.error(
             f"[DB_ENGINE_CREATE] Failed to create engine #{creation_count} after {creation_time:.3f}s: {exc}"
         )
@@ -220,8 +220,9 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     session: AsyncSession | None = None
     try:
         session_creation_start: float = time.time()
-        session = AsyncSessionLocal()  # type: ignore[call-arg]
-        session_creation_time: float = time.time() - session_creation_start
+        assert AsyncSessionLocal is not None, "AsyncSessionLocal must be initialized before use"
+        session = AsyncSessionLocal()
+        session_creation_time = time.time() - session_creation_start
         logger.debug(
             f"[DB_SESSION] Session #{session_count} created in {session_creation_time:.3f}s"
         )
@@ -229,27 +230,27 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
         connection_test_start: float = time.time()
         try:
             await session.execute(text("SELECT 1"))
-            connection_test_time: float = time.time() - connection_test_start
+            connection_test_time = time.time() - connection_test_start
             logger.debug(
                 f"[DB_SESSION] Session #{session_count} connection test passed in {connection_test_time:.3f}s"
             )
         except Exception as exc:
-            connection_test_time: float = time.time() - connection_test_start
+            connection_test_time = time.time() - connection_test_start
             logger.error(
                 f"[DB_SESSION] Session #{session_count} connection test failed in {connection_test_time:.3f}s: {exc}"
             )
             raise
         yield session
         # Log successful session completion
-        total_session_time: float = time.time() - session_start_time
+        total_session_time = time.time() - session_start_time
         logger.debug(
             f"[DB_SESSION] Session #{session_count} completed successfully in {total_session_time:.3f}s"
         )
     except SQLAlchemyError as exc:
         with _creation_lock:
             _connection_failures += 1
-            failure_count: int = _connection_failures
-        total_session_time: float = time.time() - session_start_time
+            failure_count = _connection_failures
+        total_session_time = time.time() - session_start_time
         logger.error(
             f"[DB_SESSION] Session #{session_count} SQLAlchemy error #{failure_count} after {total_session_time:.3f}s: {exc}"
         )
@@ -269,8 +270,8 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     except Exception as exc:
         with _creation_lock:
             _connection_failures += 1
-            failure_count: int = _connection_failures
-        total_session_time: float = time.time() - session_start_time
+            failure_count = _connection_failures
+        total_session_time = time.time() - session_start_time
         logger.error(
             f"[DB_SESSION] Session #{session_count} unexpected error #{failure_count} after {total_session_time:.3f}s: {exc}"
         )
@@ -318,21 +319,21 @@ async def db_healthcheck() -> bool:
     try:
         connection_start_time: float = time.time()
         async with engine.connect() as conn:
-            connection_time: float = time.time() - connection_start_time
+            connection_time = time.time() - connection_start_time
             logger.debug(
                 f"[DB_HEALTHCHECK] Connection established in {connection_time:.3f}s"
             )
             query_start_time: float = time.time()
             await conn.execute(text("SELECT 1"))
-            query_time: float = time.time() - query_start_time
-            total_healthcheck_time: float = time.time() - healthcheck_start_time
+            query_time = time.time() - query_start_time
+            total_healthcheck_time = time.time() - healthcheck_start_time
             logger.info(
                 f"[DB_HEALTHCHECK] SUCCESS - Total: {total_healthcheck_time:.3f}s, Query: {query_time:.3f}s"
             )
         _log_engine_pool_state(engine, "After successful healthcheck")
         return True
     except Exception as exc:
-        total_healthcheck_time: float = time.time() - healthcheck_start_time
+        total_healthcheck_time = time.time() - healthcheck_start_time
         logger.error(
             f"[DB_HEALTHCHECK] FAILED after {total_healthcheck_time:.3f}s: {exc}"
         )

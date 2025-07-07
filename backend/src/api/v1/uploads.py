@@ -77,7 +77,7 @@ router: APIRouter = APIRouter(prefix=ROUTER_PREFIX, tags=list(ROUTER_TAGS))
 class FileUploadResponse(BaseModel):
     filename: str
     url: str
-    model_config: ConfigDict = ConfigDict(
+    model_config = ConfigDict(
         json_schema_extra={
             "example": {"filename": "document.pdf", "url": "/uploads/document.pdf"}
         }
@@ -87,7 +87,7 @@ class FileUploadResponse(BaseModel):
 class FileListResponse(BaseModel):
     files: Sequence[FileDict]
     total: int
-    model_config: ConfigDict = ConfigDict(
+    model_config = ConfigDict(
         json_schema_extra={
             "examples": [
                 {
@@ -112,7 +112,7 @@ class FileResponse(BaseModel):
     content_type: str | None = None
     size: int | None = None
     created_at: datetime | None = None
-    model_config: ConfigDict = ConfigDict(
+    model_config = ConfigDict(
         json_schema_extra={
             "example": {
                 "filename": "document.pdf",
@@ -448,7 +448,7 @@ async def export_files_csv(
 
     def _generate_csv(files: Sequence[DBFile], columns: Sequence[str]) -> Iterator[str]:
         output: StringIO = StringIO()
-        writer = csv.writer(output)  # type: ignore[var-annotated]
+        writer = csv.writer(output)
         writer.writerow(columns)
         for f in files:
             row: list[str] = []
@@ -666,7 +666,6 @@ async def upload_file(
     request_id: str = Depends(get_request_id),
     feature_flag_ok: bool = Depends(require_feature("uploads:upload")),
     api_key_ok: None = Depends(require_api_key),
-    # type: ignore[return]
 ) -> FileUploadResponse:
     """
     Uploads a file and returns its filename and URL.

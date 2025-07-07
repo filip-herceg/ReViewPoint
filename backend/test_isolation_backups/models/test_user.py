@@ -5,7 +5,6 @@ from typing import Any, Mapping
 from collections.abc import Awaitable, Callable
 
 from tests.test_data_generators import get_unique_email, get_test_user
-from tests.test_data_generators import get_unique_email, get_test_user
 from src.models.user import User
 from tests.test_templates import AsyncModelTestTemplate, ModelUnitTestTemplate
 
@@ -37,7 +36,7 @@ class TestUserUnit(ModelUnitTestTemplate):
         assert user.role == "user"  # type: ignore[unreachable]
 
     def test_long_email(self: Any) -> None:
-        long_email = "a" * 255 + get_unique_email()
+        long_email = "a" * 255 + "@example.com"
         user = User(email=long_email, hashed_password="pw", is_active=True)
         assert user.email.startswith("a")
 
@@ -52,7 +51,7 @@ class TestUserUnit(ModelUnitTestTemplate):
         self.assert_repr(user, "User")
 
     def test_to_dict_if_present(self: Any) -> None:
-        user = User(email=get_unique_email(), hashed_password="pw", is_active=True)
+        user = User(email="dict@example.com", hashed_password="pw", is_active=True)
         if hasattr(user, "to_dict"):
             d = user.to_dict()
             assert d["email"] == user.email
@@ -60,7 +59,7 @@ class TestUserUnit(ModelUnitTestTemplate):
 
     def test_profile_fields(self: Any) -> None:
         user = User(
-            email=get_unique_email(),
+            email="profile@example.com",
             hashed_password="pw",
             is_active=True,
             name="Test User",
@@ -79,17 +78,16 @@ class TestUserUnit(ModelUnitTestTemplate):
 class TestUserDB(AsyncModelTestTemplate):
     @pytest.mark.asyncio
     async def test_user_crud(self: Any) -> None:
-        unique_email = get_unique_email()
-        user = User(email=unique_email, hashed_password="hashed", is_active=True)
+        user = User(email="{get_unique_email()}", hashed_password="hashed", is_active=True)
         self.async_session.add(user)
         await self.async_session.commit()
         await self.async_session.refresh(user)
         assert user.id is not None
         # Read
-        stmt = select(User).where(User.email == unique_email)
+        stmt = select(User).where(User.email == "{get_unique_email()}")
         result = await self.async_session.execute(stmt)
         user_db = result.scalar_one()
-        assert user_db.email == unique_email
+        assert user_db.email == "{get_unique_email()}"
         # Update
         user_db.is_active = False
         await self.async_session.commit()
@@ -99,15 +97,14 @@ class TestUserDB(AsyncModelTestTemplate):
         await self.async_session.delete(user_db)
         await self.async_session.commit()
         result = await self.async_session.execute(
-            select(User).where(User.email == unique_email)
+            select(User).where(User.email == "{get_unique_email()}")
         )
         assert result.scalar() is None
 
     @pytest.mark.asyncio
     async def test_unique_email_constraint(self: Any) -> None:
-        shared_email = get_unique_email()
-        user1 = User(email=shared_email, hashed_password="pw", is_active=True)
-        user2 = User(email=shared_email, hashed_password="pw2", is_active=False)
+        user1 = User(email="unique@example.com", hashed_password="pw", is_active=True)
+        user2 = User(email="unique@example.com", hashed_password="pw2", is_active=False)
         await self.seed_db([user1])
         await self.assert_integrity_error(user2)
 
@@ -121,7 +118,7 @@ class TestUserDB(AsyncModelTestTemplate):
 
     @pytest.mark.asyncio
     async def test_null_password(self: Any) -> None:
-        user = User(email=get_unique_email(), hashed_password=None, is_active=True)
+        user = User(email="nullpw@example.com", hashed_password=None, is_active=True)
         self.async_session.add(user)
         with pytest.raises(IntegrityError):
             await self.async_session.commit()
@@ -147,15 +144,14 @@ class TestUserDB(AsyncModelTestTemplate):
     async def test_transactional_rollback(self: Any) -> None:
         from sqlalchemy import text
 
-        test_email = get_unique_email()
-        user = User(email=test_email, hashed_password="pw", is_active=True)
+        user = User(email="rollback@example.com", hashed_password="pw", is_active=True)
 
         async def op() -> None:
             self.async_session.add(user)
 
         await self.run_in_transaction(op)
         result = await self.async_session.execute(
-            text("SELECT COUNT(*) FROM users WHERE email = :email"), {"email": test_email}
+            text("SELECT COUNT(*) FROM users WHERE email = 'rollback@example.com'")
         )
         count = result.scalar()
         assert count == 0
@@ -172,7 +168,7 @@ class TestUserDB(AsyncModelTestTemplate):
     async def test_user_files_relationship(self: Any) -> None:
         from src.models.file import File
 
-        user = User(email=get_unique_email(), hashed_password="pw", is_active=True)
+        user = User(email="filesrel@example.com", hashed_password="pw", is_active=True)
         await self.seed_db([user])
         files = [
             File(filename=f"file{i}.txt", content_type="text/plain", user_id=user.id)
@@ -195,7 +191,7 @@ class TestUserDB(AsyncModelTestTemplate):
     async def test_profile_fields_and_preferences_db(self: Any) -> None:
         prefs = {"theme": "light", "lang": "fr"}
         user = User(
-            email=get_unique_email(),
+            email="profiledb@example.com",
             hashed_password="pw",
             is_active=True,
             name="DB User",

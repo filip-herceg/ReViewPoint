@@ -21,6 +21,7 @@ from src.core.config import Settings, get_settings
 from src.core.security import JWTPayload as SecurityJWTPayload
 from src.models.user import User
 from tests.test_templates import AuthEndpointTestTemplate, AuthUnitTestTemplate
+from tests.test_data_generators import AuthTestDataGenerator
 
 # TypedDict definitions for structured data
 class RequiredJWTPayload(TypedDict):
@@ -155,6 +156,10 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
     @pytest.mark.asyncio
     async def test_register_and_login(self) -> None:
         """Test user registration and login flow."""
+        # Generate unique test data for isolation
+        test_data = AuthTestDataGenerator('test_register_and_login')
+        test_user = test_data.get_registration_user()
+        
         transport: ASGITransport = ASGITransport(app=self.test_app)
         async with AsyncClient(
             transport=transport,
@@ -162,11 +167,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             headers={"X-API-Key": "testkey"},
         ) as ac:
             # Register
-            register_data: RegisterRequest = {
-                "email": "user@example.com",
-                "password": "TestPass123!",
-                "name": "Test User",
-            }
+            register_data = test_user.to_register_dict()
             resp: Response = await ac.post(
                 "/api/v1/auth/register",
                 json=register_data,
@@ -175,7 +176,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             self.assert_status(resp, 201)
             token: str = resp.json()["access_token"]
             # Login
-            login_data: LoginRequest = {"email": "user@example.com", "password": "TestPass123!"}
+            login_data = test_user.to_login_dict()
             resp = await ac.post(
                 "/api/v1/auth/login",
                 json=login_data,
@@ -184,7 +185,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             self.assert_status(resp, 200)
             assert "access_token" in resp.json()
             # Invalid login
-            invalid_login_data: LoginRequest = {"email": "user@example.com", "password": "WrongPass!"}
+            invalid_login_data: LoginRequest = {"email": test_user.email, "password": "WrongPass!"}
             resp = await ac.post(
                 "/api/v1/auth/login",
                 json=invalid_login_data,
@@ -270,24 +271,25 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
     @pytest.mark.asyncio
     async def test_register_duplicate_email(self) -> None:
         """Test registration with duplicate email."""
+        # Generate unique test data for isolation
+        test_data = AuthTestDataGenerator('test_register_duplicate_email')
+        test_user = test_data.get_registration_user()
+        
         transport: ASGITransport = ASGITransport(app=self.test_app)
         async with AsyncClient(
             transport=transport,
             base_url="http://test",
             headers={"X-API-Key": "testkey"},
         ) as ac:
-            first_registration: RegisterRequest = {
-                "email": "dupe@example.com",
-                "password": "TestPass123!",
-                "name": "Dupe",
-            }
+            first_registration = test_user.to_register_dict()
             await ac.post(
                 "/api/v1/auth/register",
                 json=first_registration,
             )
-            duplicate_registration: RegisterRequest = {
-                "email": "dupe@example.com",
-                "password": "TestPass123!",
+            # Try to register again with same email (but different name)
+            duplicate_registration = {
+                "email": test_user.email,
+                "password": test_user.password,
                 "name": "Dupe Again",
             }
             resp: Response = await ac.post(

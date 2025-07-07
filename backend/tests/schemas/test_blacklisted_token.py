@@ -1,5 +1,8 @@
+
 from datetime import UTC, datetime, timedelta
-from typing import Final, Optional
+from typing import Final, Optional, Type, cast
+from collections.abc import Container
+from collections.abc import Container
 from collections.abc import Sequence, Callable
 import pytest
 from pydantic import ValidationError
@@ -16,17 +19,20 @@ class TestBlacklistedTokenSchema(ModelUnitTestTemplate):
     def assert_not_equal(self, a: object, b: object, msg: Optional[str] = None) -> None:
         assert a != b, msg or f"Expected {a!r} != {b!r}"
 
-    def assert_is_true(self, value: bool, msg: Optional[str] = None) -> None:
+    def assert_is_true(self, value: object, msg: Optional[str] = None) -> None:
         assert value, msg or "Expected expression to be True"
 
     def assert_is_none(self, value: object, msg: Optional[str] = None) -> None:
         assert value is None, msg or f"Expected {value!r} is None"
 
-    def assert_in(self, member: str, container: str | Sequence[str], msg: Optional[str] = None) -> None:
-        assert member in container, msg or f"Expected {member!r} in {container!r}"
+    def assert_in(self, member: object, container: object, msg: Optional[str] = None) -> None:
+        # Best practice: match base signature, but check/cast at runtime for type safety
+        if isinstance(container, Container):
+            assert member in container, msg or f"Expected {member!r} in {container!r}"
+        else:
+            raise TypeError(f"Container argument does not support 'in': {type(container)}")
 
     def assert_raises(self, exc_type: type[BaseException], func: Callable[..., object], *args: object, **kwargs: object) -> None:
-        import pytest
         with pytest.raises(exc_type):
             func(*args, **kwargs)
 
@@ -85,9 +91,11 @@ class TestBlacklistedTokenSchema(ModelUnitTestTemplate):
             )
             self.assert_equal(schema.jti, jti)
             self.assert_equal(schema.expires_at, expires_at)
-            self.assert_is_true(
-                schema.created_at == created_at or schema.created_at is None
-            )
+            # created_at can be None or a datetime, depending on input
+            if created_at is not None:
+                self.assert_equal(schema.created_at, created_at)
+            else:
+                self.assert_is_true(schema.created_at is None or isinstance(schema.created_at, datetime))
 
     @pytest.mark.parametrize(
         "jti,expires_at",

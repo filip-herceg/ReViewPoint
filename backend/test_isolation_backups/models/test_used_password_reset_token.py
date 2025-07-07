@@ -39,20 +39,19 @@ class TestUsedPasswordResetTokenUnit(ModelUnitTestTemplate):
         - __repr__ includes email and nonce
         """
         now: Final[datetime] = datetime.now(UTC)
-        test_email = get_unique_email()
         token: UsedPasswordResetToken = UsedPasswordResetToken(
-            email=test_email, nonce="abc123", used_at=now
+            email="{get_unique_email()}", nonce="abc123", used_at=now
         )
-        expected_attrs: Final[Mapping[str, object]] = {"email": test_email, "nonce": "abc123", "used_at": now}
+        expected_attrs: Final[Mapping[str, object]] = {"email": "{get_unique_email()}", "nonce": "abc123", "used_at": now}
         self._assert_model_attrs_typed(token, expected_attrs)
-        assert test_email in repr(token)
+        assert "{get_unique_email()}" in repr(token)
         assert "abc123" in repr(token)
 
     def test_token_used_at_timezone(self) -> None:
         """Test that used_at is timezone-aware and uses UTC."""
         now: Final[datetime] = datetime.now(UTC)
         token: UsedPasswordResetToken = UsedPasswordResetToken(
-            email=get_unique_email(), nonce="nonce2", used_at=now
+            email="user2@example.com", nonce="nonce2", used_at=now
         )
         assert token.used_at.tzinfo is UTC
 
@@ -73,7 +72,7 @@ class TestUsedPasswordResetTokenUnit(ModelUnitTestTemplate):
 
     def test_long_email_and_nonce(self) -> None:
         """Test long email and nonce values."""
-        long_email: Final[str] = "a" * 255 + get_unique_email()
+        long_email: Final[str] = "a" * 255 + "@example.com"
         long_nonce: Final[str] = "b" * 64
         now: Final[datetime] = datetime.now(UTC)
         token: UsedPasswordResetToken = UsedPasswordResetToken(email=long_email, nonce=long_nonce, used_at=now)
@@ -83,12 +82,11 @@ class TestUsedPasswordResetTokenUnit(ModelUnitTestTemplate):
     def test_duplicate_email_nonce(self) -> None:
         """Test duplicate email and nonce in memory (no unique constraint)."""
         now: Final[datetime] = datetime.now(UTC)
-        test_email = get_unique_email()
         token1: UsedPasswordResetToken = UsedPasswordResetToken(
-            email=test_email, nonce="dupnonce", used_at=now
+            email="dup@example.com", nonce="dupnonce", used_at=now
         )
         token2: UsedPasswordResetToken = UsedPasswordResetToken(
-            email=test_email, nonce="dupnonce", used_at=now
+            email="dup@example.com", nonce="dupnonce", used_at=now
         )
         assert token1.email == token2.email and token1.nonce == token2.nonce
 
@@ -182,9 +180,8 @@ class TestUsedPasswordResetTokenDB(AsyncModelTestTemplate):
     async def test_crud(self) -> None:
         """Test CRUD operations for UsedPasswordResetToken in DB."""
         now: Final[datetime] = datetime.now(UTC)
-        test_email = get_unique_email()
         token: UsedPasswordResetToken = UsedPasswordResetToken(
-            email=test_email, nonce="dbnonce", used_at=now
+            email="db@example.com", nonce="dbnonce", used_at=now
         )
         self.async_session.add(token)
         await self.async_session.commit()
@@ -192,7 +189,7 @@ class TestUsedPasswordResetTokenDB(AsyncModelTestTemplate):
         assert token.id is not None
         db_token: UsedPasswordResetToken | None = await self.async_session.get(UsedPasswordResetToken, token.id)
         assert db_token is not None
-        assert db_token.email == test_email
+        assert db_token.email == "db@example.com"
         db_token.nonce = "newnonce"
         await self.async_session.commit()
         await self.async_session.refresh(db_token)
@@ -233,14 +230,13 @@ class TestUsedPasswordResetTokenDB(AsyncModelTestTemplate):
     async def test_special_characters_in_email_and_nonce(self) -> None:
         """Test special characters in email and nonce in DB."""
         now: Final[datetime] = datetime.now(UTC)
-        special_email = get_unique_email("special+chars", "test")
         token: UsedPasswordResetToken = UsedPasswordResetToken(
-            email=special_email, nonce="!@#$%^&*()", used_at=now
+            email="special+chars@example.com", nonce="!@#$%^&*()", used_at=now
         )
         self.async_session.add(token)
         await self.async_session.commit()
         await self.async_session.refresh(token)
-        assert special_email.startswith("special+chars")
+        assert token.email.startswith("special+chars")
         assert token.nonce.startswith("!")
 
     @pytest.mark.asyncio

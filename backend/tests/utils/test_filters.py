@@ -1,31 +1,43 @@
 from datetime import datetime
-from typing import Final, Any, Callable, TypeVar, cast
+from typing import Final, Callable, TypedDict, Optional, Sequence, Mapping, cast
 import pytest
 from src.utils.datetime import parse_flexible_datetime
 from src.utils.filters import filter_fields, process_user_filters
 from tests.test_templates import UtilityUnitTestTemplate
 
-T = TypeVar("T")
+
+class UserDict(TypedDict, total=False):
+    id: int
+    email: str
+    name: str
+    age: int
+    role: str
+    active: bool
+    score: float
+    tags: list[str]
+    metadata: dict[str, object]
+    null_field: None
+
 
 class TestFilters(UtilityUnitTestTemplate):
     """Test utility functions in src.utils.filters module."""
 
     def test_filter_fields_empty_fields_list(self) -> None:
         """Test filter_fields with empty fields list returns original object."""
-        obj: Final[dict[str, Any]] = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
-        result: dict[str, Any] = filter_fields(obj, [])
+        obj: Final[UserDict] = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        result = filter_fields(obj, [])  # type: ignore
         self.assert_equal(result, obj)
 
     def test_filter_fields_none_fields_list(self) -> None:
         """Test filter_fields with None fields list returns original object."""
-        obj: Final[dict[str, Any]] = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
-        # Legacy behavior: filter_fields may not accept None, so we cast to Any to bypass type check
-        result: dict[str, Any] = filter_fields(obj, cast(Any, None))
+        obj: Final[UserDict] = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        # Legacy behavior: filter_fields may not accept None, so we use cast to bypass type check
+        result = filter_fields(obj, cast(Sequence[str], None))  # type: ignore
         self.assert_equal(result, obj)
 
     def test_filter_fields_with_specific_fields(self) -> None:
         """Test filter_fields with specific fields includes requested fields plus required ones."""
-        obj: Final[dict[str, Any]] = {
+        obj: Final[UserDict] = {
             "id": 1,
             "email": "test@example.com",
             "name": "John",
@@ -33,57 +45,57 @@ class TestFilters(UtilityUnitTestTemplate):
             "role": "admin",
         }
         fields: Final[list[str]] = ["name", "age"]
-        result: dict[str, Any] = filter_fields(obj, fields)
-        expected: dict[str, Any] = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        result = filter_fields(obj, fields)  # type: ignore
+        expected: UserDict = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
         self.assert_equal(result, expected)
 
     def test_filter_fields_with_required_fields_included(self) -> None:
         """Test filter_fields when required fields are already in the requested fields."""
-        obj: dict[str, Any] = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        obj: UserDict = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
         fields: list[str] = ["id", "email", "name"]
-        result: dict[str, Any] = filter_fields(obj, fields)
-        expected: dict[str, Any] = {"id": 1, "email": "test@example.com", "name": "John"}
+        result = filter_fields(obj, fields)  # type: ignore
+        expected: UserDict = {"id": 1, "email": "test@example.com", "name": "John"}
         self.assert_equal(result, expected)
 
     def test_filter_fields_with_nonexistent_fields(self) -> None:
         """Test filter_fields with fields that don't exist in the object."""
-        obj: dict[str, Any] = {"id": 1, "email": "test@example.com", "name": "John"}
+        obj: UserDict = {"id": 1, "email": "test@example.com", "name": "John"}
         fields: list[str] = ["nonexistent_field", "another_missing_field"]
-        result: dict[str, Any] = filter_fields(obj, fields)
+        result = filter_fields(obj, fields)  # type: ignore
         # Should only include the required fields that exist
-        expected: dict[str, Any] = {"id": 1, "email": "test@example.com"}
+        expected: UserDict = {"id": 1, "email": "test@example.com"}
         self.assert_equal(result, expected)
 
     def test_filter_fields_missing_required_fields(self) -> None:
         """Test filter_fields when object is missing required fields."""
-        obj: dict[str, Any] = {"name": "John", "age": 30}  # Missing id and email
+        obj: UserDict = {"name": "John", "age": 30}  # Missing id and email
         fields: list[str] = ["name"]
-        result: dict[str, Any] = filter_fields(obj, fields)
+        result = filter_fields(obj, fields)  # type: ignore
         # Should only include fields that exist
-        expected: dict[str, Any] = {"name": "John"}
+        expected: UserDict = {"name": "John"}
         self.assert_equal(result, expected)
 
     def test_filter_fields_empty_object(self) -> None:
         """Test filter_fields with empty object."""
-        obj: dict[str, Any] = {}
+        obj: UserDict = {}
         fields: list[str] = ["name", "email"]
-        result: dict[str, Any] = filter_fields(obj, fields)
-        expected: dict[str, Any] = {}
+        result = filter_fields(obj, fields)  # type: ignore
+        expected: UserDict = {}
         self.assert_equal(result, expected)
 
     def test_filter_fields_duplicate_fields(self) -> None:
         """Test filter_fields with duplicate fields in the list."""
-        obj: dict[str, Any] = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        obj: UserDict = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
         fields: list[str] = ["name", "name", "age", "id"]  # Duplicates
-        result: dict[str, Any] = filter_fields(obj, fields)
-        expected: dict[str, Any] = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        result = filter_fields(obj, fields)  # type: ignore
+        expected: UserDict = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
         self.assert_equal(result, expected)
 
     def test_process_user_filters_ascending_sort(self) -> None:
         """Test process_user_filters with ascending sort (no prefix)."""
-        sort_jsonapi = "created_at"
-        created_after = "2023-01-01T00:00:00Z"
-        created_before = "2023-12-31T23:59:59Z"
+        sort_jsonapi: str = "created_at"
+        created_after: str = "2023-01-01T00:00:00Z"
+        created_before: str = "2023-12-31T23:59:59Z"
 
         sort, order, created_after_dt, created_before_dt = process_user_filters(
             sort_jsonapi, created_after, created_before, parse_flexible_datetime
@@ -100,9 +112,9 @@ class TestFilters(UtilityUnitTestTemplate):
 
     def test_process_user_filters_descending_sort(self) -> None:
         """Test process_user_filters with descending sort (- prefix)."""
-        sort_jsonapi = "-created_at"
-        created_after = "2023-01-01T00:00:00Z"
-        created_before = "2023-12-31T23:59:59Z"
+        sort_jsonapi: str = "-created_at"
+        created_after: str = "2023-01-01T00:00:00Z"
+        created_before: str = "2023-12-31T23:59:59Z"
 
         sort, order, created_after_dt, created_before_dt = process_user_filters(
             sort_jsonapi, created_after, created_before, parse_flexible_datetime
@@ -115,9 +127,9 @@ class TestFilters(UtilityUnitTestTemplate):
 
     def test_process_user_filters_different_datetime_formats(self) -> None:
         """Test process_user_filters with different datetime formats."""
-        sort_jsonapi = "name"
-        created_after = "2023-01-01"  # Date only
-        created_before = "2023-12-31T23:59:59+00:00"  # With timezone
+        sort_jsonapi: str = "name"
+        created_after: str = "2023-01-01"  # Date only
+        created_before: str = "2023-12-31T23:59:59+00:00"  # With timezone
 
         sort, order, created_after_dt, created_before_dt = process_user_filters(
             sort_jsonapi, created_after, created_before, parse_flexible_datetime
@@ -129,10 +141,10 @@ class TestFilters(UtilityUnitTestTemplate):
         self.assert_is_instance(created_before_dt, datetime)
 
     def test_process_user_filters_invalid_created_after(self) -> None:
-        """Test process_user_filters with invalid created_after datetime."""
-        sort_jsonapi = "created_at"
-        created_after = "invalid-date"
-        created_before = "2023-12-31T23:59:59Z"
+        """Test process_user_filters with invalid created_after datetime. Expects ValueError."""
+        sort_jsonapi: str = "created_at"
+        created_after: str = "invalid-date"
+        created_before: str = "2023-12-31T23:59:59Z"
 
         with pytest.raises(ValueError) as exc_info:
             process_user_filters(
@@ -142,10 +154,10 @@ class TestFilters(UtilityUnitTestTemplate):
         self.assert_in("Invalid created_after", str(exc_info.value))
 
     def test_process_user_filters_invalid_created_before(self) -> None:
-        """Test process_user_filters with invalid created_before datetime."""
-        sort_jsonapi = "created_at"
-        created_after = "2023-01-01T00:00:00Z"
-        created_before = "not-a-date"
+        """Test process_user_filters with invalid created_before datetime. Expects ValueError."""
+        sort_jsonapi: str = "created_at"
+        created_after: str = "2023-01-01T00:00:00Z"
+        created_before: str = "not-a-date"
 
         with pytest.raises(ValueError) as exc_info:
             process_user_filters(
@@ -156,9 +168,9 @@ class TestFilters(UtilityUnitTestTemplate):
 
     def test_process_user_filters_empty_string_datetimes(self) -> None:
         """Test process_user_filters with empty string datetimes."""
-        sort_jsonapi = "email"
-        created_after = ""
-        created_before = ""
+        sort_jsonapi: str = "email"
+        created_after: str = ""
+        created_before: str = ""
 
         sort, order, created_after_dt, created_before_dt = process_user_filters(
             sort_jsonapi, created_after, created_before, parse_flexible_datetime
@@ -171,9 +183,9 @@ class TestFilters(UtilityUnitTestTemplate):
 
     def test_process_user_filters_complex_sort_field(self) -> None:
         """Test process_user_filters with complex sort field names."""
-        sort_jsonapi = "-user.profile.last_login"
-        created_after = "2023-01-01T00:00:00Z"
-        created_before = "2023-12-31T23:59:59Z"
+        sort_jsonapi: str = "-user.profile.last_login"
+        created_after: str = "2023-01-01T00:00:00Z"
+        created_before: str = "2023-12-31T23:59:59Z"
 
         sort, order, created_after_dt, created_before_dt = process_user_filters(
             sort_jsonapi, created_after, created_before, parse_flexible_datetime
@@ -184,10 +196,9 @@ class TestFilters(UtilityUnitTestTemplate):
 
     def test_process_user_filters_sort_field_starting_with_dash_but_valid_field(self) -> None:
         """Test process_user_filters with sort field that naturally starts with dash."""
-        # Edge case: what if a field name actually starts with a dash?
-        sort_jsonapi = "--special-field"  # Double dash
-        created_after = "2023-01-01T00:00:00Z"
-        created_before = "2023-12-31T23:59:59Z"
+        sort_jsonapi: str = "--special-field"  # Double dash
+        created_after: str = "2023-01-01T00:00:00Z"
+        created_before: str = "2023-12-31T23:59:59Z"
 
         sort, order, created_after_dt, created_before_dt = process_user_filters(
             sort_jsonapi, created_after, created_before, parse_flexible_datetime
@@ -198,9 +209,9 @@ class TestFilters(UtilityUnitTestTemplate):
 
     def test_process_user_filters_microseconds_datetime(self) -> None:
         """Test process_user_filters with datetime including microseconds."""
-        sort_jsonapi = "created_at"
-        created_after = "2023-01-01T00:00:00.123456Z"
-        created_before = "2023-12-31T23:59:59.999999Z"
+        sort_jsonapi: str = "created_at"
+        created_after: str = "2023-01-01T00:00:00.123456Z"
+        created_before: str = "2023-12-31T23:59:59.999999Z"
 
         sort, order, created_after_dt, created_before_dt = process_user_filters(
             sort_jsonapi, created_after, created_before, parse_flexible_datetime
@@ -215,7 +226,7 @@ class TestFilters(UtilityUnitTestTemplate):
 
     def test_filter_fields_preserves_all_values_types(self) -> None:
         """Test filter_fields preserves different value types correctly."""
-        obj = {
+        obj: UserDict = {
             "id": 1,
             "email": "test@example.com",
             "name": "John",
@@ -225,10 +236,10 @@ class TestFilters(UtilityUnitTestTemplate):
             "metadata": {"role": "admin", "level": 5},
             "null_field": None,
         }
-        fields = ["name", "active", "score", "tags", "metadata", "null_field"]
-        result = filter_fields(obj, fields)
+        fields: list[str] = ["name", "active", "score", "tags", "metadata", "null_field"]
+        result = filter_fields(obj, fields)  # type: ignore
 
-        expected = {
+        expected: UserDict = {
             "id": 1,
             "email": "test@example.com",
             "name": "John",
@@ -242,9 +253,9 @@ class TestFilters(UtilityUnitTestTemplate):
 
     def test_process_user_filters_whitespace_handling(self) -> None:
         """Test process_user_filters handles whitespace in sort field correctly."""
-        sort_jsonapi = " -created_at "  # With leading/trailing spaces
-        created_after = "2023-01-01T00:00:00Z"
-        created_before = "2023-12-31T23:59:59Z"
+        sort_jsonapi: str = " -created_at "  # With leading/trailing spaces
+        created_after: str = "2023-01-01T00:00:00Z"
+        created_before: str = "2023-12-31T23:59:59Z"
 
         sort, order, created_after_dt, created_before_dt = process_user_filters(
             sort_jsonapi, created_after, created_before, parse_flexible_datetime
@@ -257,26 +268,26 @@ class TestFilters(UtilityUnitTestTemplate):
 
     def test_filter_fields_with_only_required_fields_requested(self) -> None:
         """Test filter_fields when only required fields are requested."""
-        obj = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
-        fields = ["id", "email"]
-        result = filter_fields(obj, fields)
+        obj: UserDict = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        fields: list[str] = ["id", "email"]
+        result = filter_fields(obj, fields)  # type: ignore
 
-        expected = {"id": 1, "email": "test@example.com"}
+        expected: UserDict = {"id": 1, "email": "test@example.com"}
         self.assert_equal(result, expected)
 
     def test_filter_fields_empty_list_behavior(self) -> None:
         """Test filter_fields behavior with empty list."""
-        obj = {"id": 1, "email": "test@example.com", "name": "John"}
+        obj: UserDict = {"id": 1, "email": "test@example.com", "name": "John"}
 
         # Empty list should return a dict with the same contents as the original
-        result_empty = filter_fields(obj, [])
+        result_empty = filter_fields(obj, [])  # type: ignore
         self.assert_equal(result_empty, obj)
 
     def test_process_user_filters_only_dash_sort_field(self) -> None:
         """Test process_user_filters with sort field that is just a dash."""
-        sort_jsonapi = "-"
-        created_after = "2023-01-01T00:00:00Z"
-        created_before = "2023-12-31T23:59:59Z"
+        sort_jsonapi: str = "-"
+        created_after: str = "2023-01-01T00:00:00Z"
+        created_before: str = "2023-12-31T23:59:59Z"
 
         sort, order, created_after_dt, created_before_dt = process_user_filters(
             sort_jsonapi, created_after, created_before, parse_flexible_datetime
@@ -287,9 +298,9 @@ class TestFilters(UtilityUnitTestTemplate):
 
     def test_process_user_filters_multiple_dashes(self) -> None:
         """Test process_user_filters with multiple leading dashes."""
-        sort_jsonapi = "---created_at"
-        created_after = "2023-01-01T00:00:00Z"
-        created_before = "2023-12-31T23:59:59Z"
+        sort_jsonapi: str = "---created_at"
+        created_after: str = "2023-01-01T00:00:00Z"
+        created_before: str = "2023-12-31T23:59:59Z"
 
         sort, order, created_after_dt, created_before_dt = process_user_filters(
             sort_jsonapi, created_after, created_before, parse_flexible_datetime
@@ -306,7 +317,7 @@ class TestFilters(UtilityUnitTestTemplate):
         fields: list[object] = ["name", 123]  # Mix of string and non-string in fields
         # The function should include the numeric key if it's requested
         # We use cast to satisfy the type checker, as filter_fields expects Mapping[str, object] and Sequence[str]
-        result = filter_fields(cast(dict, obj), cast(list, fields))  # type: ignore[arg-type]
+        result = filter_fields(cast(Mapping[str, object], obj), cast(Sequence[str], fields))  # type: ignore
         expected: dict[object, object] = {
             "id": 1,
             "email": "test@example.com",

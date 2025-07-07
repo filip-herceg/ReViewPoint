@@ -16,9 +16,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Select
 
 # Import config-dependent modules inside test class to ensure env vars are set by fixtures first
+from tests.test_data_generators import get_unique_email, get_test_user
 from tests.test_templates import DatabaseTestTemplate
 
-USER_EMAIL: Final[str] = "test@example.com"
+USER_EMAIL: Final[str] = get_unique_email()
 USER_DATA: Final[dict[str, str]] = {"email": USER_EMAIL, "hashed_password": "pw"}
 
 
@@ -352,7 +353,7 @@ class TestDatabase(DatabaseTestTemplate):
                 "SQLite in-memory does not reliably support ON DELETE CASCADE for this test."
             )
         # Insert user and file, delete user, file should be deleted if cascade is enabled
-        user: Any = self.User(email="cascade@example.com", hashed_password="pw")
+        user: Any = self.User(email=get_unique_email(), hashed_password="pw")
         async with self.AsyncSessionLocal() as session:
             session.add(user)
             await session.commit()
@@ -431,12 +432,13 @@ class TestDatabase(DatabaseTestTemplate):
         Raises:
             AssertionError: If default values are not set correctly.
         """
-        user: Any = self.User(email="defaults@example.com", hashed_password="pw")
+        email = get_unique_email()
+        user: Any = self.User(email=email, hashed_password="pw")
         async with self.AsyncSessionLocal() as session:
             session.add(user)
             await session.commit()
             result: Any = await session.execute(
-                select(self.User).filter_by(email="defaults@example.com")
+                select(self.User).filter_by(email=email)
             )
             row: Any = result.scalar_one()
             assert row.is_active is True
@@ -450,14 +452,15 @@ class TestDatabase(DatabaseTestTemplate):
         Raises:
             AssertionError: If update operation doesn't work correctly.
         """
-        user: Any = self.User(email="update@example.com", hashed_password="pw")
+        email = get_unique_email()
+        user: Any = self.User(email=email, hashed_password="pw")
         async with self.AsyncSessionLocal() as session:
             session.add(user)
             await session.commit()
             user.is_active = False
             await session.commit()
             result: Any = await session.execute(
-                select(self.User).filter_by(email="update@example.com")
+                select(self.User).filter_by(email=email)
             )
             row: Any = result.scalar_one()
             assert row.is_active is False
@@ -469,7 +472,7 @@ class TestDatabase(DatabaseTestTemplate):
         Raises:
             AssertionError: If rollback doesn't work properly.
         """
-        user: Any = self.User(email="rollback@example.com", hashed_password="pw")
+        user: Any = self.User(email=get_unique_email(), hashed_password="pw")
         try:
             async with self.AsyncSessionLocal() as session:
                 session.add(user)
@@ -479,7 +482,7 @@ class TestDatabase(DatabaseTestTemplate):
         # User should not be committed
         async with self.AsyncSessionLocal() as session:
             result: Any = await session.execute(
-                select(self.User).filter_by(email="rollback@example.com")
+                select(self.User).filter_by(email=get_unique_email())
             )
             row: Any | None = result.scalar_one_or_none()
             assert row is None
@@ -491,15 +494,16 @@ class TestDatabase(DatabaseTestTemplate):
         Raises:
             AssertionError: If __repr__ doesn't return expected format.
         """
-        user: Any = self.User(email="repr@example.com", hashed_password="pw")
+        user_email = get_unique_email()
+        user: Any = self.User(email=user_email, hashed_password="pw")
         async with self.AsyncSessionLocal() as session:
             session.add(user)
             await session.commit()
             result: Any = await session.execute(
-                select(self.User).filter_by(email="repr@example.com")
+                select(self.User).filter_by(email=user_email)
             )
             row: Any = result.scalar_one()
-            assert f"<User id={row.id} email=repr@example.com>" == repr(row)
+            assert f"<User id={row.id} email={user_email}>" == repr(row)
 
     @pytest.mark.asyncio
     async def test_user_preferences_json(self) -> None:
@@ -509,14 +513,15 @@ class TestDatabase(DatabaseTestTemplate):
             AssertionError: If JSON field doesn't store/retrieve correctly.
         """
         prefs: dict[str, str] = {"theme": "dark", "lang": "en"}
+        email = get_unique_email()
         user: Any = self.User(
-            email="prefs@example.com", hashed_password="pw", preferences=prefs
+            email=email, hashed_password="pw", preferences=prefs
         )
         async with self.AsyncSessionLocal() as session:
             session.add(user)
             await session.commit()
             result: Any = await session.execute(
-                select(self.User).filter_by(email="prefs@example.com")
+                select(self.User).filter_by(email=email)
             )
             row: Any = result.scalar_one()
             assert row.preferences == prefs
@@ -529,14 +534,15 @@ class TestDatabase(DatabaseTestTemplate):
             AssertionError: If datetime field doesn't store/retrieve correctly.
         """
         now: datetime.datetime = datetime.datetime.now(datetime.UTC)
+        email = get_unique_email()
         user: Any = self.User(
-            email="dt@example.com", hashed_password="pw", last_login_at=now
+            email=email, hashed_password="pw", last_login_at=now
         )
         async with self.AsyncSessionLocal() as session:
             session.add(user)
             await session.commit()
             result: Any = await session.execute(
-                select(self.User).filter_by(email="dt@example.com")
+                select(self.User).filter_by(email=email)
             )
             row: Any = result.scalar_one()
             assert row.last_login_at.replace(microsecond=0) == now.replace(

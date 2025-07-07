@@ -41,7 +41,7 @@ from src.services.user import (
     UserService,
     ValidationError,
 )
-from src.utils.http_error import http_error
+from src.utils.http_error import http_error, ExtraLogInfo
 
 # =============================
 # TypedDicts and Constants
@@ -235,7 +235,7 @@ def rate_limit(action: str, key_func: Callable[[Request], str] | None = None) ->
                 429,
                 f"Too many {action} attempts. Please try again later.",
                 logger.warning,
-                {"limiter_key": key},
+                cast(ExtraLogInfo, {"limiter_key": key}),
             )
 
     return Depends(dependency)
@@ -307,23 +307,22 @@ async def register(
             400,
             "User with this email already exists.",
             logger.warning,
-            {"email": data.email},
+            cast(ExtraLogInfo, {"email": data.email}),
             e,
         )
     except InvalidDataError as e:
         http_error(
-            400, "Invalid registration data.", logger.warning, {"email": data.email}, e
+            400, "Invalid registration data.", logger.warning, cast(ExtraLogInfo, {"email": data.email}), e
         )
     except Exception as e:
         import traceback
 
         tb: str = traceback.format_exc()
-        logger.error(f"Registration failed for {data.email}: {e}\nTraceback: {tb}")
         http_error(
             400,
-            "An unexpected error occurred. Please try again later.",
-            logger.error,
-            {"email": data.email, "error": str(e), "traceback": tb},
+            "Invalid registration data.",
+            logger.warning,
+            cast(ExtraLogInfo, {"email": data.email, "error": str(e), "traceback": tb}),
             e,
         )
     raise AssertionError("Unreachable")
@@ -370,17 +369,17 @@ async def login(
         return AuthResponse(access_token=access_token, refresh_token=refresh_token)
     except UserNotFoundError as e:
         logger.warning(f"Login failed: {data.email}")
-        http_error(401, "Invalid credentials", logger.warning, {"email": data.email}, e)
+        http_error(401, "Invalid credentials", logger.warning, cast(ExtraLogInfo, {"email": data.email}), e)
     except ValidationError as e:
         logger.warning(f"Login failed: {data.email}")
-        http_error(401, "Invalid credentials", logger.warning, {"email": data.email}, e)
+        http_error(401, "Invalid credentials", logger.warning, cast(ExtraLogInfo, {"email": data.email}), e)
     except Exception as e:
         logger.error(f"Login failed: {data.email}")
         http_error(
             401,
             "An unexpected error occurred. Please try again later.",
             logger.error,
-            {"email": data.email, "error": str(e)},
+            cast(ExtraLogInfo, {"email": data.email, "error": str(e)}),
             e,
         )
     raise AssertionError("Unreachable")
@@ -501,18 +500,18 @@ async def refresh_token(
         )
     except RefreshTokenBlacklistedError:
         http_error(
-            401, "Invalid or expired refresh token.", logger.warning, {"token": token}
+            401, "Invalid or expired refresh token.", logger.warning, cast(ExtraLogInfo, {"token": token})
         )
     except RefreshTokenError:
         http_error(
-            401, "Invalid or expired refresh token.", logger.warning, {"token": token}
+            401, "Invalid or expired refresh token.", logger.warning, cast(ExtraLogInfo, {"token": token})
         )
     except ValueError as e:
         http_error(
             401,
             "Invalid or expired refresh token.",
             logger.warning,
-            {"token": token, "error": str(e)},
+            cast(ExtraLogInfo, {"token": token, "error": str(e)}),
             e,
         )
     except Exception as e:
@@ -520,7 +519,7 @@ async def refresh_token(
             401,
             "Invalid or expired refresh token.",
             logger.warning,
-            {"token": token, "error": str(e)},
+            cast(ExtraLogInfo, {"token": token, "error": str(e)}),
             e,
         )
     raise AssertionError("Unreachable")
@@ -599,7 +598,7 @@ async def reset_password(
     """
     pw_error: str | None = get_password_validation_error(data.new_password)
     if pw_error is not None:
-        http_error(400, pw_error, logger.warning, {"token_prefix": data.token[:8]})
+        http_error(400, pw_error, logger.warning, cast(ExtraLogInfo, {"token_prefix": data.token[:8]}))
     logger.info(f"Password reset confirm attempt: {data.token[:8]}")
     try:
         await user_service.reset_password(session, data.token, data.new_password)
@@ -610,7 +609,7 @@ async def reset_password(
             400,
             str(e),
             logger.warning,
-            {"token_prefix": data.token[:8], "error": str(e)},
+            cast(ExtraLogInfo, {"token_prefix": data.token[:8], "error": str(e)}),
             e,
         )
     except Exception as e:
@@ -618,7 +617,7 @@ async def reset_password(
             400,
             "An error occurred while resetting the password. Please try again later.",
             logger.error,
-            {"token_prefix": data.token[:8], "error": str(e)},
+            cast(ExtraLogInfo, {"token_prefix": data.token[:8], "error": str(e)}),
             e,
         )
     raise AssertionError("Unreachable")

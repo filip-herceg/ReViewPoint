@@ -85,21 +85,21 @@ def create_app() -> FastAPI:
 
     logging.warning("REGISTERED ROUTES (in registration order):")
     for route in app.routes:
-        route_path: str | None = getattr(route, "path", None)
+        route_path = getattr(route, "path", None)
         if route_path is None:
             continue
-        route_methods: set[str] | None = getattr(route, "methods", None)
-        methods_str: str = f" [{','.join(route_methods)}]" if route_methods else ""
-        endpoint_name: Callable[..., object] | None = getattr(route, "endpoint", None)
+        route_methods = getattr(route, "methods", None)
+        methods_str = f" [{','.join(route_methods)}]" if route_methods else ""
+        endpoint_name = getattr(route, "endpoint", None)
         if endpoint_name is not None and hasattr(endpoint_name, "__name__"):
-            endpoint_str: str = endpoint_name.__name__
+            endpoint_str = endpoint_name.__name__
         else:
-            endpoint_str: str = str(endpoint_name)
+            endpoint_str = str(endpoint_name)
         logging.warning(f"{route_path}{methods_str} -> {endpoint_str}")
 
     # Log routes sorted by specificity (how FastAPI matches routes)
     logging.warning("ROUTES BY MATCHING SPECIFICITY (most specific first):")
-    routes_by_specificity: list = sorted(
+    routes_by_specificity = sorted(
         [r for r in app.routes if getattr(r, "path", None) is not None],
         key=lambda r: (
             getattr(r, "path", "").count("{"),
@@ -107,16 +107,16 @@ def create_app() -> FastAPI:
         ),
     )
     for route in routes_by_specificity:
-        route_path: str | None = getattr(route, "path", None)
+        route_path = getattr(route, "path", None)
         if route_path is None:
             continue
-        route_methods: set[str] | None = getattr(route, "methods", None)
-        methods_str: str = f" [{','.join(route_methods)}]" if route_methods else ""
-        endpoint_name: Callable[..., object] | None = getattr(route, "endpoint", None)
+        route_methods = getattr(route, "methods", None)
+        methods_str = f" [{','.join(route_methods)}]" if route_methods else ""
+        endpoint_name = getattr(route, "endpoint", None)
         if endpoint_name is not None and hasattr(endpoint_name, "__name__"):
-            endpoint_str: str = endpoint_name.__name__
+            endpoint_str = endpoint_name.__name__
         else:
-            endpoint_str: str = str(endpoint_name)
+            endpoint_str = str(endpoint_name)
         logging.warning(f"{route_path}{methods_str} -> {endpoint_str}")
 
     # Check routers
@@ -125,18 +125,18 @@ def create_app() -> FastAPI:
     # Print uploads router routes specifically with path parameters highlighted
     logging.warning("UPLOADS ROUTER ROUTES (with path params highlighted):")
     for route in uploads_router.routes:
-        route_path: str | None = getattr(route, "path", None)
+        route_path = getattr(route, "path", None)
         if route_path is None:
             continue
-        route_methods: set[str] | None = getattr(route, "methods", None)
-        methods_str: str = f" [{','.join(route_methods)}]" if route_methods else ""
-        param_count: int = route_path.count("{")
-        path_highlight: str = f"[PARAM:{param_count}]" if param_count > 0 else ""
-        endpoint_name: Callable[..., object] | None = getattr(route, "endpoint", None)
+        route_methods = getattr(route, "methods", None)
+        methods_str = f" [{','.join(route_methods)}]" if route_methods else ""
+        param_count = route_path.count("{")
+        path_highlight = f"[PARAM:{param_count}]" if param_count > 0 else ""
+        endpoint_name = getattr(route, "endpoint", None)
         if endpoint_name is not None and hasattr(endpoint_name, "__name__"):
-            endpoint_str: str = endpoint_name.__name__
+            endpoint_str = endpoint_name.__name__
         else:
-            endpoint_str: str = str(endpoint_name)
+            endpoint_str = str(endpoint_name)
         logging.warning(f"{route_path}{methods_str} {path_highlight} -> {endpoint_str}")
 
     from src.utils.errors import ValidationError
@@ -362,7 +362,7 @@ def custom_openapi() -> dict[str, Any]:
 app: Final[FastAPI] = create_app()
 
 # Set custom_openapi function on app
-app.openapi = custom_openapi
+app.openapi = custom_openapi  # type: ignore[method-assign]
 
 # Register event handlers
 app.add_event_handler("startup", on_startup)

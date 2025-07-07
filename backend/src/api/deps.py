@@ -25,6 +25,7 @@ from typing import (
     Literal,
     TypedDict,
     TypeVar,
+    cast,
 )
 
 from fastapi import Depends, Header, HTTPException, Query, Request, Security, status
@@ -124,7 +125,6 @@ class DependencyRegistry:
             raise KeyError(f"Dependency {key} not registered")
         entry: DependencyEntry = cls._instances[key]
         # Use .get() with defaults for all optional keys
-
         singleton: bool = entry.get("singleton", True)
         instance: object | None = entry.get("instance", None)
         factory: Callable[[], object] | None = entry.get("factory")
@@ -179,29 +179,29 @@ def get_user_service() -> UserService:
 
 
 def get_user_repository_func() -> object:
-    return registry.get("user_repository")  # type: ignore[no-any-return]
+    return registry.get("user_repository")
 
 
 def get_blacklist_token() -> Callable[..., Awaitable[None]]:
-    return registry.get("blacklist_token")  # type: ignore[no-any-return]
+    return cast(Callable[..., Awaitable[None]], registry.get("blacklist_token"))
 
 
 def get_user_action_limiter() -> Callable[..., Awaitable[None]]:
-    return registry.get("user_action_limiter")  # type: ignore[no-any-return]
+    return cast(Callable[..., Awaitable[None]], registry.get("user_action_limiter"))
 
 
 def get_validate_email() -> Callable[[str], bool]:
-    return registry.get("validate_email")  # type: ignore[no-any-return]
+    return cast(Callable[[str], bool], registry.get("validate_email"))
 
 
 def get_password_validation_error() -> Callable[[str], str | None]:
-    return registry.get("password_validation_error")  # type: ignore[no-any-return]
+    return cast(Callable[[str], str | None], registry.get("password_validation_error"))
 
 
 def get_async_refresh_access_token() -> (
     Callable[[AsyncSession, str], Awaitable[object]]
 ):
-    async_refresh_access_token: Callable[[AsyncSession, str, str, str], Awaitable[object]] = registry.get("async_refresh_access_token")  # type: ignore[no-any-return]
+    async_refresh_access_token = cast(Callable[[AsyncSession, str, str, str], Awaitable[object]], registry.get("async_refresh_access_token"))
 
     async def wrapper(session: AsyncSession, token: str) -> object:
         settings = get_settings()
@@ -223,7 +223,7 @@ def get_async_refresh_access_token() -> (
 
 
 def get_service(module_path: str) -> object:
-    return importlib.import_module(module_path)  # type: ignore[no-any-return]
+    return importlib.import_module(module_path)
 
 
 # --- Feature Flags ---
@@ -253,7 +253,6 @@ def require_feature(
                 404,
                 "This feature is not available",
                 logger.warning,
-                {"feature": feature_name},
             )
         return True
 
@@ -273,21 +272,16 @@ class HealthCheck:
         cls._checks[name] = check_func
 
     @classmethod
-    @classmethod
     async def check_all(cls) -> dict[str, dict[str, str | bool]]:
         results: dict[str, dict[str, str | bool]] = {}
+        import asyncio
         for name, check_func in cls._checks.items():
             try:
-                result: bool | Awaitable[bool] = check_func()
-                is_healthy: bool
-                if isinstance(result, bool):
-                    is_healthy = result
-                elif hasattr(result, "__await__"):
-                    is_healthy = await result  # type: ignore
+                result = check_func()
+                if asyncio.iscoroutine(result):
+                    is_healthy = await result
                 else:
-                    raise RuntimeError(
-                        f"Health check '{name}' did not return bool or Awaitable[bool]"
-                    )
+                    is_healthy = result
                 results[name] = {"status": "healthy" if is_healthy else "unhealthy"}
             except Exception as exc:
                 results[name] = {"status": "error", "message": str(exc)}
@@ -432,14 +426,13 @@ def pagination_params(
     """
     if offset < 0:
         logger.error(f"Invalid offset: {offset}")
-        http_error(400, "Offset must be >= 0", logger.error, {"offset": offset})
+        http_error(400, "Offset must be >= 0", logger.error)
     if limit < 1 or limit > MAX_LIMIT:
         logger.error(f"Invalid limit: {limit}")
         http_error(
             400,
             f"Limit must be between 1 and {MAX_LIMIT}",
             logger.error,
-            {"limit": limit},
         )
     logger.info(f"Pagination params accepted: offset={offset}, limit={limit}")
     return PaginationParams(offset=offset, limit=limit)
@@ -449,7 +442,7 @@ def pagination_params(
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_async_session),
-) -> User:
+) -> User | None:
     """
     Dependency to extract and validate a JWT token from the request and fetch the current user from the database.
 
@@ -485,36 +478,46 @@ async def get_current_user(
             status.HTTP_401_UNAUTHORIZED,
             "Invalid token",
             logger.error,
-            {"error": str(err)},
+            None,
             err,
         )
     # Support both int and str (email) user_id
     user = None
     if user_id is not None:
         from sqlalchemy import select
-
         from src.models.user import User
-
-        if isinstance(user_id, int) or (isinstance(user_id, str) and user_id.isdigit()):
-            user = await get_user_by_id(session, int(user_id))
+        user = None
+        if isinstance(user_id, int):
+            user = await get_user_by_id(session, user_id)
+        elif isinstance(user_id, str):
+            if user_id.isdigit():
+                user = await get_user_by_id(session, int(user_id))
+            else:
+                result = await session.execute(
+                    select(User).where(User.email == user_id)
+                )
+                user = result.scalar_one_or_none()
         else:
-            result = await session.execute(
-                select(User).where(User.email == str(user_id))
+            # Defensive: user_id is neither int nor str (should not happen)
+            http_error(
+                status.HTTP_401_UNAUTHORIZED,
+                "Invalid user_id type",
+                logger.warning,
             )
-            user = result.scalar_one_or_none()
+            assert False, "unreachable after http_error"
     if not user or not user.is_active or user.is_deleted:
         logger.error(f"User not found or inactive/deleted: user_id={user_id}")
         http_error(
             status.HTTP_401_UNAUTHORIZED,
             "User not found or inactive",
             logger.warning,
-            {"user_id": user_id},
         )
-        raise ValueError("User not found or inactive")
+        assert False, "unreachable after http_error"
     # Attach role from JWT if present
-    if role:
+    if user is not None and role:
         user.role = role
-    logger.info(f"User authenticated: user_id={user_id}, role={role}")
+    if user is not None:
+        logger.info(f"User authenticated: user_id={user_id}, role={role}")
     return user
 
 
@@ -564,8 +567,14 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         async def endpoint(db: AsyncSession = Depends(get_db)):
             ...
     """
-    from src.core.database import AsyncSessionLocal
+    from src.core.database import AsyncSessionLocal, ensure_engine_initialized
 
+    # Extra safety: ensure AsyncSessionLocal is initialized
+    if AsyncSessionLocal is None:
+        ensure_engine_initialized()
+    if AsyncSessionLocal is None:
+        # Defensive: if still None, raise error
+        raise RuntimeError("AsyncSessionLocal is not initialized.")
     session = AsyncSessionLocal()
     logger.info("Database session created.")
     try:
@@ -577,7 +586,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             status.HTTP_500_INTERNAL_SERVER_ERROR,
             "Database error. Please try again later.",
             logger.error,
-            {"error": str(exc)},
+            None,
             exc,
         )
     finally:
@@ -586,8 +595,8 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def get_current_active_user(
-    user: User = Depends(get_current_user),
-) -> User:
+    user: User | None = Depends(get_current_user),
+) -> User | None:
     """
     Dependency to ensure the current user is active.
 
@@ -600,15 +609,14 @@ async def get_current_active_user(
     Usage:
         user = Depends(get_current_active_user)
     """
-    if not user.is_active or user.is_deleted:
-        logger.error(f"Inactive or deleted user tried to access: user_id={user.id}")
+    if not user or not user.is_active or user.is_deleted:
+        logger.error(f"Inactive or deleted user tried to access: user_id={getattr(user, 'id', None)}")
         http_error(
             status.HTTP_403_FORBIDDEN,
             "Inactive or deleted user.",
             logger.warning,
-            {"user_id": user.id},
         )
-    logger.info(f"Active user check passed: user_id={user.id}")
+    logger.info(f"Active user check passed: user_id={user.id if user else None}")
     return user
 
 
@@ -650,13 +658,13 @@ def get_current_request_id() -> str | None:
 
 # --- API key security scheme
 async def validate_api_key(
-    api_key: str = Security(api_key_header),
+    api_key: str | None = Security(api_key_header),
 ) -> bool:
     """
     Validate the API key from the X-API-Key header.
 
     Parameters:
-        api_key (str): API key from the X-API-Key header.
+        api_key (str | None): API key from the X-API-Key header.
     Returns:
         bool: True if the API key is valid, False otherwise.
     """
@@ -683,27 +691,49 @@ async def validate_api_key(
     return api_key == configured_api_key
 
 
-async def require_api_key(
-    api_key: str = Security(api_key_header),
+def require_api_key(
+    api_key: str | None = Header(None, alias="X-API-Key")
 ) -> None:
     """
     Dependency to require a valid API key.
 
     Parameters:
-        api_key (str): API key from the X-API-Key header.
+        api_key (str | None): API key from the X-API-Key header.
     Raises:
         HTTPException(401): If the API key is missing or invalid.
     Usage:
         _ = Depends(require_api_key)
     """
-    validation_result = await validate_api_key(api_key)
+    settings = get_settings()
 
-    if not validation_result:
+    if not settings.api_key_enabled:
+        # API key validation is disabled, always pass
+        return
+
+    # If API key validation is enabled but no key provided
+    if not api_key:
         http_error(
             status.HTTP_401_UNAUTHORIZED,
-            "Invalid or missing API key",
+            "API key is required",
             logger.warning,
-            {"api_key": api_key},
+        )
+
+    # Get the configured API key from settings
+    configured_api_key = settings.api_key
+    if not configured_api_key:
+        logger.warning("API key validation is enabled but no API key is configured")
+        http_error(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "API key validation misconfigured",
+            logger.error,
+        )
+
+    # Check if the provided API key matches the configured one
+    if api_key != configured_api_key:
+        http_error(
+            status.HTTP_401_UNAUTHORIZED,
+            "Invalid API key",
+            logger.warning,
         )
 
 
@@ -718,7 +748,15 @@ async def get_current_user_with_api_key(
     This function should be used for endpoints that require both
     JWT authentication and API key validation.
     """
-    return await get_current_user(token, session)
+    user = await get_current_user(token, session)
+    if user is None:
+        http_error(
+            status.HTTP_401_UNAUTHORIZED,
+            "Invalid or missing user.",
+            logger.error,
+        )
+        raise RuntimeError("Invalid or missing user.")  # Defensive, should never reach here
+    return user
 
 
 def require_admin(current_user: User = Depends(get_current_active_user)) -> User:
@@ -766,7 +804,6 @@ def require_api_key_for_exports(
             status.HTTP_401_UNAUTHORIZED,
             "API key required for export endpoints",
             logger.warning,
-            {"endpoint": "export"},
         )
 
     # Get the configured API key from settings
@@ -777,7 +814,6 @@ def require_api_key_for_exports(
             status.HTTP_401_UNAUTHORIZED,
             "API key validation is not properly configured",
             logger.warning,
-            {"endpoint": "export"},
         )
 
     # Check if the provided API key matches the configured one
@@ -787,7 +823,6 @@ def require_api_key_for_exports(
             status.HTTP_401_UNAUTHORIZED,
             "Invalid API key",
             logger.warning,
-            {"endpoint": "export"},
         )
 
 
@@ -830,17 +865,15 @@ async def get_current_user_with_export_api_key(
                     status.HTTP_401_UNAUTHORIZED,
                     "Invalid authentication scheme",
                     logger.warning,
-                    {"endpoint": "export"},
                 )
-                return None  # This line will never be reached due to http_error, but helps with type checking
+                return None
         except ValueError:
             http_error(
                 status.HTTP_401_UNAUTHORIZED,
                 "Invalid authorization header format",
                 logger.warning,
-                {"endpoint": "export"},
             )
-            return None  # This line will never be reached due to http_error, but helps with type checking
+            return None
 
         # Validate JWT token - always do full validation when auth is enabled
         current_user = await get_current_user(token, session)
@@ -856,7 +889,6 @@ async def get_current_user_with_export_api_key(
                     status.HTTP_401_UNAUTHORIZED,
                     "API key required for export endpoints",
                     logger.warning,
-                    {"endpoint": "export"},
                 )
 
             # Get the configured API key from settings
@@ -869,7 +901,6 @@ async def get_current_user_with_export_api_key(
                     status.HTTP_401_UNAUTHORIZED,
                     "API key validation is not properly configured",
                     logger.warning,
-                    {"endpoint": "export"},
                 )
 
             # Check if the provided API key matches the configured one
@@ -879,7 +910,6 @@ async def get_current_user_with_export_api_key(
                     status.HTTP_401_UNAUTHORIZED,
                     "Invalid API key",
                     logger.warning,
-                    {"endpoint": "export"},
                 )
 
         return current_user
@@ -891,8 +921,8 @@ async def get_current_user_with_export_api_key(
                 status.HTTP_401_UNAUTHORIZED,
                 "Authentication required",
                 logger.warning,
-                {"endpoint": "export"},
             )
+            return None
         else:
             # API key validation is disabled, allow unauthenticated access
             return None

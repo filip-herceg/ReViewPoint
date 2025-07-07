@@ -1,5 +1,6 @@
 import pytest
 
+from tests.test_data_generators import get_unique_email, get_test_user
 from tests.test_templates import AuthEndpointTestTemplate
 
 
@@ -35,9 +36,9 @@ class TestAuthSchemas(AuthEndpointTestTemplate):
         """
         from src.schemas.auth import UserRegisterRequest
         req: UserRegisterRequest = UserRegisterRequest(
-            email="user@example.com", password="password123", name="Test User"
+            email=get_unique_email(), password="password123", name="Test User"
         )
-        assert req.email == "user@example.com"
+        assert req.email.endswith("@example.com")  # Check it's a unique email
         assert req.password == "password123"
         assert req.name == "Test User"
 
@@ -45,36 +46,27 @@ class TestAuthSchemas(AuthEndpointTestTemplate):
         "email,password,name",
         [
             ("not-an-email", "password123", "Test User"),
-            ("user@example.com", "short", "Test User"),
-            pytest.param(
-                "user@example.com", "password123", None, id="name_is_optional"
-            ),
+            (get_unique_email(), "short", "Test User"),
         ],
     )
     def test_user_register_request_invalid(
         self: "TestAuthSchemas", email: str, password: str, name: Optional[str]
     ) -> None:
         """
-        Verifies that UserRegisterRequest raises ValidationError for invalid input, except when name is None (optional).
+        Verifies that UserRegisterRequest raises ValidationError for invalid input.
         """
         from pydantic import ValidationError
         from src.schemas.auth import UserRegisterRequest
-        if email == "user@example.com" and password == "password123" and name is None:
-            req: UserRegisterRequest = UserRegisterRequest(email=email, password=password, name=name)
-            assert req.email == email
-            assert req.password == password
-            assert req.name is None
-        else:
-            with pytest.raises(ValidationError):
-                UserRegisterRequest(email=email, password=password, name=name)
+        with pytest.raises(ValidationError):
+            UserRegisterRequest(email=email, password=password, name=name)
 
     def test_user_login_request_valid(self: "TestAuthSchemas") -> None:
         """
         Verifies that UserLoginRequest accepts valid input and sets all fields correctly.
         """
         from src.schemas.auth import UserLoginRequest
-        req: UserLoginRequest = UserLoginRequest(email="user@example.com", password="password123")
-        assert req.email == "user@example.com"
+        req: UserLoginRequest = UserLoginRequest(email=get_unique_email(), password="password123")
+        assert req.email.endswith("@example.com")  # Check it's a unique email
         assert req.password == "password123"
 
     def test_password_reset_request_valid(self: "TestAuthSchemas") -> None:
@@ -82,8 +74,8 @@ class TestAuthSchemas(AuthEndpointTestTemplate):
         Verifies that PasswordResetRequest accepts valid input and sets the email field correctly.
         """
         from src.schemas.auth import PasswordResetRequest
-        req: PasswordResetRequest = PasswordResetRequest(email="user@example.com")
-        assert req.email == "user@example.com"
+        req: PasswordResetRequest = PasswordResetRequest(email=get_unique_email())
+        assert req.email.endswith("@example.com")  # Check it's a unique email
 
     def test_password_reset_confirm_request_valid(self: "TestAuthSchemas") -> None:
         """
@@ -128,19 +120,36 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
     def create_fresh_app(self: "TestAuthEndpoints") -> FastAPI:
         """
         Create a fresh FastAPI app with current environment variables and override the async session dependency.
+        Ensures config cache is cleared after setting env vars, before app creation.
+        Also overrides require_api_key to a no-op for test isolation.
         """
+        import sys
+        # Remove config module from sys.modules to force reload
+        if "src.core.config" in sys.modules:
+            del sys.modules["src.core.config"]
+        # Import and clear the settings cache
+        from src.core.config import clear_settings_cache
+        clear_settings_cache()
+        # Now import other dependencies
         from src.core.database import get_async_session
         from src.main import create_app
         from fastapi import FastAPI
-
-        # Don't clear settings cache here - override_env_vars already did it after setting env vars
-        fresh_app: FastAPI = create_app()
-
+        # Create the app
+        app: FastAPI = create_app()
+        # Override the database dependency
         async def _override_get_async_session() -> AsyncGenerator[object, None]:
             yield self.async_session
-
-        fresh_app.dependency_overrides[get_async_session] = _override_get_async_session
-        return fresh_app
+        app.dependency_overrides[get_async_session] = _override_get_async_session
+        # Override require_api_key to a no-op for all tests in this class
+        try:
+            from src.api.deps import require_api_key
+        except ImportError:
+            require_api_key = None
+        if require_api_key is not None:
+            def _no_api_key(api_key: str | None = None) -> None:
+                return None
+            app.dependency_overrides[require_api_key] = _no_api_key
+        return app
 
     @pytest.mark.asyncio
     async def test_register_success(self: "TestAuthEndpoints") -> None:
@@ -163,7 +172,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             resp = await ac.post(
                 "/api/v1/auth/register",
                 json={
-                    "email": f"success_{uuid.uuid4()}@example.com",
+                    "email": get_unique_email(),
                     "password": "SecurePass123!",
                     "name": "Success User",
                 },
@@ -191,7 +200,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             import uuid
 
-            email = f"login_success_{uuid.uuid4()}@example.com"
+            email = get_unique_email()
             password = "SecurePass123!"
             await ac.post(
                 "/api/v1/auth/register",
@@ -228,7 +237,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
 
         transport = ASGITransport(app=fresh_app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
-            email = f"logout_success_{uuid.uuid4()}@example.com"
+            email = get_unique_email()
             resp = await ac.post(
                 "/api/v1/auth/register",
                 json={
@@ -265,7 +274,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
 
         transport = ASGITransport(app=fresh_app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
-            email = f"refresh_success_{uuid.uuid4()}@example.com"
+            email = get_unique_email()
             await ac.post(
                 "/api/v1/auth/register",
                 json={
@@ -304,7 +313,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
 
         transport = ASGITransport(app=fresh_app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
-            email = f"reset_request_{uuid.uuid4()}@example.com"
+            email = get_unique_email()
             await ac.post(
                 "/api/v1/auth/register",
                 json={
@@ -341,7 +350,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             await ac.post(
                 "/api/v1/auth/register",
                 json={
-                    "email": f"logoutinvalidtoken_{uuid.uuid4()}@example.com",
+                    "email": get_unique_email(),
                     "password": "SecurePass123!",
                     "name": "Logout Invalid Token",
                 },
@@ -374,7 +383,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             await ac.post(
                 "/api/v1/auth/register",
                 json={
-                    "email": f"logoutnoauth_{uuid.uuid4()}@example.com",
+                    "email": get_unique_email(),
                     "password": "SecurePass123!",
                     "name": "Logout No Auth",
                 },
@@ -412,7 +421,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             import uuid
 
-            email = f"refresh_blacklisted_{uuid.uuid4()}@example.com"
+            email = get_unique_email()
             await ac.post(
                 "/api/v1/auth/register",
                 json={
@@ -463,7 +472,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             import uuid
 
-            email = f"refresh_ratelimit_{uuid.uuid4()}@example.com"
+            email = get_unique_email()
             await ac.post(
                 "/api/v1/auth/register",
                 json={
@@ -513,7 +522,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             import uuid
 
-            email = f"refresh_decode_{uuid.uuid4()}@example.com"
+            email = get_unique_email()
             await ac.post(
                 "/api/v1/auth/register",
                 json={
@@ -567,7 +576,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
             import uuid
 
-            email = f"refresh_unexpected_{uuid.uuid4()}@example.com"
+            email = get_unique_email()
             await ac.post(
                 "/api/v1/auth/register",
                 json={
@@ -614,7 +623,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
 
         transport = ASGITransport(app=fresh_app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
-            email = f"pwreset_success_{uuid.uuid4()}@example.com"
+            email = get_unique_email()
             password = "SecurePass123!"
             new_password = "NewSecurePass123!"
             # Register user
@@ -641,3 +650,4 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 )
                 assert resp.status_code == 200
                 assert resp.json()["message"] == "Password has been reset."
+

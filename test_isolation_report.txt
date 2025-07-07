@@ -1,0 +1,1591 @@
+================================================================================
+TEST ISOLATION ANALYSIS REPORT
+================================================================================
+Total issues found: 333
+
+
+HIGH PRIORITY ISSUES (333)
+--------------------------------------------------
+
+HARDCODED_EMAIL (239 issues):
+  • test_isolation_utils.py::test_something
+    Uses hardcoded emails: test-{self.test_isolation.test_id}@example.com
+    Values: test-{self.test_isolation.test_id}@example.com
+    Lines: 201
+
+  • api\test_deps.py::test_get_current_user_returns_dev_user_when_auth_disabled
+    Uses hardcoded emails: dev@example.com
+    Values: dev@example.com
+    Lines: 27
+
+  • api\test_deps.py::test_get_validate_email_returns_callable
+    Uses hardcoded emails: user@example.com
+    Values: user@example.com
+    Lines: 96
+
+  • core\test_config.py::test_optional_env_vars
+    Uses hardcoded emails: from@example.com
+    Values: from@example.com
+    Lines: 318, 331
+
+  • core\test_database.py::test_connection_pool_size
+    Uses hardcoded emails: cascade@example.com
+    Values: cascade@example.com
+    Lines: 355
+
+  • core\test_database.py::test_file_fk_constraint
+    Uses hardcoded emails: cascade@example.com
+    Values: cascade@example.com
+    Lines: 355
+
+  • core\test_database.py::test_cascade_delete_user_files
+    Uses hardcoded emails: cascade@example.com
+    Values: cascade@example.com
+    Lines: 355
+
+  • core\test_database.py::test_user_defaults
+    Uses hardcoded emails: repr@example.com, rollback@example.com, dt@example.com, update@example.com, prefs@example.com, defaults@example.com
+    Values: repr@example.com, rollback@example.com, dt@example.com, update@example.com, prefs@example.com, defaults@example.com
+    Lines: 434, 439, 453, 460, 472
+
+  • core\test_database.py::test_update_and_query
+    Uses hardcoded emails: repr@example.com, rollback@example.com, dt@example.com, update@example.com, prefs@example.com
+    Values: repr@example.com, rollback@example.com, dt@example.com, update@example.com, prefs@example.com
+    Lines: 453, 460, 472, 482, 494
+
+  • core\test_database.py::test_rollback_on_exception
+    Uses hardcoded emails: prefs@example.com, dt@example.com, repr@example.com, rollback@example.com
+    Values: prefs@example.com, dt@example.com, repr@example.com, rollback@example.com
+    Lines: 472, 482, 494, 499, 502
+
+  • core\test_database.py::test_user_repr
+    Uses hardcoded emails: prefs@example.com, repr@example.com, dt@example.com
+    Values: prefs@example.com, repr@example.com, dt@example.com
+    Lines: 494, 499, 502, 513, 519
+
+  • core\test_database.py::test_user_preferences_json
+    Uses hardcoded emails: prefs@example.com, dt@example.com
+    Values: prefs@example.com, dt@example.com
+    Lines: 513, 519, 533, 539
+
+  • core\test_database.py::test_user_last_login_datetime
+    Uses hardcoded emails: dt@example.com
+    Values: dt@example.com
+    Lines: 533, 539
+
+  • middlewares\test_logging.py::test_sensitive_query_param_filtering
+    Uses hardcoded emails: email=foo@example.com
+    Values: email=foo@example.com
+    Lines: 340, 356
+
+  • models\test_audit_log.py::test_user_audit_log
+    Uses hardcoded emails: audit@example.com
+    Values: audit@example.com
+    Lines: 53, 75, 76
+
+  • models\test_file.py::test_file_model_fields
+    Uses hardcoded emails: nullct@example.com, unicode@example.com, multifile@example.com, specialchars@example.com, invalidct@example.com
+    Values: nullct@example.com, unicode@example.com, multifile@example.com, specialchars@example.com, invalidct@example.com
+    Lines: 201, 268, 297, 312, 325
+
+  • models\test_file.py::test_file_crud
+    Uses hardcoded emails: nullct@example.com, unicode@example.com, multifile@example.com, specialchars@example.com, invalidct@example.com
+    Values: nullct@example.com, unicode@example.com, multifile@example.com, specialchars@example.com, invalidct@example.com
+    Lines: 201, 268, 297, 312, 325
+
+  • models\test_file.py::test_file_user_relationship
+    Uses hardcoded emails: nullct@example.com, unicode@example.com, multifile@example.com, specialchars@example.com, invalidct@example.com
+    Values: nullct@example.com, unicode@example.com, multifile@example.com, specialchars@example.com, invalidct@example.com
+    Lines: 201, 268, 297, 312, 325
+
+  • models\test_file.py::test_file_integrity_error_missing_user
+    Uses hardcoded emails: nullct@example.com, unicode@example.com, multifile@example.com, specialchars@example.com, invalidct@example.com
+    Values: nullct@example.com, unicode@example.com, multifile@example.com, specialchars@example.com, invalidct@example.com
+    Lines: 201, 268, 297, 312, 325
+
+  • models\test_file.py::test_bulk_insert_and_truncate
+    Uses hardcoded emails: nullct@example.com, unicode@example.com, multifile@example.com, specialchars@example.com, invalidct@example.com
+    Values: nullct@example.com, unicode@example.com, multifile@example.com, specialchars@example.com, invalidct@example.com
+    Lines: 201, 268, 297, 312, 325
+
+  • models\test_file.py::test_transactional_rollback
+    Uses hardcoded emails: nullct@example.com, unicode@example.com, multifile@example.com, specialchars@example.com, invalidct@example.com
+    Values: nullct@example.com, unicode@example.com, multifile@example.com, specialchars@example.com, invalidct@example.com
+    Lines: 201, 268, 297, 312, 325
+
+  • models\test_file.py::test_file_repr
+    Uses hardcoded emails: nullct@example.com, unicode@example.com, multifile@example.com, specialchars@example.com, invalidct@example.com
+    Values: nullct@example.com, unicode@example.com, multifile@example.com, specialchars@example.com, invalidct@example.com
+    Lines: 201, 268, 297, 312, 325
+
+  • models\test_file.py::test_file_invalid_content_type
+    Uses hardcoded emails: nullct@example.com, unicode@example.com, multifile@example.com, specialchars@example.com, invalidct@example.com
+    Values: nullct@example.com, unicode@example.com, multifile@example.com, specialchars@example.com, invalidct@example.com
+    Lines: 201, 268, 297, 312, 325
+
+  • models\test_file.py::test_duplicate_filename_same_user
+    Uses hardcoded emails: specialchars@example.com, unicode@example.com, nullct@example.com, multifile@example.com
+    Values: specialchars@example.com, unicode@example.com, nullct@example.com, multifile@example.com
+    Lines: 268, 297, 312, 325
+
+  • models\test_file.py::test_long_filename_and_content_type
+    Uses hardcoded emails: specialchars@example.com, unicode@example.com, nullct@example.com, multifile@example.com
+    Values: specialchars@example.com, unicode@example.com, nullct@example.com, multifile@example.com
+    Lines: 268, 297, 312, 325
+
+  • models\test_file.py::test_null_filename
+    Uses hardcoded emails: specialchars@example.com, unicode@example.com, nullct@example.com, multifile@example.com
+    Values: specialchars@example.com, unicode@example.com, nullct@example.com, multifile@example.com
+    Lines: 268, 297, 312, 325
+
+  • models\test_file.py::test_null_content_type
+    Uses hardcoded emails: specialchars@example.com, unicode@example.com, nullct@example.com, multifile@example.com
+    Values: specialchars@example.com, unicode@example.com, nullct@example.com, multifile@example.com
+    Lines: 268, 297, 312, 325
+
+  • models\test_file.py::test_null_user_id
+    Uses hardcoded emails: specialchars@example.com, unicode@example.com, multifile@example.com
+    Values: specialchars@example.com, unicode@example.com, multifile@example.com
+    Lines: 297, 312, 325
+
+  • models\test_file.py::test_multiple_files_same_user
+    Uses hardcoded emails: specialchars@example.com, unicode@example.com, multifile@example.com
+    Values: specialchars@example.com, unicode@example.com, multifile@example.com
+    Lines: 297, 312, 325
+
+  • models\test_file.py::test_non_ascii_filename
+    Uses hardcoded emails: specialchars@example.com, unicode@example.com
+    Values: specialchars@example.com, unicode@example.com
+    Lines: 312, 325
+
+  • models\test_file.py::test_special_characters_in_filename_and_content_type
+    Uses hardcoded emails: specialchars@example.com
+    Values: specialchars@example.com
+    Lines: 325
+
+  • models\test_used_password_reset_token.py::test_token_used_at_timezone
+    Uses hardcoded emails: user2@example.com
+    Values: user2@example.com
+    Lines: 53
+
+  • models\test_used_password_reset_token.py::test_long_email_and_nonce
+    Uses hardcoded emails: @example.com
+    Values: @example.com
+    Lines: 53, 74, 85, 88, 183
+
+  • models\test_used_password_reset_token.py::test_duplicate_email_nonce
+    Uses hardcoded emails: dup@example.com
+    Values: dup@example.com
+    Lines: 85, 88
+
+  • models\test_used_password_reset_token.py::test_bulk_insert_and_truncate
+    Uses hardcoded emails: db@example.com, special+chars@example.com
+    Values: db@example.com, special+chars@example.com
+    Lines: 183, 191, 233
+
+  • models\test_used_password_reset_token.py::test_transactional_rollback
+    Uses hardcoded emails: db@example.com, special+chars@example.com
+    Values: db@example.com, special+chars@example.com
+    Lines: 183, 191, 233
+
+  • models\test_used_password_reset_token.py::test_crud
+    Uses hardcoded emails: db@example.com, special+chars@example.com
+    Values: db@example.com, special+chars@example.com
+    Lines: 183, 191, 233
+
+  • models\test_used_password_reset_token.py::test_integrity_error_empty_email
+    Uses hardcoded emails: special+chars@example.com
+    Values: special+chars@example.com
+    Lines: 233
+
+  • models\test_used_password_reset_token.py::test_integrity_error_empty_nonce
+    Uses hardcoded emails: special+chars@example.com
+    Values: special+chars@example.com
+    Lines: 233
+
+  • models\test_used_password_reset_token.py::test_non_ascii_email_and_nonce
+    Uses hardcoded emails: special+chars@example.com
+    Values: special+chars@example.com
+    Lines: 233
+
+  • models\test_used_password_reset_token.py::test_special_characters_in_email_and_nonce
+    Uses hardcoded emails: special+chars@example.com
+    Values: special+chars@example.com
+    Lines: 233
+
+  • models\test_user.py::test_user_creation_and_repr
+    Uses hardcoded emails: unit@example.com
+    Values: unit@example.com
+    Lines: 13, 16, 18
+
+  • models\test_user.py::test_role_property_and_setter
+    Uses hardcoded emails: role@example.com
+    Values: role@example.com
+    Lines: 22
+
+  • models\test_user.py::test_long_email
+    Uses hardcoded emails: @example.com
+    Values: @example.com
+    Lines: 13, 16, 18, 22, 36
+
+  • models\test_user.py::test_repr
+    Uses hardcoded emails: repr@example.com
+    Values: repr@example.com
+    Lines: 46
+
+  • models\test_user.py::test_to_dict_if_present
+    Uses hardcoded emails: dict@example.com
+    Values: dict@example.com
+    Lines: 50
+
+  • models\test_user.py::test_profile_fields
+    Uses hardcoded emails: profile@example.com
+    Values: profile@example.com
+    Lines: 58
+
+  • models\test_user.py::test_user_crud
+    Uses hardcoded emails: filesrel@example.com, rollback@example.com, profiledb@example.com, nullpw@example.com, unique@example.com
+    Values: filesrel@example.com, rollback@example.com, profiledb@example.com, nullpw@example.com, unique@example.com
+    Lines: 102, 103, 117, 143, 150
+
+  • models\test_user.py::test_unique_email_constraint
+    Uses hardcoded emails: filesrel@example.com, rollback@example.com, profiledb@example.com, nullpw@example.com, unique@example.com
+    Values: filesrel@example.com, rollback@example.com, profiledb@example.com, nullpw@example.com, unique@example.com
+    Lines: 102, 103, 117, 143, 150
+
+  • models\test_user.py::test_null_email
+    Uses hardcoded emails: filesrel@example.com, nullpw@example.com, rollback@example.com, profiledb@example.com
+    Values: filesrel@example.com, nullpw@example.com, rollback@example.com, profiledb@example.com
+    Lines: 117, 143, 150, 167, 190
+
+  • models\test_user.py::test_null_password
+    Uses hardcoded emails: filesrel@example.com, nullpw@example.com, rollback@example.com, profiledb@example.com
+    Values: filesrel@example.com, nullpw@example.com, rollback@example.com, profiledb@example.com
+    Lines: 117, 143, 150, 167, 190
+
+  • models\test_user.py::test_bulk_insert_and_truncate
+    Uses hardcoded emails: filesrel@example.com, rollback@example.com, profiledb@example.com
+    Values: filesrel@example.com, rollback@example.com, profiledb@example.com
+    Lines: 143, 150, 167, 190
+
+  • models\test_user.py::test_transactional_rollback
+    Uses hardcoded emails: filesrel@example.com, rollback@example.com, profiledb@example.com
+    Values: filesrel@example.com, rollback@example.com, profiledb@example.com
+    Lines: 143, 150, 167, 190
+
+  • models\test_user.py::test_non_ascii_and_special_chars_db
+    Uses hardcoded emails: filesrel@example.com, profiledb@example.com
+    Values: filesrel@example.com, profiledb@example.com
+    Lines: 167, 190
+
+  • models\test_user.py::test_user_files_relationship
+    Uses hardcoded emails: filesrel@example.com, profiledb@example.com
+    Values: filesrel@example.com, profiledb@example.com
+    Lines: 167, 190
+
+  • models\test_user.py::test_profile_fields_and_preferences_db
+    Uses hardcoded emails: profiledb@example.com
+    Values: profiledb@example.com
+    Lines: 190
+
+  • performance\test_database_performance.py::test_query_performance
+    Uses hardcoded emails: %@example.com
+    Values: %@example.com
+    Lines: 28
+
+  • repositories\test_file.py::test_create_file_success
+    Uses hardcoded emails: test13@example.com", hashed_password="hashed, test5@example.com, dupuser@example.com, rollbackuser@example.com, test101@example.com", hashed_password="hashed, test3@example.com", hashed_password="hashed, test4@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, test@example.com, test101@example.com, test7@example.com, test5@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, test7@example.com", hashed_password="hashed, test3@example.com, sortuser@example.com, test14@example.com, test13@example.com, test6@example.com, test@example.com", hashed_password="hashed, concurrentuser@example.com, test6@example.com", hashed_password="hashed, test4@example.com, rollbackdupuser@example.com, test2@example.com", hashed_password="hashed, test2@example.com, test100@example.com, pagsearch@example.com
+    Values: test13@example.com", hashed_password="hashed, test5@example.com, dupuser@example.com, rollbackuser@example.com, test101@example.com", hashed_password="hashed, test3@example.com", hashed_password="hashed, test4@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, test@example.com, test101@example.com, test7@example.com, test5@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, test7@example.com", hashed_password="hashed, test3@example.com, sortuser@example.com, test14@example.com, test13@example.com, test6@example.com, test@example.com", hashed_password="hashed, concurrentuser@example.com, test6@example.com", hashed_password="hashed, test4@example.com, rollbackdupuser@example.com, test2@example.com", hashed_password="hashed, test2@example.com, test100@example.com, pagsearch@example.com
+    Lines: 21, 35, 46, 64, 86
+
+  • repositories\test_file.py::test_create_file_missing_filename
+    Uses hardcoded emails: test13@example.com", hashed_password="hashed, test5@example.com, dupuser@example.com, rollbackuser@example.com, test101@example.com", hashed_password="hashed, test3@example.com", hashed_password="hashed, test4@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, test101@example.com, test7@example.com, test5@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, test7@example.com", hashed_password="hashed, test3@example.com, sortuser@example.com, test14@example.com, test13@example.com, test6@example.com, concurrentuser@example.com, test6@example.com", hashed_password="hashed, test4@example.com, rollbackdupuser@example.com, test2@example.com", hashed_password="hashed, test2@example.com, test100@example.com, pagsearch@example.com
+    Values: test13@example.com", hashed_password="hashed, test5@example.com, dupuser@example.com, rollbackuser@example.com, test101@example.com", hashed_password="hashed, test3@example.com", hashed_password="hashed, test4@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, test101@example.com, test7@example.com, test5@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, test7@example.com", hashed_password="hashed, test3@example.com, sortuser@example.com, test14@example.com, test13@example.com, test6@example.com, concurrentuser@example.com, test6@example.com", hashed_password="hashed, test4@example.com, rollbackdupuser@example.com, test2@example.com", hashed_password="hashed, test2@example.com, test100@example.com, pagsearch@example.com
+    Lines: 35, 46, 64, 86, 102
+
+  • repositories\test_file.py::test_get_file_by_filename
+    Uses hardcoded emails: test13@example.com", hashed_password="hashed, test5@example.com, dupuser@example.com, rollbackuser@example.com, test101@example.com", hashed_password="hashed, test3@example.com", hashed_password="hashed, test4@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, test101@example.com, test7@example.com, test5@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, test7@example.com", hashed_password="hashed, test3@example.com, sortuser@example.com, test14@example.com, test13@example.com, test6@example.com, concurrentuser@example.com, test6@example.com", hashed_password="hashed, test4@example.com, rollbackdupuser@example.com, test100@example.com, pagsearch@example.com
+    Values: test13@example.com", hashed_password="hashed, test5@example.com, dupuser@example.com, rollbackuser@example.com, test101@example.com", hashed_password="hashed, test3@example.com", hashed_password="hashed, test4@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, test101@example.com, test7@example.com, test5@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, test7@example.com", hashed_password="hashed, test3@example.com, sortuser@example.com, test14@example.com, test13@example.com, test6@example.com, concurrentuser@example.com, test6@example.com", hashed_password="hashed, test4@example.com, rollbackdupuser@example.com, test100@example.com, pagsearch@example.com
+    Lines: 46, 64, 86, 102, 117
+
+  • repositories\test_file.py::test_get_file_by_filename_not_found
+    Uses hardcoded emails: test13@example.com", hashed_password="hashed, test5@example.com, dupuser@example.com, rollbackuser@example.com, test101@example.com", hashed_password="hashed, test4@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, test101@example.com, test7@example.com, test5@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, test7@example.com", hashed_password="hashed, sortuser@example.com, test14@example.com, test13@example.com, test6@example.com, concurrentuser@example.com, test6@example.com", hashed_password="hashed, test4@example.com, rollbackdupuser@example.com, test100@example.com, pagsearch@example.com
+    Values: test13@example.com", hashed_password="hashed, test5@example.com, dupuser@example.com, rollbackuser@example.com, test101@example.com", hashed_password="hashed, test4@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, test101@example.com, test7@example.com, test5@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, test7@example.com", hashed_password="hashed, sortuser@example.com, test14@example.com, test13@example.com, test6@example.com, concurrentuser@example.com, test6@example.com", hashed_password="hashed, test4@example.com, rollbackdupuser@example.com, test100@example.com, pagsearch@example.com
+    Lines: 64, 86, 102, 117, 140
+
+  • repositories\test_file.py::test_delete_file
+    Uses hardcoded emails: test13@example.com", hashed_password="hashed, test5@example.com, dupuser@example.com, rollbackuser@example.com, test101@example.com", hashed_password="hashed, test4@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, test101@example.com, test7@example.com, test5@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, test7@example.com", hashed_password="hashed, sortuser@example.com, test14@example.com, test13@example.com, test6@example.com, concurrentuser@example.com, test6@example.com", hashed_password="hashed, test4@example.com, rollbackdupuser@example.com, test100@example.com, pagsearch@example.com
+    Values: test13@example.com", hashed_password="hashed, test5@example.com, dupuser@example.com, rollbackuser@example.com, test101@example.com", hashed_password="hashed, test4@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, test101@example.com, test7@example.com, test5@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, test7@example.com", hashed_password="hashed, sortuser@example.com, test14@example.com, test13@example.com, test6@example.com, concurrentuser@example.com, test6@example.com", hashed_password="hashed, test4@example.com, rollbackdupuser@example.com, test100@example.com, pagsearch@example.com
+    Lines: 64, 86, 102, 117, 140
+
+  • repositories\test_file.py::test_delete_file_not_found
+    Uses hardcoded emails: test13@example.com", hashed_password="hashed, test5@example.com, dupuser@example.com, rollbackuser@example.com, test101@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, test101@example.com, test7@example.com, test5@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, test7@example.com", hashed_password="hashed, sortuser@example.com, test14@example.com, test13@example.com, test6@example.com, concurrentuser@example.com, test6@example.com", hashed_password="hashed, rollbackdupuser@example.com, test100@example.com, pagsearch@example.com
+    Values: test13@example.com", hashed_password="hashed, test5@example.com, dupuser@example.com, rollbackuser@example.com, test101@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, test101@example.com, test7@example.com, test5@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, test7@example.com", hashed_password="hashed, sortuser@example.com, test14@example.com, test13@example.com, test6@example.com, concurrentuser@example.com, test6@example.com", hashed_password="hashed, rollbackdupuser@example.com, test100@example.com, pagsearch@example.com
+    Lines: 86, 102, 117, 140, 162
+
+  • repositories\test_file.py::test_duplicate_filename_same_user
+    Uses hardcoded emails: test13@example.com", hashed_password="hashed, test5@example.com, dupuser@example.com, rollbackuser@example.com, test101@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, test101@example.com, test7@example.com, test5@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, test7@example.com", hashed_password="hashed, sortuser@example.com, test14@example.com, test13@example.com, test6@example.com, concurrentuser@example.com, test6@example.com", hashed_password="hashed, rollbackdupuser@example.com, test100@example.com, pagsearch@example.com
+    Values: test13@example.com", hashed_password="hashed, test5@example.com, dupuser@example.com, rollbackuser@example.com, test101@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, test101@example.com, test7@example.com, test5@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, test7@example.com", hashed_password="hashed, sortuser@example.com, test14@example.com, test13@example.com, test6@example.com, concurrentuser@example.com, test6@example.com", hashed_password="hashed, rollbackdupuser@example.com, test100@example.com, pagsearch@example.com
+    Lines: 86, 102, 117, 140, 162
+
+  • repositories\test_file.py::test_long_filename_and_content_type
+    Uses hardcoded emails: test13@example.com", hashed_password="hashed, test5@example.com, rollbackuser@example.com, test101@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, test101@example.com, test7@example.com, test5@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, test7@example.com", hashed_password="hashed, sortuser@example.com, test14@example.com, test13@example.com, test6@example.com, concurrentuser@example.com, test6@example.com", hashed_password="hashed, rollbackdupuser@example.com, test100@example.com, pagsearch@example.com
+    Values: test13@example.com", hashed_password="hashed, test5@example.com, rollbackuser@example.com, test101@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, test101@example.com, test7@example.com, test5@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, test7@example.com", hashed_password="hashed, sortuser@example.com, test14@example.com, test13@example.com, test6@example.com, concurrentuser@example.com, test6@example.com", hashed_password="hashed, rollbackdupuser@example.com, test100@example.com, pagsearch@example.com
+    Lines: 102, 117, 140, 162, 195
+
+  • repositories\test_file.py::test_non_ascii_and_special_chars
+    Uses hardcoded emails: concurrentuser@example.com, test101@example.com, test13@example.com", hashed_password="hashed, test6@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, rollbackuser@example.com, test7@example.com, test7@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, sortuser@example.com, rollbackdupuser@example.com, test14@example.com, test101@example.com", hashed_password="hashed, test13@example.com, test6@example.com, test100@example.com, pagsearch@example.com
+    Values: concurrentuser@example.com, test101@example.com, test13@example.com", hashed_password="hashed, test6@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, rollbackuser@example.com, test7@example.com, test7@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, sortuser@example.com, rollbackdupuser@example.com, test14@example.com, test101@example.com", hashed_password="hashed, test13@example.com, test6@example.com, test100@example.com, pagsearch@example.com
+    Lines: 117, 140, 162, 195, 225
+
+  • repositories\test_file.py::test_create_file_missing_user
+    Uses hardcoded emails: concurrentuser@example.com, test101@example.com, test13@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, rollbackuser@example.com, test7@example.com, test7@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, sortuser@example.com, rollbackdupuser@example.com, test14@example.com, test101@example.com", hashed_password="hashed, test13@example.com, test100@example.com, pagsearch@example.com
+    Values: concurrentuser@example.com, test101@example.com, test13@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, rollbackuser@example.com, test7@example.com, test7@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, sortuser@example.com, rollbackdupuser@example.com, test14@example.com, test101@example.com", hashed_password="hashed, test13@example.com, test100@example.com, pagsearch@example.com
+    Lines: 140, 162, 195, 225, 253
+
+  • repositories\test_file.py::test_bulk_create_and_delete
+    Uses hardcoded emails: concurrentuser@example.com, test101@example.com, test13@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, rollbackuser@example.com, test7@example.com, test7@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, sortuser@example.com, rollbackdupuser@example.com, test14@example.com, test101@example.com", hashed_password="hashed, test13@example.com, test100@example.com, pagsearch@example.com
+    Values: concurrentuser@example.com, test101@example.com, test13@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, rollbackuser@example.com, test7@example.com, test7@example.com", hashed_password="hashed, test100@example.com", hashed_password="hashed, sortuser@example.com, rollbackdupuser@example.com, test14@example.com, test101@example.com", hashed_password="hashed, test13@example.com, test100@example.com, pagsearch@example.com
+    Lines: 140, 162, 195, 225, 253
+
+  • repositories\test_file.py::test_list_files_pagination_and_search
+    Uses hardcoded emails: concurrentuser@example.com, test101@example.com, test13@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, rollbackuser@example.com, test100@example.com", hashed_password="hashed, sortuser@example.com, rollbackdupuser@example.com, test14@example.com, test101@example.com", hashed_password="hashed, test13@example.com, test100@example.com, pagsearch@example.com
+    Values: concurrentuser@example.com, test101@example.com, test13@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, rollbackuser@example.com, test100@example.com", hashed_password="hashed, sortuser@example.com, rollbackdupuser@example.com, test14@example.com, test101@example.com", hashed_password="hashed, test13@example.com, test100@example.com, pagsearch@example.com
+    Lines: 162, 195, 225, 253, 256
+
+  • repositories\test_file.py::test_list_files_sorting
+    Uses hardcoded emails: concurrentuser@example.com, test101@example.com, test13@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, rollbackuser@example.com, sortuser@example.com, rollbackdupuser@example.com, test14@example.com, test101@example.com", hashed_password="hashed, test13@example.com, test100@example.com, test100@example.com", hashed_password="hashed
+    Values: concurrentuser@example.com, test101@example.com, test13@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, rollbackuser@example.com, sortuser@example.com, rollbackdupuser@example.com, test14@example.com, test101@example.com", hashed_password="hashed, test13@example.com, test100@example.com, test100@example.com", hashed_password="hashed
+    Lines: 195, 225, 253, 256, 308
+
+  • repositories\test_file.py::test_transactional_rollback_create_file
+    Uses hardcoded emails: concurrentuser@example.com, test101@example.com, test13@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, rollbackuser@example.com, rollbackdupuser@example.com, test14@example.com, test101@example.com", hashed_password="hashed, test13@example.com, test100@example.com, test100@example.com", hashed_password="hashed
+    Values: concurrentuser@example.com, test101@example.com, test13@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, rollbackuser@example.com, rollbackdupuser@example.com, test14@example.com, test101@example.com", hashed_password="hashed, test13@example.com, test100@example.com, test100@example.com", hashed_password="hashed
+    Lines: 225, 253, 256, 308, 328
+
+  • repositories\test_file.py::test_duplicate_filename_different_users
+    Uses hardcoded emails: concurrentuser@example.com, test101@example.com, test13@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, rollbackdupuser@example.com, test14@example.com, test101@example.com", hashed_password="hashed, test13@example.com, test100@example.com, test100@example.com", hashed_password="hashed
+    Values: concurrentuser@example.com, test101@example.com, test13@example.com", hashed_password="hashed, test14@example.com", hashed_password="hashed, rollbackdupuser@example.com, test14@example.com, test101@example.com", hashed_password="hashed, test13@example.com, test100@example.com, test100@example.com", hashed_password="hashed
+    Lines: 253, 256, 308, 328, 344
+
+  • repositories\test_file.py::test_invalid_content_type
+    Uses hardcoded emails: test13@example.com", hashed_password="hashed, concurrentuser@example.com, test14@example.com", hashed_password="hashed, rollbackdupuser@example.com, test14@example.com, test13@example.com
+    Values: test13@example.com", hashed_password="hashed, concurrentuser@example.com, test14@example.com", hashed_password="hashed, rollbackdupuser@example.com, test14@example.com, test13@example.com
+    Lines: 308, 328, 344, 368
+
+  • repositories\test_file.py::test_invalid_filename_type
+    Uses hardcoded emails: test13@example.com", hashed_password="hashed, concurrentuser@example.com, test14@example.com", hashed_password="hashed, rollbackdupuser@example.com, test14@example.com, test13@example.com
+    Values: test13@example.com", hashed_password="hashed, concurrentuser@example.com, test14@example.com", hashed_password="hashed, rollbackdupuser@example.com, test14@example.com, test13@example.com
+    Lines: 308, 328, 344, 368
+
+  • repositories\test_file.py::test_invalid_user_id
+    Uses hardcoded emails: test13@example.com", hashed_password="hashed, concurrentuser@example.com, test14@example.com", hashed_password="hashed, rollbackdupuser@example.com, test14@example.com, test13@example.com
+    Values: test13@example.com", hashed_password="hashed, concurrentuser@example.com, test14@example.com", hashed_password="hashed, rollbackdupuser@example.com, test14@example.com, test13@example.com
+    Lines: 308, 328, 344, 368
+
+  • repositories\test_file.py::test_delete_file_case_insensitive
+    Uses hardcoded emails: test13@example.com", hashed_password="hashed, concurrentuser@example.com, test14@example.com", hashed_password="hashed, rollbackdupuser@example.com, test14@example.com, test13@example.com
+    Values: test13@example.com", hashed_password="hashed, concurrentuser@example.com, test14@example.com", hashed_password="hashed, rollbackdupuser@example.com, test14@example.com, test13@example.com
+    Lines: 308, 328, 344, 368
+
+  • repositories\test_file.py::test_list_files_empty
+    Uses hardcoded emails: test14@example.com, test14@example.com", hashed_password="hashed, concurrentuser@example.com, rollbackdupuser@example.com
+    Values: test14@example.com, test14@example.com", hashed_password="hashed, concurrentuser@example.com, rollbackdupuser@example.com
+    Lines: 328, 344, 368
+
+  • repositories\test_file.py::test_list_files_offset_beyond_total
+    Uses hardcoded emails: test14@example.com, test14@example.com", hashed_password="hashed, concurrentuser@example.com, rollbackdupuser@example.com
+    Values: test14@example.com, test14@example.com", hashed_password="hashed, concurrentuser@example.com, rollbackdupuser@example.com
+    Lines: 328, 344, 368
+
+  • repositories\test_file.py::test_rollback_after_integrity_error
+    Uses hardcoded emails: concurrentuser@example.com, rollbackdupuser@example.com
+    Values: concurrentuser@example.com, rollbackdupuser@example.com
+    Lines: 344, 368
+
+  • repositories\test_file.py::test_simulated_concurrent_creation
+    Uses hardcoded emails: concurrentuser@example.com
+    Values: concurrentuser@example.com
+    Lines: 368
+
+  • repositories\test_user.py::test_create_user_validation
+    Uses hardcoded emails: alreadydeleted@example.com, safe@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, dup@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, emailfilter@example.com, count2@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, getid@example.com, bulkdelete1@example.com, other@example.com, cache@example.com, active@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, deactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, named@example.com
+    Values: alreadydeleted@example.com, safe@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, dup@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, emailfilter@example.com, count2@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, getid@example.com, bulkdelete1@example.com, other@example.com, cache@example.com, active@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, deactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, named@example.com
+    Lines: 96, 100, 107, 114, 129
+
+  • repositories\test_user.py::test_create_user_duplicate_email
+    Uses hardcoded emails: alreadydeleted@example.com, safe@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, dup@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, emailfilter@example.com, count2@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, getid@example.com, bulkdelete1@example.com, other@example.com, cache@example.com, active@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, deactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, named@example.com
+    Values: alreadydeleted@example.com, safe@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, dup@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, emailfilter@example.com, count2@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, getid@example.com, bulkdelete1@example.com, other@example.com, cache@example.com, active@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, deactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, named@example.com
+    Lines: 96, 100, 107, 114, 129
+
+  • repositories\test_user.py::test_create_user_with_name
+    Uses hardcoded emails: alreadydeleted@example.com, safe@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, emailfilter@example.com, count2@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, getid@example.com, bulkdelete1@example.com, other@example.com, cache@example.com, active@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, deactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, named@example.com
+    Values: alreadydeleted@example.com, safe@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, emailfilter@example.com, count2@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, getid@example.com, bulkdelete1@example.com, other@example.com, cache@example.com, active@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, deactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, named@example.com
+    Lines: 107, 114, 129, 139, 215
+
+  • repositories\test_user.py::test_get_user_by_id
+    Uses hardcoded emails: alreadydeleted@example.com, safe@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, emailfilter@example.com, count2@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, getid@example.com, bulkdelete1@example.com, other@example.com, cache@example.com, active@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, safe@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, emailfilter@example.com, count2@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, getid@example.com, bulkdelete1@example.com, other@example.com, cache@example.com, active@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Lines: 114, 129, 139, 215, 218
+
+  • repositories\test_user.py::test_get_user_by_id_not_found
+    Uses hardcoded emails: alreadydeleted@example.com, safe@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, emailfilter@example.com, count2@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, cache@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, safe@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, emailfilter@example.com, count2@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, cache@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Lines: 129, 139, 215, 218, 223
+
+  • repositories\test_user.py::test_get_user_by_id_with_cache
+    Uses hardcoded emails: alreadydeleted@example.com, safe@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, emailfilter@example.com, count2@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, cache@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, safe@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, emailfilter@example.com, count2@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, cache@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Lines: 129, 139, 215, 218, 223
+
+  • repositories\test_user.py::test_safe_get_user_by_id
+    Uses hardcoded emails: alreadydeleted@example.com, safe@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, emailfilter@example.com, count2@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, safe@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, emailfilter@example.com, count2@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Lines: 139, 215, 218, 223, 250
+
+  • repositories\test_user.py::test_safe_get_user_by_id_not_found
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, emailfilter@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, emailfilter@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Lines: 215, 218, 223, 250, 253
+
+  • repositories\test_user.py::test_get_users_by_ids
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, emailfilter@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, emailfilter@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Lines: 215, 218, 223, 250, 253
+
+  • repositories\test_user.py::test_get_users_by_ids_empty
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, emailfilter@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, emailfilter@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Lines: 215, 218, 223, 250, 253
+
+  • repositories\test_user.py::test_list_users_paginated
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, emailfilter@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, emailfilter@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Lines: 215, 218, 223, 250, 253
+
+  • repositories\test_user.py::test_list_users_paginated_invalid_limit
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, emailfilter@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, emailfilter@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Lines: 215, 218, 223, 250, 253
+
+  • repositories\test_user.py::test_list_users_filters_and_sort
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, emailfilter@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, emailfilter@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Lines: 215, 218, 223, 250, 253
+
+  • repositories\test_user.py::test_list_users_with_filters
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, emailfilter@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, emailfilter@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, other@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Lines: 215, 218, 223, 250, 253
+
+  • repositories\test_user.py::test_search_users_by_name_or_email
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Lines: 250, 253, 271, 278, 287
+
+  • repositories\test_user.py::test_filter_users_by_status
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, active@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, inactive@example.com, deactivate@example.com
+    Lines: 250, 253, 271, 278, 287
+
+  • repositories\test_user.py::test_filter_users_by_role
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Lines: 271, 278, 287, 290, 307
+
+  • repositories\test_user.py::test_get_users_created_within
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, daterange@example.com, bulkdelete1@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Lines: 271, 278, 287, 290, 307
+
+  • repositories\test_user.py::test_count_users
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, bulkdelete1@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, count1@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, count2@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, bulkdelete1@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Lines: 287, 290, 307, 310, 330
+
+  • repositories\test_user.py::test_get_active_users
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, bulkdelete1@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, bulkupdate2@example.com, getactive@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, bulkdelete1@example.com, anonymize@example.com, lastlogin@example.com, getinactive@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Lines: 307, 310, 330, 331, 340
+
+  • repositories\test_user.py::test_get_users_by_custom_field
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, bulkupdate2@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, bulkdelete1@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, bulkupdate2@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, bulkdelete1@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Lines: 330, 331, 340, 343, 369
+
+  • repositories\test_user.py::test_bulk_create_users
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, bulkupdate2@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, bulkdelete1@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, bulkupdate2@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, bulkdelete1@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, bulk2@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Lines: 330, 331, 340, 343, 369
+
+  • repositories\test_user.py::test_bulk_update_users
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, bulkupdate2@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, bulkdelete1@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, bulkupdate2@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, bulkdelete1@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, bulkdelete2@example.com, bulkupdate1@example.com, exists@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Lines: 330, 340, 343, 369, 372
+
+  • repositories\test_user.py::test_bulk_update_users_empty
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, bulkdelete1@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, bulkdelete2@example.com, exists@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, bulkdelete1@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, bulkdelete2@example.com, exists@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Lines: 330, 369, 372, 393, 415
+
+  • repositories\test_user.py::test_bulk_delete_users
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, bulkdelete1@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, bulkdelete2@example.com, exists@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, bulkdelete1@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, bulkdelete2@example.com, exists@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Lines: 330, 369, 372, 393, 415
+
+  • repositories\test_user.py::test_bulk_delete_users_empty
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Lines: 330, 393, 415, 440, 443
+
+  • repositories\test_user.py::test_soft_delete_user
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, softdelete@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Lines: 330, 393, 415, 440, 443
+
+  • repositories\test_user.py::test_soft_delete_user_not_found
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Lines: 330, 415, 440, 443, 448
+
+  • repositories\test_user.py::test_restore_user
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, restore@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Lines: 330, 415, 440, 443, 448
+
+  • repositories\test_user.py::test_restore_user_not_found
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Lines: 330, 440, 443, 448, 464
+
+  • repositories\test_user.py::test_upsert_user
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, upsert@example.com, deactivate@example.com
+    Lines: 330, 440, 443, 448, 464
+
+  • repositories\test_user.py::test_upsert_user_invalid_email
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, deactivate@example.com
+    Lines: 330, 464, 483, 493, 498
+
+  • repositories\test_user.py::test_partial_update_user
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, partialupdate@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, deactivate@example.com
+    Lines: 330, 464, 483, 493, 498
+
+  • repositories\test_user.py::test_partial_update_user_not_found
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, deactivate@example.com
+    Lines: 330, 483, 493, 498, 501
+
+  • repositories\test_user.py::test_user_exists
+    Uses hardcoded emails: alreadydeleted@example.com, bulk1@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, bulk1@example.com, changepass@example.com, import1@example.com, sensitive@example.com, unique@example.com, signup2@example.com, signup1@example.com, exportjson@example.com, anonymize@example.com, lastlogin@example.com, newunique@example.com, exists@example.com, error@example.com, reactivate@example.com, export@example.com, ratelimited@example.com, import2@example.com, deactivate@example.com
+    Lines: 330, 483, 493, 498, 501
+
+  • repositories\test_user.py::test_is_email_unique
+    Uses hardcoded emails: newunique@example.com, export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, changepass@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, unique@example.com, deactivate@example.com
+    Values: newunique@example.com, export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, changepass@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, unique@example.com, deactivate@example.com
+    Lines: 330, 493, 498, 501, 506
+
+  • repositories\test_user.py::test_change_user_password
+    Uses hardcoded emails: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, changepass@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Values: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, changepass@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Lines: 330, 514, 611, 616, 622
+
+  • repositories\test_user.py::test_change_user_password_not_found
+    Uses hardcoded emails: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Values: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Lines: 330, 611, 616, 622, 629
+
+  • repositories\test_user.py::test_audit_log_user_change
+    Uses hardcoded emails: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Values: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Lines: 330, 611, 616, 622, 629
+
+  • repositories\test_user.py::test_assign_role_to_user
+    Uses hardcoded emails: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Values: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Lines: 330, 611, 616, 622, 629
+
+  • repositories\test_user.py::test_revoke_role_from_user
+    Uses hardcoded emails: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Values: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Lines: 330, 611, 616, 622, 629
+
+  • repositories\test_user.py::test_db_session_context
+    Uses hardcoded emails: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Values: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Lines: 330, 611, 616, 622, 629
+
+  • repositories\test_user.py::test_db_transaction
+    Uses hardcoded emails: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Values: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Lines: 330, 611, 616, 622, 629
+
+  • repositories\test_user.py::test_get_user_with_files
+    Uses hardcoded emails: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Values: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Lines: 330, 611, 616, 622, 629
+
+  • repositories\test_user.py::test_get_user_with_files_not_found
+    Uses hardcoded emails: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Values: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Lines: 330, 611, 616, 622, 629
+
+  • repositories\test_user.py::test_export_users_to_csv
+    Uses hardcoded emails: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Values: export@example.com, alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Lines: 330, 611, 616, 622, 629
+
+  • repositories\test_user.py::test_export_users_to_json
+    Uses hardcoded emails: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, exportjson@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Lines: 330, 622, 629, 635, 640
+
+  • repositories\test_user.py::test_import_users_from_dicts
+    Uses hardcoded emails: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, import2@example.com, bulk1@example.com, signup1@example.com, error@example.com, anonymize@example.com, import1@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Lines: 330, 635, 640, 648, 649
+
+  • repositories\test_user.py::test_deactivate_user
+    Uses hardcoded emails: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, anonymize@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Values: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, anonymize@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com, deactivate@example.com
+    Lines: 330, 654, 676, 699, 723
+
+  • repositories\test_user.py::test_deactivate_user_not_found
+    Uses hardcoded emails: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, anonymize@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com
+    Values: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, anonymize@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com
+    Lines: 330, 676, 699, 723, 745
+
+  • repositories\test_user.py::test_reactivate_user
+    Uses hardcoded emails: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, anonymize@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com
+    Values: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, anonymize@example.com, lastlogin@example.com, reactivate@example.com, sensitive@example.com
+    Lines: 330, 676, 699, 723, 745
+
+  • repositories\test_user.py::test_reactivate_user_not_found
+    Uses hardcoded emails: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, anonymize@example.com, lastlogin@example.com, sensitive@example.com
+    Values: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, anonymize@example.com, lastlogin@example.com, sensitive@example.com
+    Lines: 330, 699, 723, 745, 757
+
+  • repositories\test_user.py::test_update_last_login
+    Uses hardcoded emails: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, anonymize@example.com, lastlogin@example.com, sensitive@example.com
+    Values: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, anonymize@example.com, lastlogin@example.com, sensitive@example.com
+    Lines: 330, 699, 723, 745, 757
+
+  • repositories\test_user.py::test_update_last_login_not_found
+    Uses hardcoded emails: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, anonymize@example.com, sensitive@example.com
+    Values: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, anonymize@example.com, sensitive@example.com
+    Lines: 330, 723, 745, 757, 760
+
+  • repositories\test_user.py::test_anonymize_user
+    Uses hardcoded emails: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, anonymize@example.com, sensitive@example.com
+    Values: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, anonymize@example.com, sensitive@example.com
+    Lines: 330, 723, 745, 757, 760
+
+  • repositories\test_user.py::test_anonymize_user_not_found
+    Uses hardcoded emails: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, sensitive@example.com
+    Values: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, sensitive@example.com
+    Lines: 330, 745, 757, 760, 778
+
+  • repositories\test_user.py::test_anonymize_user_already_deleted
+    Uses hardcoded emails: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, sensitive@example.com
+    Values: alreadydeleted@example.com, ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, sensitive@example.com
+    Lines: 330, 745, 757, 760, 778
+
+  • repositories\test_user.py::test_user_signups_per_month
+    Uses hardcoded emails: ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, sensitive@example.com
+    Values: ratelimited@example.com, signup2@example.com, bulk1@example.com, signup1@example.com, error@example.com, sensitive@example.com
+    Lines: 330, 757, 760, 778, 796
+
+  • repositories\test_user.py::test_sensitive_user_action
+    Uses hardcoded emails: ratelimited@example.com, error@example.com, bulk1@example.com, sensitive@example.com
+    Values: ratelimited@example.com, error@example.com, bulk1@example.com, sensitive@example.com
+    Lines: 330, 778, 796, 822, 828
+
+  • repositories\test_user.py::test_sensitive_user_action_rate_limited
+    Uses hardcoded emails: ratelimited@example.com, error@example.com, bulk1@example.com
+    Values: ratelimited@example.com, error@example.com, bulk1@example.com
+    Lines: 330, 796, 822, 828
+
+  • repositories\test_user.py::test_sensitive_user_action_user_not_found
+    Uses hardcoded emails: error@example.com, bulk1@example.com
+    Values: error@example.com, bulk1@example.com
+    Lines: 330, 822, 828
+
+  • repositories\test_user.py::test_create_user_with_validation_rollback_on_error
+    Uses hardcoded emails: error@example.com, bulk1@example.com
+    Values: error@example.com, bulk1@example.com
+    Lines: 330, 822, 828
+
+  • repositories\test_user.py::test_bulk_operations_rollback_on_error
+    Uses hardcoded emails: bulk1@example.com
+    Values: bulk1@example.com
+    Lines: 330, 828
+
+  • schemas\test_auth.py::test_register_success
+    Uses hardcoded emails: success_{uuid.uuid4()}@example.com, login_success_{uuid.uuid4()}@example.com, logoutinvalidtoken_{uuid.uuid4()}@example.com, logoutnoauth_{uuid.uuid4()}@example.com, refresh_success_{uuid.uuid4()}@example.com, logout_success_{uuid.uuid4()}@example.com, reset_request_{uuid.uuid4()}@example.com
+    Values: success_{uuid.uuid4()}@example.com, login_success_{uuid.uuid4()}@example.com, logoutinvalidtoken_{uuid.uuid4()}@example.com, logoutnoauth_{uuid.uuid4()}@example.com, refresh_success_{uuid.uuid4()}@example.com, logout_success_{uuid.uuid4()}@example.com, reset_request_{uuid.uuid4()}@example.com
+    Lines: 178, 206, 243, 280, 319
+
+  • schemas\test_auth.py::test_login_success
+    Uses hardcoded emails: login_success_{uuid.uuid4()}@example.com, logoutinvalidtoken_{uuid.uuid4()}@example.com, logoutnoauth_{uuid.uuid4()}@example.com, refresh_success_{uuid.uuid4()}@example.com, logout_success_{uuid.uuid4()}@example.com, reset_request_{uuid.uuid4()}@example.com
+    Values: login_success_{uuid.uuid4()}@example.com, logoutinvalidtoken_{uuid.uuid4()}@example.com, logoutnoauth_{uuid.uuid4()}@example.com, refresh_success_{uuid.uuid4()}@example.com, logout_success_{uuid.uuid4()}@example.com, reset_request_{uuid.uuid4()}@example.com
+    Lines: 206, 243, 280, 319, 356
+
+  • schemas\test_auth.py::test_logout_success
+    Uses hardcoded emails: logoutinvalidtoken_{uuid.uuid4()}@example.com, logoutnoauth_{uuid.uuid4()}@example.com, refresh_success_{uuid.uuid4()}@example.com, logout_success_{uuid.uuid4()}@example.com, reset_request_{uuid.uuid4()}@example.com
+    Values: logoutinvalidtoken_{uuid.uuid4()}@example.com, logoutnoauth_{uuid.uuid4()}@example.com, refresh_success_{uuid.uuid4()}@example.com, logout_success_{uuid.uuid4()}@example.com, reset_request_{uuid.uuid4()}@example.com
+    Lines: 243, 280, 319, 356, 389
+
+  • schemas\test_auth.py::test_refresh_token_success
+    Uses hardcoded emails: logoutinvalidtoken_{uuid.uuid4()}@example.com, logoutnoauth_{uuid.uuid4()}@example.com, refresh_success_{uuid.uuid4()}@example.com, reset_request_{uuid.uuid4()}@example.com
+    Values: logoutinvalidtoken_{uuid.uuid4()}@example.com, logoutnoauth_{uuid.uuid4()}@example.com, refresh_success_{uuid.uuid4()}@example.com, reset_request_{uuid.uuid4()}@example.com
+    Lines: 280, 319, 356, 389
+
+  • schemas\test_auth.py::test_password_reset_request_success
+    Uses hardcoded emails: logoutinvalidtoken_{uuid.uuid4()}@example.com, logoutnoauth_{uuid.uuid4()}@example.com, reset_request_{uuid.uuid4()}@example.com
+    Values: logoutinvalidtoken_{uuid.uuid4()}@example.com, logoutnoauth_{uuid.uuid4()}@example.com, reset_request_{uuid.uuid4()}@example.com
+    Lines: 319, 356, 389
+
+  • schemas\test_auth.py::test_logout_with_invalid_token
+    Uses hardcoded emails: logoutinvalidtoken_{uuid.uuid4()}@example.com, logoutnoauth_{uuid.uuid4()}@example.com
+    Values: logoutinvalidtoken_{uuid.uuid4()}@example.com, logoutnoauth_{uuid.uuid4()}@example.com
+    Lines: 356, 389
+
+  • schemas\test_auth.py::test_logout_without_authorization_header
+    Uses hardcoded emails: logoutnoauth_{uuid.uuid4()}@example.com
+    Values: logoutnoauth_{uuid.uuid4()}@example.com
+    Lines: 389
+
+  • schemas\test_auth.py::test_password_reset_confirm_success_branch
+    Uses hardcoded emails: pwreset_success_{uuid.uuid4()}@example.com
+    Values: pwreset_success_{uuid.uuid4()}@example.com
+    Lines: 629
+
+  • schemas\test_user.py::test_basic
+    Uses hardcoded emails: test@example.com
+    Values: test@example.com
+    Lines: 25, 34
+
+  • schemas\test_user.py::test_unicode_and_special_characters
+    Uses hardcoded emails: üñîçødë@example.com
+    Values: üñîçødë@example.com
+    Lines: 80
+
+  • schemas\test_user.py::test_serialization
+    Uses hardcoded emails: serial@example.com
+    Values: serial@example.com
+    Lines: 98
+
+  • schemas\test_user.py::test_default_values
+    Uses hardcoded emails: default@example.com
+    Values: default@example.com
+    Lines: 115
+
+  • schemas\test_user.py::test_invalid_types
+    Uses hardcoded emails: badtype@example.com
+    Values: badtype@example.com
+    Lines: 133, 140
+
+  • schemas\test_user.py::test_extreme_id
+    Uses hardcoded emails: zeroid@example.com, negid@example.com, bigid@example.com
+    Values: zeroid@example.com, negid@example.com, bigid@example.com
+    Lines: 149, 151, 153
+
+  • schemas\test_user.py::test_empty_strings
+    Uses hardcoded emails: empty@example.com
+    Values: empty@example.com
+    Lines: 170
+
+  • schemas\test_user.py::test_whitespace_fields
+    Uses hardcoded emails: ws@example.com
+    Values: ws@example.com
+    Lines: 181
+
+  • schemas\test_user.py::test_future_and_past_dates
+    Uses hardcoded emails: date@example.com
+    Values: date@example.com
+    Lines: 200
+
+  • services\test_user.py::test_success
+    Uses hardcoded emails: dev@example.com, notfound@example.com
+    Values: dev@example.com, notfound@example.com
+    Lines: 125, 165, 374
+
+  • services\test_user.py::test_wrong_password
+    Uses hardcoded emails: dev@example.com, notfound@example.com
+    Values: dev@example.com, notfound@example.com
+    Lines: 125, 165, 374
+
+  • services\test_user.py::test_user_not_found
+    Uses hardcoded emails: dev@example.com, notfound@example.com
+    Values: dev@example.com, notfound@example.com
+    Lines: 125, 165, 374
+
+  • services\test_user.py::test_inactive_or_deleted_user
+    Uses hardcoded emails: dev@example.com
+    Values: dev@example.com
+    Lines: 165
+
+  • services\test_user.py::test_auth_disabled
+    Uses hardcoded emails: dev@example.com
+    Values: dev@example.com
+    Lines: 165
+
+  • services\test_user.py::test_get_token
+    Uses hardcoded emails: real@example.com, test@example.com, notfound@example.com
+    Values: real@example.com, test@example.com, notfound@example.com
+    Lines: 26, 64, 125, 349, 374
+
+  • services\test_user.py::test_valid_get_user_by_username
+    Uses hardcoded emails: real@example.com, test@example.com, notfound@example.com
+    Values: real@example.com, test@example.com, notfound@example.com
+    Lines: 26, 64, 125, 349, 374
+
+  • services\test_user.py::test_invalid_email_get_user_by_username
+    Uses hardcoded emails: real@example.com, notfound@example.com
+    Values: real@example.com, notfound@example.com
+    Lines: 64, 125, 374, 580, 697
+
+  • services\test_user.py::test_not_found_get_user_by_username
+    Uses hardcoded emails: real@example.com, notfound@example.com
+    Values: real@example.com, notfound@example.com
+    Lines: 64, 125, 374, 580, 697
+
+  • services\test_user.py::test_true_user_exists
+    Uses hardcoded emails: real@example.com
+    Values: real@example.com
+    Lines: 64, 580, 697
+
+  • services\test_user.py::test_false_user_exists
+    Uses hardcoded emails: real@example.com
+    Values: real@example.com
+    Lines: 64, 580, 697
+
+  • services\test_user.py::test_invalid_user_exists
+    Uses hardcoded emails: real@example.com
+    Values: real@example.com
+    Lines: 64, 580, 697
+
+  • services\test_user.py::test_assign_and_check
+    Uses hardcoded emails: real@example.com
+    Values: real@example.com
+    Lines: 64, 580, 697
+
+  • services\test_user.py::test_assign_invalid
+    Uses hardcoded emails: real@example.com
+    Values: real@example.com
+    Lines: 64, 580, 697
+
+  • services\test_user.py::test_delete_soft
+    Uses hardcoded emails: real@example.com
+    Values: real@example.com
+    Lines: 64, 580, 697
+
+  • services\test_user.py::test_delete_anonymize
+    Uses hardcoded emails: real@example.com
+    Values: real@example.com
+    Lines: 64, 580, 697
+
+  • services\test_user.py::test_deactivate
+    Uses hardcoded emails: real@example.com
+    Values: real@example.com
+    Lines: 64, 580, 697
+
+  • services\test_user.py::test_reactivate
+    Uses hardcoded emails: real@example.com
+    Values: real@example.com
+    Lines: 64, 580, 697
+
+  • services\test_user.py::test_set_user_preferences
+    Uses hardcoded emails: real@example.com
+    Values: real@example.com
+    Lines: 64, 580, 697
+
+  • services\test_user.py::test_not_found_user_preferences
+    Uses hardcoded emails: real@example.com
+    Values: real@example.com
+    Lines: 64, 580, 697
+
+  • services\test_user.py::test_errors
+    Uses hardcoded emails: real@example.com
+    Values: real@example.com
+    Lines: 64, 580, 697
+
+  • services\test_user.py::test_success_async_refresh
+    Uses hardcoded emails: real@example.com
+    Values: real@example.com
+    Lines: 64, 580, 697
+
+  • utils\test_filters.py::test_filter_fields_empty_fields_list
+    Uses hardcoded emails: test@example.com", "name": "John", "age, test@example.com
+    Values: test@example.com", "name": "John", "age, test@example.com
+    Lines: 14, 20, 29, 36, 41
+
+  • utils\test_filters.py::test_filter_fields_none_fields_list
+    Uses hardcoded emails: test@example.com", "name": "John", "age, test@example.com
+    Values: test@example.com", "name": "John", "age, test@example.com
+    Lines: 14, 20, 29, 36, 41
+
+  • utils\test_filters.py::test_filter_fields_with_specific_fields
+    Uses hardcoded emails: test@example.com", "name": "John", "age, test@example.com
+    Values: test@example.com", "name": "John", "age, test@example.com
+    Lines: 14, 20, 29, 36, 41
+
+  • utils\test_filters.py::test_filter_fields_with_required_fields_included
+    Uses hardcoded emails: test@example.com", "name": "John", "age, test@example.com, test@example.com", "name": "John
+    Values: test@example.com", "name": "John", "age, test@example.com, test@example.com", "name": "John
+    Lines: 14, 20, 29, 36, 41
+
+  • utils\test_filters.py::test_filter_fields_with_nonexistent_fields
+    Uses hardcoded emails: test@example.com, test@example.com", "name": "John
+    Values: test@example.com, test@example.com", "name": "John
+    Lines: 14, 20, 29, 36, 41
+
+  • utils\test_filters.py::test_filter_fields_duplicate_fields
+    Uses hardcoded emails: test@example.com", "name": "John", "age, test@example.com
+    Values: test@example.com", "name": "John", "age, test@example.com
+    Lines: 14, 20, 29, 36, 41
+
+  • utils\test_filters.py::test_filter_fields_preserves_all_values_types
+    Uses hardcoded emails: test@example.com
+    Values: test@example.com
+    Lines: 14, 20, 29, 36, 41
+
+  • utils\test_filters.py::test_filter_fields_with_only_required_fields_requested
+    Uses hardcoded emails: test@example.com", "name": "John", "age, test@example.com
+    Values: test@example.com", "name": "John", "age, test@example.com
+    Lines: 14, 20, 29, 36, 41
+
+  • utils\test_filters.py::test_filter_fields_empty_list_behavior
+    Uses hardcoded emails: test@example.com, test@example.com", "name": "John
+    Values: test@example.com, test@example.com", "name": "John
+    Lines: 14, 20, 29, 36, 41
+
+  • utils\test_filters.py::test_filter_fields_with_integer_and_string_keys_mixed
+    Uses hardcoded emails: test@example.com, test@example.com", 123: "numeric_key", "name": "John
+    Values: test@example.com, test@example.com", 123: "numeric_key", "name": "John
+    Lines: 14, 20, 29, 36, 41
+
+  • utils\test_validation.py::test_validate_email_and_password
+    Uses hardcoded emails: test@example.com
+    Values: test@example.com
+    Lines: 17
+
+  • api\v1\test_auth.py::test_register_and_login
+    Uses hardcoded emails: pwreset@example.com, user@example.com, me@example.com, dev@example.com, missingpass@example.com, doesnotexist@example.com, refreshuser@example.com
+    Values: pwreset@example.com, user@example.com, me@example.com, dev@example.com, missingpass@example.com, doesnotexist@example.com, refreshuser@example.com
+    Lines: 206, 221, 263, 310, 377
+
+  • api\v1\test_auth.py::test_me_and_logout
+    Uses hardcoded emails: pwreset@example.com, user@example.com, me@example.com, dev@example.com, missingpass@example.com, doesnotexist@example.com, refreshuser@example.com
+    Values: pwreset@example.com, user@example.com, me@example.com, dev@example.com, missingpass@example.com, doesnotexist@example.com, refreshuser@example.com
+    Lines: 206, 221, 263, 310, 377
+
+  • api\v1\test_auth.py::test_register_invalid_fields
+    Uses hardcoded emails: pwreset@example.com, user@example.com, dev@example.com, missingpass@example.com, doesnotexist@example.com, refreshuser@example.com
+    Values: pwreset@example.com, user@example.com, dev@example.com, missingpass@example.com, doesnotexist@example.com, refreshuser@example.com
+    Lines: 263, 310, 377, 386, 393
+
+  • api\v1\test_auth.py::test_register_duplicate_email
+    Uses hardcoded emails: pwreset@example.com, user@example.com, dev@example.com, doesnotexist@example.com, refreshuser@example.com
+    Values: pwreset@example.com, user@example.com, dev@example.com, doesnotexist@example.com, refreshuser@example.com
+    Lines: 310, 377, 386, 393, 402
+
+  • api\v1\test_auth.py::test_login_missing_fields
+    Uses hardcoded emails: pwreset@example.com, user@example.com, dev@example.com, doesnotexist@example.com, refreshuser@example.com
+    Values: pwreset@example.com, user@example.com, dev@example.com, doesnotexist@example.com, refreshuser@example.com
+    Lines: 310, 377, 386, 393, 402
+
+  • api\v1\test_auth.py::test_me_endpoint_no_token
+    Uses hardcoded emails: dev@example.com, pwreset@example.com, refreshuser@example.com, doesnotexist@example.com
+    Values: dev@example.com, pwreset@example.com, refreshuser@example.com, doesnotexist@example.com
+    Lines: 377, 386, 393, 402, 426
+
+  • api\v1\test_auth.py::test_me_endpoint_invalid_token
+    Uses hardcoded emails: dev@example.com, pwreset@example.com, refreshuser@example.com, doesnotexist@example.com
+    Values: dev@example.com, pwreset@example.com, refreshuser@example.com, doesnotexist@example.com
+    Lines: 377, 386, 393, 402, 426
+
+  • api\v1\test_auth.py::test_logout_invalid_token
+    Uses hardcoded emails: dev@example.com, pwreset@example.com, refreshuser@example.com, doesnotexist@example.com
+    Values: dev@example.com, pwreset@example.com, refreshuser@example.com, doesnotexist@example.com
+    Lines: 377, 386, 393, 402, 426
+
+  • api\v1\test_auth.py::test_password_reset_request_and_confirm
+    Uses hardcoded emails: dev@example.com, pwreset@example.com, refreshuser@example.com, doesnotexist@example.com
+    Values: dev@example.com, pwreset@example.com, refreshuser@example.com, doesnotexist@example.com
+    Lines: 377, 386, 393, 402, 426
+
+  • api\v1\test_auth.py::test_password_reset_request_nonexistent_email
+    Uses hardcoded emails: dev@example.com, refreshuser@example.com, doesnotexist@example.com
+    Values: dev@example.com, refreshuser@example.com, doesnotexist@example.com
+    Lines: 426, 447, 455, 466, 486
+
+  • api\v1\test_auth.py::test_refresh_token_expired_and_blacklisted
+    Uses hardcoded emails: dev@example.com, refreshuser@example.com
+    Values: dev@example.com, refreshuser@example.com
+    Lines: 447, 455, 466, 486, 519
+
+  • api\v1\test_auth.py::test_auth_disabled_allows_access
+    Uses hardcoded emails: dev@example.com
+    Values: dev@example.com
+    Lines: 519
+
+  • api\v1\test_auth.py::test_register_feature_disabled
+    Uses hardcoded emails: flag@example.com
+    Values: flag@example.com
+    Lines: 539, 562, 579, 615
+
+  • api\v1\test_auth.py::test_login_feature_disabled
+    Uses hardcoded emails: flag@example.com
+    Values: flag@example.com
+    Lines: 539, 562, 579, 615
+
+  • api\v1\test_auth.py::test_api_key_disabled
+    Uses hardcoded emails: flag@example.com
+    Values: flag@example.com
+    Lines: 539, 562, 579, 615
+
+  • api\v1\test_auth.py::test_api_key_wrong
+    Uses hardcoded emails: flag@example.com
+    Values: flag@example.com
+    Lines: 539, 562, 579, 615
+
+  • api\v1\test_uploads.py::test_api_key_wrong
+    Uses hardcoded emails: test_admin_{uuid.uuid4().hex[:8]}@example.com
+    Values: test_admin_{uuid.uuid4().hex[:8]}@example.com
+    Lines: 447
+
+  • api\v1\users\test_core.py::test_create
+    Uses hardcoded emails: weakpw@example.com, admin@example.com, dupe@example.com, missingpw@example.com, noname@example.com
+    Values: weakpw@example.com, admin@example.com, dupe@example.com, missingpw@example.com, noname@example.com
+    Lines: 64, 115, 121, 164, 197
+
+  • api\v1\users\test_core.py::test_create_user_duplicate_email
+    Uses hardcoded emails: weakpw@example.com, admin@example.com, dupe@example.com, missingpw@example.com, noname@example.com
+    Values: weakpw@example.com, admin@example.com, dupe@example.com, missingpw@example.com, noname@example.com
+    Lines: 64, 115, 121, 164, 197
+
+  • api\v1\users\test_core.py::test_create_user_invalid_email
+    Uses hardcoded emails: weakpw@example.com, noname@example.com, admin@example.com, missingpw@example.com
+    Values: weakpw@example.com, noname@example.com, admin@example.com, missingpw@example.com
+    Lines: 64, 121, 164, 197, 203
+
+  • api\v1\users\test_core.py::test_create_user_weak_password
+    Uses hardcoded emails: weakpw@example.com, noname@example.com, admin@example.com, missingpw@example.com
+    Values: weakpw@example.com, noname@example.com, admin@example.com, missingpw@example.com
+    Lines: 64, 121, 164, 197, 203
+
+  • api\v1\users\test_core.py::test_create_user_missing_fields
+    Uses hardcoded emails: noname@example.com, admin@example.com, missingpw@example.com
+    Values: noname@example.com, admin@example.com, missingpw@example.com
+    Lines: 64, 121, 164, 203, 242
+
+  • api\v1\users\test_core.py::test_list_users
+    Uses hardcoded emails: updated@example.com, admin@example.com, delete@example.com, update@example.com
+    Values: updated@example.com, admin@example.com, delete@example.com, update@example.com
+    Lines: 64, 121, 164, 203, 242
+
+  • api\v1\users\test_core.py::test_list_users_pagination
+    Uses hardcoded emails: updated@example.com, admin@example.com, delete@example.com, update@example.com
+    Values: updated@example.com, admin@example.com, delete@example.com, update@example.com
+    Lines: 64, 121, 164, 203, 242
+
+  • api\v1\users\test_core.py::test_get_user_by_id
+    Uses hardcoded emails: updated@example.com, admin@example.com, delete@example.com, update@example.com
+    Values: updated@example.com, admin@example.com, delete@example.com, update@example.com
+    Lines: 64, 121, 164, 203, 242
+
+  • api\v1\users\test_core.py::test_update_user
+    Uses hardcoded emails: updated@example.com, admin@example.com, delete@example.com, update@example.com
+    Values: updated@example.com, admin@example.com, delete@example.com, update@example.com
+    Lines: 64, 121, 164, 203, 242
+
+  • api\v1\users\test_core.py::test_delete_user
+    Uses hardcoded emails: admin@example.com, delete@example.com
+    Values: admin@example.com, delete@example.com
+    Lines: 64, 121, 164, 203, 242
+
+  • api\v1\users\test_core.py::test_auth_required_for_create
+    Uses hardcoded emails: noauth@example.com
+    Values: noauth@example.com
+    Lines: 508, 549
+
+  • api\v1\users\test_core.py::test_auth_required_for_list
+    Uses hardcoded emails: noauth@example.com
+    Values: noauth@example.com
+    Lines: 508, 549
+
+  • api\v1\users\test_core.py::test_auth_required_for_update
+    Uses hardcoded emails: noauth@example.com
+    Values: noauth@example.com
+    Lines: 508, 549
+
+  • api\v1\users\test_core.py::test_api_key_required
+    Uses hardcoded emails: invalid@example.com, test@example.com, admin@example.com
+    Values: invalid@example.com, test@example.com, admin@example.com
+    Lines: 64, 121, 164, 203, 242
+
+  • api\v1\users\test_core.py::test_invalid_api_key
+    Uses hardcoded emails: invalid@example.com
+    Values: invalid@example.com
+    Lines: 637
+
+  • api\v1\users\test_core.py::test_email_validation_edge_cases
+    Uses hardcoded emails: admin@example.com, @example.com, emptyname@example.com, test{i}@example.com, longname@example.com, user space@example.com, user..double@example.com
+    Values: admin@example.com, @example.com, emptyname@example.com, test{i}@example.com, longname@example.com, user space@example.com, user..double@example.com
+    Lines: 35, 64, 115, 121, 164
+
+  • api\v1\users\test_core.py::test_password_validation_edge_cases
+    Uses hardcoded emails: emptyname@example.com, admin@example.com, test{i}@example.com, longname@example.com
+    Values: emptyname@example.com, admin@example.com, test{i}@example.com, longname@example.com
+    Lines: 64, 121, 164, 203, 242
+
+  • api\v1\users\test_core.py::test_name_validation
+    Uses hardcoded emails: emptyname@example.com, admin@example.com, longname@example.com
+    Values: emptyname@example.com, admin@example.com, longname@example.com
+    Lines: 64, 121, 164, 203, 242
+
+  • api\v1\users\test_exports.py::test_export_users_csv
+    Uses hardcoded emails: test1@example.com, test@example.com, test2@example.com", name="Test User 2, test@example.com", name="Test User, test1@example.com", name="Test User 1, test2@example.com
+    Values: test1@example.com, test@example.com, test2@example.com", name="Test User 2, test@example.com", name="Test User, test1@example.com", name="Test User 1, test2@example.com
+    Lines: 64, 65, 154, 185, 241
+
+  • api\v1\users\test_exports.py::test_users_export_alive
+    Uses hardcoded emails: test1@example.com, test@example.com, test2@example.com, test@example.com", name="Test User
+    Values: test1@example.com, test@example.com, test2@example.com, test@example.com", name="Test User
+    Lines: 64, 65, 154, 185, 241
+
+  • api\v1\users\test_exports.py::test_export_users_full_csv
+    Uses hardcoded emails: test1@example.com, test@example.com, test2@example.com, test@example.com", name="Test User
+    Values: test1@example.com, test@example.com, test2@example.com, test@example.com", name="Test User
+    Lines: 64, 65, 154, 185, 241
+
+  • api\v1\users\test_exports.py::test_export_users_csv_unauthenticated
+    Uses hardcoded emails: test@example.com, test@example.com", name="Test User
+    Values: test@example.com, test@example.com", name="Test User
+    Lines: 154, 185, 378, 420, 480
+
+  • api\v1\users\test_exports.py::test_export_users_full_csv_unauthenticated
+    Uses hardcoded emails: test@example.com
+    Values: test@example.com
+    Lines: 154, 185, 378, 420, 480
+
+  • api\v1\users\test_exports.py::test_export_users_csv_content
+    Uses hardcoded emails: test1@example.com, test2@example.com
+    Values: test1@example.com, test2@example.com
+    Lines: 64, 65, 241, 248, 292
+
+  • api\v1\users\test_exports.py::test_export_users_csv_with_query_params
+    Uses hardcoded emails: test1@example.com, test2@example.com
+    Values: test1@example.com, test2@example.com
+    Lines: 64, 65, 241, 248, 292
+
+  • api\v1\users\test_exports.py::test_export_users_csv_empty_db
+    Uses hardcoded emails: {EXPORT_ENDPOINT}?email=doesnotexist@example.com
+    Values: {EXPORT_ENDPOINT}?email=doesnotexist@example.com
+    Lines: 350
+
+  • api\v1\users\test_exports.py::test_export_users_csv_content_disposition
+    Uses hardcoded emails: test@example.com
+    Values: test@example.com
+    Lines: 154, 185, 378, 420, 480
+
+  • api\v1\users\test_exports.py::test_export_users_csv_unsupported_format
+    Uses hardcoded emails: test@example.com
+    Values: test@example.com
+    Lines: 154, 185, 378, 420, 480
+
+  • api\v1\users\test_exports.py::test_export_users_csv_missing_api_key
+    Uses hardcoded emails: test@example.com
+    Values: test@example.com
+    Lines: 154, 185, 378, 420, 480
+
+
+NO_CLEANUP (94 issues):
+  • api\test_deps.py::test_get_current_user_returns_dev_user_when_auth_disabled
+    Creates users but has no cleanup mechanism
+    Lines: 17
+
+  • core\test_config.py::test_verify_access_token_bypass
+    Creates users but has no cleanup mechanism
+    Lines: 396
+
+  • models\test_audit_log.py::test_user_audit_log
+    Creates users but has no cleanup mechanism
+    Lines: 29
+
+  • schemas\test_auth.py::test_register_success
+    Creates users but has no cleanup mechanism
+    Lines: 158
+
+  • schemas\test_auth.py::test_login_success
+    Creates users but has no cleanup mechanism
+    Lines: 189
+
+  • schemas\test_auth.py::test_logout_success
+    Creates users but has no cleanup mechanism
+    Lines: 226
+
+  • schemas\test_auth.py::test_refresh_token_success
+    Creates users but has no cleanup mechanism
+    Lines: 263
+
+  • schemas\test_auth.py::test_password_reset_request_success
+    Creates users but has no cleanup mechanism
+    Lines: 302
+
+  • schemas\test_auth.py::test_logout_with_invalid_token
+    Creates users but has no cleanup mechanism
+    Lines: 336
+
+  • schemas\test_auth.py::test_logout_without_authorization_header
+    Creates users but has no cleanup mechanism
+    Lines: 369
+
+  • schemas\test_auth.py::test_password_reset_confirm_success_branch
+    Creates users but has no cleanup mechanism
+    Lines: 607
+
+  • services\test_user.py::test_success
+    Creates users but has no cleanup mechanism
+    Lines: 75
+
+  • services\test_user.py::test_wrong_password
+    Creates users but has no cleanup mechanism
+    Lines: 97
+
+  • services\test_user.py::test_user_not_found
+    Creates users but has no cleanup mechanism
+    Lines: 113
+
+  • services\test_user.py::test_inactive_or_deleted_user
+    Creates users but has no cleanup mechanism
+    Lines: 129
+
+  • services\test_user.py::test_auth_disabled
+    Creates users but has no cleanup mechanism
+    Lines: 150
+
+  • services\test_user.py::test_active
+    Creates users but has no cleanup mechanism
+    Lines: 172
+
+  • services\test_user.py::test_inactive
+    Creates users but has no cleanup mechanism
+    Lines: 183
+
+  • services\test_user.py::test_deleted
+    Creates users but has no cleanup mechanism
+    Lines: 194
+
+  • services\test_user.py::test_auth_disabled_is_authenticated
+    Creates users but has no cleanup mechanism
+    Lines: 206
+
+  • services\test_user.py::test_get_token
+    Creates users but has no cleanup mechanism
+    Lines: 326
+
+  • services\test_user.py::test_valid_get_user_by_username
+    Creates users but has no cleanup mechanism
+    Lines: 339
+
+  • services\test_user.py::test_invalid_email_get_user_by_username
+    Creates users but has no cleanup mechanism
+    Lines: 353
+
+  • services\test_user.py::test_not_found_get_user_by_username
+    Creates users but has no cleanup mechanism
+    Lines: 365
+
+  • services\test_user.py::test_true_user_exists
+    Creates users but has no cleanup mechanism
+    Lines: 378
+
+  • services\test_user.py::test_false_user_exists
+    Creates users but has no cleanup mechanism
+    Lines: 393
+
+  • services\test_user.py::test_invalid_user_exists
+    Creates users but has no cleanup mechanism
+    Lines: 409
+
+  • services\test_user.py::test_assign_and_check
+    Creates users but has no cleanup mechanism
+    Lines: 422
+
+  • services\test_user.py::test_assign_invalid
+    Creates users but has no cleanup mechanism
+    Lines: 435
+
+  • services\test_user.py::test_delete_soft
+    Creates users but has no cleanup mechanism
+    Lines: 445
+
+  • services\test_user.py::test_delete_anonymize
+    Creates users but has no cleanup mechanism
+    Lines: 460
+
+  • services\test_user.py::test_deactivate
+    Creates users but has no cleanup mechanism
+    Lines: 475
+
+  • services\test_user.py::test_reactivate
+    Creates users but has no cleanup mechanism
+    Lines: 490
+
+  • services\test_user.py::test_set_user_preferences
+    Creates users but has no cleanup mechanism
+    Lines: 505
+
+  • services\test_user.py::test_not_found_user_preferences
+    Creates users but has no cleanup mechanism
+    Lines: 523
+
+  • services\test_user.py::test_errors
+    Creates users but has no cleanup mechanism
+    Lines: 563
+
+  • services\test_user.py::test_success_async_refresh
+    Creates users but has no cleanup mechanism
+    Lines: 684
+
+  • utils\test_errors.py::test_error_handling_utilities
+    Creates users but has no cleanup mechanism
+    Lines: 29
+
+  • utils\test_filters.py::test_process_user_filters_ascending_sort
+    Creates users but has no cleanup mechanism
+    Lines: 81
+
+  • utils\test_filters.py::test_process_user_filters_descending_sort
+    Creates users but has no cleanup mechanism
+    Lines: 100
+
+  • utils\test_filters.py::test_process_user_filters_different_datetime_formats
+    Creates users but has no cleanup mechanism
+    Lines: 115
+
+  • utils\test_filters.py::test_process_user_filters_empty_string_datetimes
+    Creates users but has no cleanup mechanism
+    Lines: 156
+
+  • utils\test_filters.py::test_process_user_filters_complex_sort_field
+    Creates users but has no cleanup mechanism
+    Lines: 171
+
+  • utils\test_filters.py::test_process_user_filters_sort_field_starting_with_dash_but_valid_field
+    Creates users but has no cleanup mechanism
+    Lines: 184
+
+  • utils\test_filters.py::test_process_user_filters_microseconds_datetime
+    Creates users but has no cleanup mechanism
+    Lines: 198
+
+  • utils\test_filters.py::test_process_user_filters_whitespace_handling
+    Creates users but has no cleanup mechanism
+    Lines: 242
+
+  • utils\test_filters.py::test_process_user_filters_only_dash_sort_field
+    Creates users but has no cleanup mechanism
+    Lines: 274
+
+  • utils\test_filters.py::test_process_user_filters_multiple_dashes
+    Creates users but has no cleanup mechanism
+    Lines: 287
+
+  • api\v1\test_auth.py::test_invalid_access_token_raises
+    Creates users but has no cleanup mechanism
+    Lines: 93
+
+  • api\v1\test_auth.py::test_missing_secret_raises
+    Creates users but has no cleanup mechanism
+    Lines: 109
+
+  • api\v1\test_auth.py::test_jwt_invalid_algorithm
+    Creates users but has no cleanup mechanism
+    Lines: 129
+
+  • api\v1\test_auth.py::test_register_and_login
+    Creates users but has no cleanup mechanism
+    Lines: 156
+
+  • api\v1\test_auth.py::test_me_and_logout
+    Creates users but has no cleanup mechanism
+    Lines: 196
+
+  • api\v1\test_auth.py::test_register_invalid_fields
+    Creates users but has no cleanup mechanism
+    Lines: 236
+
+  • api\v1\test_auth.py::test_register_duplicate_email
+    Creates users but has no cleanup mechanism
+    Lines: 271
+
+  • api\v1\test_auth.py::test_login_missing_fields
+    Creates users but has no cleanup mechanism
+    Lines: 302
+
+  • api\v1\test_auth.py::test_me_endpoint_no_token
+    Creates users but has no cleanup mechanism
+    Lines: 324
+
+  • api\v1\test_auth.py::test_me_endpoint_invalid_token
+    Creates users but has no cleanup mechanism
+    Lines: 336
+
+  • api\v1\test_auth.py::test_logout_invalid_token
+    Creates users but has no cleanup mechanism
+    Lines: 350
+
+  • api\v1\test_auth.py::test_password_reset_request_and_confirm
+    Creates users but has no cleanup mechanism
+    Lines: 365
+
+  • api\v1\test_auth.py::test_password_reset_request_nonexistent_email
+    Creates users but has no cleanup mechanism
+    Lines: 418
+
+  • api\v1\test_auth.py::test_refresh_token_expired_and_blacklisted
+    Creates users but has no cleanup mechanism
+    Lines: 435
+
+  • api\v1\test_auth.py::test_auth_disabled_allows_access
+    Creates users but has no cleanup mechanism
+    Lines: 510
+
+  • api\v1\test_auth.py::test_register_feature_disabled
+    Creates users but has no cleanup mechanism
+    Lines: 527
+
+  • api\v1\test_auth.py::test_login_feature_disabled
+    Creates users but has no cleanup mechanism
+    Lines: 551
+
+  • api\v1\test_auth.py::test_api_key_disabled
+    Creates users but has no cleanup mechanism
+    Lines: 572
+
+  • api\v1\test_auth.py::test_api_key_wrong
+    Creates users but has no cleanup mechanism
+    Lines: 591
+
+  • api\v1\test_uploads.py::test_api_key_wrong
+    Creates users but has no cleanup mechanism
+    Lines: 395
+
+  • api\v1\users\test_core.py::test_create
+    Creates users but has no cleanup mechanism
+    Lines: 42
+
+  • api\v1\users\test_core.py::test_create_user_duplicate_email
+    Creates users but has no cleanup mechanism
+    Lines: 97
+
+  • api\v1\users\test_core.py::test_create_user_invalid_email
+    Creates users but has no cleanup mechanism
+    Lines: 141
+
+  • api\v1\users\test_core.py::test_create_user_weak_password
+    Creates users but has no cleanup mechanism
+    Lines: 180
+
+  • api\v1\users\test_core.py::test_create_user_missing_fields
+    Creates users but has no cleanup mechanism
+    Lines: 219
+
+  • api\v1\users\test_core.py::test_list_users
+    Creates users but has no cleanup mechanism
+    Lines: 275
+
+  • api\v1\users\test_core.py::test_list_users_pagination
+    Creates users but has no cleanup mechanism
+    Lines: 313
+
+  • api\v1\users\test_core.py::test_get_user_by_id
+    Creates users but has no cleanup mechanism
+    Lines: 349
+
+  • api\v1\users\test_core.py::test_update_user
+    Creates users but has no cleanup mechanism
+    Lines: 383
+
+  • api\v1\users\test_core.py::test_delete_user
+    Creates users but has no cleanup mechanism
+    Lines: 439
+
+  • api\v1\users\test_core.py::test_auth_required_for_create
+    Creates users but has no cleanup mechanism
+    Lines: 494
+
+  • api\v1\users\test_core.py::test_api_key_required
+    Creates users but has no cleanup mechanism
+    Lines: 579
+
+  • api\v1\users\test_core.py::test_invalid_api_key
+    Creates users but has no cleanup mechanism
+    Lines: 622
+
+  • api\v1\users\test_core.py::test_email_validation_edge_cases
+    Creates users but has no cleanup mechanism
+    Lines: 649
+
+  • api\v1\users\test_core.py::test_password_validation_edge_cases
+    Creates users but has no cleanup mechanism
+    Lines: 697
+
+  • api\v1\users\test_core.py::test_name_validation
+    Creates users but has no cleanup mechanism
+    Lines: 749
+
+  • api\v1\users\test_exports.py::test_export_users_csv
+    Creates users but has no cleanup mechanism
+    Lines: 591
+
+  • api\v1\users\test_exports.py::test_users_export_alive
+    Creates users but has no cleanup mechanism
+    Lines: 631
+
+  • api\v1\users\test_exports.py::test_export_users_full_csv
+    Creates users but has no cleanup mechanism
+    Lines: 641
+
+  • api\v1\users\test_exports.py::test_export_users_csv_unauthenticated
+    Creates users but has no cleanup mechanism
+    Lines: 693
+
+  • api\v1\users\test_exports.py::test_export_users_full_csv_unauthenticated
+    Creates users but has no cleanup mechanism
+    Lines: 164
+
+  • api\v1\users\test_exports.py::test_export_users_csv_content
+    Creates users but has no cleanup mechanism
+    Lines: 219
+
+  • api\v1\users\test_exports.py::test_export_users_csv_with_query_params
+    Creates users but has no cleanup mechanism
+    Lines: 270
+
+  • api\v1\users\test_exports.py::test_export_users_csv_content_disposition
+    Creates users but has no cleanup mechanism
+    Lines: 357
+
+  • api\v1\users\test_exports.py::test_export_users_csv_unsupported_format
+    Creates users but has no cleanup mechanism
+    Lines: 398
+
+  • api\v1\users\test_exports.py::test_export_users_csv_missing_api_key
+    Creates users but has no cleanup mechanism
+    Lines: 458
+
+
+RECOMMENDations:
+--------------------------------------------------
+1. Replace hardcoded emails with UUID-based generation:
+   email = f'test-{uuid.uuid4()}@example.com'
+
+2. Add proper test cleanup using fixtures or teardown methods
+3. Use transactional tests that rollback automatically

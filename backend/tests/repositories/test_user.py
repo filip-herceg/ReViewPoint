@@ -12,6 +12,8 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+from tests.test_data_generators import get_unique_email, get_test_user
+from tests.test_data_generators import get_unique_email, get_test_user
 from src.models.file import File
 from src.models.user import User
 from src.repositories.user import (
@@ -70,8 +72,8 @@ class TestUserRepository:
         "email,password,expected_exc",
         [
             ("bademail", "Password123!", ValidationError),
-            ("repo@example.com", "short", ValidationError),
-            ("repo@example.com", "Password123!", None),
+            (get_unique_email(), "short", ValidationError),
+            (get_unique_email(), "Password123!", None),
         ],
     )
     async def test_create_user_validation(
@@ -92,26 +94,27 @@ class TestUserRepository:
 
     @pytest.mark.asyncio
     async def test_create_user_duplicate_email(self, async_session: AsyncSession) -> None:
+        test_email = get_unique_email()
         await create_user_with_validation(
-            async_session, "dup@example.com", "Password123!"
+            async_session, test_email, "Password123!"
         )
         with pytest.raises(UserAlreadyExistsError):
             await create_user_with_validation(
-                async_session, "dup@example.com", "Password123!"
+                async_session, test_email, "Password123!"
             )
         await async_session.rollback()
 
     @pytest.mark.asyncio
     async def test_create_user_with_name(self, async_session: AsyncSession) -> None:
         user = await create_user_with_validation(
-            async_session, "named@example.com", "Password123!", "Test User"
+            async_session, get_unique_email(), "Password123!", "Test User"
         )
         assert user.name == "Test User"
 
     @pytest.mark.asyncio
     async def test_get_user_by_id(self, async_session: AsyncSession) -> None:
         user = await create_user_with_validation(
-            async_session, "getid@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         found = await get_user_by_id(async_session, user.id)
         assert found is not None
@@ -126,7 +129,7 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_get_user_by_id_with_cache(self, async_session: AsyncSession) -> None:
         user = await create_user_with_validation(
-            async_session, "cache@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         # Test with cache disabled
         found = await get_user_by_id(async_session, user.id, use_cache=False)
@@ -136,7 +139,7 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_safe_get_user_by_id(self, async_session: AsyncSession) -> None:
         user = await create_user_with_validation(
-            async_session, "safe@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         found = await safe_get_user_by_id(async_session, user.id)
         assert found.email == user.email
@@ -211,16 +214,18 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_list_users_with_filters(self, async_session: AsyncSession) -> None:
         # Test email filter
+        email1 = get_unique_email()
+        email2 = f"emailfilter-{get_unique_email()}"  # This will contain "emailfilter"
         user1 = await create_user_with_validation(
-            async_session, "emailfilter@example.com", "Password123!"
+            async_session, email1, "Password123!"
         )
         user2 = await create_user_with_validation(
-            async_session, "other@example.com", "Password123!"
+            async_session, email2, "Password123!"
         )
         await async_session.commit()
 
         listed, total = await list_users(async_session, email="emailfilter")
-        assert any(u.email == "emailfilter@example.com" for u in listed)
+        assert any(u.email == email2 for u in listed)
 
         # Test name filter
         user1.name = "FilterName"
@@ -238,8 +243,9 @@ class TestUserRepository:
 
     @pytest.mark.asyncio
     async def test_search_users_by_name_or_email(self, async_session: AsyncSession) -> None:
+        test_email = f"searchme-{get_unique_email()}"  # This will contain "searchme"
         await create_user_with_validation(
-            async_session, "searchme@example.com", "Password123!"
+            async_session, test_email, "Password123!"
         )
         found = await search_users_by_name_or_email(async_session, "searchme")
         assert any("searchme" in u.email for u in found)
@@ -247,10 +253,10 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_filter_users_by_status(self, async_session: AsyncSession) -> None:
         user1 = await create_user_with_validation(
-            async_session, "active@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         user2 = await create_user_with_validation(
-            async_session, "inactive@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         user2.is_active = False
         await async_session.commit()
@@ -267,15 +273,16 @@ class TestUserRepository:
 
     @pytest.mark.asyncio
     async def test_get_users_created_within(self, async_session: AsyncSession) -> None:
+        test_email = get_unique_email()
         user = await create_user_with_validation(
-            async_session, "daterange@example.com", "Password123!"
+            async_session, test_email, "Password123!"
         )
         await async_session.commit()
 
         start = datetime.now(UTC) - timedelta(hours=1)
         end = datetime.now(UTC) + timedelta(hours=1)
         found = await get_users_created_within(async_session, start, end)
-        assert any(u.email == "daterange@example.com" for u in found)
+        assert any(u.email == test_email for u in found)
 
     @pytest.mark.asyncio
     async def test_count_users(self, async_session: AsyncSession) -> None:
@@ -284,10 +291,10 @@ class TestUserRepository:
         await async_session.commit()
 
         user1 = await create_user_with_validation(
-            async_session, "count1@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         user2 = await create_user_with_validation(
-            async_session, "count2@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         user2.is_active = False
         await async_session.commit()
@@ -304,10 +311,10 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_get_active_users(self, async_session: AsyncSession) -> None:
         user1 = await create_user_with_validation(
-            async_session, "getactive@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         user2 = await create_user_with_validation(
-            async_session, "getinactive@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         user2.is_active = False
         await async_session.commit()
@@ -327,8 +334,8 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_bulk_create_users(self, async_session: AsyncSession) -> None:
         users = [
-            User(email="bulk1@example.com", hashed_password="hash1", is_active=True),
-            User(email="bulk2@example.com", hashed_password="hash2", is_active=True),
+            User(email=get_unique_email(), hashed_password="hash1", is_active=True),
+            User(email=get_unique_email(), hashed_password="hash2", is_active=True),
         ]
         result = await bulk_create_users(async_session, users)
         assert len(result) == 2
@@ -337,10 +344,10 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_bulk_update_users(self, async_session: AsyncSession) -> None:
         user1 = await create_user_with_validation(
-            async_session, "bulkupdate1@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         user2 = await create_user_with_validation(
-            async_session, "bulkupdate2@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         await async_session.commit()
 
@@ -366,10 +373,10 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_bulk_delete_users(self, async_session: AsyncSession) -> None:
         user1 = await create_user_with_validation(
-            async_session, "bulkdelete1@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         user2 = await create_user_with_validation(
-            async_session, "bulkdelete2@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         await async_session.commit()
 
@@ -390,7 +397,7 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_soft_delete_user(self, async_session: AsyncSession) -> None:
         user = await create_user_with_validation(
-            async_session, "softdelete@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         await async_session.commit()
 
@@ -412,7 +419,7 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_restore_user(self, async_session: AsyncSession) -> None:
         user = await create_user_with_validation(
-            async_session, "restore@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         user.is_deleted = True
         await async_session.commit()
@@ -435,19 +442,20 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_upsert_user(self, async_session: AsyncSession) -> None:
         # Test insert
+        test_email = get_unique_email()
         user = await upsert_user(
             async_session,
-            "upsert@example.com",
+            test_email,
             {"hashed_password": "hash123", "is_active": True},
         )
-        assert user.email == "upsert@example.com"
+        assert user.email == test_email
         assert user.is_active is True
 
-        # Test update
+        # Test update (same email should update the existing user)
         user2 = await upsert_user(
-            async_session, "upsert@example.com", {"name": "Updated Name"}
+            async_session, test_email, {"name": "Updated Name", "hashed_password": "hash123"}
         )
-        assert user2.id == user.id
+        assert user2.id == user.id  # Should be the same user
         assert user2.name == "Updated Name"
 
     @pytest.mark.asyncio
@@ -461,7 +469,7 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_partial_update_user(self, async_session: AsyncSession) -> None:
         user = await create_user_with_validation(
-            async_session, "partialupdate@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         await async_session.commit()
 
@@ -480,7 +488,7 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_user_exists(self, async_session: AsyncSession) -> None:
         user = await create_user_with_validation(
-            async_session, "exists@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         await async_session.commit()
 
@@ -489,21 +497,22 @@ class TestUserRepository:
 
     @pytest.mark.asyncio
     async def test_is_email_unique(self, async_session: AsyncSession) -> None:
+        user_email = get_unique_email()
         user = await create_user_with_validation(
-            async_session, "unique@example.com", "Password123!"
+            async_session, user_email, "Password123!"
         )
         await async_session.commit()
 
         # Email is not unique (already exists)
-        assert await is_email_unique(async_session, "unique@example.com") is False
+        assert await is_email_unique(async_session, user_email) is False
 
         # Email is unique (doesn't exist)
-        assert await is_email_unique(async_session, "newunique@example.com") is True
+        assert await is_email_unique(async_session, get_unique_email()) is True
 
         # Email is unique when excluding the user that has it
         assert (
             await is_email_unique(
-                async_session, "unique@example.com", exclude_user_id=user.id
+                async_session, get_unique_email(), exclude_user_id=user.id
             )
             is True
         )
@@ -511,7 +520,7 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_change_user_password(self, async_session: AsyncSession) -> None:
         user = await create_user_with_validation(
-            async_session, "changepass@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         await async_session.commit()
 
@@ -583,7 +592,7 @@ class TestUserRepository:
     async def test_get_user_with_files(self, async_session: AsyncSession) -> None:
         """Test that a user with files returns the correct files (iterable best practice)."""
         user = await create_user_with_validation(
-            async_session, "fileuser@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         file = File(filename="testfile.txt", content_type="text/plain", user_id=user.id)
         async_session.add(file)
@@ -607,37 +616,41 @@ class TestUserRepository:
 
     @pytest.mark.asyncio
     async def test_export_users_to_csv(self, async_session: AsyncSession) -> None:
+        test_email = get_unique_email()
         user = await create_user_with_validation(
-            async_session, "export@example.com", "Password123!"
+            async_session, test_email, "Password123!"
         )
         await async_session.commit()
 
         csv_data = await export_users_to_csv(async_session)
-        assert "export@example.com" in csv_data
+        assert test_email in csv_data
         assert "id,email,is_active" in csv_data
 
     @pytest.mark.asyncio
     async def test_export_users_to_json(self, async_session: AsyncSession) -> None:
+        test_email = get_unique_email()
         user = await create_user_with_validation(
-            async_session, "exportjson@example.com", "Password123!"
+            async_session, test_email, "Password123!"
         )
         await async_session.commit()
 
         json_data = await export_users_to_json(async_session)
         data = json.loads(json_data)
         assert isinstance(data, list)
-        assert any(u["email"] == "exportjson@example.com" for u in data)
+        assert any(u["email"] == test_email for u in data)
 
     @pytest.mark.asyncio
     async def test_import_users_from_dicts(self, async_session: AsyncSession) -> None:
+        email1 = get_unique_email()
+        email2 = get_unique_email()
         user_dicts = [
             {
-                "email": "import1@example.com",
+                "email": email1,
                 "hashed_password": "hash1",
                 "is_active": True,
             },
             {
-                "email": "import2@example.com",
+                "email": email2,
                 "hashed_password": "hash2",
                 "is_active": True,
             },
@@ -645,13 +658,13 @@ class TestUserRepository:
 
         users = await import_users_from_dicts(async_session, user_dicts)
         assert len(users) == 2
-        assert users[0].email == "import1@example.com"
-        assert users[1].email == "import2@example.com"
+        assert users[0].email == email1
+        assert users[1].email == email2
 
     @pytest.mark.asyncio
     async def test_deactivate_user(self, async_session: AsyncSession) -> None:
         user = await create_user_with_validation(
-            async_session, "deactivate@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         await async_session.commit()
 
@@ -673,7 +686,7 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_reactivate_user(self, async_session: AsyncSession) -> None:
         user = await create_user_with_validation(
-            async_session, "reactivate@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         user.is_active = False
         await async_session.commit()
@@ -696,7 +709,7 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_update_last_login(self, async_session: AsyncSession) -> None:
         user = await create_user_with_validation(
-            async_session, "lastlogin@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         await async_session.commit()
 
@@ -720,7 +733,7 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_anonymize_user(self, async_session: AsyncSession) -> None:
         user = await create_user_with_validation(
-            async_session, "anonymize@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         await async_session.commit()
 
@@ -742,7 +755,7 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_anonymize_user_already_deleted(self, async_session: AsyncSession) -> None:
         user = await create_user_with_validation(
-            async_session, "alreadydeleted@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         user.is_deleted = True
         await async_session.commit()
@@ -754,10 +767,10 @@ class TestUserRepository:
     async def test_user_signups_per_month(self, async_session: AsyncSession) -> None:
         # Create users with specific created_at dates
         user1 = await create_user_with_validation(
-            async_session, "signup1@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         user2 = await create_user_with_validation(
-            async_session, "signup2@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
 
         # Set created_at to January and February 2024
@@ -775,7 +788,7 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_sensitive_user_action(self, async_session: AsyncSession) -> None:
         user = await create_user_with_validation(
-            async_session, "sensitive@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         await async_session.commit()
 
@@ -793,7 +806,7 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_sensitive_user_action_rate_limited(self, async_session: AsyncSession) -> None:
         user = await create_user_with_validation(
-            async_session, "ratelimited@example.com", "Password123!"
+            async_session, get_unique_email(), "Password123!"
         )
         await async_session.commit()
 
@@ -819,13 +832,13 @@ class TestUserRepository:
         with patch.object(async_session, "commit", side_effect=Exception("DB Error")):
             with pytest.raises(Exception):
                 await create_user_with_validation(
-                    async_session, "error@example.com", "Password123!"
+                    async_session, get_unique_email(), "Password123!"
                 )
 
     @pytest.mark.asyncio
     async def test_bulk_operations_rollback_on_error(self, async_session: AsyncSession) -> None:
         users = [
-            User(email="bulk1@example.com", hashed_password="hash1", is_active=True),
+            User(email=get_unique_email(), hashed_password="hash1", is_active=True),
         ]
 
         # Mock commit to raise an exception

@@ -10,7 +10,7 @@ from src.models.base import BaseModel
 
 class UsedPasswordResetToken(BaseModel):
     @validates("used_at")
-    def _validate_used_at(self, key, value):
+    def _validate_used_at(self, key: str, value: datetime) -> datetime:
         # Always ensure used_at is timezone-aware (UTC)
         if value is not None and value.tzinfo is None:
             return value.replace(tzinfo=UTC)
@@ -46,12 +46,12 @@ class UsedPasswordResetToken(BaseModel):
         return value
 
     @used_at.setter
-    def used_at(self, value: datetime):
+    def used_at(self, value: datetime) -> None:
         if value is not None and value.tzinfo is None:
             value = value.replace(tzinfo=UTC)
         self._used_at = value
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         used_at = kwargs.get("used_at")
         if used_at is not None:
             if used_at.tzinfo is None:

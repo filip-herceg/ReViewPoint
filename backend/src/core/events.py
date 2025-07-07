@@ -91,7 +91,7 @@ def log_startup_complete() -> None:
         pool_size: int | str
         pool = getattr(db_module.engine, "pool", None)
         if pool is not None and hasattr(pool, "size") and callable(pool.size):
-            pool_size = pool.size()  # type: ignore
+            pool_size = str(pool.size())
         else:
             pool_size = "n/a"
     except Exception:

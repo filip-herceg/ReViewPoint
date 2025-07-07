@@ -41,7 +41,7 @@ class HealthResponseDict(TypedDict, total=False):
 
 
 class MetricsResponse(Response):
-    media_type: Final[str] = "text/plain"
+    media_type = "text/plain"
 
 
 router: Final[APIRouter] = APIRouter(tags=["Health"])
