@@ -439,3 +439,126 @@ export function createNetworkError(): ApiError {
     testLogger.error('Created network error', error);
     return error;
 }
+
+// Enhanced Auth Token Templates for JWT Testing
+
+// Create expired auth tokens for testing refresh scenarios
+export function createExpiredAuthTokens(overrides: Partial<AuthTokens> = {}): AuthTokens {
+    const now = Math.floor(Date.now() / 1000);
+    const exp = now - 3600; // 1 hour ago (expired)
+
+    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const payload = btoa(JSON.stringify({
+        sub: randomInt(1, 1000).toString(),
+        email: `user${randomString(4)}@example.com`,
+        exp,
+        iat: now - 7200, // 2 hours ago
+        iss: 'reviewpoint',
+        roles: ['user']
+    }));
+    const signature = randomString(43);
+
+    const tokens: AuthTokens = {
+        access_token: overrides.access_token || `${header}.${payload}.${signature}`,
+        refresh_token: overrides.refresh_token || `rt_${randomString(64)}`,
+        token_type: 'bearer',
+        ...overrides,
+    };
+    testLogger.debug('Created expired auth tokens', {
+        hasAccessToken: !!tokens.access_token,
+        hasRefreshToken: !!tokens.refresh_token,
+        expiry: exp
+    });
+    return tokens;
+}
+
+// Create tokens that will expire soon (for testing refresh buffer)
+export function createSoonToExpireAuthTokens(overrides: Partial<AuthTokens> = {}): AuthTokens {
+    const now = Math.floor(Date.now() / 1000);
+    const exp = now + 60; // 1 minute from now (within refresh buffer)
+
+    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const payload = btoa(JSON.stringify({
+        sub: randomInt(1, 1000).toString(),
+        email: `user${randomString(4)}@example.com`,
+        exp,
+        iat: now - 60, // 1 minute ago
+        iss: 'reviewpoint',
+        roles: ['user']
+    }));
+    const signature = randomString(43);
+
+    const tokens: AuthTokens = {
+        access_token: overrides.access_token || `${header}.${payload}.${signature}`,
+        refresh_token: overrides.refresh_token || `rt_${randomString(64)}`,
+        token_type: 'bearer',
+        ...overrides,
+    };
+    testLogger.debug('Created soon-to-expire auth tokens', {
+        hasAccessToken: !!tokens.access_token,
+        hasRefreshToken: !!tokens.refresh_token,
+        expiry: exp,
+        timeToExpiry: exp - now
+    });
+    return tokens;
+}
+
+// Create valid long-lived auth tokens (for testing normal scenarios)
+export function createValidAuthTokens(overrides: Partial<AuthTokens> = {}): AuthTokens {
+    const now = Math.floor(Date.now() / 1000);
+    const exp = now + 3600; // 1 hour from now
+
+    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const payload = btoa(JSON.stringify({
+        sub: randomInt(1, 1000).toString(),
+        email: `user${randomString(4)}@example.com`,
+        exp,
+        iat: now,
+        iss: 'reviewpoint',
+        roles: ['user']
+    }));
+    const signature = randomString(43);
+
+    const tokens: AuthTokens = {
+        access_token: overrides.access_token || `${header}.${payload}.${signature}`,
+        refresh_token: overrides.refresh_token || `rt_${randomString(64)}`,
+        token_type: 'bearer',
+        ...overrides,
+    };
+    testLogger.debug('Created valid auth tokens', {
+        hasAccessToken: !!tokens.access_token,
+        hasRefreshToken: !!tokens.refresh_token,
+        expiry: exp,
+        timeToExpiry: exp - now
+    });
+    return tokens;
+}
+
+// Token Refresh Test Templates
+export function createTokenRefreshRequest(refreshToken?: string) {
+    const request = {
+        refresh_token: refreshToken || `rt_${randomString(64)}`
+    };
+    testLogger.debug('Created token refresh request', {
+        hasRefreshToken: !!request.refresh_token
+    });
+    return request;
+}
+
+export function createTokenRefreshResponse(overrides: Partial<AuthTokens> = {}): AuthTokens {
+    const tokens = createValidAuthTokens(overrides);
+    testLogger.debug('Created token refresh response', {
+        hasAccessToken: !!tokens.access_token,
+        hasRefreshToken: !!tokens.refresh_token
+    });
+    return tokens;
+}
+
+// Mock token service state for testing
+export function createTokenServiceMockState() {
+    return {
+        isRefreshing: false,
+        refreshPromise: null,
+        refreshQueue: [],
+    };
+}
