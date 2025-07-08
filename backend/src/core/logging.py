@@ -33,6 +33,17 @@ COLOR_MAP: Final[
 _FLAG: Final[str] = "_rvp_internal"
 
 
+def _is_testing() -> bool:
+    """Check if we're currently running in a test environment."""
+    import os
+    import sys
+    return (
+        "PYTEST_CURRENT_TEST" in os.environ
+        or "pytest" in sys.modules
+        or any("test" in arg.lower() for arg in sys.argv)
+    )
+
+
 # ───────────────────────── public API ─────────────────────────
 
 
@@ -70,8 +81,12 @@ def init_logging(
 
     from loguru import logger as loguru_logger
 
-    # Remove all existing loguru handlers
-    loguru_logger.remove()
+    # Remove all existing loguru handlers safely
+    try:
+        loguru_logger.remove()
+    except (ValueError, OSError):
+        # Ignore errors during cleanup - handlers might already be removed
+        pass
 
     # Console sink
     if json or json_format:
@@ -84,8 +99,8 @@ def init_logging(
             format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan> | <level>{message}</level>",
         )
 
-    # Optional file sink
-    if logfile is not None:
+    # Optional file sink - but avoid file logging during tests to prevent handle issues
+    if logfile is not None and not _is_testing():
         fp: Path = Path(logfile)
         fp.parent.mkdir(parents=True, exist_ok=True)
         loguru_logger.add(

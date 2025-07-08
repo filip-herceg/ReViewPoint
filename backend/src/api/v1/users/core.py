@@ -274,7 +274,7 @@ async def delete_user(
     """
     STATUS_NO_CONTENT = 204
     try:
-        result: None = await user_service.delete_user(session, user_id)
+        await user_service.delete_user(session, user_id)
     except UserNotFoundError:
         logger.warning("User not found.", extra={"user_id": user_id})
         return Response(status_code=404, content="User not found.")

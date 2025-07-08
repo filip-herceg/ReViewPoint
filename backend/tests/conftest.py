@@ -48,6 +48,20 @@ is_pytest_run = (
     )
 )
 
+@pytest.fixture(scope="session", autouse=True)
+def _loguru_session_cleanup() -> Generator[None, None, None]:
+    """
+    Session-level fixture to ensure proper loguru cleanup at the end of all tests.
+    This prevents Windows handle errors during test teardown.
+    """
+    yield
+    # Clean up all loguru handlers at the end of the session
+    try:
+        logger.remove()
+    except (ValueError, OSError):
+        # Ignore any errors during cleanup
+        pass
+
 if is_pytest_run:
     # Only set during pytest runs to avoid affecting normal app usage
     worker_id = os.environ.get("PYTEST_XDIST_WORKER", "main")

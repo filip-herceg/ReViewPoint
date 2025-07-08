@@ -75,7 +75,7 @@ class TestMainApp(MainAppTestTemplate):
         """
         Test that double import of src.main does not duplicate middleware.
         """
-        self.patch_var("src.core.logging.init_logging", lambda *a: None)
+        self.patch_var("src.core.logging.init_logging", lambda *a, **kw: None)
         sys.modules.pop("src.main", None)
         importlib.invalidate_caches()
         import src.main  # noqa: F401

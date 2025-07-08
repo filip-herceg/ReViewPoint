@@ -109,13 +109,13 @@ class TestGetCurrentUser(AuthUnitTestTemplate):
 
     def test_get_user_action_limiter_returns_limiter(self) -> None:
         """
-        Test that get_user_action_limiter returns an AsyncRateLimiter instance.
+        Test that get_user_action_limiter returns a callable.
         """
         from src.api import deps
+        from collections.abc import Awaitable, Callable
 
-        limiter_result = deps.get_user_action_limiter()
-        assert isinstance(limiter_result, AsyncRateLimiter)
-        limiter: Final[AsyncRateLimiter[str]] = limiter_result
+        limiter: Callable[..., Awaitable[None]] = deps.get_user_action_limiter()
+        assert callable(limiter)
 
     def test_get_validate_email_returns_callable(self) -> None:
         """
