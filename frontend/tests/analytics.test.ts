@@ -54,7 +54,7 @@ beforeEach(() => {
 
   // Ensure mockImplementation is attached
   if (!plausibleMock.mockImplementation) {
-    plausibleMock.mockImplementation = vi.fn(() => Object.assign(() => ({
+    (plausibleMock as any).mockImplementation = vi.fn(() => Object.assign(() => ({
       trackEvent: vi.fn(),
       trackPageview: vi.fn(),
       enableAutoPageviews: vi.fn(),

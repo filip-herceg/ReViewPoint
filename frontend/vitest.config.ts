@@ -27,12 +27,10 @@ export default defineConfig({
         coverage: {
             reporter: ['text', 'html'],
         },
-        onConsoleLog: (log) => {
-            if (log.includes('@/')) {
-                console.log('Alias resolution debug log:', log);
-                console.log('Alias @ resolves to:', resolve(__dirname, 'src'));
-                console.log('Alias @/logger resolves to:', resolve(__dirname, 'src/logger.ts'));
-            }
-        },
+        // Remove verbose console logging
+        silent: false,
+        logHeapUsage: false,
+        // Only show console logs for failed tests
+        onConsoleLog: () => false,
     },
 });

@@ -5,32 +5,32 @@ import { testLogger } from './test-utils';
 import { http, HttpResponse } from 'msw';
 import { createUpload, createUploadList } from './test-templates';
 export const handlers = [
-    // GET /api/uploads/:id (must come before /api/uploads)
-    http.get('/api/uploads/:id', ({ params }) => {
-        const { id } = params;
-        if (id === '1') {
-            const data = { id: '1', name: 'file.pdf', status: 'pending', progress: 0, createdAt: 'now' };
-            logger.info('[MSW] GET /api/uploads/:id', data);
+    // GET /api/uploads/:filename (must come before /api/uploads)
+    http.get('/api/uploads/:filename', ({ params }) => {
+        const { filename } = params;
+        if (filename === '1' || filename === 'file.pdf') {
+            const data = { filename: 'file.pdf', url: '/uploads/file.pdf' };
+            logger.info('[MSW] GET /api/uploads/:filename', data);
             return new Response(
                 JSON.stringify(data),
                 { status: 200, headers: { 'Content-Type': 'application/json' } }
             );
         }
-        logger.warn('[MSW] GET /api/uploads/:id - Not found', { id });
+        logger.warn('[MSW] GET /api/uploads/:filename - Not found', { filename });
         return new Response(JSON.stringify({ error: 'Not found' }), { status: 404 });
     }),
-    // GET /uploads/:id (for axios baseURL '/api', this is the actual endpoint hit)
-    http.get('/uploads/:id', ({ params }) => {
-        const { id } = params;
-        if (id === '1') {
-            const data = { id: '1', name: 'file.pdf', status: 'pending', progress: 0, createdAt: 'now' };
-            logger.info('[MSW] GET /uploads/:id', data);
+    // GET /uploads/:filename (for axios baseURL '/api', this is the actual endpoint hit)
+    http.get('/uploads/:filename', ({ params }) => {
+        const { filename } = params;
+        if (filename === '1' || filename === 'file.pdf') {
+            const data = { filename: 'file.pdf', url: '/uploads/file.pdf' };
+            logger.info('[MSW] GET /uploads/:filename', data);
             return new Response(
                 JSON.stringify(data),
                 { status: 200, headers: { 'Content-Type': 'application/json' } }
             );
         }
-        logger.warn('[MSW] GET /uploads/:id - Not found', { id });
+        logger.warn('[MSW] GET /uploads/:filename - Not found', { filename });
         return new Response(JSON.stringify({ error: 'Not found' }), { status: 404 });
     }),
 
@@ -41,7 +41,10 @@ export const handlers = [
             logger.warn('[MSW] GET /api/uploads - Simulating error response');
             return new Response(JSON.stringify({ error: 'fail' }), { status: 500 });
         }
-        const data = [{ id: '1', name: 'file.pdf', status: 'pending', progress: 0, createdAt: 'now' }];
+        const data = {
+            files: [{ filename: 'file.pdf', url: '/uploads/file.pdf' }],
+            total: 1
+        };
         logger.info('[MSW] GET /api/uploads', data);
         return new Response(
             JSON.stringify(data),
@@ -55,7 +58,10 @@ export const handlers = [
             logger.warn('[MSW] GET /uploads - Simulating error response');
             return new Response(JSON.stringify({ error: 'fail' }), { status: 500 });
         }
-        const data = [{ id: '1', name: 'file.pdf', status: 'pending', progress: 0, createdAt: 'now' }];
+        const data = {
+            files: [{ filename: 'file.pdf', url: '/uploads/file.pdf' }],
+            total: 1
+        };
         logger.info('[MSW] GET /uploads', data);
         return new Response(
             JSON.stringify(data),

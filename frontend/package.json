@@ -17,7 +17,12 @@
         "test:coverage": "vitest run --coverage",
         "analyze": "vite build --plugin rollup-plugin-visualizer",
         "audit": "pnpm audit --audit-level=moderate",
-        "prepare": ""
+        "prepare": "",
+        "generate:openapi-schema": "cd .. && python scripts/export-backend-schema.py",
+        "generate:api-types": "tsx scripts/generate-api-types.ts",
+        "generate:all": "pnpm run generate:openapi-schema && pnpm run generate:api-types",
+        "validate:api-schema": "tsx scripts/validate-openapi.ts",
+        "dev:with-types": "pnpm run generate:all && pnpm run dev"
     },
     "dependencies": {
         "@radix-ui/react-slot": "^1.2.3",
@@ -39,6 +44,7 @@
         "zustand": "^5.0.6"
     },
     "devDependencies": {
+        "@apidevtools/swagger-parser": "^12.0.0",
         "@biomejs/biome": "^2.0.6",
         "@csstools/postcss-progressive-custom-properties": "^4.1.0",
         "@originjs/vite-plugin-federation": "^1.4.1",
@@ -57,10 +63,13 @@
         "biome": "^0.3.3",
         "jsdom": "^26.1.0",
         "msw": "^2.10.3",
+        "openapi-fetch": "^0.14.0",
+        "openapi-typescript": "^6.7.6",
         "playwright": "^1.53.2",
         "postcss": "^8.5.6",
         "rollup-plugin-visualizer": "^6.0.3",
         "tailwindcss": "^4.1.11",
+        "tsx": "^4.20.3",
         "tw-animate-css": "^1.3.5",
         "typescript": "^5.8.3",
         "vite": "^7.0.2",

@@ -4,6 +4,7 @@ import UploadForm from '@/components/UploadForm';
 import * as uploadStoreModule from '@/lib/store/uploadStore';
 import { createUploadFormData, createTestError } from '../test-templates';
 import { testLogger } from '../test-utils';
+import { createUpload } from '@/lib/api';
 
 // Spy on the store
 let useUploadStoreSpy: ReturnType<typeof vi.spyOn>;

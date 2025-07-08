@@ -16,6 +16,19 @@ export function createTestError(message: string | Error = 'Test error'): Error {
 
 import { randomString, randomInt, randomDate, testLogger } from './test-utils';
 import { QueryClient } from '@tanstack/react-query';
+import type {
+    User,
+    AuthTokens,
+    AuthRegisterRequest,
+    AuthLoginRequest,
+    AuthError,
+    UserUpdateRequest,
+    Upload,
+    FileUploadResponse,
+    ApiResponse,
+    ApiError,
+    PaginatedResponse,
+} from '@/lib/api/types';
 
 // Utility to clear all react-query caches for test isolation
 export function clearReactQueryCache() {
@@ -30,7 +43,7 @@ export function clearReactQueryCache() {
 }
 
 // Update Upload type to match app (pending | uploading | completed | error)
-export type Upload = {
+export type TestUpload = {
     id: string;
     name: string;
     status: 'pending' | 'uploading' | 'completed' | 'error';
@@ -40,9 +53,9 @@ export type Upload = {
 
 import { randomStatus } from './test-utils';
 
-// Pick a random status for Upload
-export function randomUploadStatus(): Upload['status'] {
-    const statuses: Upload['status'][] = ['pending', 'uploading', 'completed', 'error'];
+// Pick a random status for TestUpload
+export function randomUploadStatus(): TestUpload['status'] {
+    const statuses: TestUpload['status'][] = ['pending', 'uploading', 'completed', 'error'];
     const status = statuses[randomInt(0, statuses.length - 1)];
     if (status === 'error') {
         testLogger.warn('Picked random upload status: error');
@@ -52,8 +65,8 @@ export function randomUploadStatus(): Upload['status'] {
     return status;
 }
 
-export function createUpload(overrides: Partial<Upload> = {}): Upload {
-    const upload: Upload = {
+export function createUpload(overrides: Partial<TestUpload> = {}): TestUpload {
+    const upload: TestUpload = {
         id: overrides.id || randomString(6),
         name: overrides.name || `${randomString(4)}.pdf`,
         status: overrides.status || randomUploadStatus(),
@@ -74,7 +87,7 @@ export function createUpload(overrides: Partial<Upload> = {}): Upload {
 
 
 // Create an array of uploads (for UploadList tests)
-export function createUploadList(count = 3, overrides: Partial<Upload> = {}): Upload[] {
+export function createUploadList(count = 3, overrides: Partial<TestUpload> = {}): TestUpload[] {
     const list = Array.from({ length: count }, () => createUpload(overrides));
     if (count > 10) {
         testLogger.warn(`Created large upload list of length ${count}`);
@@ -87,23 +100,17 @@ export function createUploadList(count = 3, overrides: Partial<Upload> = {}): Up
 // If you add user/auth features, add user templates here
 // export function createUser(...) { ... }
 
-// User type for authStore
-export type User = {
-    id: string;
-    username: string;
-    email: string;
-    roles: string[];
-};
-
 export function createUser(overrides: Partial<User> = {}): User {
-    const user = {
-        id: overrides.id || randomString(6),
-        username: overrides.username || 'user_' + randomString(4),
-        email: overrides.email || randomString(5) + '@example.com',
-        roles: overrides.roles || ['user'],
-        ...overrides,
+    const user: User = {
+        id: overrides.id ?? Math.floor(Math.random() * 10000),
+        email: overrides.email ?? randomString(5) + '@example.com',
+        name: overrides.name ?? ('user_' + randomString(4)),
+        bio: overrides.bio ?? null,
+        avatar_url: overrides.avatar_url ?? null,
+        created_at: overrides.created_at ?? new Date().toISOString(),
+        updated_at: overrides.updated_at ?? new Date().toISOString(),
     };
-    if (user.roles && user.roles.includes('admin')) {
+    if (user.name && user.name.includes('admin')) {
         testLogger.info('Created admin user', user);
     } else {
         testLogger.debug('Created user', user);
@@ -232,4 +239,203 @@ export function createCardProps(overrides: Partial<CardProps> = {}): CardProps {
         testLogger.debug('Created card props', card);
     }
     return card;
+}
+
+// API Types Templates
+// Templates for testing API types and responses
+
+import {
+    AuthErrorType,
+} from '@/lib/api/types';
+
+// Auth Templates
+export function createAuthTokens(overrides: Partial<AuthTokens> = {}): AuthTokens {
+    const tokens: AuthTokens = {
+        access_token: overrides.access_token || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' + randomString(32),
+        refresh_token: overrides.refresh_token || 'refresh_' + randomString(32),
+        token_type: 'bearer',
+        ...overrides,
+    };
+    testLogger.debug('Created auth tokens', {
+        access_token: tokens.access_token.substring(0, 20) + '...',
+        refresh_token: tokens.refresh_token.substring(0, 20) + '...',
+        token_type: tokens.token_type
+    });
+    return tokens;
+}
+
+export function createAuthRegisterRequest(overrides: Partial<AuthRegisterRequest> = {}): AuthRegisterRequest {
+    const request: AuthRegisterRequest = {
+        email: overrides.email || randomString(5) + '@example.com',
+        password: overrides.password || 'securePassword' + randomString(3),
+        name: overrides.name || 'User ' + randomString(4),
+        ...overrides,
+    };
+    testLogger.debug('Created auth register request', { email: request.email, name: request.name });
+    return request;
+}
+
+export function createAuthLoginRequest(overrides: Partial<AuthLoginRequest> = {}): AuthLoginRequest {
+    const request: AuthLoginRequest = {
+        email: overrides.email || randomString(5) + '@example.com',
+        password: overrides.password || 'password123',
+        ...overrides,
+    };
+    testLogger.debug('Created auth login request', { email: request.email });
+    return request;
+}
+
+export function createAuthError(
+    type: AuthErrorType = AuthErrorType.INVALID_CREDENTIALS,
+    overrides: Partial<AuthError> = {}
+): AuthError {
+    const error: AuthError = {
+        type,
+        message: overrides.message || `Auth error: ${type}`,
+        status: overrides.status || (type === AuthErrorType.TOKEN_EXPIRED ? 401 : 400),
+        details: overrides.details,
+        ...overrides,
+    };
+    testLogger.error('Created auth error', error);
+    return error;
+}
+
+// User Templates
+export function createApiUser(overrides: Partial<User> = {}): User {
+    const user: User = {
+        id: overrides.id || randomInt(1, 10000),
+        email: overrides.email || randomString(5) + '@example.com',
+        name: overrides.name || 'User ' + randomString(4),
+        bio: overrides.bio || null,
+        avatar_url: overrides.avatar_url || null,
+        created_at: overrides.created_at || randomDate(),
+        updated_at: overrides.updated_at || randomDate(),
+        ...overrides,
+    };
+    testLogger.debug('Created API user', { id: user.id, email: user.email, name: user.name });
+    return user;
+}
+
+export function createUserUpdateRequest(overrides: Partial<UserUpdateRequest> = {}): UserUpdateRequest {
+    const request: UserUpdateRequest = {
+        name: overrides.name !== undefined ? overrides.name : 'Updated User ' + randomString(3),
+        bio: overrides.bio !== undefined ? overrides.bio : 'Updated bio ' + randomString(5),
+        ...overrides,
+    };
+    testLogger.debug('Created user update request', request);
+    return request;
+}
+
+// Upload Templates
+export function createApiUpload(overrides: Partial<Upload> = {}): Upload {
+    const statuses: Upload['status'][] = ['pending', 'uploading', 'completed', 'error', 'cancelled'];
+    const upload: Upload = {
+        id: overrides.id || randomString(8),
+        name: overrides.name || randomString(5) + '.pdf',
+        status: overrides.status || statuses[randomInt(0, statuses.length - 1)],
+        progress: overrides.progress ?? (overrides.status === 'completed' ? 100 : randomInt(0, 99)),
+        createdAt: overrides.createdAt || randomDate(),
+        size: overrides.size || randomInt(1024, 10 * 1024 * 1024), // 1KB to 10MB
+        type: overrides.type || 'application/pdf',
+        ...overrides,
+    };
+
+    if (upload.status === 'error') {
+        testLogger.warn('Created API upload with error status', upload);
+    } else {
+        testLogger.debug('Created API upload', upload);
+    }
+    return upload;
+}
+
+export function createFileUploadResponse(overrides: Partial<FileUploadResponse> = {}): FileUploadResponse {
+    const response: FileUploadResponse = {
+        filename: overrides.filename || randomString(5) + '.pdf',
+        url: overrides.url || '/uploads/' + randomString(8) + '.pdf',
+        ...overrides,
+    };
+    testLogger.debug('Created file upload response', response);
+    return response;
+}
+
+// Generic API Response Templates
+export function createApiResponse<T>(data: T, overrides: Partial<ApiResponse<T>> = {}): ApiResponse<T> {
+    const response: ApiResponse<T> = {
+        data,
+        error: overrides.error,
+        ...overrides,
+    };
+
+    if (response.error) {
+        testLogger.error('Created API error response', { error: response.error });
+    } else {
+        testLogger.debug('Created API success response', { dataType: typeof data });
+    }
+    return response;
+}
+
+export function createApiErrorResponse(error: string): ApiResponse<never> {
+    const response: ApiResponse<never> = {
+        data: null,
+        error,
+    };
+    testLogger.error('Created API error response', response);
+    return response;
+}
+
+export function createPaginatedResponse<T>(
+    items: T[],
+    overrides: Partial<PaginatedResponse<T>> = {}
+): PaginatedResponse<T> {
+    const total = overrides.total || items.length;
+    const per_page = overrides.per_page || 10;
+    const page = overrides.page || 1;
+    const pages = Math.ceil(total / per_page);
+
+    const response: PaginatedResponse<T> = {
+        items,
+        total,
+        page,
+        per_page,
+        pages,
+        ...overrides,
+    };
+
+    testLogger.debug('Created paginated response', {
+        itemCount: items.length,
+        total,
+        page,
+        pages
+    });
+    return response;
+}
+
+// Validation Error Templates
+export function createValidationError(field: string, message: string, code?: string): ApiError {
+    const error: ApiError = {
+        message: 'Validation failed',
+        type: 'validation_error',
+        field_errors: [
+            {
+                field,
+                message,
+                code,
+            },
+        ],
+    };
+    testLogger.error('Created validation error', error);
+    return error;
+}
+
+export function createNetworkError(): ApiError {
+    const error: ApiError = {
+        message: 'Network error occurred',
+        type: 'network_error',
+        details: {
+            code: 'NETWORK_ERROR',
+            timestamp: new Date().toISOString(),
+        },
+    };
+    testLogger.error('Created network error', error);
+    return error;
 }
