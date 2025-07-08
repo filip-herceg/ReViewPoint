@@ -64,14 +64,14 @@ def get_pool_stats() -> PoolStatsDict:
         pool: object | None = getattr(engine, "pool", None)
         if pool is not None:
             for attr in ("size", "checkedin", "checkedout", "overflow", "awaiting"):
-                val: Callable[[], int] | int | None | None = getattr(pool, attr, None)
+                val: Callable[[], int] | int | None = getattr(pool, attr, None)
                 if callable(val):
                     try:
-                        stats[attr] = val()  # type: ignore[call-arg]
+                        stats[attr] = val()
                     except Exception:
                         stats[attr] = None
                 else:
-                    stats[attr] = cast(int | None, val)
+                    stats[attr] = val
     except Exception:
         # If engine initialization fails, return empty stats
         pass

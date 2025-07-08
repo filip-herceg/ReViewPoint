@@ -12,7 +12,9 @@ import time
 from pathlib import Path
 
 
-def run_command(cmd, description=""):
+
+
+def run_command(cmd: list[str], description: str = "") -> int:
     """Run a command and return the result."""
     if description:
         print(f"🚀 {description}")
@@ -34,7 +36,9 @@ def run_command(cmd, description=""):
     return result.returncode
 
 
-def main():
+
+
+def main() -> int:
     parser = argparse.ArgumentParser(
         description="ReViewPoint Backend Test Runner",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -73,6 +77,8 @@ Examples:
     elif args.mode == "coverage":
         cmd = ["hatch", "run", "fast:coverage"] + args.args
         return run_command(cmd, "Running fast tests with coverage")
+    else:
+        return 1  # Ensure all code paths return int
 
 
 if __name__ == "__main__":

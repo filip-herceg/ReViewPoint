@@ -3,7 +3,7 @@
 import pytest
 
 @pytest.mark.asyncio
-async def test_pytest_asyncio_discovery():
+async def test_pytest_asyncio_discovery() -> None:
     assert True
 import json
 from datetime import UTC, datetime, timedelta

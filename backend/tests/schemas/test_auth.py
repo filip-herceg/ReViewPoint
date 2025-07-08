@@ -143,12 +143,11 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
         # Override require_api_key to a no-op for all tests in this class
         try:
             from src.api.deps import require_api_key
-        except ImportError:
-            require_api_key = None
-        if require_api_key is not None:
             def _no_api_key(api_key: str | None = None) -> None:
-                return None
+                pass
             app.dependency_overrides[require_api_key] = _no_api_key
+        except ImportError:
+            pass
         return app
 
     @pytest.mark.asyncio

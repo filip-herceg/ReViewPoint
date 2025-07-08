@@ -10,23 +10,17 @@ from src.models.base import BaseModel
 
 class UsedPasswordResetToken(BaseModel):
     @validates("used_at")
-    def _validate_used_at(self, key: str, value: datetime) -> datetime:
+    def _validate_used_at(self, key: str, value: datetime | None) -> datetime:
         # Always ensure used_at is timezone-aware (UTC)
-        if value is not None and value.tzinfo is None:
+        if value is None:
+            raise ValueError("used_at cannot be None")
+        if value.tzinfo is None:
             return value.replace(tzinfo=UTC)
         return value
 
-    @property
-    def used_at_aware(self) -> datetime:
-        """
-        Always return used_at as a timezone-aware datetime (UTC).
-        """
-        if self.used_at is not None and self.used_at.tzinfo is None:
-            return self.used_at.replace(tzinfo=UTC)
-        return self.used_at
-    """
-    Model for used password reset tokens.
-    """
+    # ...existing code...
+
+    # Model for used password reset tokens.
 
     __tablename__ = "used_password_reset_tokens"
 
@@ -34,26 +28,23 @@ class UsedPasswordResetToken(BaseModel):
     nonce: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     # The default lambda is a callable with signature () -> datetime
     used_at_default: ClassVar[ABCCallable[[], datetime]] = lambda: datetime.now(UTC)
-    _used_at: Mapped[datetime] = mapped_column(
+    used_at: Mapped[datetime] = mapped_column(
         "used_at", DateTime(timezone=True), default=used_at_default, nullable=False
     )
 
     @property
-    def used_at(self) -> datetime:
-        value = self._used_at
+    def used_at_aware(self) -> datetime:
+        """
+        Always return used_at as a timezone-aware datetime (UTC).
+        """
+        value = self.used_at
         if value is not None and value.tzinfo is None:
             return value.replace(tzinfo=UTC)
         return value
 
-    @used_at.setter
-    def used_at(self, value: datetime) -> None:
-        if value is not None and value.tzinfo is None:
-            value = value.replace(tzinfo=UTC)
-        self._used_at = value
-
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: object, **kwargs: object) -> None:
         used_at = kwargs.get("used_at")
-        if used_at is not None:
+        if isinstance(used_at, datetime):
             if used_at.tzinfo is None:
                 # Convert naive datetime to UTC
                 kwargs["used_at"] = used_at.replace(tzinfo=UTC)

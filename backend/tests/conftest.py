@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Final, Optional, TypedDict, cast, Any
 from typing import Callable as _Callable
 
+
 import pytest
 import pytest_asyncio
 from loguru import logger
@@ -46,6 +47,20 @@ is_pytest_run = (
         if isinstance(arg, str)
     )
 )
+
+@pytest.fixture(scope="session", autouse=True)
+def _loguru_session_cleanup() -> Generator[None, None, None]:
+    """
+    Session-level fixture to ensure proper loguru cleanup at the end of all tests.
+    This prevents Windows handle errors during test teardown.
+    """
+    yield
+    # Clean up all loguru handlers at the end of the session
+    try:
+        logger.remove()
+    except (ValueError, OSError):
+        # Ignore any errors during cleanup
+        pass
 
 if is_pytest_run:
     # Only set during pytest runs to avoid affecting normal app usage
@@ -125,9 +140,12 @@ if is_pytest_run:
             logger.warning(f"[EARLY_ENV_SETUP] Could not clear settings cache: {e}")
 
 
+
 @pytest.fixture(scope="session")
 def use_fast_db() -> bool:
-    """Enable fast testing mode with shared in-memory SQLite if FAST_TESTS env var is set."""
+    """
+    Enable fast testing mode with shared in-memory SQLite if FAST_TESTS env var is set.
+    """
     return IS_FAST_TEST_MODE
 
 
@@ -136,7 +154,9 @@ from _pytest.config import Config
 from _pytest.nodes import Item
 
 def pytest_configure(config: Config) -> None:
-    """Register test markers for slow and fast tests and handle log level configuration."""
+    """
+    Register test markers for slow and fast tests and handle log level configuration.
+    """
     config.addinivalue_line(
         "markers", "slow: marks tests that access real database or are slow"
     )
@@ -170,7 +190,9 @@ def pytest_configure(config: Config) -> None:
 
 
 def pytest_runtest_setup(item: Item) -> None:
-    """Skip tests marked with skip_if_fast_tests or requires_real_db when in fast test mode."""
+    """
+    Skip tests marked with skip_if_fast_tests or requires_real_db when in fast test mode.
+    """
     if IS_FAST_TEST_MODE and (
         item.get_closest_marker("skip_if_fast_tests")
         or item.get_closest_marker("requires_real_db")
@@ -287,7 +309,7 @@ def database_setup(use_fast_db: bool) -> Generator[None, None, None]:
 
 
 # Define the postgres_container fixture for backward compatibility
-postgres_container = database_setup
+postgres_container: Callable[[bool], Generator[None, None, None]] = database_setup
 
 
 #
@@ -313,11 +335,10 @@ def set_required_env_vars_session(database_setup: object) -> None:
     Set critical environment variables at session scope before any code that might
     create database engines runs. This is essential for pytest-xdist workers.
     """
-    worker_id = os.environ.get("PYTEST_XDIST_WORKER", "main")
+    worker_id: str = os.environ.get("PYTEST_XDIST_WORKER", "main")
     logger.info(
         f"[ENV_SETUP_SESSION] Setting session-level environment variables for worker: {worker_id}"
     )
-
     # Environment variables are already set in early setup, just log confirmation
     logger.info(
         f"[ENV_SETUP_SESSION] Critical env vars confirmed for worker: {worker_id}"
@@ -410,12 +431,17 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 import pytest_asyncio
 
 @pytest_asyncio.fixture(scope="session")
-async def async_engine(use_fast_db: bool, postgres_container: object) -> AsyncGenerator[AsyncEngine, None]:
+async def async_engine(
+    use_fast_db: bool, postgres_container: object
+) -> AsyncGenerator[AsyncEngine, None]:
+    """
+    Provides a session-scoped SQLAlchemy async engine for tests.
+    """
     from sqlalchemy.ext.asyncio import create_async_engine
-
+    db_url: str
     if use_fast_db:
         db_url = "sqlite+aiosqlite:///:memory:?cache=shared"
-        engine = create_async_engine(
+        engine: AsyncEngine = create_async_engine(
             db_url, future=True, connect_args={"check_same_thread": False}
         )
     else:
@@ -426,16 +452,15 @@ async def async_engine(use_fast_db: bool, postgres_container: object) -> AsyncGe
 
 
 @pytest_asyncio.fixture(autouse=True, scope="function")
+
 async def truncate_tables(async_engine_isolated: AsyncEngine) -> None:
     """
     Truncate all tables in the test database before each test for full isolation.
     Handles DBs with no tables, and logs errors for unsupported backends.
     """
     import sqlalchemy
-
     sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
     from src.models import Base
-
     try:
         async with async_engine_isolated.begin() as conn:
             # Only run for PostgreSQL
@@ -464,7 +489,9 @@ async def truncate_tables(async_engine_isolated: AsyncEngine) -> None:
 
 
 @pytest_asyncio.fixture(scope="function")
-async def async_engine_isolated(use_fast_db: bool, database_setup: object) -> AsyncGenerator[AsyncEngine, None]:
+async def async_engine_isolated(
+    use_fast_db: bool, database_setup: object
+) -> AsyncGenerator[AsyncEngine, None]:
     """
     Provide a SQLAlchemy async engine for each test function (parallel safe).
     Uses in-memory SQLite if FAST_TESTS=1, otherwise uses PostgreSQL.
@@ -488,11 +515,14 @@ async def async_engine_isolated(use_fast_db: bool, database_setup: object) -> As
         # Enable foreign key constraints for SQLite
         from sqlalchemy import event
 
+        from typing import Any
         @event.listens_for(engine.sync_engine, "connect")
-        def set_sqlite_pragma(dbapi_connection, connection_record):
-            cursor = dbapi_connection.cursor()
-            cursor.execute("PRAGMA foreign_keys=ON")
-            cursor.close()
+        def set_sqlite_pragma(dbapi_connection: Any, connection_record: Any) -> None:
+            cursor = getattr(dbapi_connection, "cursor", None)
+            if cursor is not None:
+                c = cursor()
+                c.execute("PRAGMA foreign_keys=ON")
+                c.close()
 
         # Create all tables
         async with engine.begin() as conn:
@@ -530,10 +560,13 @@ async def async_engine_isolated(use_fast_db: bool, database_setup: object) -> As
             # Enable foreign key constraints for SQLite
             from sqlalchemy import event
 
-            def set_sqlite_pragma_isolated(dbapi_connection, connection_record):
-                cursor = dbapi_connection.cursor()
-                cursor.execute("PRAGMA foreign_keys=ON")
-                cursor.close()
+            from typing import Any
+            def set_sqlite_pragma_isolated(dbapi_connection: Any, connection_record: Any) -> None:
+                cursor = getattr(dbapi_connection, "cursor", None)
+                if cursor is not None:
+                    c = cursor()
+                    c.execute("PRAGMA foreign_keys=ON")
+                    c.close()
 
             engine = create_async_engine(
                 db_url, future=True, connect_args={"check_same_thread": False}
@@ -583,7 +616,77 @@ async def async_engine_isolated(use_fast_db: bool, database_setup: object) -> As
 
 
 @pytest_asyncio.fixture(scope="function")
-async def async_session(async_engine_isolated: AsyncEngine) -> AsyncGenerator[object, None]:
+async def async_session(
+    async_engine_isolated: AsyncEngine,
+) -> AsyncGenerator["AsyncSession", None]:
+    """
+    Provide an async SQLAlchemy session for each test function.
+    Uses strict isolation to prevent asyncpg concurrency conflicts.
+    """
+    import asyncio
+    import time
+    from sqlalchemy.ext.asyncio import AsyncSession
+    worker_id: str = os.environ.get("PYTEST_XDIST_WORKER", "main")
+    logger.debug(f"[SESSION_ISOLATED] Creating session for worker: {worker_id}")
+    session_start_time: float = time.time()
+    session: Optional[AsyncSession] = None
+    try:
+        session = AsyncSession(
+            bind=async_engine_isolated,
+            expire_on_commit=False,
+            close_resets_only=True,
+        )
+        test_start: float = time.time()
+        try:
+            from sqlalchemy import text
+            await session.execute(text("SELECT 1"))
+            test_time: float = time.time() - test_start
+            logger.debug(
+                f"[SESSION_ISOLATED] Session test query completed in {test_time:.3f}s"
+            )
+        except Exception as e:
+            test_time = time.time() - test_start
+            logger.error(
+                f"[SESSION_ISOLATED] Session test query failed in {test_time:.3f}s: {e}"
+            )
+            await session.close()
+            raise
+        total_session_time: float = time.time() - session_start_time
+        logger.debug(
+            f"[SESSION_ISOLATED] Session ready in {total_session_time:.3f}s (worker: {worker_id})"
+        )
+        yield session
+    except Exception as e:
+        total_session_time = time.time() - session_start_time
+        logger.error(
+            f"[SESSION_ISOLATED] Session creation failed in {total_session_time:.3f}s: {e}"
+        )
+        if session:
+            try:
+                await session.close()
+            except Exception:
+                pass
+        raise
+    finally:
+        if session:
+            try:
+                if session.in_transaction():
+                    await session.rollback()
+                    logger.debug(
+                        f"[SESSION_ISOLATED] Session transaction rolled back (worker: {worker_id})"
+                    )
+            except Exception as e:
+                logger.warning(
+                    f"[SESSION_ISOLATED] Error rolling back session (worker: {worker_id}): {e}"
+                )
+            try:
+                await session.close()
+                logger.debug(f"[SESSION_ISOLATED] Session closed (worker: {worker_id})")
+            except Exception as e:
+                logger.warning(
+                    f"[SESSION_ISOLATED] Error closing session (worker: {worker_id}): {e}"
+                )
+            await asyncio.sleep(0.001)
     """
     Provide an async SQLAlchemy session for each test function.
     Uses strict isolation to prevent asyncpg concurrency conflicts.
@@ -675,8 +778,10 @@ async def async_session(async_engine_isolated: AsyncEngine) -> AsyncGenerator[ob
 # Patch for ScopeMismatch: ensure patch_loguru_remove is function-scoped fixture
 import pytest
 @pytest.fixture(scope="function")
-def patch_loguru_remove(monkeypatch: pytest.MonkeyPatch):
-    """Fixture to patch loguru remove for function scope."""
+def patch_loguru_remove(monkeypatch: pytest.MonkeyPatch) -> Generator[None, None, None]:
+    """
+    Fixture to patch loguru remove for function scope.
+    """
     yield
 # 4. App and client fixtures
 
@@ -699,13 +804,10 @@ def test_app(async_session: object) -> Generator[FastAPI, None, None]:
     """
     from src.core.database import get_async_session
     from src.main import create_app
-
-    app = create_app()
-
-    # Override get_async_session to yield the test session
-    async def _override_get_async_session():
+    app: FastAPI = create_app()
+    from collections.abc import AsyncGenerator
+    async def _override_get_async_session() -> AsyncGenerator[object, None]:
         yield async_session
-
     app.dependency_overrides[get_async_session] = _override_get_async_session
     yield app
 
@@ -731,15 +833,13 @@ def loguru_list_sink() -> Iterator[list[str]]:
     Use this fixture to inspect logs generated during tests.
     """
     logs: list[str] = []
-
-    def sink(message: Any) -> None:
+    def sink(message: object) -> None:
         # message is a loguru.Message object; message.record['message'] is the plain log message
         try:
-            logs.append(message.record["message"])
+            logs.append(getattr(message, 'record', {}).get("message", str(message)))
         except Exception:
             logs.append(str(message))
-
-    sink_id = logger.add(sink)
+    sink_id: int = logger.add(sink)
     try:
         yield logs
     finally:
@@ -761,18 +861,15 @@ def override_env_vars(
     Also clears settings cache to ensure new values are picked up.
     Strictly typed for test hygiene.
     """
-
     def _override(vars: dict[str, str]) -> None:
         for k, v in vars.items():
             monkeypatch.setenv(k, v)
         # Clear settings cache to ensure new environment variables are picked up
         try:
             from src.core.config import clear_settings_cache
-
             clear_settings_cache()
         except Exception as e:
             logger.warning(f"Could not clear settings cache in override_env_vars: {e}")
-
     return _override
 
 
@@ -787,8 +884,8 @@ def wait_for_condition(
     Returns the value from condition_fn if successful, else None.
     """
     import time
-
-    start = time.time()
+    start: float = time.time()
+    result: Optional[object]
     while time.time() - start < timeout:
         result = condition_fn()
         if result:
@@ -803,14 +900,12 @@ def wait_for_admin_promotion(
     password: str,
     timeout: float = 2.0,
     interval: float = 0.05,
-) -> "Optional[str]":
+) -> Optional[str]:
     """
     Polls the login endpoint until the user can log in as admin, or timeout is reached.
     Returns the access token if successful, else None.
     """
-    login_data = {"email": email, "password": password}
-
-    from typing import Optional
+    login_data: dict[str, str] = {"email": email, "password": password}
     def try_login() -> Optional[str]:
         resp = client.post(
             "/api/v1/auth/login",
@@ -821,7 +916,6 @@ def wait_for_admin_promotion(
             token_val = resp.json().get("access_token")
             return str(token_val) if token_val is not None else None
         return None
-
     from typing import cast
     return cast(Optional[str], wait_for_condition(try_login, timeout=timeout, interval=interval))
 
@@ -830,7 +924,7 @@ import pathlib
 import re
 
 # List of test files (relative to backend/tests/) allowed to set env vars/DB URLs directly
-ALLOWED_ENV_OVERRIDE_FILES = {
+ALLOWED_ENV_OVERRIDE_FILES: set[str] = {
     "core/test_config.py",  # config/env/DB error handling tests
 }
 
@@ -840,16 +934,20 @@ def pytest_collection_finish(session: pytest.Session) -> None:
     """
     Enforce that no test file (except allowed exceptions) sets environment variables or DB URLs directly.
     """
-    root = pathlib.Path(__file__).parent
-    pattern_env = re.compile(r"(os\\.environ|setenv|DATABASE_URL)")
+    root: pathlib.Path = pathlib.Path(__file__).parent
+    pattern_env: re.Pattern[str] = re.compile(r"(os\\.environ|setenv|DATABASE_URL)")
     for item in session.items:
-        path = pathlib.Path(item.fspath)
-        rel_path = str(path.relative_to(root)).replace("\\", "/")
+        path: pathlib.Path = pathlib.Path(item.fspath)
+        try:
+            rel_path: str = str(path.relative_to(root)).replace("\\", "/")
+        except ValueError:
+            # path is not under root, use absolute path as fallback
+            rel_path = str(path.resolve()).replace("\\", "/")
         if rel_path in ALLOWED_ENV_OVERRIDE_FILES:
             continue
         try:
             with open(path, encoding="utf-8") as f:
-                content = f.read()
+                content: str = f.read()
             if pattern_env.search(content):
                 raise RuntimeError(
                     f"Test file {rel_path} sets environment variables or DB URLs directly. "
@@ -861,7 +959,9 @@ def pytest_collection_finish(session: pytest.Session) -> None:
 
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
-async def create_and_drop_tables(postgres_container: object) -> AsyncGenerator[None, None]:
+async def create_and_drop_tables(
+    postgres_container: object,
+) -> AsyncGenerator[None, None]:
     """
     Automatically create all tables before the test session and drop them after.
     Ensures a clean PostgreSQL test database for every test run.
@@ -872,13 +972,10 @@ async def create_and_drop_tables(postgres_container: object) -> AsyncGenerator[N
     from alembic.config import Config
     import os
     from pathlib import Path
-
-    db_url = os.environ["REVIEWPOINT_DB_URL"]
-    # Ensure Alembic Config is initialized with correct script_location
-    alembic_cfg = Config()
-    migrations_path = str(Path(__file__).parent.parent / "src" / "alembic_migrations")
+    db_url: str = os.environ["REVIEWPOINT_DB_URL"]
+    alembic_cfg: Config = Config()
+    migrations_path: str = str(Path(__file__).parent.parent / "src" / "alembic_migrations")
     alembic_cfg.set_main_option("script_location", migrations_path)
-
     engine = create_async_engine(db_url, future=True)
     async with engine.connect() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -896,7 +993,11 @@ def test_db_url() -> str:
     return os.environ["REVIEWPOINT_DB_URL"]
 
 
-def get_auth_header(client: TestClient, email: Optional[str] = None, password: str = "TestPassword123!") -> dict[str, str]:
+def get_auth_header(
+    client: TestClient,
+    email: Optional[str] = None,
+    password: str = "TestPassword123!",
+) -> dict[str, str]:
     """
     Register a new user (or login if already exists) and return an auth header for API requests.
     Promotes the user to admin if registration is successful.
@@ -905,7 +1006,6 @@ def get_auth_header(client: TestClient, email: Optional[str] = None, password: s
     Raises RuntimeError if admin promotion fails unexpectedly.
     """
     from src.core.security import create_access_token
-
     if email is None:
         email = f"testuser_{uuid.uuid4().hex[:8]}@example.com"
     register_data: dict[str, str] = {"email": email, "password": password, "name": "Test User"}
@@ -922,8 +1022,7 @@ def get_auth_header(client: TestClient, email: Optional[str] = None, password: s
                 headers={"Authorization": f"Bearer {token}", "X-API-Key": "testkey"},
             )
             if promote_resp.status_code == 200:
-                # Wait for admin promotion to take effect, polling login endpoint
-                new_token = wait_for_admin_promotion(client, email, password)
+                new_token: Optional[str] = wait_for_admin_promotion(client, email, password)
                 if new_token:
                     token = new_token
                     return {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
@@ -946,63 +1045,62 @@ def get_auth_header(client: TestClient, email: Optional[str] = None, password: s
             )
             if login_resp.status_code == 200:
                 token_val = login_resp.json().get("access_token")
-                token: str = str(token_val) if token_val is not None else ""
+                token = str(token_val) if token_val is not None else ""
                 return {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
         except Exception as exc:
             logger.error(f"Exception during login for {email}: {exc}")
             raise
         payload: dict[str, str] = {"sub": email}
-        token: str = create_access_token(payload)
+        token = create_access_token(payload)
         return {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
 
 
 # Fast test specific fixtures - only used when FAST_TESTS=1
+
 if IS_FAST_TEST_MODE:
     # Import fast test dependencies
     from fastapi.testclient import TestClient
     from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
     @pytest_asyncio.fixture(scope="session")
-    async def fast_test_engine():
-        """Create SQLite in-memory engine for fast tests."""
+    async def fast_test_engine() -> AsyncGenerator[AsyncEngine, None]:
+        """
+        Create SQLite in-memory engine for fast tests.
+        """
         from src.models import Base
-
-        engine = create_async_engine(
+        engine: AsyncEngine = create_async_engine(
             "sqlite+aiosqlite:///:memory:",
             echo=False,  # Disable SQL echo for speed
             pool_pre_ping=False,  # Disable ping for speed
         )
-
-        # Create all tables
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-
         yield engine
         await engine.dispose()
 
     @pytest_asyncio.fixture
-    async def fast_async_session(fast_test_engine):
-        """Create clean database session for each fast test."""
-        from sqlalchemy.ext.asyncio import async_sessionmaker
-
-        session_factory = async_sessionmaker(
+    async def fast_async_session(fast_test_engine: AsyncEngine) -> AsyncGenerator[AsyncSession, None]:
+        """
+        Create clean database session for each fast test.
+        """
+        from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+        session_factory: Callable[[], AsyncSession] = async_sessionmaker(
             fast_test_engine, class_=AsyncSession, expire_on_commit=False
         )
-
         async with session_factory() as session:
             yield session
             await session.rollback()
 
-    # Helper test utilities for fast tests
     @pytest_asyncio.fixture
-    async def create_test_user():
-        """Factory fixture to create test users in fast tests."""
-
-        async def _create_user(session: AsyncSession, **kwargs):
+    async def create_test_user() -> Callable[["AsyncSession", dict[str, object]], object]:
+        """
+        Factory fixture to create test users in fast tests.
+        """
+        from typing import Awaitable
+        async def _create_user(session: "AsyncSession", kwargs: dict[str, object]) -> object:
             from src.models.user import User
             from src.utils.hashing import hash_password
-
-            defaults = {
+            defaults: dict[str, object] = {
                 "email": f"user_{uuid.uuid4().hex[:8]}@example.com",
                 "name": "Test User",
                 "hashed_password": hash_password("password123"),
@@ -1010,23 +1108,22 @@ if IS_FAST_TEST_MODE:
                 "is_admin": False,
             }
             defaults.update(kwargs)
-
             user = User(**defaults)
             session.add(user)
             await session.commit()
             await session.refresh(user)
             return user
-
         return _create_user
 
     @pytest_asyncio.fixture
-    async def create_test_file():
-        """Factory fixture to create test files in fast tests."""
-
-        async def _create_file(session: AsyncSession, user_id: uuid.UUID, **kwargs):
+    async def create_test_file() -> Callable[["AsyncSession", uuid.UUID, dict[str, object]], object]:
+        """
+        Factory fixture to create test files in fast tests.
+        """
+        from typing import Awaitable
+        async def _create_file(session: "AsyncSession", user_id: uuid.UUID, kwargs: dict[str, object]) -> object:
             from src.models.file import File
-
-            defaults = {
+            defaults: dict[str, object] = {
                 "filename": f"test_{uuid.uuid4().hex[:8]}.txt",
                 "original_filename": "test.txt",
                 "content_type": "text/plain",
@@ -1034,20 +1131,22 @@ if IS_FAST_TEST_MODE:
                 "user_id": user_id,
             }
             defaults.update(kwargs)
-
             file = File(**defaults)
             session.add(file)
             await session.commit()
             await session.refresh(file)
             return file
-
         return _create_file
 
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
 async def _setup_db_env_function(
-    request, monkeypatch, override_env_vars, loguru_list_sink, async_engine_isolated
-):
+    request: object,
+    monkeypatch: pytest.MonkeyPatch,
+    override_env_vars: Callable[[dict[str, str]], None],
+    loguru_list_sink: list[str],
+    async_engine_isolated: AsyncEngine,
+) -> None:
     """
     Auto-use fixture for database test classes that need engine access.
     This provides the test instance with engine, models, and other DB utilities.
@@ -1055,31 +1154,24 @@ async def _setup_db_env_function(
     test_instance = getattr(request, "instance", None)
     if test_instance is not None:
         import sys
-
         sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
-
         from src.models.file import File
         from src.models.user import User
-
-        # Set up the test instance with database utilities
-        test_instance.monkeypatch = monkeypatch
-        test_instance.override_env_vars = override_env_vars
-        test_instance.loguru_list_sink = loguru_list_sink
-        test_instance.engine = async_engine_isolated
-        test_instance.User = User
-        test_instance.File = File
-
-        # Set up session factory and healthcheck
+        # Use setattr for dynamic attributes
+        setattr(test_instance, "monkeypatch", monkeypatch)
+        setattr(test_instance, "override_env_vars", override_env_vars)
+        setattr(test_instance, "loguru_list_sink", loguru_list_sink)
+        setattr(test_instance, "engine", async_engine_isolated)
+        setattr(test_instance, "User", User)
+        setattr(test_instance, "File", File)
         from sqlalchemy import text
         from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-
-        test_instance.AsyncSessionLocal = async_sessionmaker(
+        AsyncSessionLocal = async_sessionmaker(
             async_engine_isolated, class_=AsyncSession, expire_on_commit=False
         )
-        test_instance.get_async_session = lambda: test_instance.AsyncSessionLocal()
-
-        async def db_healthcheck():
-            async with test_instance.AsyncSessionLocal() as session:
+        setattr(test_instance, "AsyncSessionLocal", AsyncSessionLocal)
+        setattr(test_instance, "get_async_session", lambda: AsyncSessionLocal())
+        async def db_healthcheck() -> None:
+            async with AsyncSessionLocal() as session:
                 await session.execute(text("SELECT 1"))
-
-        test_instance.db_healthcheck = db_healthcheck
+        setattr(test_instance, "db_healthcheck", db_healthcheck)

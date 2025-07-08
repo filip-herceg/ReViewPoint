@@ -10,7 +10,9 @@ import sys
 from pathlib import Path
 
 
-def check_file_exists(path, description):
+
+
+def check_file_exists(path: str, description: str) -> bool:
     """Check if a file exists and report status."""
     if Path(path).exists():
         print(f"✅ {description}: {path}")
@@ -20,7 +22,9 @@ def check_file_exists(path, description):
         return False
 
 
-def check_hatch_env():
+
+
+def check_hatch_env() -> bool:
     """Check if hatch environments are configured."""
     try:
         import subprocess
@@ -56,7 +60,9 @@ def check_hatch_env():
         return False
 
 
-def main():
+
+
+def main() -> int:
     """Validate the testing setup."""
     print("🔍 Validating ReViewPoint Backend Testing Setup")
     print("=" * 50)

@@ -1,3 +1,4 @@
+from typing import Any
 """
 Dependency injection utilities for FastAPI API endpoints.
 
@@ -312,13 +313,9 @@ def measure_dependency(
     async def wrapper(*args: object, **kwargs: object) -> object:
         start: float = time.time()
         status: Literal["success", "error"] = "success"
+        result: object | None = None
         try:
-            result: object = (
-                await func(*args, **kwargs)
-                if callable(getattr(func, "__await__", None))
-                else func(*args, **kwargs)
-            )
-            status = "success"
+            result = await func(*args, **kwargs)
         except Exception:
             status = "error"
             raise
@@ -427,6 +424,7 @@ def pagination_params(
     if offset < 0:
         logger.error(f"Invalid offset: {offset}")
         http_error(400, "Offset must be >= 0", logger.error)
+        raise RuntimeError("unreachable after http_error")
     if limit < 1 or limit > MAX_LIMIT:
         logger.error(f"Invalid limit: {limit}")
         http_error(
@@ -434,11 +432,26 @@ def pagination_params(
             f"Limit must be between 1 and {MAX_LIMIT}",
             logger.error,
         )
+        raise RuntimeError("unreachable after http_error")
     logger.info(f"Pagination params accepted: offset={offset}, limit={limit}")
     return PaginationParams(offset=offset, limit=limit)
 
 
 # --- Auth Dependencies ---
+async def _resolve_user_from_id(session: AsyncSession, user_id: Any) -> User | None:
+    """Helper to resolve a user from an int or str user_id."""
+    from sqlalchemy import select
+    from src.models.user import User
+    if isinstance(user_id, int):
+        return await get_user_by_id(session, user_id)
+    if isinstance(user_id, str):
+        if user_id.isdigit():
+            return await get_user_by_id(session, int(user_id))
+        result = await session.execute(select(User).where(User.email == user_id))
+        return result.scalar_one_or_none()
+    logger.error(f"user_id has unexpected type: {type(user_id)}")
+    return None
+
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_async_session),
@@ -484,27 +497,7 @@ async def get_current_user(
     # Support both int and str (email) user_id
     user = None
     if user_id is not None:
-        from sqlalchemy import select
-        from src.models.user import User
-        user = None
-        if isinstance(user_id, int):
-            user = await get_user_by_id(session, user_id)
-        elif isinstance(user_id, str):
-            if user_id.isdigit():
-                user = await get_user_by_id(session, int(user_id))
-            else:
-                result = await session.execute(
-                    select(User).where(User.email == user_id)
-                )
-                user = result.scalar_one_or_none()
-        else:
-            # Defensive: user_id is neither int nor str (should not happen)
-            http_error(
-                status.HTTP_401_UNAUTHORIZED,
-                "Invalid user_id type",
-                logger.warning,
-            )
-            assert False, "unreachable after http_error"
+        user = await _resolve_user_from_id(session, user_id)
     if not user or not user.is_active or user.is_deleted:
         logger.error(f"User not found or inactive/deleted: user_id={user_id}")
         http_error(
@@ -512,7 +505,8 @@ async def get_current_user(
             "User not found or inactive",
             logger.warning,
         )
-        assert False, "unreachable after http_error"
+        # mypy: unreachable after http_error, but needed for type checkers
+        return None
     # Attach role from JWT if present
     if user is not None and role:
         user.role = role
@@ -616,6 +610,7 @@ async def get_current_active_user(
             "Inactive or deleted user.",
             logger.warning,
         )
+        raise RuntimeError("unreachable after http_error")  # for type checkers
     logger.info(f"Active user check passed: user_id={user.id if user else None}")
     return user
 

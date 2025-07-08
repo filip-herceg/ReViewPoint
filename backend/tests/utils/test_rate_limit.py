@@ -15,7 +15,7 @@ class TestAsyncRateLimiter(UtilityUnitTestTemplate):
         Test AsyncRateLimiter allows up to max_calls within the period, blocks further calls,
         and allows again after the period. Also tests reset for a single key and global reset.
         """
-        limiter: Final[AsyncRateLimiter] = AsyncRateLimiter(max_calls=2, period=0.5)
+        limiter: Final[AsyncRateLimiter[str]] = AsyncRateLimiter(max_calls=2, period=0.5)
         key: Final[str] = "user:1:test"
         results: List[bool] = [await limiter.is_allowed(key) for _ in range(2)]
         self.assert_all_true(results)

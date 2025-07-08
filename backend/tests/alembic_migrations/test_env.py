@@ -50,14 +50,13 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
     def reset_logger_handlers(self) -> Generator[None, None, None]:
         """Reset logger handlers before and after each test to ensure clean state."""
         from src.alembic_migrations import env
-
         env.logger.handlers.clear()
         yield
         env.logger.handlers.clear()
 
     def _make_context(
         self,
-        url: str | None = None,
+        url: Optional[str] = None,
         config_file_name: str = "fake.ini",
         section: str = "section",
     ) -> AlembicContextNamespace:
@@ -70,7 +69,7 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
         Returns:
             AlembicContextNamespace: a strictly typed mock context
         """
-        def get_main_option_func(key: str) -> str | None:
+        def get_main_option_func(key: str) -> Optional[str]:
             return url if key == "sqlalchemy.url" else None
         def get_section_func(s: str) -> dict[str, object]:
             return {}
@@ -95,7 +94,7 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
         Ensures configure and run_migrations are called exactly once.
         """
         from src.alembic_migrations import env
-        fake_context: AlembicContextNamespace = self._make_context(url=test_db_url)
+        fake_context: Final[AlembicContextNamespace] = self._make_context(url=test_db_url)
         self.patch_alembic_context(monkeypatch, fake_context)
         monkeypatch.setattr("logging.config.fileConfig", lambda *a, **k: None)
         env.run_migrations_offline()
@@ -119,11 +118,14 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
         monkeypatch: pytest.MonkeyPatch,
         test_db_url: str,
     ) -> None:
-        """Test successful online migration execution with valid database URL."""
+        """
+        Test successful online migration execution with valid database URL.
+        Ensures configure and run_migrations are called exactly once.
+        """
         from src.alembic_migrations import env
         from src.alembic_migrations.env import EngineFromConfigType
 
-        fake_context: types.SimpleNamespace = self._make_context(url=test_db_url)
+        fake_context: AlembicContextNamespace = self._make_context(url=test_db_url)
         self.patch_alembic_context(monkeypatch, fake_context)
         file_config_lambda: Callable[..., None] = lambda *a, **k: None
         monkeypatch.setattr("logging.config.fileConfig", file_config_lambda)
