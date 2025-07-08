@@ -1,8 +1,5 @@
 import React, { useEffect } from 'react';
-import UploadList from '@/components/UploadList';
-import UploadForm from '@/components/UploadForm';
-import { WebSocketStatus } from '@/components/websocket/WebSocketStatus';
-import { useWebSocketConnection } from '@/lib/websocket/hooks';
+import { AppRouter } from '@/lib/router/AppRouter';
 import { useWebSocketStore } from '@/lib/store/webSocketStore';
 import { ErrorBoundary } from 'react-error-boundary';
 import { getErrorMessage } from '@/lib/utils/errorHandling';
@@ -26,17 +23,7 @@ export default function App() {
 
     return (
         <ErrorBoundary FallbackComponent={ErrorFallback}>
-            <div className="p-4 max-w-2xl mx-auto">
-                <div className="flex items-center justify-between mb-4">
-                    <h1 className="text-2xl font-bold">ReViewPoint</h1>
-                    <WebSocketStatus inline />
-                </div>
-                <UploadForm />
-                <UploadList />
-                <div className="mt-6">
-                    <WebSocketStatus showDetails />
-                </div>
-            </div>
+            <AppRouter />
         </ErrorBoundary>
     );
 }

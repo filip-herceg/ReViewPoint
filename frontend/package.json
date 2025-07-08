@@ -39,6 +39,7 @@
         "react": "^19.1.0",
         "react-dom": "^19.1.0",
         "react-error-boundary": "^6.0.0",
+        "react-router-dom": "^7.6.3",
         "tailwind-merge": "^3.3.1",
         "web-vitals": "^5.0.3",
         "zustand": "^5.0.6"
@@ -56,6 +57,7 @@
         "@types/jest": "^30.0.0",
         "@types/react": "^19.1.8",
         "@types/react-dom": "^19.1.6",
+        "@types/react-router-dom": "^5.3.3",
         "@types/testing-library__react": "^10.2.0",
         "@types/testing-library__user-event": "4.2.0",
         "@vitejs/plugin-react": "^4.6.0",
