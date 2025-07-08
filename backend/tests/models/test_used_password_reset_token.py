@@ -23,33 +23,40 @@ from src.models.used_password_reset_token import UsedPasswordResetToken
 from tests.test_templates import AsyncModelTestTemplate, ModelUnitTestTemplate
 
 
+
 class TestUsedPasswordResetTokenUnit(ModelUnitTestTemplate):
-    def _assert_model_attrs_typed(self, model: UsedPasswordResetToken, attrs: Mapping[str, object]) -> None:
-        """Type-safe wrapper for assert_model_attrs method."""
-        from typing import cast
-        cast(Callable[[UsedPasswordResetToken, Mapping[str, object]], None], self.assert_model_attrs)(model, attrs)
+    """Unit tests for UsedPasswordResetToken model with strict static typing."""
 
+    def _assert_model_attrs_typed(
+        self, model: UsedPasswordResetToken, attrs: dict[str, object]
+    ) -> None:
+        """
+        Type-safe wrapper for assert_model_attrs method.
+        """
+        self.assert_model_attrs(model, attrs)
 
-    # Removed stray/empty mixin and duplicate class definition
     def test_token_creation_and_repr(self) -> None:
-        """Test creation and __repr__ of UsedPasswordResetToken.
-
+        """
+        Test creation and __repr__ of UsedPasswordResetToken.
         Verifies:
-        - Fields are set correctly
-        - __repr__ includes email and nonce
+            - Fields are set correctly
+            - __repr__ includes email and nonce
         """
         now: Final[datetime] = datetime.now(UTC)
-        test_email = get_unique_email()
-        token: UsedPasswordResetToken = UsedPasswordResetToken(
+        test_email: Final[str] = get_unique_email()
+        token: Final[UsedPasswordResetToken] = UsedPasswordResetToken(
             email=test_email, nonce="abc123", used_at=now
         )
-        expected_attrs: Final[Mapping[str, object]] = {"email": test_email, "nonce": "abc123", "used_at": now}
+        expected_attrs: Final[dict[str, object]] = {"email": test_email, "nonce": "abc123", "used_at": now}
         self._assert_model_attrs_typed(token, expected_attrs)
-        assert test_email in repr(token)
-        assert "abc123" in repr(token)
+        token_repr: str = repr(token)
+        assert test_email in token_repr
+        assert "abc123" in token_repr
 
     def test_token_used_at_timezone(self) -> None:
-        """Test that used_at is timezone-aware and uses UTC."""
+        """
+        Test that used_at is timezone-aware and uses UTC.
+        """
         now: Final[datetime] = datetime.now(UTC)
         token: UsedPasswordResetToken = UsedPasswordResetToken(
             email=get_unique_email(), nonce="nonce2", used_at=now
@@ -57,7 +64,8 @@ class TestUsedPasswordResetTokenUnit(ModelUnitTestTemplate):
         assert token.used_at.tzinfo is UTC
 
     def test_token_edge_cases(self) -> None:
-        """Test edge cases for UsedPasswordResetToken fields.
+        """
+        Test edge cases for UsedPasswordResetToken fields.
 
         Expects:
         - ValueError for empty email or nonce
@@ -72,7 +80,9 @@ class TestUsedPasswordResetTokenUnit(ModelUnitTestTemplate):
         assert token.used_at.year == 2000
 
     def test_long_email_and_nonce(self) -> None:
-        """Test long email and nonce values."""
+        """
+        Test long email and nonce values.
+        """
         long_email: Final[str] = "a" * 255 + get_unique_email()
         long_nonce: Final[str] = "b" * 64
         now: Final[datetime] = datetime.now(UTC)
@@ -81,9 +91,11 @@ class TestUsedPasswordResetTokenUnit(ModelUnitTestTemplate):
         assert token.nonce.startswith("b")
 
     def test_duplicate_email_nonce(self) -> None:
-        """Test duplicate email and nonce in memory (no unique constraint)."""
+        """
+        Test duplicate email and nonce in memory (no unique constraint).
+        """
         now: Final[datetime] = datetime.now(UTC)
-        test_email = get_unique_email()
+        test_email: Final[str] = get_unique_email()
         token1: UsedPasswordResetToken = UsedPasswordResetToken(
             email=test_email, nonce="dupnonce", used_at=now
         )
@@ -93,23 +105,28 @@ class TestUsedPasswordResetTokenUnit(ModelUnitTestTemplate):
         assert token1.email == token2.email and token1.nonce == token2.nonce
 
     def test_default_used_at(self) -> None:
-        """Test default used_at value is set and timezone-aware."""
+        """
+        Test default used_at value is set and timezone-aware.
+        """
         token: UsedPasswordResetToken = UsedPasswordResetToken(
-            email="default@ex.com", nonce="default", used_at=None or datetime.now(UTC)
+            email="default@ex.com", nonce="default", used_at=datetime.now(UTC)
         )
         assert isinstance(token.used_at, datetime)
         assert token.used_at.tzinfo is not None
 
     def test_invalid_types(self) -> None:
-        """Test invalid types for email and nonce raise ValueError."""
+        """
+        Test invalid types for email and nonce raise ValueError.
+        """
         with pytest.raises(ValueError):
             UsedPasswordResetToken(email=123, nonce="abc", used_at=datetime.now(UTC))
         with pytest.raises(ValueError):
             UsedPasswordResetToken(email="abc@ex.com", nonce=456, used_at=datetime.now(UTC))
-        # used_at as string should fail at DB/ORM level, not constructor
 
     def test_to_dict_if_present(self) -> None:
-        """Test to_dict method if present on model."""
+        """
+        Test to_dict method if present on model.
+        """
         token: UsedPasswordResetToken = UsedPasswordResetToken(
             email="dict@ex.com", nonce="dictnonce", used_at=datetime.now(UTC)
         )
@@ -126,8 +143,10 @@ class TestUsedPasswordResetTokenDB(AsyncModelTestTemplate):
         from typing import cast
         cast(Callable[[UsedPasswordResetToken, Mapping[str, object]], None], self.assert_model_attrs)(model, attrs)
 
-    async def _seed_db_typed(self, objs: list[UsedPasswordResetToken]) -> None:
-        """Type-safe wrapper for seed_db."""
+    async def _seed_db_typed(self, objs: list[object]) -> None:
+        """
+        Type-safe wrapper for seed_db.
+        """
         await self.seed_db(objs)
 
     async def _truncate_table_typed(self, table: str) -> None:
@@ -149,8 +168,9 @@ class TestUsedPasswordResetTokenDB(AsyncModelTestTemplate):
             )
             for i in range(5)
         ]
-        await self._seed_db_typed(tokens)
+        await self._seed_db_typed(list(tokens))
         for t in tokens:
+            assert isinstance(t, UsedPasswordResetToken)
             assert t.id is not None
         await self._truncate_table_typed("used_password_reset_tokens")
         result = await self.async_session.execute(
@@ -302,7 +322,7 @@ class TestUsedPasswordResetTokenDB(AsyncModelTestTemplate):
             )
             for i in range(3)
         ]
-        await self._seed_db_typed(tokens)
+        await self._seed_db_typed(list(tokens))
         result = await self.async_session.execute(
             text("SELECT * FROM used_password_reset_tokens WHERE email = :email"),
             {"email": "idx1@ex.com"},
@@ -332,7 +352,7 @@ class TestUsedPasswordResetTokenDB(AsyncModelTestTemplate):
             )
             for i in range(10)
         ]
-        await self._seed_db_typed(tokens)
+        await self._seed_db_typed(list(tokens))
         await self._truncate_table_typed("used_password_reset_tokens")
         result = await self.async_session.execute(
             text("SELECT COUNT(*) FROM used_password_reset_tokens")

@@ -1,14 +1,20 @@
 from collections.abc import Generator
-
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from src.core.database import engine
-
-# Only create SessionLocal if engine is a synchronous Engine (not AsyncEngine)
-SessionLocal: sessionmaker[Session] | None = None
-if engine is not None and isinstance(engine, Engine):
-    SessionLocal = sessionmaker(bind=engine)
+def get_sync_session_factory() -> sessionmaker[Session]:
+    """
+    Returns a sessionmaker for synchronous SQLAlchemy engines.
+    Raises RuntimeError if the engine is not a synchronous Engine.
+    """
+    from src.core.database import engine
+    if engine is None:
+        raise RuntimeError("No SQLAlchemy engine is configured.")
+    # Only allow synchronous Engine, not AsyncEngine
+    from sqlalchemy.ext.asyncio import AsyncEngine
+    if isinstance(engine, AsyncEngine):
+        raise RuntimeError("Synchronous session requested, but engine is an AsyncEngine. Use async session for AsyncEngine.")
+    return sessionmaker(bind=engine)
 
 
 def get_session() -> Generator[Session, None, None]:
@@ -23,10 +29,7 @@ def get_session() -> Generator[Session, None, None]:
         Exception: Any exception raised during session usage is propagated.
         RuntimeError: If SessionLocal is not initialized or engine is not a sync Engine.
     """
-    if SessionLocal is None:
-        raise RuntimeError(
-            "SessionLocal is not initialized. Ensure a synchronous SQLAlchemy Engine is available."
-        )
+    SessionLocal = get_sync_session_factory()
     db: Session = SessionLocal()
     try:
         yield db

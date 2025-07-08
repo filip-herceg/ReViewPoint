@@ -7,7 +7,7 @@ from typing import Final, TypedDict
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.routing import APIRouter as APIRouterType
 from sqlalchemy import select
-from sqlalchemy.engine import Result as SQLAlchemyResult
+from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_async_session
@@ -47,7 +47,7 @@ async def promote_user_to_admin_async(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Not allowed in production."
         )
-    user: SQLAlchemyResult = await session.execute(
+    user: Result[tuple[User]] = await session.execute(
         select(User).where(User.email == email)
     )
     user_obj: User | None = user.scalars().first()

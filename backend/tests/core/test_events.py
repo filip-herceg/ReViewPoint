@@ -50,9 +50,7 @@ class TestEvents(EventTestTemplate):
 
     def get_loguru_text(self) -> str:
         """Typed wrapper for EventTestTemplate.get_loguru_text method."""
-        from typing import cast
-        super_method = cast(Callable[[], str], super().get_loguru_text)
-        return super_method()
+        return super().get_loguru_text()
 
     def assert_caplog_contains(self, text: str, level: Optional[str] = None) -> None:
         """Typed wrapper for EventTestTemplate.assert_caplog_contains method."""

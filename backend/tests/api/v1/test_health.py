@@ -238,7 +238,8 @@ class TestHealthFeatureFlags(HealthEndpointTestTemplate):
             async def _override_get_async_session() -> AsyncGenerator[object, None]:
                 yield async_session
             fresh_app.dependency_overrides[get_async_session] = _override_get_async_session
-            client: TestClient = TestClient(fresh_app)
+            test_client: TestClient = TestClient(fresh_app)
+            client = test_client
         headers: HeadersDict = self._get_auth_header_typed(client)
         headers["X-API-Key"] = "wrongkey"
         resp: Response = self._safe_request_typed(client.get, "/api/v1/health", headers=headers)

@@ -172,7 +172,8 @@ router: Final[APIRouter] = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 class UserActionLimiterProtocol:
-    async def is_allowed(self, key: str) -> bool: ...
+    async def is_allowed(self, key: str) -> bool:
+        return False
 
 
 async def check_rate_limit(
@@ -191,7 +192,7 @@ async def check_rate_limit(
             429,
             f"Too many {action} attempts. Please try again later.",
             logger.warning,
-            log_extra,
+            cast(ExtraLogInfo, log_extra),
         )
 
 
@@ -445,7 +446,7 @@ async def logout(
                 },
             )
             http_error(
-                401, "Invalid or expired token.", logger.warning, {"error": str(e)}
+                401, "Invalid or expired token.", logger.warning, cast(ExtraLogInfo, {"error": str(e)})
             )
     await user_service.logout_user(session, current_user.id)
     logger.info("logout_success", extra={"user_id": current_user.id})
@@ -496,7 +497,7 @@ async def refresh_token(
             429,
             "Too many token refresh attempts. Please try again later.",
             logger.warning,
-            {"token": token},
+            cast(ExtraLogInfo, {"token": token}),
         )
     except RefreshTokenBlacklistedError:
         http_error(

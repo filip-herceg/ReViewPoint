@@ -18,10 +18,12 @@ class TestUserProfileSchema(ModelUnitTestTemplate):
     """Strictly typed tests for the UserProfile schema."""
 
     def test_basic(self) -> None:
-        """Test UserProfile with all fields set and correct values."""
-        now: datetime = datetime.now(UTC)
-        now_str: str = now.isoformat()
-        profile: UserProfile = UserProfile(
+        """
+        Test UserProfile with all fields set and correct values.
+        """
+        now: Final[datetime] = datetime.now(UTC)
+        now_str: Final[str] = now.isoformat()
+        profile: Final[UserProfile] = UserProfile(
             id=1,
             email="test@example.com",
             name="Test User",
@@ -30,7 +32,7 @@ class TestUserProfileSchema(ModelUnitTestTemplate):
             created_at=now_str,
             updated_at=now_str,
         )
-        expected: Dict[str, object] = {
+        expected: Final[dict[str, object]] = {
             "id": 1,
             "email": "test@example.com",
             "name": "Test User",
@@ -328,7 +330,7 @@ class TestUserPreferencesUpdateSchema(ModelUnitTestTemplate):
 
         def make_invalid_preferences() -> object:
             # This helper intentionally returns an invalid type for testing
-            return {1: "one", "two": 2}  # type: ignore[dict-item]
+            return {1: "one", "two": 2}
 
         # This should raise because 1 is not a string key
         with pytest.raises(pydantic.ValidationError):

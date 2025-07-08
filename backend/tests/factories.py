@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 from typing import TypedDict
 from factory.base import Factory
 from factory.declarations import Sequence, LazyFunction
+from typing import Any
 
 
 
@@ -19,17 +20,17 @@ class UserDict(TypedDict, total=False):
     created_at: datetime
 
 
-class UserFactory(Factory):
+class UserFactory(Factory[dict[str, Any]]):
     """Factory for building user dicts for tests (not DB objects)."""
     model = dict
 
-    email = Sequence(lambda n: f"user{n}@example.com")
+    email = Sequence(lambda n: f"user{n}@example.com")  # type: ignore
     password_hash = "hashed_password"
     is_active = True
-    created_at = LazyFunction(lambda: datetime.now(UTC))
+    created_at = LazyFunction(lambda: datetime.now(UTC))  # type: ignore
 
     @classmethod
-    def build_obj(cls, **overrides: object) -> dict[str, object]:
+    def build_obj(cls, **overrides: object) -> dict[str, Any]:
         """
         Return a dict representing a user, with optional overrides.
         Args:
@@ -37,7 +38,7 @@ class UserFactory(Factory):
         Returns:
             dict[str, object]: A user dictionary with the specified overrides applied.
         """
-        data: dict[str, object] = cls.build()
+        data: dict[str, Any] = cls.build()
         data.update(overrides)
         return data
 

@@ -275,19 +275,11 @@ async def delete_user(
     STATUS_NO_CONTENT = 204
     try:
         result: None = await user_service.delete_user(session, user_id)
-        logger.info("user_deleted", extra={"user_id": user_id})
-        return Response(status_code=STATUS_NO_CONTENT)
-    except UserNotFoundError as e:
-        http_error(404, "User not found.", logger.warning, cast(ExtraLogInfo, {"user_id": user_id}), e)
-        raise HTTPException(status_code=404, detail="User not found.")
+    except UserNotFoundError:
+        logger.warning("User not found.", extra={"user_id": user_id})
+        return Response(status_code=404, content="User not found.")
     except Exception as e:
-        http_error(
-            500,
-            "Unexpected error.",
-            logger.error,
-            cast(ExtraLogInfo, {"user_id": user_id, "error": str(e)}),
-            e,
-        )
-        raise HTTPException(status_code=500, detail="Unexpected error.")
-    # Defensive: function must always return Response or raise
-    raise HTTPException(status_code=500, detail="Unreachable code in delete_user")
+        logger.error("Unexpected error.", extra={"user_id": user_id, "error": str(e)})
+        return Response(status_code=500, content="Unexpected error.")
+    logger.info("user_deleted", extra={"user_id": user_id})
+    return Response(status_code=STATUS_NO_CONTENT)

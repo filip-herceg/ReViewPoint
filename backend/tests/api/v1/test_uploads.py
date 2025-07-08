@@ -14,7 +14,7 @@ import json
 import os
 import uuid
 from collections.abc import AsyncGenerator, Callable, Mapping, Sequence
-from typing import Final, Literal, TypedDict, TypeVar, Union, cast
+from typing import Final, Literal, TypedDict, TypeVar, Union, cast, Generator
 
 import pytest
 import pytest_asyncio
@@ -426,7 +426,7 @@ class TestUploadsFeatureFlags(TypedExportEndpointTestTemplate):
 @pytest_asyncio.fixture
 async def async_client(test_app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
     """Shared async client fixture for all tests."""
-    transport: ASGITransport = ASGITransport(app=test_app)
+    transport: Final[ASGITransport] = ASGITransport(app=test_app)
     async with AsyncClient(
         transport=transport,
         base_url="http://test",
@@ -444,12 +444,11 @@ async def fast_admin_client(
     from src.core.security import create_access_token
     from src.models.user import User
 
-    # Create a real user in the database with unique email
-    unique_email: str = f"test_admin_{uuid.uuid4().hex[:8]}@example.com"
-    real_user: User = User(
+    unique_email: Final[str] = f"test_admin_{uuid.uuid4().hex[:8]}@example.com"
+    real_user: Final[User] = User(
         email=unique_email,
         name="Test Admin",
-        hashed_password="hashed_password",  # Not used in tests
+        hashed_password="hashed_password",
         is_active=True,
         is_admin=True,
     )
@@ -457,18 +456,16 @@ async def fast_admin_client(
     await async_session.commit()
     await async_session.refresh(real_user)
 
-    # Override the auth dependency to return real user
     def override_get_current_user() -> User:
         return real_user
 
     test_app.dependency_overrides[get_current_user] = override_get_current_user
 
-    # Create a proper JWT token with the real user ID
-    token_payload: dict[str, Union[str, int]] = {"sub": str(real_user.id), "role": "admin"}
-    valid_token: str = create_access_token(token_payload)
+    token_payload: Final[dict[str, str | int]] = {"sub": str(real_user.id), "role": "admin"}
+    valid_token: Final[str] = create_access_token(token_payload)
 
     try:
-        transport: ASGITransport = ASGITransport(app=test_app)
+        transport: Final[ASGITransport] = ASGITransport(app=test_app)
         async with AsyncClient(
             transport=transport,
             base_url="http://test",
@@ -476,14 +473,13 @@ async def fast_admin_client(
         ) as ac:
             yield ac
     finally:
-        # Clean up the override
         test_app.dependency_overrides.pop(get_current_user, None)
 
 
 @pytest_asyncio.fixture
 async def fast_anon_client(test_app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
     """Ultra-fast async client without authentication."""
-    transport: ASGITransport = ASGITransport(app=test_app)
+    transport: Final[ASGITransport] = ASGITransport(app=test_app)
     async with AsyncClient(
         transport=transport,
         base_url="http://test",

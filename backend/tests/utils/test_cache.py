@@ -11,7 +11,7 @@ class TestAsyncInMemoryCache(UtilityUnitTestTemplate):
         """
         Test that set and get work for a single key-value pair.
         """
-        cache: Final[AsyncInMemoryCache] = AsyncInMemoryCache()
+        cache: Final[AsyncInMemoryCache[str, str]] = AsyncInMemoryCache()
         key: Final[str] = "key1"
         value: Final[str] = "value1"
         await cache.set(key, value)
@@ -26,7 +26,7 @@ class TestAsyncInMemoryCache(UtilityUnitTestTemplate):
         """
         Test that a key expires after its TTL.
         """
-        cache: Final[AsyncInMemoryCache] = AsyncInMemoryCache()
+        cache: Final[AsyncInMemoryCache[str, str]] = AsyncInMemoryCache()
         key: Final[str] = "key2"
         value: Final[str] = "value2"
         await cache.set(key, value, ttl=0.1)
@@ -41,7 +41,7 @@ class TestAsyncInMemoryCache(UtilityUnitTestTemplate):
         """
         Test that clear removes all keys from the cache.
         """
-        cache: Final[AsyncInMemoryCache] = AsyncInMemoryCache()
+        cache: Final[AsyncInMemoryCache[str, str]] = AsyncInMemoryCache()
         key: Final[str] = "key3"
         value: Final[str] = "value3"
         await cache.set(key, value)

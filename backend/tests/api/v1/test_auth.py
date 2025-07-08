@@ -516,7 +516,8 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
         settings: Settings = get_settings()
         self.monkeypatch.setattr(settings, "auth_enabled", False)
         
-        user: User = await get_current_user(token="irrelevant", session=self.async_session)
+        user: User | None = await get_current_user(token="irrelevant", session=self.async_session)
+        assert user is not None
         assert user.email == "dev@example.com"
         assert user.is_active
         self.monkeypatch.setattr(settings, "auth_enabled", True)

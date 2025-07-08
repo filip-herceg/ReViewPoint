@@ -15,7 +15,7 @@ class ExtraLogInfo(TypedDict, total=False):
     # Add more known keys and restrict values with Literal or stricter types as needed
 
 
-DEFAULT_LOGGER_FUNC: Final[Callable[[str], None]] = logger.error  # type: ignore[assignment]
+DEFAULT_LOGGER_FUNC: Final[Callable[[str], None]] = logger.error  # type: ignore[assignment, unused-ignore]
 
 
 def http_error(
@@ -41,7 +41,7 @@ def http_error(
     """
     if extra is not None:
         try:
-            logger_func(detail, extra=extra)  # type: ignore[call-arg]  # loguru's logger accepts extra
+            logger_func(detail, extra=extra)  # type: ignore[call-arg, unused-ignore]  # loguru's logger accepts extra
         except TypeError:
             logger_func(f"{detail} | {extra}")
     else:

@@ -361,4 +361,5 @@ def setup_openapi(app: FastAPI) -> None:
         self.openapi_schema = openapi_schema
         return self.openapi_schema
 
-    app.openapi = custom_openapi.__get__(app, type(app))
+    # Assign the custom_openapi method to the app
+    app.openapi = custom_openapi.__get__(app, type(app))  # type: ignore[method-assign]

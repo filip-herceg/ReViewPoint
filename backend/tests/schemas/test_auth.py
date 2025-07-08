@@ -147,7 +147,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             require_api_key = None
         if require_api_key is not None:
             def _no_api_key(api_key: str | None = None) -> None:
-                return None
+                pass
             app.dependency_overrides[require_api_key] = _no_api_key
         return app
 

@@ -1,3 +1,5 @@
+# Add at the top of the file, after other imports
+from typing import Callable, Awaitable, Any
 """
 Test Cleanup and Isolation Infrastructure
 
@@ -50,10 +52,10 @@ class TestIsolationManager:
                 text("DELETE FROM users WHERE email LIKE :pattern"),
                 {"pattern": email_pattern}
             )
-            deleted_count = result.rowcount
+            deleted_count = getattr(result, 'rowcount', None)
             await self.session.commit()
             
-            if deleted_count > 0:
+            if deleted_count and deleted_count > 0:
                 logger.debug(f"Cleaned up {deleted_count} users matching pattern: {email_pattern}")
         except Exception as e:
             logger.warning(f"Error cleaning up users by pattern {email_pattern}: {e}")
@@ -191,7 +193,7 @@ async def verified_isolation(async_session: "AsyncSession") -> AsyncGenerator[tu
 
 
 # Decorator for automatic test isolation
-def with_test_isolation(test_func):
+def with_test_isolation(test_func: Callable[..., Awaitable[Any]]) -> Callable[..., Awaitable[Any]]:
     """
     Decorator that automatically provides test isolation for test methods.
     
@@ -202,7 +204,7 @@ def with_test_isolation(test_func):
             user = User(email=f"test-{self.test_isolation.test_id}@example.com")
             # ... test code
     """
-    async def wrapper(self, *args, **kwargs):
+    async def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
         async with isolated_test_session(self.async_session) as isolation:
             self.test_isolation = isolation
             try:
@@ -225,7 +227,7 @@ async def cleanup_test_users(session: AsyncSession, email_patterns: List[str]) -
                 text("DELETE FROM users WHERE email LIKE :pattern"),
                 {"pattern": pattern}
             )
-            cleaned = result.rowcount or 0
+            cleaned = getattr(result, 'rowcount', 0) or 0
             total_cleaned += cleaned
             logger.debug(f"Cleaned {cleaned} users matching pattern: {pattern}")
         except Exception as e:
@@ -260,8 +262,7 @@ async def cleanup_test_tokens(session: AsyncSession, patterns: List[str]) -> int
                     result = await session.execute(
                         text(f"DELETE FROM {table} WHERE id IN (SELECT id FROM {table} LIMIT 0)")
                     )
-                    
-                cleaned = result.rowcount or 0
+                cleaned = getattr(result, 'rowcount', 0) or 0
                 total_cleaned += cleaned
                 logger.debug(f"Cleaned {cleaned} records from {table} matching pattern: {pattern}")
             except Exception as e:
