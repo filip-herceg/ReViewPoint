@@ -652,3 +652,370 @@ export function createTestConnectionMetadata(overrides: Partial<{
         ...overrides,
     };
 }
+
+// Configuration and Monitoring Test Templates
+
+import type { FeatureFlags } from '@/lib/config/featureFlags';
+import type { EnvironmentConfig } from '@/lib/config/environment';
+import type { ErrorReport } from '@/lib/monitoring/errorMonitoring';
+import type { PerformanceMetric } from '@/lib/monitoring/performanceMonitoring';
+
+// Environment Configuration Templates
+export function createEnvironmentConfig(overrides: Partial<EnvironmentConfig> = {}): EnvironmentConfig {
+    const config: EnvironmentConfig = {
+        NODE_ENV: 'test',
+        API_BASE_URL: 'http://localhost:8000',
+        API_TIMEOUT: 10000,
+        WS_URL: 'ws://localhost:8000/ws',
+        SENTRY_DSN: undefined,
+        ENABLE_ANALYTICS: false,
+        LOG_LEVEL: 'debug',
+        ENABLE_ERROR_REPORTING: true,
+        ENABLE_PERFORMANCE_MONITORING: true,
+        APP_VERSION: '0.1.0-test',
+        APP_NAME: 'ReViewPoint (Test)',
+        ...overrides,
+    };
+
+    testLogger.debug('Created environment config', {
+        environment: config.NODE_ENV,
+        apiBaseUrl: config.API_BASE_URL,
+        logLevel: config.LOG_LEVEL,
+    });
+
+    return config;
+}
+
+export function createDevelopmentEnvironmentConfig(): EnvironmentConfig {
+    return createEnvironmentConfig({
+        NODE_ENV: 'development',
+        LOG_LEVEL: 'debug',
+        ENABLE_ANALYTICS: false,
+        APP_NAME: 'ReViewPoint (Dev)',
+    });
+}
+
+export function createProductionEnvironmentConfig(): EnvironmentConfig {
+    return createEnvironmentConfig({
+        NODE_ENV: 'production',
+        API_BASE_URL: 'https://api.reviewpoint.com',
+        WS_URL: 'wss://api.reviewpoint.com/ws',
+        LOG_LEVEL: 'warn',
+        ENABLE_ANALYTICS: true,
+        SENTRY_DSN: 'https://test-dsn@sentry.io/123',
+        APP_VERSION: '1.0.0',
+        APP_NAME: 'ReViewPoint',
+    });
+}
+
+// Feature Flags Templates
+export function createFeatureFlags(overrides: Partial<FeatureFlags> = {}): FeatureFlags {
+    const flags: FeatureFlags = {
+        enablePasswordReset: true,
+        enableSocialLogin: false,
+        enableTwoFactorAuth: false,
+        enableMultipleFileUpload: true,
+        enableDragDropUpload: true,
+        enableUploadProgress: true,
+        enableFilePreview: true,
+        enableAiReviews: false,
+        enableCollaborativeReviews: false,
+        enableReviewComments: true,
+        enableReviewExport: true,
+        enableDarkMode: true,
+        enableNotifications: true,
+        enableBreadcrumbs: true,
+        enableSidebar: true,
+        enableWebSocket: true,
+        enableVirtualization: false,
+        enableLazyLoading: true,
+        enableCodeSplitting: true,
+        enableAnalytics: false,
+        enableErrorReporting: true,
+        enablePerformanceMonitoring: true,
+        enableWebVitals: true,
+        enableDevTools: false,
+        enableDebugMode: false,
+        enableTestMode: true,
+        ...overrides,
+    };
+
+    const enabledFeatures = Object.entries(flags)
+        .filter(([, enabled]) => enabled)
+        .map(([feature]) => feature);
+
+    testLogger.debug('Created feature flags', {
+        totalFeatures: Object.keys(flags).length,
+        enabledFeatures: enabledFeatures.length,
+        enabledList: enabledFeatures,
+    });
+
+    return flags;
+}
+
+export function createDevelopmentFeatureFlags(): FeatureFlags {
+    return createFeatureFlags({
+        enableDevTools: true,
+        enableDebugMode: true,
+        enableSocialLogin: false,
+        enableAiReviews: false,
+        enableVirtualization: false,
+    });
+}
+
+export function createProductionFeatureFlags(): FeatureFlags {
+    return createFeatureFlags({
+        enableDevTools: false,
+        enableDebugMode: false,
+        enableTestMode: false,
+        enableSocialLogin: true,
+        enableTwoFactorAuth: true,
+        enableAiReviews: true,
+        enableCollaborativeReviews: true,
+        enableVirtualization: true,
+        enableAnalytics: true,
+    });
+}
+
+// Error Report Templates
+export function createErrorReport(overrides: Partial<ErrorReport> = {}): ErrorReport {
+    const severities: ErrorReport['severity'][] = ['low', 'medium', 'high', 'critical'];
+    const error: ErrorReport = {
+        id: randomString(16),
+        timestamp: new Date(),
+        message: 'Test error message',
+        stack: `Error: Test error message\n    at TestFunction (test.js:1:1)\n    at Object.<anonymous> (test.js:5:1)`,
+        componentStack: undefined,
+        errorBoundary: undefined,
+        props: undefined,
+        userAgent: 'Mozilla/5.0 (Test Browser)',
+        url: 'http://localhost:3000/test',
+        userId: undefined,
+        severity: severities[randomInt(0, severities.length - 1)],
+        context: {
+            source: 'test',
+            environment: 'test',
+        },
+        ...overrides,
+    };
+
+    if (error.severity === 'critical') {
+        testLogger.error('Created critical error report', {
+            id: error.id,
+            message: error.message,
+            severity: error.severity,
+        });
+    } else {
+        testLogger.debug('Created error report', {
+            id: error.id,
+            severity: error.severity,
+        });
+    }
+
+    return error;
+}
+
+export function createConsoleErrorReport(): ErrorReport {
+    return createErrorReport({
+        severity: 'high',
+        context: {
+            source: 'console.error',
+            environment: 'test',
+        },
+    });
+}
+
+export function createUnhandledRejectionErrorReport(): ErrorReport {
+    return createErrorReport({
+        message: 'Unhandled promise rejection: Something went wrong',
+        severity: 'critical',
+        context: {
+            source: 'unhandledrejection',
+            reason: 'Something went wrong',
+            environment: 'test',
+        },
+    });
+}
+
+export function createComponentErrorReport(): ErrorReport {
+    return createErrorReport({
+        componentStack: '    in ErrorComponent (at Error.tsx:1:1)\n    in App (at App.tsx:10:5)',
+        errorBoundary: 'EnhancedErrorBoundary',
+        severity: 'high',
+        context: {
+            source: 'ErrorBoundary',
+            environment: 'test',
+        },
+    });
+}
+
+// Performance Metric Templates
+export function createPerformanceMetric(overrides: Partial<PerformanceMetric> = {}): PerformanceMetric {
+    const metricNames = ['CLS', 'FCP', 'INP', 'LCP', 'TTFB', 'resource-timing', 'dns-lookup', 'tcp-connect'];
+    const ratings: PerformanceMetric['rating'][] = ['good', 'needs-improvement', 'poor'];
+    const deviceTypes: PerformanceMetric['deviceType'][] = ['mobile', 'tablet', 'desktop'];
+    const navigationTypes = ['navigate', 'reload', 'back_forward', 'prerender'];
+
+    const metric: PerformanceMetric = {
+        id: randomString(16),
+        name: metricNames[randomInt(0, metricNames.length - 1)],
+        value: randomInt(100, 5000),
+        rating: ratings[randomInt(0, ratings.length - 1)],
+        timestamp: Date.now(),
+        url: 'http://localhost:3000/test',
+        navigationType: navigationTypes[randomInt(0, navigationTypes.length - 1)],
+        deviceType: deviceTypes[randomInt(0, deviceTypes.length - 1)],
+        ...overrides,
+    };
+
+    if (metric.rating === 'poor') {
+        testLogger.warn('Created poor performance metric', {
+            name: metric.name,
+            value: metric.value,
+            rating: metric.rating,
+        });
+    } else {
+        testLogger.debug('Created performance metric', {
+            name: metric.name,
+            rating: metric.rating,
+        });
+    }
+
+    return metric;
+}
+
+export function createCLSMetric(rating: PerformanceMetric['rating'] = 'good'): PerformanceMetric {
+    const values = {
+        good: 0.05,
+        'needs-improvement': 0.15,
+        poor: 0.3,
+    };
+
+    return createPerformanceMetric({
+        name: 'CLS',
+        value: values[rating],
+        rating,
+    });
+}
+
+export function createLCPMetric(rating: PerformanceMetric['rating'] = 'good'): PerformanceMetric {
+    const values = {
+        good: 2000,
+        'needs-improvement': 3500,
+        poor: 5000,
+    };
+
+    return createPerformanceMetric({
+        name: 'LCP',
+        value: values[rating],
+        rating,
+    });
+}
+
+export function createINPMetric(rating: PerformanceMetric['rating'] = 'good'): PerformanceMetric {
+    const values = {
+        good: 150,
+        'needs-improvement': 350,
+        poor: 600,
+    };
+
+    return createPerformanceMetric({
+        name: 'INP',
+        value: values[rating],
+        rating,
+    });
+}
+
+export function createWebVitalsMetrics(): PerformanceMetric[] {
+    return [
+        createCLSMetric('good'),
+        createPerformanceMetric({ name: 'FCP', value: 1500, rating: 'good' }),
+        createINPMetric('good'),
+        createLCPMetric('good'),
+        createPerformanceMetric({ name: 'TTFB', value: 600, rating: 'good' }),
+    ];
+}
+
+export function createPoorWebVitalsMetrics(): PerformanceMetric[] {
+    return [
+        createCLSMetric('poor'),
+        createPerformanceMetric({ name: 'FCP', value: 4000, rating: 'poor' }),
+        createINPMetric('poor'),
+        createLCPMetric('poor'),
+        createPerformanceMetric({ name: 'TTFB', value: 2500, rating: 'poor' }),
+    ];
+}
+
+// Mock Environment Variables Template (subset of ImportMetaEnv)
+export function createMockImportMetaEnv(overrides: Partial<{
+    NODE_ENV: string;
+    VITE_API_BASE_URL?: string;
+    VITE_API_TIMEOUT?: string;
+    VITE_WS_URL?: string;
+    VITE_SENTRY_DSN?: string;
+    VITE_ENABLE_ANALYTICS?: string;
+    VITE_LOG_LEVEL?: string;
+    VITE_ENABLE_ERROR_REPORTING?: string;
+    VITE_ENABLE_PERFORMANCE_MONITORING?: string;
+    VITE_APP_VERSION?: string;
+    VITE_APP_NAME?: string;
+}> = {}) {
+    const env = {
+        NODE_ENV: 'test',
+        VITE_API_BASE_URL: 'http://localhost:8000',
+        VITE_API_TIMEOUT: '10000',
+        VITE_WS_URL: 'ws://localhost:8000/ws',
+        VITE_SENTRY_DSN: '',
+        VITE_ENABLE_ANALYTICS: 'false',
+        VITE_LOG_LEVEL: 'debug',
+        VITE_ENABLE_ERROR_REPORTING: 'true',
+        VITE_ENABLE_PERFORMANCE_MONITORING: 'true',
+        VITE_APP_VERSION: '0.1.0-test',
+        VITE_APP_NAME: 'ReViewPoint (Test)',
+        ...overrides,
+    };
+
+    testLogger.debug('Created mock import.meta.env', {
+        nodeEnv: env.NODE_ENV,
+        apiBaseUrl: env.VITE_API_BASE_URL,
+        logLevel: env.VITE_LOG_LEVEL,
+    });
+
+    return env;
+}
+
+// Monitoring Service State Templates
+export function createErrorMonitoringConfig() {
+    return {
+        enableConsoleTracking: true,
+        enableUnhandledRejections: true,
+        enableComponentErrors: true,
+        enableUserFeedback: true,
+        maxErrors: 100,
+        reportToSentry: false,
+    };
+}
+
+export function createPerformanceMonitoringConfig() {
+    return {
+        enableWebVitals: true,
+        enableResourceTiming: true,
+        enableNavigationTiming: true,
+        enableUserTiming: true,
+        sampleRate: 1.0,
+        reportToAnalytics: false,
+    };
+}
+
+// Feature Flag Update Templates
+export function createFeatureFlagUpdates(overrides: Partial<FeatureFlags> = {}): Partial<FeatureFlags> {
+    const updates: Partial<FeatureFlags> = {
+        enableAiReviews: true,
+        enableSocialLogin: true,
+        enableVirtualization: true,
+        ...overrides,
+    };
+
+    testLogger.debug('Created feature flag updates', updates);
+    return updates;
+}
