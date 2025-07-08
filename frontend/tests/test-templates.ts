@@ -562,3 +562,93 @@ export function createTokenServiceMockState() {
         refreshQueue: [],
     };
 }
+
+// WebSocket-related test data factories
+
+export function createTestNotification(overrides: Partial<{
+    id: string;
+    type: 'info' | 'success' | 'warning' | 'error';
+    title: string;
+    message: string;
+    timestamp: Date;
+    read: boolean;
+    persistent?: boolean;
+}> = {}): {
+    id: string;
+    type: 'info' | 'success' | 'warning' | 'error';
+    title: string;
+    message: string;
+    timestamp: Date;
+    read: boolean;
+    persistent?: boolean;
+} {
+    return {
+        id: randomString(16),
+        type: 'info',
+        title: 'Test Notification',
+        message: 'This is a test notification',
+        timestamp: new Date(),
+        read: false,
+        persistent: false,
+        ...overrides,
+    };
+}
+
+export function createTestUploadProgress(overrides: Partial<{
+    uploadId: string;
+    progress: number;
+    status: 'uploading' | 'completed' | 'error';
+    error?: string;
+    timestamp: Date;
+}> = {}): {
+    uploadId: string;
+    progress: number;
+    status: 'uploading' | 'completed' | 'error';
+    error?: string;
+    timestamp: Date;
+} {
+    return {
+        uploadId: randomString(16),
+        progress: randomInt(0, 100),
+        status: 'uploading',
+        timestamp: new Date(),
+        ...overrides,
+    };
+}
+
+export function createTestWebSocketEvent(overrides: Partial<{
+    type: string;
+    data: any;
+    timestamp: Date;
+}> = {}): {
+    type: string;
+    data: any;
+    timestamp: Date;
+} {
+    return {
+        type: 'test_event',
+        data: { message: 'Test event data' },
+        timestamp: new Date(),
+        ...overrides,
+    };
+}
+
+export function createTestConnectionMetadata(overrides: Partial<{
+    connectionId: string;
+    userId: string;
+    connectedAt: Date;
+    lastHeartbeat: Date;
+}> = {}): {
+    connectionId: string;
+    userId: string;
+    connectedAt: Date;
+    lastHeartbeat: Date;
+} {
+    return {
+        connectionId: randomString(32),
+        userId: randomString(16),
+        connectedAt: new Date(),
+        lastHeartbeat: new Date(),
+        ...overrides,
+    };
+}

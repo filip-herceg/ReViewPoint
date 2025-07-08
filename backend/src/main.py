@@ -13,6 +13,7 @@ from src.api.v1.auth import router as auth_router
 from src.api.v1.health import router as health_router
 from src.api.v1.uploads import router as uploads_router
 from src.api.v1.users import all_routers
+from src.api.v1.websocket import router as websocket_router
 from src.core.config import get_settings
 from src.core.events import on_shutdown, on_startup
 from src.core.logging import init_logging
@@ -80,6 +81,8 @@ def create_app() -> FastAPI:
         app.include_router(router, prefix="/api/v1/users")
     # Register uploads router
     app.include_router(uploads_router, prefix="/api/v1")
+    # Register WebSocket router
+    app.include_router(websocket_router, prefix="/api/v1")
 
     import logging
 
