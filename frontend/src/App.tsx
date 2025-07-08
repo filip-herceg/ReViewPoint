@@ -1,29 +1,53 @@
 import React, { useEffect } from 'react';
 import { AppRouter } from '@/lib/router/AppRouter';
 import { useWebSocketStore } from '@/lib/store/webSocketStore';
-import { ErrorBoundary } from 'react-error-boundary';
-import { getErrorMessage } from '@/lib/utils/errorHandling';
+import { ThemeProvider } from '@/lib/theme/theme-provider';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { Toaster } from '@/components/ui/sonner';
 
-function ErrorFallback({ error }: { error: unknown }) {
-    return (
-        <div className="p-4 bg-red-100 text-red-800 rounded">
-            <h2 className="font-bold">Something went wrong</h2>
-            <pre className="whitespace-pre-wrap break-all">{getErrorMessage(error)}</pre>
-        </div>
-    );
-}
+// Configuration and monitoring
+import { createEnhancedErrorBoundary } from '@/lib/monitoring/errorMonitoring';
+import { useFeatureFlag } from '@/lib/config/featureFlags';
+import logger from '@/logger';
+
+// Create enhanced error boundary
+const EnhancedErrorBoundary = createEnhancedErrorBoundary();
 
 export default function App() {
     const { connect } = useWebSocketStore();
 
-    // Initialize WebSocket connection on app start
+    // Feature flags
+    const enableWebSocket = useFeatureFlag('enableWebSocket');
+    const enableDarkMode = useFeatureFlag('enableDarkMode');
+
+    // Initialize WebSocket connection on app start if feature is enabled
     useEffect(() => {
-        connect();
-    }, [connect]);
+        if (enableWebSocket) {
+            logger.info('Initializing WebSocket connection');
+            connect();
+        } else {
+            logger.info('WebSocket feature disabled');
+        }
+    }, [connect, enableWebSocket]);
+
+    // Log app initialization
+    useEffect(() => {
+        logger.info('App component initialized', {
+            features: {
+                webSocket: enableWebSocket,
+                darkMode: enableDarkMode
+            }
+        });
+    }, [enableWebSocket, enableDarkMode]);
 
     return (
-        <ErrorBoundary FallbackComponent={ErrorFallback}>
-            <AppRouter />
-        </ErrorBoundary>
+        <ThemeProvider defaultTheme={enableDarkMode ? "dark" : "light"}>
+            <EnhancedErrorBoundary>
+                <ErrorBoundary>
+                    <AppRouter />
+                    <Toaster />
+                </ErrorBoundary>
+            </EnhancedErrorBoundary>
+        </ThemeProvider>
     );
 }

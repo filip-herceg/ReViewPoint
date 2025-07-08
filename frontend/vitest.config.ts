@@ -32,5 +32,8 @@ export default defineConfig({
         logHeapUsage: false,
         // Only show console logs for failed tests
         onConsoleLog: () => false,
+        // Add timeout to prevent hanging tests
+        testTimeout: 10000, // 10 seconds
+        hookTimeout: 5000,  // 5 seconds for setup/teardown
     },
 });
