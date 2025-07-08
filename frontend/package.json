@@ -25,6 +25,12 @@
         "dev:with-types": "pnpm run generate:all && pnpm run dev"
     },
     "dependencies": {
+        "@hookform/resolvers": "^5.1.1",
+        "@radix-ui/react-dialog": "^1.1.14",
+        "@radix-ui/react-dropdown-menu": "^2.1.15",
+        "@radix-ui/react-label": "^2.1.7",
+        "@radix-ui/react-progress": "^1.1.7",
+        "@radix-ui/react-select": "^2.2.5",
         "@radix-ui/react-slot": "^1.2.3",
         "@sentry/react": "^9.35.0",
         "@sentry/tracing": "^7.120.3",
@@ -35,13 +41,17 @@
         "clsx": "^2.1.1",
         "dompurify": "^3.2.6",
         "lucide-react": "^0.525.0",
+        "next-themes": "^0.4.6",
         "plausible-tracker": "^0.3.9",
         "react": "^19.1.0",
         "react-dom": "^19.1.0",
         "react-error-boundary": "^6.0.0",
+        "react-hook-form": "^7.60.0",
         "react-router-dom": "^7.6.3",
+        "sonner": "^2.0.6",
         "tailwind-merge": "^3.3.1",
         "web-vitals": "^5.0.3",
+        "zod": "^3.25.75",
         "zustand": "^5.0.6"
     },
     "devDependencies": {

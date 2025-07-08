@@ -23,25 +23,40 @@ describe('uiStore error handling', () => {
         expect(useUIStore.getState().sidebarOpen).toBe(!prev);
     });
 
-    it('throws if addNotification called with empty message', () => {
-        expect(() => useUIStore.getState().addNotification('')).toThrow(/notification message required/i);
+    it('throws if addNotification called with empty title', () => {
+        expect(() => useUIStore.getState().addNotification({
+            type: 'info',
+            title: ''
+        })).toThrow(/notification title required/i);
     });
 
     it('adds notification for valid message', () => {
-        useUIStore.getState().addNotification('Hello');
-        expect(useUIStore.getState().notifications).toContain('Hello');
+        const initialCount = useUIStore.getState().notifications.length;
+        useUIStore.getState().addNotification({
+            type: 'info',
+            title: 'Hello'
+        });
+        expect(useUIStore.getState().notifications).toHaveLength(initialCount + 1);
+        expect(useUIStore.getState().notifications[0].title).toBe('Hello');
     });
 
-    it('throws if removeNotification called with invalid index', () => {
-        useUIStore.getState().addNotification('A');
-        expect(() => useUIStore.getState().removeNotification(-1)).toThrow(/invalid notification index/i);
-        expect(() => useUIStore.getState().removeNotification(99)).toThrow(/invalid notification index/i);
+    it('throws if removeNotification called with invalid id', () => {
+        expect(() => useUIStore.getState().removeNotification('')).toThrow(/invalid notification id/i);
+        expect(() => useUIStore.getState().removeNotification('nonexistent')).toThrow(/notification not found/i);
     });
 
-    it('removes notification for valid index', () => {
-        useUIStore.getState().addNotification('A');
-        useUIStore.getState().addNotification('B');
-        useUIStore.getState().removeNotification(0);
-        expect(useUIStore.getState().notifications).toEqual(['B']);
+    it('removes notification for valid id', () => {
+        useUIStore.getState().addNotification({ type: 'info', title: 'A' });
+        useUIStore.getState().addNotification({ type: 'info', title: 'B' });
+
+        const notifications = useUIStore.getState().notifications;
+        expect(notifications).toHaveLength(2);
+
+        const firstId = notifications[0].id;
+        useUIStore.getState().removeNotification(firstId);
+
+        const remainingNotifications = useUIStore.getState().notifications;
+        expect(remainingNotifications).toHaveLength(1);
+        expect(remainingNotifications[0].title).toBe('B');
     });
 });

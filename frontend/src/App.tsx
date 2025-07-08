@@ -1,17 +1,9 @@
 import React, { useEffect } from 'react';
 import { AppRouter } from '@/lib/router/AppRouter';
 import { useWebSocketStore } from '@/lib/store/webSocketStore';
-import { ErrorBoundary } from 'react-error-boundary';
-import { getErrorMessage } from '@/lib/utils/errorHandling';
-
-function ErrorFallback({ error }: { error: unknown }) {
-    return (
-        <div className="p-4 bg-red-100 text-red-800 rounded">
-            <h2 className="font-bold">Something went wrong</h2>
-            <pre className="whitespace-pre-wrap break-all">{getErrorMessage(error)}</pre>
-        </div>
-    );
-}
+import { ThemeProvider } from '@/lib/theme/theme-provider';
+import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { Toaster } from '@/components/ui/sonner';
 
 export default function App() {
     const { connect } = useWebSocketStore();
@@ -22,8 +14,11 @@ export default function App() {
     }, [connect]);
 
     return (
-        <ErrorBoundary FallbackComponent={ErrorFallback}>
-            <AppRouter />
-        </ErrorBoundary>
+        <ThemeProvider defaultTheme="light">
+            <ErrorBoundary>
+                <AppRouter />
+                <Toaster />
+            </ErrorBoundary>
+        </ThemeProvider>
     );
 }
