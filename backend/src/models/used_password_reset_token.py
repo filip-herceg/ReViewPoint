@@ -1,6 +1,6 @@
 from collections.abc import Callable as ABCCallable
 from datetime import UTC, datetime
-from typing import ClassVar, Literal
+from typing import ClassVar
 
 from sqlalchemy import DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column, validates

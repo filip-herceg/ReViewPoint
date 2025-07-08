@@ -1,4 +1,3 @@
-
 """Test module for File model functionality.
 
 This module tests the File model including:
@@ -19,10 +18,9 @@ import pytest
 from sqlalchemy import Result, select, text
 from sqlalchemy.exc import IntegrityError
 
-from tests.test_data_generators import get_unique_email, get_test_user
-from tests.test_data_generators import get_unique_email, get_test_user
 from src.models.file import File
 from src.models.user import User
+from tests.test_data_generators import get_unique_email
 from tests.test_templates import AsyncModelTestTemplate
 
 
@@ -31,34 +29,47 @@ class TestFileModel(AsyncModelTestTemplate):
     async def _run_in_transaction_typed(self, coro: Callable[[], object]) -> None:
         """Type-safe wrapper for run_in_transaction method."""
         from typing import cast
-        await cast(Callable[[Callable[[], object]], Awaitable[None]], self.run_in_transaction)(coro)
+
+        await cast(
+            Callable[[Callable[[], object]], Awaitable[None]], self.run_in_transaction
+        )(coro)
+
     """Test class for File model functionality."""
-
-
 
     async def _seed_db_typed(self, objs: list[File] | list[User]) -> None:
         """Type-safe wrapper for seed_db method."""
         from typing import cast
-        await cast(Callable[[list[File] | list[User]], Awaitable[None]], self.seed_db)(objs)
+
+        await cast(Callable[[list[File] | list[User]], Awaitable[None]], self.seed_db)(
+            objs
+        )
 
     async def _assert_integrity_error_typed(self, obj: File) -> None:
         """Type-safe wrapper for assert_integrity_error method."""
         from typing import cast
+
         await cast(Callable[[File], Awaitable[None]], self.assert_integrity_error)(obj)
 
     async def _truncate_table_typed(self, table: str) -> None:
         """Type-safe wrapper for truncate_table method."""
         from typing import cast
+
         await cast(Callable[[str], Awaitable[None]], self.truncate_table)(table)
 
-    def _assert_model_attrs_typed(self, model: File, attrs: Mapping[str, object]) -> None:
+    def _assert_model_attrs_typed(
+        self, model: File, attrs: Mapping[str, object]
+    ) -> None:
         """Type-safe wrapper for assert_model_attrs method."""
         from typing import cast
-        cast(Callable[[File, Mapping[str, object]], None], self.assert_model_attrs)(model, attrs)
+
+        cast(Callable[[File, Mapping[str, object]], None], self.assert_model_attrs)(
+            model, attrs
+        )
 
     def _assert_repr_typed(self, obj: File, class_name: str) -> None:
         """Type-safe wrapper for assert_repr method."""
         from typing import cast
+
         cast(Callable[[File, str], None], self.assert_repr)(obj, class_name)
 
     @pytest.mark.asyncio
@@ -70,12 +81,20 @@ class TestFileModel(AsyncModelTestTemplate):
         - created_at and updated_at are set
         - Model attributes match expected values
         """
-        user: Final[User] = User(email=get_unique_email(), hashed_password="hashed", is_active=True)
+        user: Final[User] = User(
+            email=get_unique_email(), hashed_password="hashed", is_active=True
+        )
         await self._seed_db_typed([user])
-        file: Final[File] = File(filename="doc.txt", content_type="text/plain", user_id=user.id)
+        file: Final[File] = File(
+            filename="doc.txt", content_type="text/plain", user_id=user.id
+        )
         self.async_session.add(file)
         await self.async_session.flush()
-        expected_attrs: Final[Mapping[str, object]] = {"filename": "doc.txt", "content_type": "text/plain", "user_id": user.id}
+        expected_attrs: Final[Mapping[str, object]] = {
+            "filename": "doc.txt",
+            "content_type": "text/plain",
+            "user_id": user.id,
+        }
         self._assert_model_attrs_typed(file, expected_attrs)
         assert file.created_at is not None
         assert file.updated_at is not None
@@ -90,9 +109,13 @@ class TestFileModel(AsyncModelTestTemplate):
         - Create, read, update, delete operations
         - File is persisted, updated, and deleted as expected
         """
-        user: Final[User] = User(email=get_unique_email(), hashed_password="hashed", is_active=True)
+        user: Final[User] = User(
+            email=get_unique_email(), hashed_password="hashed", is_active=True
+        )
         await self._seed_db_typed([user])
-        file: File = File(filename="crud.txt", content_type="text/plain", user_id=user.id)
+        file: File = File(
+            filename="crud.txt", content_type="text/plain", user_id=user.id
+        )
         self.async_session.add(file)
         await self.async_session.commit()
         await self.async_session.refresh(file)
@@ -116,9 +139,13 @@ class TestFileModel(AsyncModelTestTemplate):
         Verifies:
         - File.user_id matches the related User's id
         """
-        user: Final[User] = User(email=get_unique_email(), hashed_password="hashed", is_active=True)
+        user: Final[User] = User(
+            email=get_unique_email(), hashed_password="hashed", is_active=True
+        )
         await self._seed_db_typed([user])
-        file: Final[File] = File(filename="rel.txt", content_type="text/plain", user_id=user.id)
+        file: Final[File] = File(
+            filename="rel.txt", content_type="text/plain", user_id=user.id
+        )
         await self._seed_db_typed([file])
         db_file: File | None = await self.async_session.get(File, file.id)
         assert db_file is not None
@@ -134,7 +161,9 @@ class TestFileModel(AsyncModelTestTemplate):
         Expects:
         - IntegrityError is raised when user_id does not exist
         """
-        file: Final[File] = File(filename="bad.txt", content_type="text/plain", user_id=999999)
+        file: Final[File] = File(
+            filename="bad.txt", content_type="text/plain", user_id=999999
+        )
         await self._assert_integrity_error_typed(file)
 
     @pytest.mark.asyncio
@@ -145,14 +174,21 @@ class TestFileModel(AsyncModelTestTemplate):
         - Multiple files can be inserted in bulk
         - Table truncation removes all records
         """
-        user: Final[User] = User(email=get_unique_email(), hashed_password="hashed", is_active=True)
+        user: Final[User] = User(
+            email=get_unique_email(), hashed_password="hashed", is_active=True
+        )
         await self._seed_db_typed([user])
-        files: list[File] = [File(filename=f"bulk-{i}.txt", content_type="text/plain", user_id=user.id) for i in range(5)]
+        files: list[File] = [
+            File(filename=f"bulk-{i}.txt", content_type="text/plain", user_id=user.id)
+            for i in range(5)
+        ]
         await self._seed_db_typed(files)
         for f in files:
             assert f.id is not None
         await self._truncate_table_typed("files")
-        result: Result[tuple[int]] = await self.async_session.execute(text("SELECT COUNT(*) FROM files"))
+        result: Result[tuple[int]] = await self.async_session.execute(
+            text("SELECT COUNT(*) FROM files")
+        )
         count: int | None = result.scalar()
         assert count == 0
 
@@ -163,9 +199,13 @@ class TestFileModel(AsyncModelTestTemplate):
         Verifies:
         - Changes are rolled back and not persisted
         """
-        user: Final[User] = User(email=get_unique_email(), hashed_password="hashed", is_active=True)
+        user: Final[User] = User(
+            email=get_unique_email(), hashed_password="hashed", is_active=True
+        )
         await self._seed_db_typed([user])
-        file: Final[File] = File(filename="rollback.txt", content_type="text/plain", user_id=user.id)
+        file: Final[File] = File(
+            filename="rollback.txt", content_type="text/plain", user_id=user.id
+        )
 
         async def op() -> None:
             self.async_session.add(file)
@@ -184,9 +224,13 @@ class TestFileModel(AsyncModelTestTemplate):
         Verifies:
         - __repr__ includes class name
         """
-        user: Final[User] = User(email=get_unique_email(), hashed_password="hashed", is_active=True)
+        user: Final[User] = User(
+            email=get_unique_email(), hashed_password="hashed", is_active=True
+        )
         await self._seed_db_typed([user])
-        file: Final[File] = File(filename="repr.txt", content_type="text/plain", user_id=user.id)
+        file: Final[File] = File(
+            filename="repr.txt", content_type="text/plain", user_id=user.id
+        )
         await self._seed_db_typed([file])
         self._assert_repr_typed(file, "File")
 
@@ -200,7 +244,9 @@ class TestFileModel(AsyncModelTestTemplate):
         Expects:
         - IntegrityError on empty content_type (if constraint exists)
         """
-        user: Final[User] = User(email=get_unique_email(), hashed_password="hashed", is_active=True)
+        user: Final[User] = User(
+            email=get_unique_email(), hashed_password="hashed", is_active=True
+        )
         await self._seed_db_typed([user])
         file: File = File(filename="badct.txt", content_type="", user_id=user.id)
         self.async_session.add(file)
@@ -216,10 +262,16 @@ class TestFileModel(AsyncModelTestTemplate):
         - Whether unique constraint exists on (filename, user_id)
         - Documents current behavior (allowed or not)
         """
-        user: Final[User] = User(email=get_unique_email(), hashed_password="hashed", is_active=True)
+        user: Final[User] = User(
+            email=get_unique_email(), hashed_password="hashed", is_active=True
+        )
         await self._seed_db_typed([user])
-        file1: File = File(filename="dup.txt", content_type="text/plain", user_id=user.id)
-        file2: File = File(filename="dup.txt", content_type="text/plain", user_id=user.id)
+        file1: File = File(
+            filename="dup.txt", content_type="text/plain", user_id=user.id
+        )
+        file2: File = File(
+            filename="dup.txt", content_type="text/plain", user_id=user.id
+        )
         await self._seed_db_typed([file1])
         allowed: bool
         try:
@@ -236,11 +288,15 @@ class TestFileModel(AsyncModelTestTemplate):
         Verifies:
         - Model accepts long strings for filename and content_type
         """
-        user: Final[User] = User(email=get_unique_email(), hashed_password="hashed", is_active=True)
+        user: Final[User] = User(
+            email=get_unique_email(), hashed_password="hashed", is_active=True
+        )
         await self._seed_db_typed([user])
         long_filename: Final[str] = "a" * 255
         long_content_type: Final[str] = "b" * 128
-        file: File = File(filename=long_filename, content_type=long_content_type, user_id=user.id)
+        file: File = File(
+            filename=long_filename, content_type=long_content_type, user_id=user.id
+        )
         await self._seed_db_typed([file])
         assert file.filename == long_filename
         assert file.content_type == long_content_type
@@ -252,7 +308,9 @@ class TestFileModel(AsyncModelTestTemplate):
         Expects:
         - IntegrityError when filename is None
         """
-        user: Final[User] = User(email=get_unique_email(), hashed_password="hashed", is_active=True)
+        user: Final[User] = User(
+            email=get_unique_email(), hashed_password="hashed", is_active=True
+        )
         await self._seed_db_typed([user])
         file: File = File(filename=None, content_type="text/plain", user_id=user.id)
         self.async_session.add(file)
@@ -267,7 +325,9 @@ class TestFileModel(AsyncModelTestTemplate):
         Expects:
         - IntegrityError when content_type is None
         """
-        user: Final[User] = User(email=get_unique_email(), hashed_password="hashed", is_active=True)
+        user: Final[User] = User(
+            email=get_unique_email(), hashed_password="hashed", is_active=True
+        )
         await self._seed_db_typed([user])
         file: File = File(filename="nullct.txt", content_type=None, user_id=user.id)
         self.async_session.add(file)
@@ -282,7 +342,9 @@ class TestFileModel(AsyncModelTestTemplate):
         Expects:
         - IntegrityError when user_id is None
         """
-        file: File = File(filename="nouser.txt", content_type="text/plain", user_id=None)
+        file: File = File(
+            filename="nouser.txt", content_type="text/plain", user_id=None
+        )
         self.async_session.add(file)
         with pytest.raises(IntegrityError):
             await self.async_session.commit()
@@ -296,11 +358,18 @@ class TestFileModel(AsyncModelTestTemplate):
         - User can have multiple files
         - All files are retrievable by user_id
         """
-        user: Final[User] = User(email=get_unique_email(), hashed_password="hashed", is_active=True)
+        user: Final[User] = User(
+            email=get_unique_email(), hashed_password="hashed", is_active=True
+        )
         await self._seed_db_typed([user])
-        files: list[File] = [File(filename=f"multi-{i}.txt", content_type="text/plain", user_id=user.id) for i in range(3)]
+        files: list[File] = [
+            File(filename=f"multi-{i}.txt", content_type="text/plain", user_id=user.id)
+            for i in range(3)
+        ]
         await self._seed_db_typed(files)
-        result = await self.async_session.execute(select(File).where(File.user_id == user.id))
+        result = await self.async_session.execute(
+            select(File).where(File.user_id == user.id)
+        )
         user_files = result.scalars().all()
         assert len(user_files) == 3
 
@@ -311,9 +380,13 @@ class TestFileModel(AsyncModelTestTemplate):
         Verifies:
         - Model accepts Unicode filenames
         """
-        user: Final[User] = User(email=get_unique_email(), hashed_password="hashed", is_active=True)
+        user: Final[User] = User(
+            email=get_unique_email(), hashed_password="hashed", is_active=True
+        )
         await self._seed_db_typed([user])
-        file: File = File(filename="файл.txt", content_type="text/plain", user_id=user.id)
+        file: File = File(
+            filename="файл.txt", content_type="text/plain", user_id=user.id
+        )
         await self._seed_db_typed([file])
         assert "файл" in file.filename
 
@@ -324,7 +397,9 @@ class TestFileModel(AsyncModelTestTemplate):
         Verifies:
         - Model accepts special characters in filename and content_type
         """
-        user: Final[User] = User(email=get_unique_email(), hashed_password="hashed", is_active=True)
+        user: Final[User] = User(
+            email=get_unique_email(), hashed_password="hashed", is_active=True
+        )
         await self._seed_db_typed([user])
         file: File = File(
             filename="weird!@#$.txt",

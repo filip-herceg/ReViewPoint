@@ -41,7 +41,7 @@ from src.services.user import (
     UserService,
     ValidationError,
 )
-from src.utils.http_error import http_error, ExtraLogInfo
+from src.utils.http_error import ExtraLogInfo, http_error
 
 # =============================
 # TypedDicts and Constants
@@ -313,7 +313,11 @@ async def register(
         )
     except InvalidDataError as e:
         http_error(
-            400, "Invalid registration data.", logger.warning, cast(ExtraLogInfo, {"email": data.email}), e
+            400,
+            "Invalid registration data.",
+            logger.warning,
+            cast(ExtraLogInfo, {"email": data.email}),
+            e,
         )
     except Exception as e:
         import traceback
@@ -370,10 +374,22 @@ async def login(
         return AuthResponse(access_token=access_token, refresh_token=refresh_token)
     except UserNotFoundError as e:
         logger.warning(f"Login failed: {data.email}")
-        http_error(401, "Invalid credentials", logger.warning, cast(ExtraLogInfo, {"email": data.email}), e)
+        http_error(
+            401,
+            "Invalid credentials",
+            logger.warning,
+            cast(ExtraLogInfo, {"email": data.email}),
+            e,
+        )
     except ValidationError as e:
         logger.warning(f"Login failed: {data.email}")
-        http_error(401, "Invalid credentials", logger.warning, cast(ExtraLogInfo, {"email": data.email}), e)
+        http_error(
+            401,
+            "Invalid credentials",
+            logger.warning,
+            cast(ExtraLogInfo, {"email": data.email}),
+            e,
+        )
     except Exception as e:
         logger.error(f"Login failed: {data.email}")
         http_error(
@@ -446,7 +462,10 @@ async def logout(
                 },
             )
             http_error(
-                401, "Invalid or expired token.", logger.warning, cast(ExtraLogInfo, {"error": str(e)})
+                401,
+                "Invalid or expired token.",
+                logger.warning,
+                cast(ExtraLogInfo, {"error": str(e)}),
             )
     await user_service.logout_user(session, current_user.id)
     logger.info("logout_success", extra={"user_id": current_user.id})
@@ -501,11 +520,17 @@ async def refresh_token(
         )
     except RefreshTokenBlacklistedError:
         http_error(
-            401, "Invalid or expired refresh token.", logger.warning, cast(ExtraLogInfo, {"token": token})
+            401,
+            "Invalid or expired refresh token.",
+            logger.warning,
+            cast(ExtraLogInfo, {"token": token}),
         )
     except RefreshTokenError:
         http_error(
-            401, "Invalid or expired refresh token.", logger.warning, cast(ExtraLogInfo, {"token": token})
+            401,
+            "Invalid or expired refresh token.",
+            logger.warning,
+            cast(ExtraLogInfo, {"token": token}),
         )
     except ValueError as e:
         http_error(
@@ -599,7 +624,12 @@ async def reset_password(
     """
     pw_error: str | None = get_password_validation_error(data.new_password)
     if pw_error is not None:
-        http_error(400, pw_error, logger.warning, cast(ExtraLogInfo, {"token_prefix": data.token[:8]}))
+        http_error(
+            400,
+            pw_error,
+            logger.warning,
+            cast(ExtraLogInfo, {"token_prefix": data.token[:8]}),
+        )
     logger.info(f"Password reset confirm attempt: {data.token[:8]}")
     try:
         await user_service.reset_password(session, data.token, data.new_password)
@@ -653,7 +683,11 @@ async def get_me(
         "name": current_user.name,
         "bio": current_user.bio,
         "avatar_url": current_user.avatar_url,
-        "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
-        "updated_at": current_user.updated_at.isoformat() if current_user.updated_at else None,
+        "created_at": (
+            current_user.created_at.isoformat() if current_user.created_at else None
+        ),
+        "updated_at": (
+            current_user.updated_at.isoformat() if current_user.updated_at else None
+        ),
     }
     return UserProfile.model_validate(user_dict)

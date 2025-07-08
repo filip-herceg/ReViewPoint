@@ -3,9 +3,9 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from sqlalchemy import JSON, Boolean, DateTime, String
 from sqlalchemy.orm import Mapped, WriteOnlyMapped, mapped_column, relationship

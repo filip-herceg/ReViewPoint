@@ -1,6 +1,5 @@
-
 from datetime import datetime
-from typing import Literal, Any
+from typing import Any, Literal
 
 import sqlalchemy
 from sqlalchemy import func, select
@@ -12,6 +11,7 @@ from src.utils.errors import ValidationError
 
 async def get_file_by_filename(session: AsyncSession, filename: str) -> File | None:
     from typing import Any
+
     result: sqlalchemy.engine.Result[Any] = await session.execute(
         select(File).where(File.filename == filename)
     )

@@ -1,6 +1,8 @@
 from datetime import datetime
-from typing import Final, Callable, TypedDict, Optional, Sequence, Mapping, cast
+from typing import Final, TypedDict
+
 import pytest
+
 from src.utils.datetime import parse_flexible_datetime
 from src.utils.filters import filter_fields, process_user_filters
 from tests.test_templates import UtilityUnitTestTemplate
@@ -24,13 +26,23 @@ class TestFilters(UtilityUnitTestTemplate):
 
     def test_filter_fields_empty_fields_list(self) -> None:
         """Test filter_fields with empty fields list returns original object."""
-        obj: Final[UserDict] = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        obj: Final[UserDict] = {
+            "id": 1,
+            "email": "test@example.com",
+            "name": "John",
+            "age": 30,
+        }
         result = filter_fields(obj, [])
         self.assert_equal(result, obj)
 
     def test_filter_fields_none_fields_list(self) -> None:
         """Test filter_fields with None fields list returns original object."""
-        obj: Final[UserDict] = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        obj: Final[UserDict] = {
+            "id": 1,
+            "email": "test@example.com",
+            "name": "John",
+            "age": 30,
+        }
         # filter_fields does not accept None, so skip this test or expect a type error
         with pytest.raises(TypeError):
             filter_fields(obj, None)  # type: ignore
@@ -46,12 +58,22 @@ class TestFilters(UtilityUnitTestTemplate):
         }
         fields: Final[list[str]] = ["name", "age"]
         result = filter_fields(obj, fields)
-        expected: UserDict = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        expected: UserDict = {
+            "id": 1,
+            "email": "test@example.com",
+            "name": "John",
+            "age": 30,
+        }
         self.assert_equal(result, expected)
 
     def test_filter_fields_with_required_fields_included(self) -> None:
         """Test filter_fields when required fields are already in the requested fields."""
-        obj: UserDict = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        obj: UserDict = {
+            "id": 1,
+            "email": "test@example.com",
+            "name": "John",
+            "age": 30,
+        }
         fields: list[str] = ["id", "email", "name"]
         result = filter_fields(obj, fields)
         expected: UserDict = {"id": 1, "email": "test@example.com", "name": "John"}
@@ -85,10 +107,20 @@ class TestFilters(UtilityUnitTestTemplate):
 
     def test_filter_fields_duplicate_fields(self) -> None:
         """Test filter_fields with duplicate fields in the list."""
-        obj: UserDict = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        obj: UserDict = {
+            "id": 1,
+            "email": "test@example.com",
+            "name": "John",
+            "age": 30,
+        }
         fields: list[str] = ["name", "name", "age", "id"]  # Duplicates
         result = filter_fields(obj, fields)
-        expected: UserDict = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        expected: UserDict = {
+            "id": 1,
+            "email": "test@example.com",
+            "name": "John",
+            "age": 30,
+        }
         self.assert_equal(result, expected)
 
     def test_process_user_filters_ascending_sort(self) -> None:
@@ -194,7 +226,9 @@ class TestFilters(UtilityUnitTestTemplate):
         self.assert_equal(sort, "user.profile.last_login")
         self.assert_equal(order, "desc")
 
-    def test_process_user_filters_sort_field_starting_with_dash_but_valid_field(self) -> None:
+    def test_process_user_filters_sort_field_starting_with_dash_but_valid_field(
+        self,
+    ) -> None:
         """Test process_user_filters with sort field that naturally starts with dash."""
         sort_jsonapi: str = "--special-field"  # Double dash
         created_after: str = "2023-01-01T00:00:00Z"
@@ -236,7 +270,14 @@ class TestFilters(UtilityUnitTestTemplate):
             "metadata": {"role": "admin", "level": 5},
             "null_field": None,
         }
-        fields: list[str] = ["name", "active", "score", "tags", "metadata", "null_field"]
+        fields: list[str] = [
+            "name",
+            "active",
+            "score",
+            "tags",
+            "metadata",
+            "null_field",
+        ]
         result = filter_fields(obj, fields)
 
         expected: UserDict = {
@@ -268,7 +309,12 @@ class TestFilters(UtilityUnitTestTemplate):
 
     def test_filter_fields_with_only_required_fields_requested(self) -> None:
         """Test filter_fields when only required fields are requested."""
-        obj: UserDict = {"id": 1, "email": "test@example.com", "name": "John", "age": 30}
+        obj: UserDict = {
+            "id": 1,
+            "email": "test@example.com",
+            "name": "John",
+            "age": 30,
+        }
         fields: list[str] = ["id", "email"]
         result = filter_fields(obj, fields)
         expected: UserDict = {"id": 1, "email": "test@example.com"}
@@ -320,9 +366,20 @@ class TestFilters(UtilityUnitTestTemplate):
     def test_filter_fields_with_integer_and_string_keys_mixed(self) -> None:
         """Test filter_fields handles mixed key types gracefully."""
         # Edge case: what if the object has non-string keys?
-        obj: dict[object, object] = {"id": 1, "email": "test@example.com", 123: "numeric_key", "name": "John"}
+        obj: dict[object, object] = {
+            "id": 1,
+            "email": "test@example.com",
+            123: "numeric_key",
+            "name": "John",
+        }
         fields: list[str] = ["name"]  # Only use string fields for type safety
         # The function should ignore the numeric key
-        result = filter_fields({k: v for k, v in obj.items() if isinstance(k, str)}, fields)
-        expected: dict[str, object] = {"id": 1, "email": "test@example.com", "name": "John"}
+        result = filter_fields(
+            {k: v for k, v in obj.items() if isinstance(k, str)}, fields
+        )
+        expected: dict[str, object] = {
+            "id": 1,
+            "email": "test@example.com",
+            "name": "John",
+        }
         self.assert_equal(result, expected)

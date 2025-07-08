@@ -1,12 +1,11 @@
+from typing import Any
+
 import pytest
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from typing import Any, Mapping
-from collections.abc import Awaitable, Callable
 
-from tests.test_data_generators import get_unique_email, get_test_user
-from tests.test_data_generators import get_unique_email, get_test_user
 from src.models.user import User
+from tests.test_data_generators import get_unique_email
 from tests.test_templates import AsyncModelTestTemplate, ModelUnitTestTemplate
 
 
@@ -155,7 +154,8 @@ class TestUserDB(AsyncModelTestTemplate):
 
         await self.run_in_transaction(op)
         result = await self.async_session.execute(
-            text("SELECT COUNT(*) FROM users WHERE email = :email"), {"email": test_email}
+            text("SELECT COUNT(*) FROM users WHERE email = :email"),
+            {"email": test_email},
         )
         count = result.scalar()
         assert count == 0

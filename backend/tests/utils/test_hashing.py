@@ -1,4 +1,5 @@
 from typing import Final
+
 from tests.test_templates import UtilityUnitTestTemplate
 
 

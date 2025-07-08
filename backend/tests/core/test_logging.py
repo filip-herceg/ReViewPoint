@@ -6,10 +6,9 @@ import sys
 from pathlib import Path
 from types import ModuleType
 from typing import Final
+from unittest.mock import patch
 
-import pytest
 from _pytest.capture import CaptureFixture
-from _pytest.tmpdir import TempPathFactory
 
 from tests.test_templates import LogCaptureTestTemplate
 
@@ -22,7 +21,7 @@ class TestLogging(LogCaptureTestTemplate):
     def reload_logging(self) -> ModuleType:
         """
         Reload the logging module to ensure clean state between tests.
-        
+
         Returns:
             The reloaded logging module.
         """
@@ -77,8 +76,12 @@ class TestLogging(LogCaptureTestTemplate):
         """Test that logging to file works correctly."""
         log_mod: ModuleType = self.reload_logging()
         logfile: Path = tmp_path / "app.log"
-        log_mod.init_logging(level="INFO", logfile=str(logfile))
-        logging.getLogger().info("to-file")
+
+        # Temporarily patch the _is_testing function to allow file logging
+        with patch.object(log_mod, "_is_testing", return_value=False):
+            log_mod.init_logging(level="INFO", logfile=str(logfile))
+            logging.getLogger().info("to-file")
+
         assert logfile.exists() and "to-file" in logfile.read_text()
 
     def test_core_logging_import_smoke(self) -> None:

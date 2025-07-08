@@ -5,13 +5,13 @@ This module provides custom pytest markers that allow tests to be skipped
 conditionally based on the test environment, rather than being skipped in all environments.
 """
 
-
 import os
-from typing import Final, Optional, Callable
+from typing import Final
+
 import pytest
 
 
-def skip_if_fast_tests(reason: Optional[str] = None) -> None:
+def skip_if_fast_tests(reason: str | None = None) -> None:
     """
     Skip this test only when running in fast test mode (FAST_TESTS=1).
 
@@ -32,11 +32,13 @@ def skip_if_fast_tests(reason: Optional[str] = None) -> None:
             # rest of test...
     """
     if os.environ.get("FAST_TESTS") == "1":
-        default_reason: Final[str] = "Test not compatible with fast test mode (SQLite in-memory)"
+        default_reason: Final[str] = (
+            "Test not compatible with fast test mode (SQLite in-memory)"
+        )
         pytest.skip(reason or default_reason)
 
 
-def skip_if_not_fast_tests(reason: Optional[str] = None) -> None:
+def skip_if_not_fast_tests(reason: str | None = None) -> None:
     """
     Skip this test only when NOT running in fast test mode.
 
@@ -56,7 +58,7 @@ def skip_if_not_fast_tests(reason: Optional[str] = None) -> None:
         pytest.skip(reason or default_reason)
 
 
-def requires_real_db(reason: Optional[str] = None) -> None:
+def requires_real_db(reason: str | None = None) -> None:
     """
     Skip this test when running with in-memory SQLite (fast test mode).
 
@@ -77,7 +79,7 @@ def requires_real_db(reason: Optional[str] = None) -> None:
     )
 
 
-def requires_timing_precision(reason: Optional[str] = None) -> None:
+def requires_timing_precision(reason: str | None = None) -> None:
     """
     Skip this test when running in fast test mode due to timing issues.
 
@@ -95,7 +97,7 @@ def requires_timing_precision(reason: Optional[str] = None) -> None:
     )
 
 
-def skip_if_missing_feature(feature_name: str, reason: Optional[str] = None) -> None:
+def skip_if_missing_feature(feature_name: str, reason: str | None = None) -> None:
     """
     Skip this test if a specific feature is not available.
 

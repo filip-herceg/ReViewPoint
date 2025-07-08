@@ -1,5 +1,5 @@
 from collections.abc import Callable, Mapping, Sequence
-from typing import Final, Literal, TypedDict
+from typing import Final, Literal, TypedDict, TypeVar
 
 
 class UserDict(TypedDict, total=False):
@@ -24,14 +24,14 @@ def filter_fields(
     Returns:
         A new dict with only the specified and required fields.
     """
+    if fields is None:
+        raise TypeError("fields parameter cannot be None")
     if not fields:
         return dict(obj)
     required_fields: Final[list[RequiredField]] = ["id", "email"]
     fields_to_include: list[str] = list(set(fields) | set(required_fields))
     return {k: v for k, v in obj.items() if k in fields_to_include}
 
-
-from typing import TypeVar
 
 TDate = TypeVar("TDate")
 
@@ -68,9 +68,9 @@ def process_user_filters(
     try:
         created_after_dt: TDate = parse_flexible_datetime(created_after)
     except ValueError as e:
-        raise ValueError(f"Invalid created_after: {e}")
+        raise ValueError(f"Invalid created_after: {e}") from e
     try:
         created_before_dt: TDate = parse_flexible_datetime(created_before)
     except ValueError as e:
-        raise ValueError(f"Invalid created_before: {e}")
+        raise ValueError(f"Invalid created_before: {e}") from e
     return sort, order, created_after_dt, created_before_dt

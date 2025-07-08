@@ -1,17 +1,22 @@
 import statistics
 import time
+from collections.abc import Sequence
 from typing import Final
+
 import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.models.user import User
 from tests.test_templates import DatabaseTestTemplate
-from collections.abc import Sequence
+
 
 @pytest.mark.performance
 class TestDatabasePerformance(DatabaseTestTemplate):
     @pytest.mark.asyncio
-    async def test_query_performance(self: "TestDatabasePerformance", async_session: AsyncSession) -> None:
+    async def test_query_performance(
+        self: "TestDatabasePerformance", async_session: AsyncSession
+    ) -> None:
         """
         Test database query performance with populated database.
 

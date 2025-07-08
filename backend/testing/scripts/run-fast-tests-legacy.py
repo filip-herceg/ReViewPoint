@@ -1,9 +1,9 @@
-
 import os
-import sys
 import shutil
 import subprocess
+import sys
 from pathlib import Path
+
 
 def main() -> int:
     """Run fast tests with proper conftest switching."""

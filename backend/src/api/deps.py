@@ -1,20 +1,3 @@
-from typing import Any
-"""
-Dependency injection utilities for FastAPI API endpoints.
-
-This module provides robust, reusable dependencies for:
-- Database session management (get_db)
-- User authentication and active user checks (get_current_user, get_current_active_user, optional_get_current_user)
-- Pagination parameter validation (pagination_params)
-- Repository/service locator for testability (get_user_service, get_service)
-- Request ID propagation for tracing (get_request_id, get_current_request_id)
-- Feature flag checks
-- Dependency health checks and metrics
-- Dynamic config reloading
-
-All dependencies use loguru for error and event logging, follow security best practices, and are designed for easy testing and mocking.
-"""
-
 import contextvars
 import importlib
 import time
@@ -22,8 +5,10 @@ import uuid
 from collections.abc import AsyncGenerator, Awaitable, Callable
 from functools import lru_cache, wraps
 from typing import (
+    Any,
     Final,
     Literal,
+    Protocol,
     TypedDict,
     TypeVar,
     cast,
@@ -43,6 +28,22 @@ from src.repositories import user as user_repository
 from src.repositories.user import get_user_by_id
 from src.services.user import UserService
 from src.utils.http_error import http_error
+
+"""
+Dependency injection utilities for FastAPI API endpoints.
+
+This module provides robust, reusable dependencies for:
+- Database session management (get_db)
+- User authentication and active user checks (get_current_user, get_current_active_user, optional_get_current_user)
+- Pagination parameter validation (pagination_params)
+- Repository/service locator for testability (get_user_service, get_service)
+- Request ID propagation for tracing (get_request_id, get_current_request_id)
+- Feature flag checks
+- Dependency health checks and metrics
+- Dynamic config reloading
+
+All dependencies use loguru for error and event logging, follow security best practices, and are designed for easy testing and mocking.
+"""
 
 REQUEST_ID_HEADER: Final[str] = "X-Request-ID"
 
@@ -202,7 +203,10 @@ def get_password_validation_error() -> Callable[[str], str | None]:
 def get_async_refresh_access_token() -> (
     Callable[[AsyncSession, str], Awaitable[object]]
 ):
-    async_refresh_access_token = cast(Callable[[AsyncSession, str, str, str], Awaitable[object]], registry.get("async_refresh_access_token"))
+    async_refresh_access_token = cast(
+        Callable[[AsyncSession, str, str, str], Awaitable[object]],
+        registry.get("async_refresh_access_token"),
+    )
 
     async def wrapper(session: AsyncSession, token: str) -> object:
         settings = get_settings()
@@ -228,9 +232,6 @@ def get_service(module_path: str) -> object:
 
 
 # --- Feature Flags ---
-
-
-from typing import Protocol
 
 
 class FeatureFlagsProtocol(Protocol):
@@ -276,6 +277,7 @@ class HealthCheck:
     async def check_all(cls) -> dict[str, dict[str, str | bool]]:
         results: dict[str, dict[str, str | bool]] = {}
         import asyncio
+
         for name, check_func in cls._checks.items():
             try:
                 result = check_func()
@@ -441,7 +443,9 @@ def pagination_params(
 async def _resolve_user_from_id(session: AsyncSession, user_id: Any) -> User | None:
     """Helper to resolve a user from an int or str user_id."""
     from sqlalchemy import select
+
     from src.models.user import User
+
     if isinstance(user_id, int):
         return await get_user_by_id(session, user_id)
     if isinstance(user_id, str):
@@ -451,6 +455,7 @@ async def _resolve_user_from_id(session: AsyncSession, user_id: Any) -> User | N
         return result.scalar_one_or_none()
     logger.error(f"user_id has unexpected type: {type(user_id)}")
     return None
+
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -604,7 +609,9 @@ async def get_current_active_user(
         user = Depends(get_current_active_user)
     """
     if not user or not user.is_active or user.is_deleted:
-        logger.error(f"Inactive or deleted user tried to access: user_id={getattr(user, 'id', None)}")
+        logger.error(
+            f"Inactive or deleted user tried to access: user_id={getattr(user, 'id', None)}"
+        )
         http_error(
             status.HTTP_403_FORBIDDEN,
             "Inactive or deleted user.",
@@ -686,9 +693,7 @@ async def validate_api_key(
     return api_key == configured_api_key
 
 
-def require_api_key(
-    api_key: str | None = Header(None, alias="X-API-Key")
-) -> None:
+def require_api_key(api_key: str | None = Header(None, alias="X-API-Key")) -> None:
     """
     Dependency to require a valid API key.
 
@@ -750,7 +755,9 @@ async def get_current_user_with_api_key(
             "Invalid or missing user.",
             logger.error,
         )
-        raise RuntimeError("Invalid or missing user.")  # Defensive, should never reach here
+        raise RuntimeError(
+            "Invalid or missing user."
+        )  # Defensive, should never reach here
     return user
 
 

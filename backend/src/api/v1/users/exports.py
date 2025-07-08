@@ -3,7 +3,7 @@ User export endpoints: CSV, health, and simple export endpoints.
 """
 
 import csv
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from io import StringIO
 from typing import Final, Literal, TypedDict
 
@@ -64,7 +64,6 @@ async def export_users_csv(
     # Generate CSV
 
     output: StringIO = StringIO()
-    writer: Callable[[Sequence[str]], int] = csv.writer(output).writerow
     csv_writer = csv.writer(output)
     csv_writer.writerow(["id", "email", "name"])
 

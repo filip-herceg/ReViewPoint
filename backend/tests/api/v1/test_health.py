@@ -6,8 +6,8 @@ Note: Do NOT use BaseAPITest directly for health checks—use HealthEndpointTest
 """
 
 import os
-from collections.abc import Callable, Generator, Mapping, MutableMapping
-from typing import Final, Literal, Union, cast, TYPE_CHECKING
+from collections.abc import Callable, Mapping, MutableMapping
+from typing import Final, cast
 
 import pytest
 from fastapi.testclient import TestClient
@@ -28,31 +28,40 @@ EnvVarsDict = Mapping[str, str]
 HTTPMethod = Callable[..., Response]
 
 
-
 class TestHealthEndpoint(HealthEndpointTestTemplate):
     """
     Test class for health endpoint functionality.
     Tests various HTTP methods, auth scenarios, and response validation.
     """
 
-    def _safe_request_typed(self, method: HTTPMethod, *args: object, **kwargs: object) -> Response:
+    def _safe_request_typed(
+        self, method: HTTPMethod, *args: object, **kwargs: object
+    ) -> Response:
         """Type-safe wrapper for base class safe_request method."""
-        safe_request_method: Callable[..., Response] = cast(Callable[..., Response], self.safe_request)
+        safe_request_method: Callable[..., Response] = cast(
+            Callable[..., Response], self.safe_request
+        )
         return safe_request_method(method, *args, **kwargs)
 
     def _assert_health_response_typed(self, resp: Response) -> None:
         """Type-safe wrapper for base class assert_health_response method."""
-        assert_health_method: Callable[[Response], None] = cast(Callable[[Response], None], self.assert_health_response)
+        assert_health_method: Callable[[Response], None] = cast(
+            Callable[[Response], None], self.assert_health_response
+        )
         assert_health_method(resp)
 
     def _assert_content_type_typed(self, resp: Response, content_type: str) -> None:
         """Type-safe wrapper for base class assert_content_type method."""
-        assert_content_type_method: Callable[[Response, str], None] = cast(Callable[[Response, str], None], self.assert_content_type)
+        assert_content_type_method: Callable[[Response, str], None] = cast(
+            Callable[[Response, str], None], self.assert_content_type
+        )
         assert_content_type_method(resp, content_type)
 
     def _assert_status_typed(self, resp: Response, status: StatusCodeUnion) -> None:
         """Type-safe wrapper for base class assert_status method."""
-        assert_status_method: Callable[[Response, StatusCodeUnion], None] = cast(Callable[[Response, StatusCodeUnion], None], self.assert_status)
+        assert_status_method: Callable[[Response, StatusCodeUnion], None] = cast(
+            Callable[[Response, StatusCodeUnion], None], self.assert_status
+        )
         assert_status_method(resp, status)
 
     def _get_auth_header_typed(self, client: TestClient) -> HeadersDict:
@@ -61,7 +70,9 @@ class TestHealthEndpoint(HealthEndpointTestTemplate):
 
     def _override_env_vars_typed(self, env_vars: EnvVarsDict) -> None:
         """Type-safe wrapper for base class override_env_vars method."""
-        override_env_vars_method: Callable[[EnvVarsDict], None] = cast(Callable[[EnvVarsDict], None], self.override_env_vars)
+        override_env_vars_method: Callable[[EnvVarsDict], None] = cast(
+            Callable[[EnvVarsDict], None], self.override_env_vars
+        )
         override_env_vars_method(env_vars)
 
     @pytest.fixture(autouse=True)
@@ -102,7 +113,9 @@ class TestHealthEndpoint(HealthEndpointTestTemplate):
         Expects 200 (success), 401 (unauthorized), or 503 (service unavailable).
         """
         headers: HeadersDict = self._get_auth_header_typed(client)
-        resp: Response = self._safe_request_typed(client.get, HEALTH_ENDPOINT, headers=headers)
+        resp: Response = self._safe_request_typed(
+            client.get, HEALTH_ENDPOINT, headers=headers
+        )
         if resp.status_code == 200:
             self._assert_health_response_typed(resp)
             self._assert_content_type_typed(resp, CONTENT_TYPE_JSON)
@@ -140,17 +153,16 @@ class TestHealthEndpoint(HealthEndpointTestTemplate):
         """
         base_headers: HeadersDict = self._get_auth_header_typed(client)
         headers: HeadersDict = {
-            k: v
-            for k, v in base_headers.items()
-            if k.lower() != "x-api-key"
+            k: v for k, v in base_headers.items() if k.lower() != "x-api-key"
         }
-        resp: Response = self._safe_request_typed(client.get, HEALTH_ENDPOINT, headers=headers)
+        resp: Response = self._safe_request_typed(
+            client.get, HEALTH_ENDPOINT, headers=headers
+        )
         if resp.status_code == 200:
             self._assert_health_response_typed(resp)
             self._assert_content_type_typed(resp, CONTENT_TYPE_JSON)
         else:
             self._assert_status_typed(resp, (401, 403))
-
 
 
 class TestHealthFeatureFlags(HealthEndpointTestTemplate):
@@ -159,9 +171,13 @@ class TestHealthFeatureFlags(HealthEndpointTestTemplate):
     Tests various feature flag scenarios and API key configurations.
     """
 
-    def _safe_request_typed(self, method: HTTPMethod, *args: object, **kwargs: object) -> Response:
+    def _safe_request_typed(
+        self, method: HTTPMethod, *args: object, **kwargs: object
+    ) -> Response:
         """Type-safe wrapper for base class safe_request method."""
-        safe_request_method: Callable[..., Response] = cast(Callable[..., Response], self.safe_request)
+        safe_request_method: Callable[..., Response] = cast(
+            Callable[..., Response], self.safe_request
+        )
         return safe_request_method(method, *args, **kwargs)
 
     def _get_auth_header_typed(self, client: TestClient) -> HeadersDict:
@@ -170,12 +186,16 @@ class TestHealthFeatureFlags(HealthEndpointTestTemplate):
 
     def _assert_api_key_required_typed(self, resp: Response) -> None:
         """Type-safe wrapper for base class assert_api_key_required method."""
-        assert_api_key_required_method: Callable[[Response], None] = cast(Callable[[Response], None], self.assert_api_key_required)
+        assert_api_key_required_method: Callable[[Response], None] = cast(
+            Callable[[Response], None], self.assert_api_key_required
+        )
         assert_api_key_required_method(resp)
 
     def _override_env_vars_typed(self, env_vars: EnvVarsDict) -> None:
         """Type-safe wrapper for base class override_env_vars method."""
-        override_env_vars_method: Callable[[EnvVarsDict], None] = cast(Callable[[EnvVarsDict], None], self.override_env_vars)
+        override_env_vars_method: Callable[[EnvVarsDict], None] = cast(
+            Callable[[EnvVarsDict], None], self.override_env_vars
+        )
         override_env_vars_method(env_vars)
 
     def test_health_feature_disabled(self, client: TestClient) -> None:
@@ -229,18 +249,24 @@ class TestHealthFeatureFlags(HealthEndpointTestTemplate):
                 "REVIEWPOINT_FEATURE_HEALTH_READ": "true",
             }
             self._override_env_vars_typed(regular_env)
-            from src.main import create_app
             from src.core.database import get_async_session
+            from src.main import create_app
+
             async_session = request.getfixturevalue("async_session")
             fresh_app = create_app()
-            import collections.abc
-            from typing import AsyncGenerator
+            from collections.abc import AsyncGenerator
+
             async def _override_get_async_session() -> AsyncGenerator[object, None]:
                 yield async_session
-            fresh_app.dependency_overrides[get_async_session] = _override_get_async_session
+
+            fresh_app.dependency_overrides[get_async_session] = (
+                _override_get_async_session
+            )
             test_client: TestClient = TestClient(fresh_app)
             client = test_client
         headers: HeadersDict = self._get_auth_header_typed(client)
         headers["X-API-Key"] = "wrongkey"
-        resp: Response = self._safe_request_typed(client.get, "/api/v1/health", headers=headers)
+        resp: Response = self._safe_request_typed(
+            client.get, "/api/v1/health", headers=headers
+        )
         self._assert_api_key_required_typed(resp)

@@ -1,7 +1,6 @@
-
 from datetime import UTC, datetime, timedelta
-from typing import Final, Optional, TypedDict, Callable, cast, Dict, List
-from collections.abc import Generator
+from typing import Final
+
 from src.schemas.user import (
     UserAvatarResponse,
     UserPreferences,
@@ -10,8 +9,6 @@ from src.schemas.user import (
     UserProfileUpdate,
 )
 from tests.test_templates import ModelUnitTestTemplate
-
-
 
 
 class TestUserProfileSchema(ModelUnitTestTemplate):
@@ -50,6 +47,7 @@ class TestUserProfileSchema(ModelUnitTestTemplate):
             pydantic.ValidationError: If required fields are missing or extra fields are provided.
         """
         import pydantic
+
         self.assert_raises(pydantic.ValidationError, UserProfile, id=None, email=None)
         self.assert_raises(pydantic.ValidationError, UserProfile, id=1, email=None)
         self.assert_raises(
@@ -88,7 +86,9 @@ class TestUserProfileSchema(ModelUnitTestTemplate):
         self.assert_in("üñîçødë", profile.email)
         self.assert_is_true(profile.name is not None and "测试用户" in profile.name)
         self.assert_is_true(profile.bio is not None and "💡" in profile.bio)
-        self.assert_is_true(profile.avatar_url is not None and profile.avatar_url.endswith("😀.png"))
+        self.assert_is_true(
+            profile.avatar_url is not None and profile.avatar_url.endswith("😀.png")
+        )
 
     def test_serialization(self) -> None:
         """
@@ -105,7 +105,7 @@ class TestUserProfileSchema(ModelUnitTestTemplate):
             created_at=now_str,
             updated_at=now_str,
         )
-        d: Dict[str, object] = profile.model_dump()
+        d: dict[str, object] = profile.model_dump()
         assert isinstance(d["created_at"], str)
         j: str = profile.model_dump_json()
         self.assert_in('"name":"Serial"', j)
@@ -129,6 +129,7 @@ class TestUserProfileSchema(ModelUnitTestTemplate):
             pydantic.ValidationError: If invalid types are provided for fields.
         """
         import pydantic
+
         self.assert_raises(
             pydantic.ValidationError,
             UserProfile,
@@ -203,6 +204,7 @@ class TestUserProfileSchema(ModelUnitTestTemplate):
             id=104, email="date@example.com", created_at=future_str, updated_at=past_str
         )
         import dateutil.parser
+
         if profile.created_at is not None:
             created_at_dt: datetime = dateutil.parser.isoparse(profile.created_at)
             self.assert_is_true(created_at_dt > now)
@@ -229,7 +231,6 @@ class TestUserProfileSchema(ModelUnitTestTemplate):
             self.assert_in("💬", profile.bio)
         if profile.avatar_url is not None:
             self.assert_in("用户", profile.avatar_url)
-
 
 
 class TestUserProfileUpdateSchema(ModelUnitTestTemplate):
@@ -262,7 +263,6 @@ class TestUserProfileUpdateSchema(ModelUnitTestTemplate):
             self.assert_is_true(update.bio.isspace())
 
 
-
 class TestUserPreferencesSchema(ModelUnitTestTemplate):
     """Strictly typed tests for the UserPreferences schema."""
 
@@ -281,6 +281,7 @@ class TestUserPreferencesSchema(ModelUnitTestTemplate):
     def test_edge_cases(self) -> None:
         """Test UserPreferences with invalid and extra fields, expecting ValidationError."""
         import pydantic
+
         self.assert_raises(
             pydantic.ValidationError,
             UserPreferences,
@@ -304,13 +305,12 @@ class TestUserPreferencesSchema(ModelUnitTestTemplate):
         )
 
 
-
 class TestUserPreferencesUpdateSchema(ModelUnitTestTemplate):
     """Strictly typed tests for the UserPreferencesUpdate schema."""
 
     def test_deeply_nested_and_empty(self) -> None:
         """Test UserPreferencesUpdate with nested and empty preferences."""
-        nested: Dict[str, object] = {
+        nested: dict[str, object] = {
             "theme": "dark",
             "settings": {"notifications": {"email": True, "sms": False}},
         }
@@ -341,19 +341,26 @@ class TestUserPreferencesUpdateSchema(ModelUnitTestTemplate):
         self.assert_equal(prefs.preferences["two"], 2)
 
 
-
 class TestUserAvatarResponseSchema(ModelUnitTestTemplate):
     """Strictly typed tests for the UserAvatarResponse schema."""
 
     def test_valid_and_special_characters(self) -> None:
         """Test UserAvatarResponse with valid and special character avatar URLs."""
-        resp: UserAvatarResponse = UserAvatarResponse(avatar_url="/uploads/avatars/1_avatar.png")
+        resp: UserAvatarResponse = UserAvatarResponse(
+            avatar_url="/uploads/avatars/1_avatar.png"
+        )
         self.assert_is_true(resp.avatar_url.endswith("avatar.png"))
-        resp2: UserAvatarResponse = UserAvatarResponse(avatar_url="/uploads/avatars/!@#$%^&*().png")
+        resp2: UserAvatarResponse = UserAvatarResponse(
+            avatar_url="/uploads/avatars/!@#$%^&*().png"
+        )
         self.assert_is_true(any(c in resp2.avatar_url for c in "!@#$%^&*()"))
-        resp3: UserAvatarResponse = UserAvatarResponse(avatar_url="/uploads/avatars/😀.png")
+        resp3: UserAvatarResponse = UserAvatarResponse(
+            avatar_url="/uploads/avatars/😀.png"
+        )
         self.assert_in("😀", resp3.avatar_url)
-        resp4: UserAvatarResponse = UserAvatarResponse(avatar_url="/uploads/avatars/with space.png")
+        resp4: UserAvatarResponse = UserAvatarResponse(
+            avatar_url="/uploads/avatars/with space.png"
+        )
         self.assert_in(" ", resp4.avatar_url)
         resp5: UserAvatarResponse = UserAvatarResponse(avatar_url="")
         self.assert_equal(resp5.avatar_url, "")
@@ -361,6 +368,7 @@ class TestUserAvatarResponseSchema(ModelUnitTestTemplate):
     def test_invalid(self) -> None:
         """Test UserAvatarResponse with invalid avatar_url, expecting ValidationError."""
         import pydantic
+
         self.assert_raises(
             pydantic.ValidationError, UserAvatarResponse, avatar_url=None
         )

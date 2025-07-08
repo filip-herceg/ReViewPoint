@@ -6,17 +6,16 @@ import asyncio
 import datetime
 import os
 import uuid
-from collections.abc import Awaitable, Callable, Sequence
-from typing import Any, Final, Literal, cast
+from collections.abc import Awaitable, Callable
+from typing import Any, Final, cast
 
 import pytest
-from sqlalchemy import select, text
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql import Select
 
 # Import config-dependent modules inside test class to ensure env vars are set by fixtures first
-from tests.test_data_generators import get_unique_email, get_test_user
+from tests.test_data_generators import get_unique_email
 from tests.test_templates import DatabaseTestTemplate
 
 USER_EMAIL: Final[str] = get_unique_email()
@@ -37,7 +36,9 @@ class TestDatabase(DatabaseTestTemplate):
         self, operations: list[Callable[[AsyncSession], Awaitable[Any]]]
     ) -> list[Any]:
         """Typed wrapper for run_concurrent_operations."""
-        return cast(list[Any], await cast(Any, super().run_concurrent_operations)(operations))
+        return cast(
+            list[Any], await cast(Any, super().run_concurrent_operations)(operations)
+        )
 
     async def _assert_healthcheck_ok_typed(
         self, healthcheck_func: Callable[[], Awaitable[None]]
@@ -46,10 +47,14 @@ class TestDatabase(DatabaseTestTemplate):
         await cast(Any, super().assert_healthcheck_ok)(healthcheck_func)
 
     async def _assert_session_context_ok_typed(
-        self, get_session_func: Callable[[], AsyncSession], session_type: type[AsyncSession]
+        self,
+        get_session_func: Callable[[], AsyncSession],
+        session_type: type[AsyncSession],
     ) -> None:
         """Typed wrapper for assert_session_context_ok."""
-        await cast(Any, super().assert_session_context_ok)(get_session_func, session_type)
+        await cast(Any, super().assert_session_context_ok)(
+            get_session_func, session_type
+        )
 
     async def _assert_session_rollback_typed(
         self, session_factory: Callable[[], AsyncSession]
@@ -76,22 +81,35 @@ class TestDatabase(DatabaseTestTemplate):
         )
 
     async def _assert_transaction_isolation_typed(
-        self, session_factory: Callable[[], AsyncSession], table: type[Any], insert_dict: dict[str, str]
+        self,
+        session_factory: Callable[[], AsyncSession],
+        table: type[Any],
+        insert_dict: dict[str, str],
     ) -> None:
         """Typed wrapper for assert_transaction_isolation."""
-        await cast(Any, super().assert_transaction_isolation)(session_factory, table, insert_dict)
+        await cast(Any, super().assert_transaction_isolation)(
+            session_factory, table, insert_dict
+        )
 
     async def _bulk_insert_typed(
-        self, session_factory: Callable[[], AsyncSession], table: type[Any], rows: list[dict[str, str]]
+        self,
+        session_factory: Callable[[], AsyncSession],
+        table: type[Any],
+        rows: list[dict[str, str]],
     ) -> None:
         """Typed wrapper for bulk_insert."""
         await cast(Any, super().bulk_insert)(session_factory, table, rows)
 
     async def _assert_db_integrity_error_typed(
-        self, session_factory: Callable[[], AsyncSession], table: type[Any], insert_dict: dict[str, str]
+        self,
+        session_factory: Callable[[], AsyncSession],
+        table: type[Any],
+        insert_dict: dict[str, str],
     ) -> None:
         """Typed wrapper for assert_db_integrity_error."""
-        await cast(Any, super().assert_db_integrity_error)(session_factory, table, insert_dict)
+        await cast(Any, super().assert_db_integrity_error)(
+            session_factory, table, insert_dict
+        )
 
     async def _assert_bulk_query_typed(
         self,
@@ -101,10 +119,15 @@ class TestDatabase(DatabaseTestTemplate):
         expected_count: int,
     ) -> None:
         """Typed wrapper for assert_bulk_query."""
-        await cast(Any, super().assert_bulk_query)(session_factory, table, filter_dict, expected_count)
+        await cast(Any, super().assert_bulk_query)(
+            session_factory, table, filter_dict, expected_count
+        )
 
     async def _seed_database_typed(
-        self, session_factory: Callable[[], AsyncSession], table: type[Any], rows: list[dict[str, str]]
+        self,
+        session_factory: Callable[[], AsyncSession],
+        table: type[Any],
+        rows: list[dict[str, str]],
     ) -> None:
         """Typed wrapper for seed_database."""
         await cast(Any, super().seed_database)(session_factory, table, rows)
@@ -125,7 +148,9 @@ class TestDatabase(DatabaseTestTemplate):
         """Typed wrapper for run_migration."""
         cast(Any, super().run_migration)(command)
 
-    def _simulate_db_disconnect_typed(self, session_factory: Callable[[], AsyncSession]) -> None:
+    def _simulate_db_disconnect_typed(
+        self, session_factory: Callable[[], AsyncSession]
+    ) -> None:
         """Typed wrapper for simulate_db_disconnect."""
         cast(Any, super().simulate_db_disconnect)(session_factory)
 
@@ -135,14 +160,16 @@ class TestDatabase(DatabaseTestTemplate):
         """Typed wrapper for simulate_db_latency."""
         cast(Any, super().simulate_db_latency)(session_factory, delay)
 
-    def _assert_connection_pool_size_typed(self, engine: Any, expected_size: int) -> None:
+    def _assert_connection_pool_size_typed(
+        self, engine: Any, expected_size: int
+    ) -> None:
         """Typed wrapper for assert_connection_pool_size."""
         cast(Any, super().assert_connection_pool_size)(engine, expected_size)
 
     @pytest.mark.asyncio
     async def test_true_concurrent_inserts(self) -> None:
         """Test true concurrent inserts using run_concurrent_operations helper.
-        
+
         Raises:
             AssertionError: If the concurrent inserts fail or results are not unique.
         """
@@ -164,7 +191,7 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_db_healthcheck(self) -> None:
         """Test that db_healthcheck succeeds on a valid connection.
-        
+
         Raises:
             AssertionError: If the healthcheck fails unexpectedly.
         """
@@ -173,16 +200,18 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_db_session_context(self) -> None:
         """Test that session context manager works properly.
-        
+
         Raises:
             AssertionError: If the session context doesn't work as expected.
         """
-        await self._assert_session_context_ok_typed(self.get_async_session, AsyncSession)
+        await self._assert_session_context_ok_typed(
+            self.get_async_session, AsyncSession
+        )
 
     @pytest.mark.asyncio
     async def test_session_rollback(self) -> None:
         """Test session rollback on error.
-        
+
         Raises:
             AssertionError: If session rollback doesn't work properly.
         """
@@ -191,7 +220,7 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_users_table_exists(self) -> None:
         """Test that the users table exists.
-        
+
         Raises:
             AssertionError: If the users table doesn't exist.
         """
@@ -200,7 +229,7 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_can_insert_and_query_user(self) -> None:
         """Test inserting and querying a user.
-        
+
         Raises:
             AssertionError: If inserting and querying fails.
         """
@@ -211,7 +240,7 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_transaction_isolation(self) -> None:
         """Test transaction isolation for concurrent sessions.
-        
+
         Raises:
             AssertionError: If transaction isolation doesn't work properly.
         """
@@ -222,7 +251,7 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_integrity_error_on_duplicate_email(self) -> None:
         """Test that inserting a user with a duplicate email raises an integrity error.
-        
+
         Raises:
             AssertionError: If integrity error is not raised for duplicate email.
         """
@@ -234,12 +263,14 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_bulk_insert_and_query(self) -> None:
         """Test bulk inserting and querying users.
-        
+
         Raises:
             AssertionError: If bulk operations fail.
         """
         emails: list[str] = [f"user{i}@ex.com" for i in range(5)]
-        rows: list[dict[str, str]] = [dict(email=e, hashed_password="pw") for e in emails]
+        rows: list[dict[str, str]] = [
+            {"email": e, "hashed_password": "pw"} for e in emails
+        ]
         await self._bulk_insert_typed(self.AsyncSessionLocal, self.User, rows)
         await self._assert_bulk_query_typed(
             self.AsyncSessionLocal, self.User, {"is_active": True}, 5
@@ -248,7 +279,7 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_seed_and_truncate(self) -> None:
         """Test seeding and truncating the users table.
-        
+
         Raises:
             AssertionError: If seeding and truncating operations fail.
         """
@@ -260,7 +291,7 @@ class TestDatabase(DatabaseTestTemplate):
 
     def test_migration_applied(self) -> None:
         """Test that the migration has been applied.
-        
+
         Raises:
             AssertionError: If migration is not applied.
         """
@@ -271,7 +302,7 @@ class TestDatabase(DatabaseTestTemplate):
     )
     def test_run_migration(self) -> None:
         """Test running the migration.
-        
+
         Raises:
             AssertionError: If migration fails.
         """
@@ -279,7 +310,7 @@ class TestDatabase(DatabaseTestTemplate):
 
     def test_simulate_db_disconnect(self) -> None:
         """Test simulating a database disconnect.
-        
+
         Raises:
             pytest.skip: If running in fast tests mode.
             AssertionError: If disconnect simulation doesn't work.
@@ -289,17 +320,19 @@ class TestDatabase(DatabaseTestTemplate):
                 "Simulate DB disconnect is not supported in fast (SQLite in-memory) mode."
             )
         self._simulate_db_disconnect_typed(self.AsyncSessionLocal)
-        
+
         # Use asyncio.run with a proper coroutine
         async def test_healthcheck() -> None:
             await self.db_healthcheck()
-            
-        with pytest.raises(Exception):
+
+        with pytest.raises(
+            (Exception,)
+        ):  # Explicitly test for any exception after DB disconnect
             asyncio.run(test_healthcheck())
 
     def test_simulate_db_latency(self) -> None:
         """Test simulating database latency.
-        
+
         Raises:
             AssertionError: If latency simulation fails.
         """
@@ -308,7 +341,7 @@ class TestDatabase(DatabaseTestTemplate):
 
     def test_connection_pool_size(self) -> None:
         """Test the connection pool size.
-        
+
         Raises:
             AssertionError: If connection pool size doesn't match expected.
         """
@@ -317,7 +350,7 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_file_fk_constraint(self) -> None:
         """Test foreign key constraint enforcement.
-        
+
         Raises:
             pytest.skip: If running in fast tests mode.
             AssertionError: If foreign key constraint is not enforced.
@@ -327,7 +360,11 @@ class TestDatabase(DatabaseTestTemplate):
                 "SQLite in-memory does not reliably enforce foreign key constraints for this test."
             )
         # Should fail: user_id does not exist
-        bad_file_data: dict[str, str | int] = dict(filename="bad.txt", content_type="text/plain", user_id=999999)
+        bad_file_data: dict[str, str | int] = {
+            "filename": "bad.txt",
+            "content_type": "text/plain",
+            "user_id": 999999,
+        }
         async with self.AsyncSessionLocal() as session:
             file_obj: Any = self.File(**bad_file_data)
             session.add(file_obj)
@@ -338,7 +375,7 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_cascade_delete_user_files(self) -> None:
         """Test cascade delete functionality for user files.
-        
+
         Raises:
             pytest.skip: If running SQLite backend or fast tests mode.
             AssertionError: If cascade delete doesn't work properly.
@@ -376,7 +413,7 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_unique_constraint_on_email(self) -> None:
         """Test unique constraint on email field.
-        
+
         Raises:
             AssertionError: If unique constraint is not enforced.
         """
@@ -387,7 +424,7 @@ class TestDatabase(DatabaseTestTemplate):
 
     def test_indexes_exist(self) -> None:
         """Test that expected indexes exist on tables.
-        
+
         Raises:
             RuntimeError: If inspector is None.
             AssertionError: If expected indexes don't exist.
@@ -407,8 +444,12 @@ class TestDatabase(DatabaseTestTemplate):
                             raise RuntimeError(
                                 f"Inspector is None for sync_conn: {sync_conn}, type: {type(sync_conn)}"
                             )
-                        user_indexes: list[str] = [ix["name"] for ix in insp.get_indexes("users")]
-                        file_indexes: list[str] = [ix["name"] for ix in insp.get_indexes("files")]
+                        user_indexes: list[str] = [
+                            ix["name"] for ix in insp.get_indexes("users")
+                        ]
+                        file_indexes: list[str] = [
+                            ix["name"] for ix in insp.get_indexes("files")
+                        ]
                         return user_indexes, file_indexes
 
                     user_indexes, file_indexes = await conn.run_sync(get_indexes)
@@ -428,7 +469,7 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_user_defaults(self) -> None:
         """Test that user model has correct default values.
-        
+
         Raises:
             AssertionError: If default values are not set correctly.
         """
@@ -448,7 +489,7 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_update_and_query(self) -> None:
         """Test updating user data and querying the changes.
-        
+
         Raises:
             AssertionError: If update operation doesn't work correctly.
         """
@@ -468,7 +509,7 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_rollback_on_exception(self) -> None:
         """Test that session rollback works correctly on exceptions.
-        
+
         Raises:
             AssertionError: If rollback doesn't work properly.
         """
@@ -490,7 +531,7 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_user_repr(self) -> None:
         """Test string representation of user objects.
-        
+
         Raises:
             AssertionError: If __repr__ doesn't return expected format.
         """
@@ -508,15 +549,13 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_user_preferences_json(self) -> None:
         """Test JSON field handling for user preferences.
-        
+
         Raises:
             AssertionError: If JSON field doesn't store/retrieve correctly.
         """
         prefs: dict[str, str] = {"theme": "dark", "lang": "en"}
         email = get_unique_email()
-        user: Any = self.User(
-            email=email, hashed_password="pw", preferences=prefs
-        )
+        user: Any = self.User(email=email, hashed_password="pw", preferences=prefs)
         async with self.AsyncSessionLocal() as session:
             session.add(user)
             await session.commit()
@@ -529,15 +568,13 @@ class TestDatabase(DatabaseTestTemplate):
     @pytest.mark.asyncio
     async def test_user_last_login_datetime(self) -> None:
         """Test datetime field handling for last login timestamp.
-        
+
         Raises:
             AssertionError: If datetime field doesn't store/retrieve correctly.
         """
         now: datetime.datetime = datetime.datetime.now(datetime.UTC)
         email = get_unique_email()
-        user: Any = self.User(
-            email=email, hashed_password="pw", last_login_at=now
-        )
+        user: Any = self.User(email=email, hashed_password="pw", last_login_at=now)
         async with self.AsyncSessionLocal() as session:
             session.add(user)
             await session.commit()

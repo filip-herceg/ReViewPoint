@@ -1,6 +1,5 @@
 from src.utils import file as file_utils
 from tests.test_templates import UtilityUnitTestTemplate
-from typing import Final
 
 
 class TestFileUtils(UtilityUnitTestTemplate):

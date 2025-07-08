@@ -8,6 +8,7 @@ This module tests the BlacklistedToken model including:
 - Transaction handling and rollback scenarios
 - Bulk operations and table truncation
 """
+
 from __future__ import annotations
 
 import uuid
@@ -28,26 +29,33 @@ class TestBlacklistedTokenModel(AsyncModelTestTemplate):
     async def _seed_db_typed(self, objs: list[BlacklistedToken]) -> None:
         """Type-safe wrapper for seed_db method."""
         from typing import cast
+
         await cast(Any, self.seed_db)(objs)
 
     async def _assert_integrity_error_typed(self, obj: BlacklistedToken) -> None:
         """Type-safe wrapper for assert_integrity_error method."""
         from typing import cast
+
         await cast(Any, self.assert_integrity_error)(obj)
 
     async def _truncate_table_typed(self, table: str) -> None:
         """Type-safe wrapper for truncate_table method."""
         from typing import cast
+
         await cast(Any, self.truncate_table)(table)
 
-    def _assert_model_attrs_typed(self, model: BlacklistedToken, attrs: dict[str, Any]) -> None:
+    def _assert_model_attrs_typed(
+        self, model: BlacklistedToken, attrs: dict[str, Any]
+    ) -> None:
         """Type-safe wrapper for assert_model_attrs method."""
         from typing import cast
+
         cast(Any, self.assert_model_attrs)(model, attrs)
 
     def _assert_repr_typed(self, obj: BlacklistedToken, class_name: str) -> None:
         """Type-safe wrapper for assert_repr method."""
         from typing import cast
+
         cast(Any, self.assert_repr)(obj, class_name)
 
     @pytest.mark.asyncio
@@ -84,8 +92,12 @@ class TestBlacklistedTokenModel(AsyncModelTestTemplate):
         expires_time: datetime = datetime.now(UTC) + timedelta(hours=1)
         jti_value: str = f"uniquejti-{uuid.uuid4()}"
 
-        token1: BlacklistedToken = BlacklistedToken(jti=jti_value, expires_at=expires_time)
-        token2: BlacklistedToken = BlacklistedToken(jti=jti_value, expires_at=expires_time)
+        token1: BlacklistedToken = BlacklistedToken(
+            jti=jti_value, expires_at=expires_time
+        )
+        token2: BlacklistedToken = BlacklistedToken(
+            jti=jti_value, expires_at=expires_time
+        )
 
         await self._seed_db_typed([token1])
         await self._assert_integrity_error_typed(token2)
@@ -173,7 +185,9 @@ class TestBlacklistedTokenModel(AsyncModelTestTemplate):
         """
         future_time: datetime = datetime.now(UTC) + timedelta(hours=3)
         jti_value: str = f"rollback-{uuid.uuid4()}"
-        token: BlacklistedToken = BlacklistedToken(jti=jti_value, expires_at=future_time)
+        token: BlacklistedToken = BlacklistedToken(
+            jti=jti_value, expires_at=future_time
+        )
 
         # Manually create a transaction that we can control
         await self.async_session.execute(text("BEGIN"))

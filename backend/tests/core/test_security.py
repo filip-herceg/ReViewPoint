@@ -1,6 +1,6 @@
+from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 from typing import Final, cast
-from collections.abc import Mapping
 
 import pytest
 from jose import jwt
@@ -39,8 +39,10 @@ class TestSecurity(SecurityUnitTestTemplate):
         """Test manual JWT token creation with full payload."""
         settings = get_settings()
         current_time: datetime = datetime.now(UTC)
-        expiry_time: datetime = current_time + timedelta(minutes=self._TOKEN_EXPIRY_MINUTES)
-        
+        expiry_time: datetime = current_time + timedelta(
+            minutes=self._TOKEN_EXPIRY_MINUTES
+        )
+
         payload: dict[str, str | int] = {
             "sub": self._TEST_USER_ID_2,
             "email": self._TEST_EMAIL_2,
@@ -70,7 +72,7 @@ class TestSecurity(SecurityUnitTestTemplate):
         current_time: datetime = datetime.now(UTC)
         expired_time: datetime = current_time - timedelta(seconds=1)
         issued_time: datetime = current_time - timedelta(minutes=1)
-        
+
         payload: dict[str, str | int] = {
             "sub": self._EXPIRED_USER_ID,
             "exp": int(expired_time.timestamp()),
@@ -104,7 +106,7 @@ class TestSecurity(SecurityUnitTestTemplate):
         # Create a token with the original secret
         data: Mapping[str, str] = {"sub": self._TEST_USER_ID, "email": self._TEST_EMAIL}
         token: str = create_access_token(data=data)
-        
+
         # Patch the secret and check that the valid token now fails
         self.patch_jwt_secret(self._FAKE_SECRET)
         self.assert_jwt_invalid(

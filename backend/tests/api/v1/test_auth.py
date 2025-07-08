@@ -5,72 +5,91 @@ Uses DRY test templates for all test logic and fixture management.
 
 import asyncio
 import uuid
-from collections.abc import AsyncGenerator, Awaitable, Callable, Mapping, MutableMapping, Sequence
-from datetime import UTC, datetime, timedelta
-from typing import Final, Literal, TypedDict, Union
+from collections.abc import (
+    Callable,
+    Mapping,
+    MutableMapping,
+    Sequence,
+)
+from datetime import datetime, timedelta
+from typing import TypedDict
 
 import pytest
-from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient, Response
 from jose import JWTError, jwt
-from pytest import MonkeyPatch
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core import security
 from src.core.config import Settings, get_settings
 from src.core.security import JWTPayload as SecurityJWTPayload
 from src.models.user import User
-from tests.test_templates import AuthEndpointTestTemplate, AuthUnitTestTemplate
 from tests.test_data_generators import AuthTestDataGenerator
+from tests.test_templates import AuthEndpointTestTemplate, AuthUnitTestTemplate
+
 
 # TypedDict definitions for structured data
 class RequiredJWTPayload(TypedDict):
     """Required JWT payload fields."""
+
     sub: str
     exp: int
 
+
 class BaseJWTPayload(RequiredJWTPayload, total=False):
     """Base JWT payload structure with optional fields."""
+
     email: str
     role: str
     permissions: Sequence[str]
     jti: str
+
 
 class CompleteJWTPayload(RequiredJWTPayload):
     """Complete JWT payload with all common fields."""
+
     email: str
     role: str
     permissions: Sequence[str]
     jti: str
 
+
 class RegisterRequest(TypedDict):
     """Registration request structure."""
+
     email: str
     password: str
     name: str
 
+
 class LoginRequest(TypedDict):
     """Login request structure."""
+
     email: str
     password: str
 
+
 class PasswordResetRequest(TypedDict):
     """Password reset request structure."""
+
     email: str
+
 
 class PasswordResetConfirm(TypedDict):
     """Password reset confirmation structure."""
+
     token: str
     new_password: str
 
+
 class RefreshTokenRequest(TypedDict):
     """Refresh token request structure."""
+
     refresh_token: str
+
 
 # Type aliases for better readability
 TokenData = Mapping[str, str | int | bool]  # Match security module signature
 OverrideEnvVarsFixture = Callable[[Mapping[str, str]], None]
-StatusCodeUnion = Union[int, tuple[int, ...]]
+StatusCodeUnion = int | tuple[int, ...]
 JsonData = Mapping[str, object]
 JWTPayload = SecurityJWTPayload  # Use the actual type from security module
 
@@ -118,9 +137,9 @@ class TestJWTUtils(AuthUnitTestTemplate):
     def test_jwt_with_custom_claims(self) -> None:
         """Test JWT with custom claims."""
         data: TokenData = {
-            "sub": "user456", 
-            "role": "editor", 
-            "permissions": "read,write"  # Store as comma-separated string
+            "sub": "user456",
+            "role": "editor",
+            "permissions": "read,write",  # Store as comma-separated string
         }
         token: str = security.create_access_token(data)
         payload: JWTPayload = security.verify_access_token(token)
@@ -157,9 +176,9 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
     async def test_register_and_login(self) -> None:
         """Test user registration and login flow."""
         # Generate unique test data for isolation
-        test_data = AuthTestDataGenerator('test_register_and_login')
+        test_data = AuthTestDataGenerator("test_register_and_login")
         test_user = test_data.get_registration_user()
-        
+
         transport: ASGITransport = ASGITransport(app=self.test_app)
         async with AsyncClient(
             transport=transport,
@@ -174,7 +193,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             )
             self.debug_response(resp, 201)
             self.assert_status(resp, 201)
-            token: str = resp.json()["access_token"]
+            resp.json()["access_token"]
             # Login
             login_data = test_user.to_login_dict()
             resp = await ac.post(
@@ -185,7 +204,10 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             self.assert_status(resp, 200)
             assert "access_token" in resp.json()
             # Invalid login
-            invalid_login_data: LoginRequest = {"email": test_user.email, "password": "WrongPass!"}
+            invalid_login_data: LoginRequest = {
+                "email": test_user.email,
+                "password": "WrongPass!",
+            }
             resp = await ac.post(
                 "/api/v1/auth/login",
                 json=invalid_login_data,
@@ -243,7 +265,10 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             headers={"X-API-Key": "testkey"},
         ) as ac:
             # Missing email
-            incomplete_data: Mapping[str, str] = {"password": "TestPass123!", "name": "No Email"}
+            incomplete_data: Mapping[str, str] = {
+                "password": "TestPass123!",
+                "name": "No Email",
+            }
             resp: Response = await ac.post(
                 "/api/v1/auth/register",
                 json=incomplete_data,
@@ -261,7 +286,10 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             )
             self.assert_status(resp, 422)
             # Missing password
-            missing_password_data: Mapping[str, str] = {"email": "missingpass@example.com", "name": "No Pass"}
+            missing_password_data: Mapping[str, str] = {
+                "email": "missingpass@example.com",
+                "name": "No Pass",
+            }
             resp = await ac.post(
                 "/api/v1/auth/register",
                 json=missing_password_data,
@@ -272,9 +300,9 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
     async def test_register_duplicate_email(self) -> None:
         """Test registration with duplicate email."""
         # Generate unique test data for isolation
-        test_data = AuthTestDataGenerator('test_register_duplicate_email')
+        test_data = AuthTestDataGenerator("test_register_duplicate_email")
         test_user = test_data.get_registration_user()
-        
+
         transport: ASGITransport = ASGITransport(app=self.test_app)
         async with AsyncClient(
             transport=transport,
@@ -393,21 +421,30 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             # Get token directly (simulate email)
             token: str = user_service.get_password_reset_token("pwreset@example.com")
             # Confirm reset
-            reset_confirm: PasswordResetConfirm = {"token": token, "new_password": "NewPassword456!"}
+            reset_confirm: PasswordResetConfirm = {
+                "token": token,
+                "new_password": "NewPassword456!",
+            }
             resp = await ac.post(
                 "/api/v1/auth/reset-password",
                 json=reset_confirm,
             )
             self.assert_status(resp, 200)
             # Try login with new password
-            new_login: LoginRequest = {"email": "pwreset@example.com", "password": "NewPassword456!"}
+            new_login: LoginRequest = {
+                "email": "pwreset@example.com",
+                "password": "NewPassword456!",
+            }
             resp = await ac.post(
                 "/api/v1/auth/login",
                 json=new_login,
             )
             self.assert_status(resp, 200)
             # Try using token again (should fail)
-            repeat_reset: PasswordResetConfirm = {"token": token, "new_password": "AnotherPassword789!"}
+            repeat_reset: PasswordResetConfirm = {
+                "token": token,
+                "new_password": "AnotherPassword789!",
+            }
             resp = await ac.post(
                 "/api/v1/auth/reset-password",
                 json=repeat_reset,
@@ -424,7 +461,9 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             base_url="http://test",
             headers={"X-API-Key": "testkey"},
         ) as ac:
-            nonexistent_request: PasswordResetRequest = {"email": "doesnotexist@example.com"}
+            nonexistent_request: PasswordResetRequest = {
+                "email": "doesnotexist@example.com"
+            }
             resp: Response = await ac.post(
                 "/api/v1/auth/request-password-reset",
                 json=nonexistent_request,
@@ -453,7 +492,10 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "/api/v1/auth/register",
                 json=register_data,
             )
-            login_data: LoginRequest = {"email": "refreshuser@example.com", "password": "TestPass123!"}
+            login_data: LoginRequest = {
+                "email": "refreshuser@example.com",
+                "password": "TestPass123!",
+            }
             login_resp: Response = await ac.post(
                 "/api/v1/auth/login",
                 json=login_data,
@@ -511,12 +553,13 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
     async def test_auth_disabled_allows_access(self) -> None:
         """Test that auth disabled allows access."""
         from src.api.deps import get_current_user
-        from src.models.user import User
 
         settings: Settings = get_settings()
         self.monkeypatch.setattr(settings, "auth_enabled", False)
-        
-        user: User | None = await get_current_user(token="irrelevant", session=self.async_session)
+
+        user: User | None = await get_current_user(
+            token="irrelevant", session=self.async_session
+        )
         assert user is not None
         assert user.email == "dev@example.com"
         assert user.is_active
@@ -561,7 +604,10 @@ class TestAuthFeatureFlags(AuthEndpointTestTemplate):
                 base_url="http://test",
                 headers={"X-API-Key": "testkey"},
             ) as ac:
-                login_data: LoginRequest = {"email": "flag@example.com", "password": "pw123456"}
+                login_data: LoginRequest = {
+                    "email": "flag@example.com",
+                    "password": "pw123456",
+                }
                 resp: Response = await ac.post(
                     "/api/v1/auth/login",
                     json=login_data,

@@ -1,9 +1,7 @@
-
+from collections.abc import Callable, Container
 from datetime import UTC, datetime, timedelta
-from typing import Final, Optional, Type, cast
-from collections.abc import Container
-from collections.abc import Container
-from collections.abc import Sequence, Callable
+from typing import Final
+
 import pytest
 from pydantic import ValidationError
 
@@ -13,48 +11,62 @@ from tests.test_templates import ModelUnitTestTemplate
 
 class TestBlacklistedTokenSchema(ModelUnitTestTemplate):
     # --- Typed assertion helpers for mypy compliance ---
-    def assert_equal(self, a: object, b: object, msg: Optional[str] = None) -> None:
+    def assert_equal(self, a: object, b: object, msg: str | None = None) -> None:
         assert a == b, msg or f"Expected {a!r} == {b!r}"
 
-    def assert_not_equal(self, a: object, b: object, msg: Optional[str] = None) -> None:
+    def assert_not_equal(self, a: object, b: object, msg: str | None = None) -> None:
         assert a != b, msg or f"Expected {a!r} != {b!r}"
 
-    def assert_is_true(self, value: object, msg: Optional[str] = None) -> None:
+    def assert_is_true(self, value: object, msg: str | None = None) -> None:
         assert value, msg or "Expected expression to be True"
 
-    def assert_is_none(self, value: object, msg: Optional[str] = None) -> None:
+    def assert_is_none(self, value: object, msg: str | None = None) -> None:
         assert value is None, msg or f"Expected {value!r} is None"
 
-    def assert_in(self, member: object, container: object, msg: Optional[str] = None) -> None:
+    def assert_in(
+        self, member: object, container: object, msg: str | None = None
+    ) -> None:
         # Best practice: match base signature, but check/cast at runtime for type safety
         if isinstance(container, Container):
             assert member in container, msg or f"Expected {member!r} in {container!r}"
         else:
-            raise TypeError(f"Container argument does not support 'in': {type(container)}")
+            raise TypeError(
+                f"Container argument does not support 'in': {type(container)}"
+            )
 
-    def assert_raises(self, exc_type: type[BaseException], func: Callable[..., object], *args: object, **kwargs: object) -> None:
+    def assert_raises(
+        self,
+        exc_type: type[BaseException],
+        func: Callable[..., object],
+        *args: object,
+        **kwargs: object,
+    ) -> None:
         with pytest.raises(exc_type):
             func(*args, **kwargs)
 
     def assert_repr(self, obj: object, class_name: str) -> None:
         assert class_name in repr(obj), f"Expected '{class_name}' in repr: {repr(obj)}"
+
     def test_valid_schema(self) -> None:
         """
         Verifies that BlacklistedTokenSchema accepts valid input and sets all fields correctly, including from dict.
         """
         now: Final[datetime] = datetime.now(UTC)
-        schema: BlacklistedTokenSchema = BlacklistedTokenSchema(jti="abc123", expires_at=now, created_at=now)
+        schema: BlacklistedTokenSchema = BlacklistedTokenSchema(
+            jti="abc123", expires_at=now, created_at=now
+        )
         self.assert_equal(schema.jti, "abc123")
         self.assert_equal(schema.expires_at, now)
         self.assert_equal(schema.created_at, now)
-        dummy: dict[str, object] = {"jti": "def456", "expires_at": now, "created_at": now}
+        dummy: dict[str, object] = {
+            "jti": "def456",
+            "expires_at": now,
+            "created_at": now,
+        }
         schema2: BlacklistedTokenSchema = BlacklistedTokenSchema.model_validate(dummy)
         self.assert_equal(schema2.jti, "def456")
         self.assert_equal(schema2.expires_at, now)
         self.assert_equal(schema2.created_at, now)
-
-
-
 
     @pytest.mark.parametrize(
         "jti,expires_at,created_at,should_raise",
@@ -67,9 +79,9 @@ class TestBlacklistedTokenSchema(ModelUnitTestTemplate):
     )
     def test_schema_missing_fields(
         self: "TestBlacklistedTokenSchema",
-        jti: Optional[str],
-        expires_at: Optional[datetime],
-        created_at: Optional[datetime],
+        jti: str | None,
+        expires_at: datetime | None,
+        created_at: datetime | None,
         should_raise: bool,
     ) -> None:
         """
@@ -95,7 +107,9 @@ class TestBlacklistedTokenSchema(ModelUnitTestTemplate):
             if created_at is not None:
                 self.assert_equal(schema.created_at, created_at)
             else:
-                self.assert_is_true(schema.created_at is None or isinstance(schema.created_at, datetime))
+                self.assert_is_true(
+                    schema.created_at is None or isinstance(schema.created_at, datetime)
+                )
 
     @pytest.mark.parametrize(
         "jti,expires_at",
@@ -118,9 +132,13 @@ class TestBlacklistedTokenSchema(ModelUnitTestTemplate):
         """
         Verifies that BlacklistedTokenSchema raises ValidationError for None values, and accepts None for created_at.
         """
-        self.assert_raises(ValidationError, BlacklistedTokenSchema, jti=None, expires_at=None)
+        self.assert_raises(
+            ValidationError, BlacklistedTokenSchema, jti=None, expires_at=None
+        )
         now: Final[datetime] = datetime.now(UTC)
-        schema: BlacklistedTokenSchema = BlacklistedTokenSchema(jti="x", expires_at=now, created_at=None)
+        schema: BlacklistedTokenSchema = BlacklistedTokenSchema(
+            jti="x", expires_at=now, created_at=None
+        )
         self.assert_is_none(schema.created_at)
 
     def test_schema_future_and_past_dates(self: "TestBlacklistedTokenSchema") -> None:
@@ -144,7 +162,9 @@ class TestBlacklistedTokenSchema(ModelUnitTestTemplate):
         Verifies that __repr__ and model_dump work as expected for BlacklistedTokenSchema.
         """
         now: Final[datetime] = datetime.now(UTC)
-        schema: BlacklistedTokenSchema = BlacklistedTokenSchema(jti="reprtest", expires_at=now, created_at=now)
+        schema: BlacklistedTokenSchema = BlacklistedTokenSchema(
+            jti="reprtest", expires_at=now, created_at=now
+        )
         self.assert_repr(schema, "BlacklistedTokenSchema")
         d: dict[str, object] = schema.model_dump()
         self.assert_equal(d["jti"], "reprtest")
@@ -156,9 +176,15 @@ class TestBlacklistedTokenSchema(ModelUnitTestTemplate):
         Verifies that equality and inequality work for BlacklistedTokenSchema.
         """
         now: Final[datetime] = datetime.now(UTC)
-        s1: BlacklistedTokenSchema = BlacklistedTokenSchema(jti="eq", expires_at=now, created_at=now)
-        s2: BlacklistedTokenSchema = BlacklistedTokenSchema(jti="eq", expires_at=now, created_at=now)
-        s3: BlacklistedTokenSchema = BlacklistedTokenSchema(jti="neq", expires_at=now, created_at=now)
+        s1: BlacklistedTokenSchema = BlacklistedTokenSchema(
+            jti="eq", expires_at=now, created_at=now
+        )
+        s2: BlacklistedTokenSchema = BlacklistedTokenSchema(
+            jti="eq", expires_at=now, created_at=now
+        )
+        s3: BlacklistedTokenSchema = BlacklistedTokenSchema(
+            jti="neq", expires_at=now, created_at=now
+        )
         self.assert_equal(s1, s2)
         self.assert_not_equal(s1, s3)
 
@@ -167,7 +193,9 @@ class TestBlacklistedTokenSchema(ModelUnitTestTemplate):
         Verifies that model_copy and update work for BlacklistedTokenSchema.
         """
         now: Final[datetime] = datetime.now(UTC)
-        s1: BlacklistedTokenSchema = BlacklistedTokenSchema(jti="copyme", expires_at=now, created_at=now)
+        s1: BlacklistedTokenSchema = BlacklistedTokenSchema(
+            jti="copyme", expires_at=now, created_at=now
+        )
         s2: BlacklistedTokenSchema = s1.model_copy(update={"jti": "copyme2"})
         self.assert_equal(s2.jti, "copyme2")
         self.assert_equal(s2.expires_at, now)
@@ -178,7 +206,9 @@ class TestBlacklistedTokenSchema(ModelUnitTestTemplate):
         Verifies that model_dump_json serializes BlacklistedTokenSchema correctly.
         """
         now: Final[datetime] = datetime.now(UTC)
-        s1: BlacklistedTokenSchema = BlacklistedTokenSchema(jti="json", expires_at=now, created_at=now)
+        s1: BlacklistedTokenSchema = BlacklistedTokenSchema(
+            jti="json", expires_at=now, created_at=now
+        )
         json_str: str = s1.model_dump_json()
         self.assert_in("json", json_str)
         self.assert_in(str(now.year), json_str)
@@ -193,7 +223,10 @@ class TestBlacklistedTokenSchema(ModelUnitTestTemplate):
             jti: str
             expires_at: datetime
             created_at: datetime
-            def __init__(self, jti: str, expires_at: datetime, created_at: datetime) -> None:
+
+            def __init__(
+                self, jti: str, expires_at: datetime, created_at: datetime
+            ) -> None:
                 self.jti = jti
                 self.expires_at = expires_at
                 self.created_at = created_at
@@ -209,7 +242,9 @@ class TestBlacklistedTokenSchema(ModelUnitTestTemplate):
         Verifies that __str__ includes all relevant fields for BlacklistedTokenSchema.
         """
         now: Final[datetime] = datetime.now(UTC)
-        s: BlacklistedTokenSchema = BlacklistedTokenSchema(jti="strtest", expires_at=now, created_at=now)
+        s: BlacklistedTokenSchema = BlacklistedTokenSchema(
+            jti="strtest", expires_at=now, created_at=now
+        )
         s_str: str = str(s)
         self.assert_in("strtest", s_str)
         self.assert_in("expires_at", s_str)

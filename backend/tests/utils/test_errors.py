@@ -1,8 +1,10 @@
+from collections.abc import Awaitable, Callable
+
 import pytest
 from pytest_asyncio import fixture
-from typing import Final, Callable, Awaitable
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.models.user import User
 from src.repositories import user as user_repo
 from src.repositories.user import user_action_limiter
@@ -32,9 +34,15 @@ class TestErrorHandlingUtilities(UtilityUnitTestTemplate):
         Test that error utilities raise the correct exceptions for user operations.
         Verifies ValidationError, UserAlreadyExistsError, UserNotFoundError, and RateLimitExceededError.
         """
-        create_user_with_validation: Callable[[AsyncSession, str, str], Awaitable[User]] = user_repo.create_user_with_validation
-        sensitive_user_action: Callable[[AsyncSession, int, str], Awaitable[None]] = user_repo.sensitive_user_action
-        safe_get_user_by_id: Callable[[AsyncSession, int], Awaitable[User]] = user_repo.safe_get_user_by_id
+        create_user_with_validation: Callable[
+            [AsyncSession, str, str], Awaitable[User]
+        ] = user_repo.create_user_with_validation
+        sensitive_user_action: Callable[[AsyncSession, int, str], Awaitable[None]] = (
+            user_repo.sensitive_user_action
+        )
+        safe_get_user_by_id: Callable[[AsyncSession, int], Awaitable[User]] = (
+            user_repo.safe_get_user_by_id
+        )
 
         # ValidationError
         async def create_invalid_user() -> None:

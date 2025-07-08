@@ -5,7 +5,7 @@ import logging
 import os
 import sys
 from collections.abc import Callable, Mapping
-from typing import Final, cast
+from typing import Final
 
 import sqlalchemy
 from sqlalchemy.engine import Engine

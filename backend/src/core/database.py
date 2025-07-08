@@ -55,6 +55,7 @@ def _log_engine_pool_state(engine: AsyncEngine, context: str) -> None:
         pool = engine.pool
         worker_id, process_id, _ = _log_worker_info()
         logger.info(f"[DB_POOL_STATE] {context} - Worker: {worker_id}")
+
         def safe_call(attr: str) -> object:
             method = getattr(pool, attr, None)
             if callable(method):
@@ -63,11 +64,12 @@ def _log_engine_pool_state(engine: AsyncEngine, context: str) -> None:
                 except Exception:
                     return "N/A"
             return "N/A"
-        pool_size = safe_call('size')
-        checked_out = safe_call('checkedout')
-        checked_in = safe_call('checkedin')
-        overflow = safe_call('overflow')
-        invalidated = safe_call('invalidated')
+
+        pool_size = safe_call("size")
+        checked_out = safe_call("checkedout")
+        checked_in = safe_call("checkedin")
+        overflow = safe_call("overflow")
+        invalidated = safe_call("invalidated")
         logger.info(f"[DB_POOL_STATE] Pool size: {pool_size}")
         logger.info(f"[DB_POOL_STATE] Checked out: {checked_out}")
         logger.info(f"[DB_POOL_STATE] Checked in: {checked_in}")
@@ -220,7 +222,9 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
     session: AsyncSession | None = None
     try:
         session_creation_start: float = time.time()
-        assert AsyncSessionLocal is not None, "AsyncSessionLocal must be initialized before use"
+        assert (
+            AsyncSessionLocal is not None
+        ), "AsyncSessionLocal must be initialized before use"
         session = AsyncSessionLocal()
         session_creation_time = time.time() - session_creation_start
         logger.debug(
@@ -382,6 +386,7 @@ def get_connection_debug_info() -> ConnectionDebugInfo:
     if engine:
         try:
             pool = engine.pool
+
             def safe_call(attr: str) -> int | None:
                 val = getattr(pool, attr, None)
                 if callable(val):
@@ -391,6 +396,7 @@ def get_connection_debug_info() -> ConnectionDebugInfo:
                     except Exception:
                         return None
                 return None
+
             info["pool_size"] = safe_call("size")
             info["pool_checked_out"] = safe_call("checkedout")
             info["pool_checked_in"] = safe_call("checkedin")

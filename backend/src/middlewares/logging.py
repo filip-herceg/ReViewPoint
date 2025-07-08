@@ -151,11 +151,14 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             process_time_ms: int = round(process_time * 1000)
 
             # Log the response
-            cast("Logger", self.logger.bind(
-                **log_extra,
-                status_code=response.status_code,
-                process_time_ms=process_time_ms,
-            )).info(  # type: ignore[no-untyped-call]
+            cast(
+                "Logger",
+                self.logger.bind(  # type: ignore[no-untyped-call]
+                    **log_extra,
+                    status_code=response.status_code,
+                    process_time_ms=process_time_ms,
+                ),
+            ).info(
                 f"Response {request.method} {request.url.path} completed with status {response.status_code} in {process_time_ms}ms | query: {filtered_query_str}"
             )
 
@@ -168,11 +171,14 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             error_process_time: float = time.time() - start_time
             error_process_time_ms: int = round(error_process_time * 1000)
 
-            cast("Logger", self.logger.bind(
-                **log_extra,
-                error=str(exc),
-                process_time_ms=error_process_time_ms,
-            )).exception(  # type: ignore[no-untyped-call]
+            cast(
+                "Logger",
+                self.logger.bind(  # type: ignore[no-untyped-call]
+                    **log_extra,
+                    error=str(exc),
+                    process_time_ms=error_process_time_ms,
+                ),
+            ).exception(
                 f"Error processing request {request.method} {request.url.path}: {exc}"
             )
             raise

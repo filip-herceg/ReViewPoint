@@ -227,7 +227,7 @@ def refresh_access_token(user_id: int | str, refresh_token: str) -> str:
             raise ValidationError("Refresh token subject mismatch.")
         email_val = payload.get("email")
         # Only allow str, int, bool for JWT payloads
-        if not (isinstance(email_val, (str, int, bool)) or email_val is None):
+        if not (isinstance(email_val, str | int | bool) or email_val is None):
             raise ValidationError("Invalid email type in refresh token payload.")
         # Optionally check audience, issuer, exp, etc.
         # Issue new access token
@@ -622,7 +622,7 @@ async def async_refresh_access_token(
             token, jwt_secret, algorithms=[jwt_algorithm]
         )
         user_id_val = payload.get("user_id")
-        if not isinstance(user_id_val, (int, str)):
+        if not isinstance(user_id_val, int | str):
             raise RefreshTokenError("Invalid token format: missing user_id.")
         user_id: int = int(user_id_val)
         # Ensure user exists and is active
@@ -639,7 +639,7 @@ async def async_refresh_access_token(
                 raise RefreshTokenRateLimitError("Too many token refresh attempts.")
         # Blacklist check
         jti_val = payload.get("jti")
-        jti: str = str(jti_val) if isinstance(jti_val, (str, int)) else token
+        jti: str = str(jti_val) if isinstance(jti_val, str | int) else token
         if await is_token_blacklisted(session, jti):
             raise RefreshTokenBlacklistedError("Refresh token is blacklisted.")
         # Issue new access token
@@ -651,11 +651,9 @@ async def async_refresh_access_token(
         # Only raise as RefreshTokenError if not a known custom error
         if isinstance(
             e,
-            (
-                RefreshTokenRateLimitError,
-                RefreshTokenBlacklistedError,
-                RefreshTokenError,
-            ),
+            RefreshTokenRateLimitError
+            | RefreshTokenBlacklistedError
+            | RefreshTokenError,
         ):
             raise
         raise RefreshTokenError(f"Unexpected error: {e}") from e
