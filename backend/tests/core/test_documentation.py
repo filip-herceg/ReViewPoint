@@ -170,7 +170,8 @@ class TestDocumentationModule:
                 def has_valid_domain(code_sample: str) -> bool:
                     import re
 
-                    urls = re.findall(r'https?://[^\s"\']+', code_sample)
+                    # Check for both HTTP(S) and WebSocket URLs
+                    urls = re.findall(r'(?:https?|wss?):\/\/[^\s"\']+', code_sample)
                     for url in urls:
                         hostname = urlparse(url).hostname
                         if hostname and hostname.lower() in (

@@ -61,6 +61,7 @@ jobs:
         if: success() && steps.trivy-fs-sarif.outcome == 'success'
         with:
           sarif_file: 'trivy-fs-results.sarif'
+          category: 'trivy-filesystem'
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -341,15 +342,15 @@ jobs:
             
             # Check if build was successful
             if [ $? -eq 0 ]; then
-              echo "::set-output name=outcome::success"
-              echo "::set-output name=digest::$(docker inspect reviewpoint-backend:latest --format='{{.Id}}')"
+              echo "outcome=success" >> $GITHUB_OUTPUT
+              echo "digest=$(docker inspect reviewpoint-backend:latest --format='{{.Id}}')" >> $GITHUB_OUTPUT
               echo "Fallback build succeeded!"
             else
-              echo "::set-output name=outcome::failure"
+              echo "outcome=failure" >> $GITHUB_OUTPUT
               echo "Fallback build also failed."
             fi
           else
-            echo "::set-output name=outcome::failure"
+            echo "outcome=failure" >> $GITHUB_OUTPUT
             echo "Fallback pyproject.toml not found."
           fi
           
@@ -420,6 +421,7 @@ jobs:
         if: success() && steps.trivy-image-sarif.outcome == 'success' && (steps.docker_build.outcome == 'success' || steps.docker_build_fallback.outcome == 'success')
         with:
           sarif_file: 'trivy-image-results.sarif'
+          category: 'trivy-docker-image'
           
       - name: Save filesystem scan artifact
         uses: actions/upload-artifact@v4
