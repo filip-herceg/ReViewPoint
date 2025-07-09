@@ -312,7 +312,7 @@ async def reset_password(session: AsyncSession, token: str, new_password: str) -
         err: str | None = get_password_validation_error(new_password)
         if err:
             logger.warning(
-                "Password reset failed: password validation error", email=email
+                "Password reset failed: validation requirements not met", email=email
             )
             raise ValidationError(err)
         result = await session.execute(
@@ -370,7 +370,7 @@ async def change_password(
     err: str | None = get_password_validation_error(new_pw)
     if err:
         logger.warning(
-            "Password change failed: password validation error", user_id=user_id
+            "Password change failed: validation requirements not met", user_id=user_id
         )
         raise ValidationError(err)
     hashed: str = hash_password(new_pw)

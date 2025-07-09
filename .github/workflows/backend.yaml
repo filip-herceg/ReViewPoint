@@ -21,7 +21,7 @@ jobs:
   test:
     name: Lint, Typecheck & Tests
     # Skip duplicate workflow runs for PRs from the same repository
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
 
     steps:
