@@ -1,3 +1,4 @@
+# Base image for building dependencies
 FROM python:3.11-slim AS builder
 
 WORKDIR /app
@@ -18,6 +19,7 @@ COPY pyproject.toml ./
 RUN hatch env create && \
     cp -r $(hatch env find) ./.venv
 
+# Runtime image
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -31,14 +33,46 @@ RUN apt-get update && apt-get install -y \
 # Copy virtual environment from builder
 COPY --from=builder /app/.venv /app/.venv
 
-# Copy application code
-COPY src/ ./src/
-COPY scripts/ ./scripts/
-COPY docker-entrypoint.sh ./
+# Debug: List root directory contents
+RUN echo "Root directory contents:" && ls -la /
 
-# Make scripts executable
-RUN chmod +x docker-entrypoint.sh || true
-RUN if [ -d "scripts" ] && [ -n "$(find scripts -name '*.sh' 2>/dev/null)" ]; then chmod +x scripts/*.sh; fi
+# Copy all files from build context to /app
+COPY . /app/
+
+# Debug: List app directory contents
+RUN echo "App directory contents:" && ls -la /app/
+
+# Make entrypoint script executable if it exists
+RUN if [ -f "/app/docker-entrypoint.sh" ]; then \
+    chmod +x /app/docker-entrypoint.sh && \
+    echo "Entrypoint script made executable"; \
+    else \
+    echo "WARNING: Entrypoint script not found"; \
+    find /app -type f -name "*.sh" | sort; \
+    fi
+
+# Make scripts in scripts directory executable
+RUN if [ -d "/app/scripts" ]; then \
+    find /app/scripts -type f -name "*.sh" -exec chmod +x {} \; || \
+    echo "No .sh files found in scripts directory"; \
+    else \
+    echo "Scripts directory not found"; \
+    mkdir -p /app/scripts; \
+    fi
+
+# Create non-root user for security
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN chown -R appuser:appuser /app
+USER appuser
+
+# Set Python path and environment
+ENV PYTHONPATH=/app
+ENV PATH="/app/.venv/bin:$PATH"
+
+EXPOSE 8000
+
+# Set the entrypoint script with fallback
+CMD ["/bin/bash", "-c", "if [ -f /app/docker-entrypoint.sh ]; then /app/docker-entrypoint.sh python -m uvicorn src.main:app --host 0.0.0.0 --port 8000; else echo 'Entrypoint not found, running default command'; exec python -m uvicorn src.main:app --host 0.0.0.0 --port 8000; fi"]
 
 # Create non-root user
 RUN groupadd -r appuser && useradd -r -g appuser appuser
