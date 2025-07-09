@@ -1,15 +1,19 @@
 name: Security Scan
 
 on:
+  # Use push triggers only for main/develop, not for PRs targeting these branches
   push:
     branches: [ main, develop ]
     paths:
       - 'backend/**'
       - '.github/workflows/security-scan.yaml'
+  # Use pull_request triggers only for branches other than main/develop
   pull_request:
     branches: [ main, develop ]
     paths:
       - 'backend/**'
+    # This prevents duplicate runs when pushing to a PR branch
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
   schedule:
     # Run security scan weekly on Mondays at 3 AM UTC
@@ -22,6 +26,9 @@ permissions:
 jobs:
   trivy-scan:
     name: Trivy Security Scan
+    # Skip duplicate workflow runs
+    # This prevents the workflow from running twice on PRs from the same repo
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
