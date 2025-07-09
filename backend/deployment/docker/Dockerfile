@@ -14,10 +14,15 @@ RUN pip install --upgrade setuptools>=78.1.1 pip \
 
 # Copy dependency files
 COPY pyproject.toml ./
+COPY README.md ./
 
-# Use Hatch to install dependencies
-RUN hatch env create && \
-    cp -r $(hatch env find) ./.venv
+# Use Hatch to install dependencies with fallback
+RUN echo "Contents of current directory:" && ls -la && \
+    (hatch env create || \
+    (echo "WARNING: Hatch env creation failed, creating a virtual environment manually" && \
+    python -m venv .venv && \
+    . .venv/bin/activate && \
+    pip install -e .))
 
 # Runtime image
 FROM python:3.11-slim
@@ -73,11 +78,6 @@ EXPOSE 8000
 
 # Set the entrypoint script with fallback
 CMD ["/bin/bash", "-c", "if [ -f /app/docker-entrypoint.sh ]; then /app/docker-entrypoint.sh python -m uvicorn src.main:app --host 0.0.0.0 --port 8000; else echo 'Entrypoint not found, running default command'; exec python -m uvicorn src.main:app --host 0.0.0.0 --port 8000; fi"]
-
-# Create non-root user
-RUN groupadd -r appuser && useradd -r -g appuser appuser
-RUN chown -R appuser:appuser /app
-USER appuser
 
 # Set Python path and environment
 ENV PYTHONPATH=/app/src

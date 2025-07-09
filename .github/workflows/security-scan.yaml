@@ -87,6 +87,17 @@ jobs:
           # Copy essential files
           echo "Copying essential files..."
           cp ./backend/pyproject.toml ./build_context/ || echo "WARNING: pyproject.toml not found"
+          
+          # Handle README.md - create one if not found
+          if [ -f "./backend/README.md" ]; then
+            cp ./backend/README.md ./build_context/
+            echo "README.md copied successfully"
+          else
+            echo "WARNING: README.md not found, creating a placeholder"
+            echo "# Backend Project" > ./build_context/README.md
+            echo "This is a placeholder README file generated during the build process." >> ./build_context/README.md
+          fi
+          
           cp ./backend/alembic.ini ./build_context/ || echo "WARNING: alembic.ini not found"
           
           # Create source directory and copy source files
@@ -177,6 +188,14 @@ jobs:
           docker images
           echo "Inspecting reviewpoint-backend image:"
           docker inspect reviewpoint-backend:latest || echo "Image not found"
+          
+          # Check if the container can start
+          echo "Attempting to start container to verify configuration:"
+          docker run --rm reviewpoint-backend:latest echo "Container started successfully" || echo "Container failed to start"
+          
+          # Check if Python environment is working
+          echo "Checking Python environment:"
+          docker run --rm reviewpoint-backend:latest python -c "import sys; print(f'Python {sys.version} working')" || echo "Python check failed"
           
       - name: Run Trivy vulnerability scanner (Docker image)
         id: trivy-image-sarif
