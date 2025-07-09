@@ -266,26 +266,211 @@ async def authenticate_websocket(token: str) -> User:
 @router.websocket("/ws/{token}")
 async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
     """
-    Main WebSocket endpoint for real-time communication.
-
-    Authentication:
-        Uses JWT token in URL path for authentication
-
-    Message Format:
-        {
-            "type": "event_type",
-            "data": {...},
-            "timestamp": "ISO timestamp",
-            "id": "unique_message_id"
+    **Real-time WebSocket Communication Endpoint**
+    
+    Establishes a persistent WebSocket connection for real-time bidirectional communication
+    between client and server. Supports file upload progress, notifications, and system events.
+    
+    **Authentication:**
+    - JWT token passed in URL path: `/ws/{token}`
+    - Token must be valid and non-expired
+    - User must be active and authenticated
+    
+    **Connection Flow:**
+    1. Client connects with JWT token in path
+    2. Server validates token and extracts user info
+    3. Connection registered in connection manager
+    4. Welcome message sent to client
+    5. Bidirectional message exchange begins
+    
+    **Message Format:**
+    All messages follow this JSON structure:
+    ```json
+    {
+        "type": "event_type",
+        "data": {...},
+        "timestamp": "2025-01-08T10:30:00Z",
+        "id": "unique_message_id"
+    }
+    ```
+    
+    **Client → Server Message Types:**
+    
+    **Heartbeat (ping):**
+    ```json
+    {
+        "type": "ping",
+        "data": {},
+        "timestamp": "2025-01-08T10:30:00Z",
+        "id": "msg_123"
+    }
+    ```
+    
+    **Event Subscription:**
+    ```json
+    {
+        "type": "subscribe",
+        "data": {
+            "events": ["upload.progress", "upload.completed", "system.notification"]
+        },
+        "timestamp": "2025-01-08T10:30:00Z",
+        "id": "msg_124"
+    }
+    ```
+    
+    **Server → Client Message Types:**
+    
+    **Connection Established:**
+    ```json
+    {
+        "type": "connection.established",
+        "data": {
+            "connection_id": "conn_xyz789",
+            "user_id": "123",
+            "timestamp": "2025-01-08T10:30:00Z"
+        },
+        "timestamp": "2025-01-08T10:30:00Z",
+        "id": "msg_001"
+    }
+    ```
+    
+    **Heartbeat Response:**
+    ```json
+    {
+        "type": "pong",
+        "data": {
+            "timestamp": "2025-01-08T10:30:00Z"
+        },
+        "timestamp": "2025-01-08T10:30:00Z",
+        "id": "msg_002"
+    }
+    ```
+    
+    **Upload Progress:**
+    ```json
+    {
+        "type": "upload.progress",
+        "data": {
+            "upload_id": "upload_456",
+            "progress": 75,
+            "timestamp": "2025-01-08T10:30:00Z"
+        },
+        "timestamp": "2025-01-08T10:30:00Z",
+        "id": "msg_003"
+    }
+    ```
+    
+    **Upload Completed:**
+    ```json
+    {
+        "type": "upload.completed",
+        "data": {
+            "upload_id": "upload_456",
+            "result": {
+                "file_id": "file_789",
+                "url": "https://example.com/files/789",
+                "size": 1024000
+            },
+            "timestamp": "2025-01-08T10:30:00Z"
+        },
+        "timestamp": "2025-01-08T10:30:00Z",
+        "id": "msg_004"
+    }
+    ```
+    
+    **System Notification:**
+    ```json
+    {
+        "type": "system.notification",
+        "data": {
+            "message": "System maintenance scheduled",
+            "level": "warning",
+            "timestamp": "2025-01-08T10:30:00Z"
+        },
+        "timestamp": "2025-01-08T10:30:00Z",
+        "id": "msg_005"
+    }
+    ```
+    
+    **Error Handling:**
+    - Authentication failures close connection with code 1008
+    - Internal errors close connection with code 1011
+    - Invalid JSON messages are logged but connection continues
+    - Unknown message types are logged and ignored
+    
+    **Connection Management:**
+    - Multiple connections per user supported
+    - Automatic cleanup on disconnect
+    - Connection statistics tracked
+    - Graceful handling of network interruptions
+    
+    **Usage Examples:**
+    
+    **JavaScript Client:**
+    ```javascript
+    const token = "your-jwt-token";
+    const ws = new WebSocket(`ws://localhost:8000/api/v1/websocket/ws/${token}`);
+    
+    ws.onopen = function() {
+        console.log("Connected to WebSocket");
+        
+        // Subscribe to events
+        ws.send(JSON.stringify({
+            type: "subscribe",
+            data: { events: ["upload.progress", "system.notification"] },
+            timestamp: new Date().toISOString(),
+            id: "sub_001"
+        }));
+    };
+    
+    ws.onmessage = function(event) {
+        const message = JSON.parse(event.data);
+        console.log("Received:", message);
+        
+        switch(message.type) {
+            case "upload.progress":
+                updateProgressBar(message.data.progress);
+                break;
+            case "system.notification":
+                showNotification(message.data.message, message.data.level);
+                break;
         }
-
-    Supported Event Types:
-        - ping: Heartbeat message
-        - upload.progress: File upload progress
-        - upload.completed: Upload completion
-        - upload.error: Upload error
-        - review.updated: Review process update
-        - system.notification: System notification
+    };
+    
+    // Send heartbeat every 30 seconds
+    setInterval(() => {
+        ws.send(JSON.stringify({
+            type: "ping",
+            data: {},
+            timestamp: new Date().toISOString(),
+            id: `ping_${Date.now()}`
+        }));
+    }, 30000);
+    ```
+    
+    **Python Client:**
+    ```python
+    import asyncio
+    import json
+    import websockets
+    
+    async def websocket_client():
+        token = "your-jwt-token"
+        uri = f"ws://localhost:8000/api/v1/websocket/ws/{token}"
+        
+        async with websockets.connect(uri) as websocket:
+            # Subscribe to events
+            await websocket.send(json.dumps({
+                "type": "subscribe",
+                "data": {"events": ["upload.progress", "upload.completed"]},
+                "timestamp": "2025-01-08T10:30:00Z",
+                "id": "sub_001"
+            }))
+            
+            async for message in websocket:
+                data = json.loads(message)
+                print(f"Received: {data}")
+    ```
     """
     try:
         # Authenticate the connection
@@ -382,13 +567,64 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
         connection_manager.disconnect(websocket)
 
 
-@router.get("/ws/stats")
+@router.get(
+    "/ws/stats",
+    summary="Get WebSocket connection statistics",
+    description="""
+    Retrieve real-time statistics about active WebSocket connections.
+    
+    **Requirements:**
+    - Valid JWT token in Authorization header
+    - Admin privileges required
+    
+    **Response Data:**
+    - `total_users`: Number of unique users with active connections
+    - `total_connections`: Total number of active WebSocket connections
+    - `users_online`: List of user IDs currently connected
+    
+    **Use Cases:**
+    - Monitor system load and connection health
+    - Debug connection issues
+    - Analytics and usage tracking
+    - System administration
+    
+    **Example Response:**
+    ```json
+    {
+        "status": "success",
+        "data": {
+            "total_users": 15,
+            "total_connections": 23,
+            "users_online": ["123", "456", "789"]
+        }
+    }
+    ```
+    """,
+    responses={
+        200: {
+            "description": "Connection statistics retrieved successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "status": "success",
+                        "data": {
+                            "total_users": 15,
+                            "total_connections": 23,
+                            "users_online": ["123", "456", "789"]
+                        }
+                    }
+                }
+            }
+        },
+        401: {"description": "Invalid or missing JWT token"},
+        403: {"description": "Admin access required"},
+        500: {"description": "Internal server error"}
+    },
+    tags=["WebSocket"],
+)
 async def get_websocket_stats(current_user: User = Depends(get_current_user)) -> Any:
     """
-    Get WebSocket connection statistics.
-
-    Requires authentication.
-    Only admins can access this endpoint.
+    Get real-time WebSocket connection statistics for system monitoring.
     """
     if not current_user.is_admin:
         raise HTTPException(

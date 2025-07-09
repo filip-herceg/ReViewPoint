@@ -14,6 +14,7 @@ from src.api.v1.uploads import router as uploads_router
 from src.api.v1.users import all_routers
 from src.api.v1.websocket import router as websocket_router
 from src.core.config import get_settings
+from src.core.documentation import get_enhanced_openapi_schema
 from src.core.events import on_shutdown, on_startup
 from src.core.logging import init_logging
 from src.middlewares.logging import RequestLoggingMiddleware
@@ -57,6 +58,14 @@ def create_app() -> FastAPI:
         redoc_url="/redoc",
         openapi_url="/openapi.json",
         swagger_ui_parameters=swagger_ui_parameters,
+        # Enhanced Swagger UI configuration
+        swagger_ui_oauth2_redirect_url="/docs/oauth2-redirect",
+        swagger_ui_init_oauth={
+            "usePkceWithAuthorizationCodeGrant": True,
+            "clientId": "reviewpoint-docs",
+            "realm": "reviewpoint",
+            "appName": "ReViewPoint API Documentation",
+        },
     )
     # Initialize logging system
     settings = get_settings()
@@ -190,172 +199,58 @@ def create_app() -> FastAPI:
     return app
 
 
-# --- TypedDicts for OpenAPI schema (for documentation only, not for runtime type checking) ---
-class ContactInfoDict(TypedDict):
-    name: str
-    url: str
-    email: str
-
-
-class LicenseInfoDict(TypedDict):
-    name: str
-    url: str
-
-
-class ServerInfoDict(TypedDict):
-    url: str
-    description: str
-
-
-class SecuritySchemeDict(TypedDict, total=False):
-    type: str
-    scheme: str
-    bearerFormat: str
-    description: str
-    flows: dict[str, dict[str, str | dict[str, str]]]
-
-
-# Note: OpenAPISchemaDict is for documentation only. At runtime, use dict[str, Any] for compatibility with FastAPI.
-
-
 def custom_openapi() -> dict[str, Any]:
     """
-    Generate custom OpenAPI schema with additional features like:
-    - Global security scheme
-    - Tags with descriptions
-    - Operation ID generation
-    - Improved descriptions
+    Generate custom OpenAPI schema with comprehensive documentation.
+    
+    Features:
+    - Enhanced API metadata with contact and license info
+    - Multiple server environments (dev, staging, prod)
+    - Comprehensive security schemes (JWT, API Key, OAuth2)
+    - Detailed endpoint tags and descriptions
+    - Code samples and examples for common operations
+    - Proper error response documentation
+    
     Returns:
-        dict[str, Any]: The OpenAPI schema dictionary.
+        dict[str, Any]: Enhanced OpenAPI schema dictionary
+        
     Raises:
-        Exception: If schema generation fails.
+        Exception: If schema generation fails
     """
     try:
-        openapi_schema: dict[str, Any] = get_openapi(
+        logger.info("Generating custom OpenAPI schema with enhanced documentation")
+        
+        # Generate base schema from FastAPI
+        base_schema: dict[str, Any] = get_openapi(
             title=app.title,
             version=app.version,
             description=app.description,
             routes=app.routes,
+            tags=[
+                {"name": "Auth", "description": "Authentication operations"},
+                {"name": "User Management", "description": "User management operations"}, 
+                {"name": "File", "description": "File upload and management operations"},
+                {"name": "Health", "description": "Health check and monitoring endpoints"},
+                {"name": "WebSocket", "description": "Real-time communication endpoints"},
+            ],
         )
-
-        # Use TypedDicts for structure, but cast at assignment for type safety in IDEs
-        if "info" in openapi_schema and "contact" not in openapi_schema["info"]:
-            openapi_schema["info"]["contact"] = cast(
-                ContactInfoDict,
-                {
-                    "name": "ReViewPoint Team",
-                    "url": "https://github.com/your-org/reviewpoint",
-                    "email": "support@reviewpoint.org",
-                },
-            )
-        if "info" in openapi_schema and "license" not in openapi_schema["info"]:
-            openapi_schema["info"]["license"] = cast(
-                LicenseInfoDict,
-                {
-                    "name": "MIT",
-                    "url": "https://opensource.org/licenses/MIT",
-                },
-            )
-
-        if "servers" not in openapi_schema:
-            openapi_schema["servers"] = [
-                cast(
-                    ServerInfoDict,
-                    {
-                        "url": "http://localhost:8000",
-                        "description": "Development server",
-                    },
-                ),
-                cast(
-                    ServerInfoDict,
-                    {
-                        "url": "https://api.reviewpoint.org",
-                        "description": "Production server",
-                    },
-                ),
-            ]
-
-        if "components" not in openapi_schema:
-            openapi_schema["components"] = {}
-
-        if "securitySchemes" not in openapi_schema["components"]:
-            openapi_schema["components"]["securitySchemes"] = {
-                "BearerAuth": cast(
-                    SecuritySchemeDict,
-                    {
-                        "type": "http",
-                        "scheme": "bearer",
-                        "bearerFormat": "JWT",
-                        "description": "Enter JWT token",
-                    },
-                ),
-                "OAuth2PasswordBearer": cast(
-                    SecuritySchemeDict,
-                    {
-                        "type": "oauth2",
-                        "flows": {
-                            "password": {
-                                "tokenUrl": "/api/v1/auth/login",
-                                "scopes": {},
-                            }
-                        },
-                    },
-                ),
-            }
-
-        openapi_schema["security"] = [{"BearerAuth": []}]
-
-        openapi_schema["tags"] = [
-            {"name": "Auth", "description": "Authentication operations"},
-            {"name": "Users", "description": "User management operations"},
-            {"name": "Health", "description": "Health check and monitoring endpoints"},
-            {"name": "Files", "description": "File upload and management operations"},
-        ]
-
-        # Defensive: check for 'paths' key before iterating
-        paths = openapi_schema.get("paths")
-        if isinstance(paths, dict):
-            for path, path_item in paths.items():
-                if not isinstance(path_item, dict):
-                    continue
-                if "/api/v1/auth" in path:
-                    for _method, method_item in path_item.items():
-                        if not isinstance(method_item, dict):
-                            continue
-                        if "tags" not in method_item:
-                            method_item["tags"] = ["Auth"]
-                        if path in [
-                            "/api/v1/auth/login",
-                            "/api/v1/auth/register",
-                            "/api/v1/auth/request-password-reset",
-                            "/api/v1/auth/reset-password",
-                        ]:
-                            method_item["security"] = []
-                elif "/api/v1/users" in path:
-                    for _method, method_item in path_item.items():
-                        if not isinstance(method_item, dict):
-                            continue
-                        if "tags" not in method_item:
-                            method_item["tags"] = ["Users"]
-                elif "/api/v1/health" in path or "/api/v1/metrics" in path:
-                    for _method, method_item in path_item.items():
-                        if not isinstance(method_item, dict):
-                            continue
-                        if "tags" not in method_item:
-                            method_item["tags"] = ["Health"]
-                        method_item["security"] = []
-                elif "/api/v1/uploads" in path:
-                    for _method, method_item in path_item.items():
-                        if not isinstance(method_item, dict):
-                            continue
-                        if "tags" not in method_item:
-                            method_item["tags"] = ["Files"]
-
-        logger.info("OpenAPI schema generated successfully")
-        return openapi_schema
+        
+        # Use comprehensive documentation module to enhance schema
+        enhanced_schema = get_enhanced_openapi_schema(base_schema)
+        
+        logger.info("Custom OpenAPI schema generated successfully with enhanced documentation")
+        return enhanced_schema
+        
     except Exception as e:
-        logger.error(f"Failed to generate OpenAPI schema: {e}")
-        raise
+        logger.error(f"Failed to generate custom OpenAPI schema: {e}")
+        # Fallback to basic schema if enhancement fails
+        logger.warning("Falling back to basic OpenAPI schema")
+        return get_openapi(
+            title=app.title,
+            version=app.version, 
+            description=app.description,
+            routes=app.routes,
+        )
 
 
 app: Final[FastAPI] = create_app()

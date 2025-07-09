@@ -523,19 +523,80 @@ async def export_files_csv(
     "",
     summary="Upload a file",
     description="""
-    **File Upload**
+    **Secure File Upload**
 
-    Uploads a file and returns its filename and URL.
+    Uploads files with comprehensive validation, virus scanning, and metadata generation.
 
-    **How it works:**
-    1. User sends a file using multipart/form-data.
-    2. The server validates the file type and size.
-    3. If valid, the file is saved and a URL is returned.
+    **Process:**
+    1. **File Validation**: Checks file type, size, and content
+    2. **Security Scan**: Virus scanning and malware detection  
+    3. **Metadata Generation**: Extracts file information and generates checksums
+    4. **Storage**: Secure storage with access controls
+    5. **Response**: Returns file metadata and access URLs
 
-    **Notes:**
-    - Only certain file types may be allowed (e.g., PDF, images).
-    - File size limits and rate limiting may apply.
-    - Use the returned URL to access or download the file.
+    **Supported File Types:**
+    - **Documents**: PDF, DOC, DOCX, TXT, RTF
+    - **Images**: JPEG, PNG, GIF, SVG, WEBP
+    - **Data**: CSV, XLS, XLSX, JSON, XML
+    - **Archives**: ZIP, TAR, GZ (with content scanning)
+
+    **File Constraints:**
+    - **Maximum Size**: 100MB per file
+    - **Rate Limiting**: 5 uploads per minute per user
+    - **Naming**: Automatic sanitization and duplicate handling
+
+    **Security Features:**
+    - Virus and malware scanning
+    - Content type validation (not just extension)
+    - File size limits and timeout protection
+    - Automatic quarantine of suspicious files
+    - Access logging and audit trail
+
+    **Response Format:**
+    ```json
+    {
+      "id": 123,
+      "filename": "document.pdf",
+      "content_type": "application/pdf",
+      "size": 2048576,
+      "md5_hash": "d41d8cd98f00b204e9800998ecf8427e",
+      "upload_url": "/api/v1/uploads/123",
+      "download_url": "/api/v1/uploads/123/download",
+      "created_at": "2024-01-16T09:15:00Z"
+    }
+    ```
+
+    **Usage Examples:**
+
+    *cURL:*
+    ```bash
+    curl -X POST "https://api.reviewpoint.org/api/v1/uploads" \\
+      -H "Authorization: Bearer YOUR_JWT_TOKEN" \\
+      -F "file=@document.pdf" \\
+      -F "description=Research paper draft"
+    ```
+
+    *Python:*
+    ```python
+    import requests
+    
+    files = {"file": ("doc.pdf", open("doc.pdf", "rb"))}
+    headers = {"Authorization": "Bearer YOUR_JWT_TOKEN"}
+    
+    response = requests.post(
+        "https://api.reviewpoint.org/api/v1/uploads",
+        files=files,
+        headers=headers
+    )
+    ```
+
+    **Error Handling:**
+    - `400`: Invalid file type or corrupt file
+    - `401`: Authentication required
+    - `413`: File too large (>100MB)
+    - `415`: Unsupported file type
+    - `429`: Upload rate limit exceeded
+    - `422`: Validation errors (missing file, etc.)
     """,
     response_model=FileUploadResponse,
     status_code=status.HTTP_201_CREATED,

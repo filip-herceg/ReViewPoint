@@ -65,33 +65,107 @@ REGISTER_SUMMARY: Final[str] = "Register a new user"
 REGISTER_DESCRIPTION: Final[
     str
 ] = """
-Registers a new user account and returns a JWT access token.
+**User Registration**
 
-**Steps:**
-1. User submits registration data (email, password, name).
-2. System validates input and checks for duplicate email.
-3. On success, a new user is created and a JWT access token is returned.
+Creates a new user account and returns authentication tokens for immediate login.
 
-**Notes:**
-- Duplicate emails are not allowed.
-- Password must meet security requirements.
-- Rate limiting is applied to prevent abuse.
+**Process:**
+1. Validates email format and password strength
+2. Checks if email is already registered
+3. Creates user account with hashed password
+4. Returns JWT tokens for authentication
+
+**Requirements:**
+- Email must be valid and unique
+- Password must be at least 8 characters
+- Name is optional but recommended
+- API key required for registration
+
+**Rate Limiting:** 5 attempts per email per hour
+
+**Security Features:**
+- Password hashing with bcrypt
+- Email verification (optional)
+- Rate limiting to prevent abuse
+- API key requirement for service protection
+
+**Response:** Returns access token, refresh token, and user profile data
+
+**Examples:**
+```json
+{
+  "email": "user@example.com",
+  "password": "SecurePassword123!",
+  "name": "Jane Doe"
+}
+```
+
+**Error Codes:**
+- `400`: Invalid input data
+- `409`: Email already registered  
+- `429`: Too many registration attempts
+- `422`: Validation errors
 """
 
 LOGIN_SUMMARY: Final[str] = "User login"
 LOGIN_DESCRIPTION: Final[
     str
 ] = """
-Authenticates a user and returns a JWT access token.
+**User Authentication**
 
-**Steps:**
-1. User submits email and password.
-2. System validates credentials and rate limits attempts.
-3. On success, a JWT access token is returned.
+Authenticates user credentials and returns JWT tokens for API access.
 
-**Notes:**
-- Invalid credentials or too many attempts will result in errors.
-- Use the returned token for authenticated requests.
+**Process:**
+1. Validates email and password credentials
+2. Checks account status (active, not locked)
+3. Issues access and refresh tokens
+4. Returns user profile information
+
+**Authentication Methods:**
+- **Email + Password**: Standard login method
+- **Rate Limited**: 10 attempts per IP per minute
+
+**Token Details:**
+- **Access Token**: Valid for 24 hours, use for API requests
+- **Refresh Token**: Valid for 7 days, use to get new access tokens
+- **Token Type**: Bearer (include in Authorization header)
+
+**Security Features:**
+- Password verification with timing attack protection
+- Account lockout after failed attempts
+- Secure token generation with cryptographic signatures
+- IP-based rate limiting
+
+**Usage Examples:**
+
+*Request:*
+```json
+{
+  "email": "user@example.com", 
+  "password": "yourpassword"
+}
+```
+
+*Response:*
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIs...",
+  "refresh_token": "eyJhbGciOiJIUzI1NiIs...",
+  "token_type": "bearer",
+  "expires_in": 86400,
+  "user": {
+    "id": 123,
+    "email": "user@example.com",
+    "name": "Jane Doe"
+  }
+}
+```
+
+**Error Codes:**
+- `400`: Missing or invalid credentials
+- `401`: Invalid email or password
+- `429`: Too many login attempts
+- `423`: Account temporarily locked
 """
 
 LOGOUT_SUMMARY: Final[str] = "Logout user"
