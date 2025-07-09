@@ -55,12 +55,13 @@ class TestDocumentationModule:
 
         server_urls = [server["url"] for server in SERVERS]
         assert any(
-            urlparse(url).hostname
-            and urlparse(url).hostname.lower() == "api.reviewpoint.org"
+            urlparse(url).hostname is not None
+            and (urlparse(url).hostname or "").lower() == "api.reviewpoint.org"
             for url in server_urls
         )  # Production
         assert any(
-            urlparse(url).hostname and urlparse(url).hostname.lower() == "localhost"
+            urlparse(url).hostname is not None
+            and (urlparse(url).hostname or "").lower() == "localhost"
             for url in server_urls
         )  # Local
 
