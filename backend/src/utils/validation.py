@@ -1,26 +1,29 @@
 import re
-from re import Pattern
-from typing import Final, Literal
+from typing import Literal
 
+from email_validator import EmailNotValidError
+from email_validator import validate_email as _validate_email
 from typing_extensions import TypedDict
-
-# Strict constant for the email regex pattern
-EMAIL_REGEX_PATTERN: Final[str] = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
-EMAIL_REGEX: Final[Pattern[str]] = re.compile(EMAIL_REGEX_PATTERN)
 
 
 def validate_email(email: str) -> bool:
     """
-    Simple email format validation.
+    Validate email address using the email_validator library.
 
     Args:
         email (str): The email address to validate.
 
     Returns:
-        bool: True if the email matches the pattern, False otherwise.
+        bool: True if the email is valid, False otherwise.
     """
-    result: bool = bool(EMAIL_REGEX.match(email))
-    return result
+    try:
+        # Limit input length to 320 characters (max email length per RFC)
+        if len(email) > 320:
+            return False
+        _validate_email(email, check_deliverability=False)
+        return True
+    except EmailNotValidError:
+        return False
 
 
 def validate_password(password: str, min_length: int = 8) -> bool:

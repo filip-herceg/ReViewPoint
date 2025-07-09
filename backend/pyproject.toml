@@ -38,6 +38,7 @@ dependencies = [
   "structlog>=23.1.0",
   "pydantic-settings==2.0.3",
   "aiosqlite==0.20.0",
+  "email_validator>=2.1.1",
   "starlette>=0.46.2",
   "autopep8>=2.3.2",
   "loguru>=0.7.3",
