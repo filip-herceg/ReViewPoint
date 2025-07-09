@@ -5,12 +5,13 @@ import logging
 import os
 import sys
 from collections.abc import Callable, Mapping
-from typing import Final
+from typing import Any, Final
 
 import sqlalchemy
-from sqlalchemy.engine import Engine
 from alembic import context
+from alembic.config import Config
 from sqlalchemy import engine_from_config
+from sqlalchemy.engine import Engine
 
 from src.models.base import Base
 
@@ -26,27 +27,34 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"
 
 target_metadata: Final[sqlalchemy.MetaData] = Base.metadata
 
-# Alembic Config object
-config = context.config
+
+# Alembic Config object - accessed lazily to avoid issues in test environments
+def get_config() -> Config:
+    """Get the Alembic config object."""
+    return context.config
+
 
 # Get the database URL from environment variable, falling back to alembic.ini
-def get_url():
+
+
+def get_url() -> str | None:
     """Get database URL, converting from async to sync format if needed."""
-    # Try environment variable first (from the app's .env file)
-    url = os.getenv('REVIEWPOINT_DB_URL')
+    url: str | None = os.getenv("REVIEWPOINT_DB_URL")
     if url:
         # Convert async URL to sync for Alembic
-        url = url.replace('postgresql+asyncpg://', 'postgresql://')
+        url = url.replace("postgresql+asyncpg://", "postgresql://")
         logger.info(f"Using database URL from environment: {url}")
         return url
-    
+
     # Fall back to alembic.ini
+    config = get_config()
     url = config.get_main_option("sqlalchemy.url")
     logger.info(f"Using database URL from alembic.ini: {url}")
     return url
 
+
 # Type alias for the engine_from_config callable signature
-EngineFromConfigType = Callable[[Mapping[str, object], str, object | None], Engine]
+EngineFromConfigType = Callable[[Mapping[str, object], str, Any | None], Engine]
 
 
 def run_migrations_offline() -> None:
@@ -58,24 +66,26 @@ def run_migrations_offline() -> None:
     from logging.config import fileConfig
 
     logger.info("Starting offline migrations")
-    config_file = context.config.config_file_name
+
+    config = get_config()
+    config_file: str | None = config.config_file_name
     if config_file is not None:
         fileConfig(config_file)
         logger.debug(f"Loaded logging config from {config_file}")
-    
-    url = get_url()
+
+    url: str | None = get_url()
     if url is None:
         logger.error("No sqlalchemy.url provided for offline migration")
         raise ValueError("No sqlalchemy.url provided for offline migration")
-    
+
     logger.info(f"Configuring context for offline migration (url={url})")
     context.configure(
-        url=url, 
+        url=url,
         target_metadata=target_metadata,
-        literal_binds=True, 
-        dialect_opts={"paramstyle": "named"}
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
     )
-    
+
     # begin_transaction returns a _ProxyTransaction, not a ContextManager[None]
     with context.begin_transaction():
         logger.info("Running offline migrations...")
@@ -83,7 +93,9 @@ def run_migrations_offline() -> None:
         logger.info("Offline migrations complete.")
 
 
-def run_migrations_online(engine_from_config_func: EngineFromConfigType | None = None) -> None:
+def run_migrations_online(
+    engine_from_config_func: EngineFromConfigType | None = None,
+) -> None:
     """
     Run migrations in 'online' mode. The engine_from_config dependency must be provided for testability.
     Raises:
@@ -93,36 +105,36 @@ def run_migrations_online(engine_from_config_func: EngineFromConfigType | None =
     from logging.config import fileConfig
 
     logger.info("Starting online migrations")
-    config_file = context.config.config_file_name
+    config = get_config()
+    config_file: str | None = config.config_file_name
     if config_file is not None:
         fileConfig(config_file)
         logger.debug(f"Loaded logging config from {config_file}")
-    
-    url = get_url()
+
+    url: str | None = get_url()
     if url is None:
         logger.error("No sqlalchemy.url provided for online migration")
         raise ValueError("No sqlalchemy.url provided for online migration")
-    
+
     # Override the URL in the config
+    config = get_config()
     config.set_main_option("sqlalchemy.url", url)
-    
+
     logger.info(f"Configuring engine and context for online migration (url={url})")
-    section_raw: object = context.config.get_section(
-        context.config.config_ini_section
-    )
+    section_raw: object = config.get_section(config.config_ini_section)
     if not isinstance(section_raw, Mapping):
         raise TypeError("Expected config section to be a Mapping[str, object]")
     section: Mapping[str, object] = section_raw
     prefix: Final[str] = "sqlalchemy."
-    
+
     # Use the provided engine function or default
     if engine_from_config_func:
-        engine: Engine = engine_from_config_func(section, prefix, None)
+        configured_engine: Engine = engine_from_config_func(section, prefix, None)
     else:
-        engine: Engine = engine_from_config(section, prefix)
-    
+        configured_engine = engine_from_config(dict(section), prefix)
+
     # engine.connect() returns a Connection, which is a context manager
-    with engine.connect() as connection:
+    with configured_engine.connect() as connection:
         logger.info("Connected to database, configuring context...")
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
@@ -131,8 +143,14 @@ def run_migrations_online(engine_from_config_func: EngineFromConfigType | None =
             logger.info("Online migrations complete.")
 
 
-# Main execution for Alembic
-if context.is_offline_mode():
-    run_migrations_offline()
-else:
-    run_migrations_online()
+def run_migrations() -> None:
+    """Run migrations based on the current context mode."""
+    if context.is_offline_mode():
+        run_migrations_offline()
+    else:
+        run_migrations_online()
+
+
+# Main execution for Alembic - only run if this is the main module
+if __name__ == "__main__":
+    run_migrations()

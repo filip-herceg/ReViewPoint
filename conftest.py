@@ -14,6 +14,7 @@ if project_root not in sys.path:
 # Remove all handlers at module level to start clean
 logger.remove()
 
+
 @pytest.fixture(autouse=True)
 def _global_teardown() -> Generator[None, None, None]:
     """
@@ -23,10 +24,12 @@ def _global_teardown() -> Generator[None, None, None]:
     yield
     logger.remove()
 
+
 pytest_plugins: list[str] = [
     "backend.tests.pytest_plugins.mapping_checker",
     "pytest_loguru",
 ]
+
 
 @pytest.fixture(autouse=True, scope="session")
 def patch_loguru_remove(monkeypatch: pytest.MonkeyPatch) -> None:

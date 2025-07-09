@@ -45,7 +45,12 @@ _env_path: str | None = os.getenv("ENV_FILE")
 _env_file: Path | None
 if IS_PYTEST:
     _env_file = None  # Always ignore .env during tests
-    if _env_path or Path("config/.env").exists() or Path("backend/config/.env").exists() or Path("backend/.env").exists():
+    if (
+        _env_path
+        or Path("config/.env").exists()
+        or Path("backend/config/.env").exists()
+        or Path("backend/.env").exists()
+    ):
         # Defensive: log if any .env file would have been loaded during tests
         # Only warn, do not print or log debug/devlog
         try:
@@ -194,22 +199,22 @@ class Settings(BaseSettings):
             or os.environ.get("FAST_TESTS") == "1"
             or os.environ.get("REVIEWPOINT_TEST_MODE") == "1"
         )
-        is_dev_mode: bool = (
-            os.environ.get("REVIEWPOINT_ENVIRONMENT") == "dev"
-        )
-        
+        is_dev_mode: bool = os.environ.get("REVIEWPOINT_ENVIRONMENT") == "dev"
+
         if not v:
             if not is_explicit_test_mode:
                 raise RuntimeError("Missing database URL: set REVIEWPOINT_DB_URL")
             v = "sqlite+aiosqlite:///:memory:"
-            
+
         if v.startswith("postgresql+asyncpg://"):
             return v
         elif v.startswith("sqlite+aiosqlite://"):
             if is_explicit_test_mode or is_dev_mode:
                 return v
             else:
-                raise ValueError("SQLite database is only allowed in dev or test environments")
+                raise ValueError(
+                    "SQLite database is only allowed in dev or test environments"
+                )
         else:
             accepted_schemes: str = "postgresql+asyncpg://"
             if is_explicit_test_mode or is_dev_mode:
