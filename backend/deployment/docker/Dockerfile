@@ -6,41 +6,29 @@ WORKDIR /app
 # Install system dependencies and upgrade all packages to latest security patches
 RUN apt-get update && \
     apt-get install -y --no-install-recommends build-essential && \
-    apt-get upgrade -y && \
+    apt-get dist-upgrade -y && \
+    apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
 # Install pip and upgrade setuptools for security
 RUN pip install --no-cache-dir --upgrade setuptools>=78.1.1 pip
 
-# Copy dependency files
+# Copy dependency files and source code (needed for dynamic version resolution)
 COPY pyproject.toml ./
+COPY src ./src/
 
-# Create a simple README.md and modify pyproject.toml if needed
+# Create a simple README.md if it doesn't exist
 RUN echo "Contents of current directory:" && ls -la && \
     echo "# Backend Project" > README.md && \
     echo "This is a placeholder README file for Docker build." >> README.md && \
     echo "Created README.md successfully" && \
-    cat README.md && \
-    echo "Checking pyproject.toml:" && \
-    if grep -q "readme =" pyproject.toml; then \
-    echo "Removing readme reference from pyproject.toml"; \
-    sed -i '/readme =/d' pyproject.toml; \
-    fi && \
-    if grep -q "dynamic =" pyproject.toml; then \
-    echo "Ensuring proper version handling in pyproject.toml"; \
-    sed -i '/dynamic =/d' pyproject.toml; \
-    echo "Adding static version to pyproject.toml"; \
-    sed -i '/name = "backend"/a version = "0.1.0"' pyproject.toml; \
-    echo "Removing any tool.hatch.version section if it exists"; \
-    sed -i '/\[tool\.hatch\.version\]/,+1d' pyproject.toml; \
-    fi
+    cat README.md
 
 # Use pip directly for installation
 RUN python -m venv .venv && \
     . .venv/bin/activate && \
     pip install --no-cache-dir --upgrade pip setuptools && \
     pip install --no-cache-dir .
-
 FROM python:3.11-slim-bullseye AS runtime
 
 WORKDIR /app
@@ -48,9 +36,11 @@ WORKDIR /app
 # Install runtime dependencies, upgrade all packages to latest security patches, and upgrade setuptools for security
 RUN apt-get update && \
     apt-get install -y --no-install-recommends postgresql-client && \
-    apt-get upgrade -y && \
+    apt-get dist-upgrade -y && \
+    apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/* && \
     pip install --no-cache-dir --upgrade setuptools>=78.1.1 pip && \
+    pip install --no-cache-dir --upgrade setuptools>=78.1.1 pip
     pip install --no-cache-dir --upgrade setuptools>=78.1.1 pip
 
 # Copy virtual environment from builder
