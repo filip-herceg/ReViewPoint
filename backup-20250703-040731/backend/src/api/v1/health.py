@@ -202,11 +202,13 @@ async def health_check(
     start = time.monotonic()
     db_ok = True
     db_error: str | None = None
+    import logging
     try:
         await db_healthcheck()
     except Exception as exc:
         db_ok = False
-        db_error = str(exc)
+        db_error = "Database connection failed"
+        logging.exception("Database health check failed")  # Log the real exception internally
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
     duration = time.monotonic() - start
     response.headers["X-Health-Response-Time"] = f"{duration:.4f}s"
@@ -227,9 +229,9 @@ async def health_check(
         "db": {"ok": db_ok, "error": db_error, "pool": pool_stats},
         "uptime": uptime,
         "response_time": duration,
-        "versions": versions,
-    }
     if not db_ok:
+        health["detail"] = db_error  # This is now a generic message
+    return health
         health["detail"] = db_error
     return health
 

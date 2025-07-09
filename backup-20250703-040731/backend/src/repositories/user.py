@@ -63,7 +63,7 @@ async def create_user_with_validation(
         raise ValidationError("Invalid email format.")
     err = get_password_validation_error(password)
     if err:
-        logging.warning(f"Password validation error for {email}: {err}")
+        logging.warning(f"Password validation error for user with email {email}: {err}")
         raise ValidationError(err)
     if not await is_email_unique(session, email):
         logging.warning(f"Email already exists: {email}")

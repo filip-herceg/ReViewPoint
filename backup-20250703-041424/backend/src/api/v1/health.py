@@ -204,9 +204,9 @@ async def health_check(
     db_error: str | None = None
     try:
         await db_healthcheck()
-    except Exception as exc:
+    except Exception:
         db_ok = False
-        db_error = str(exc)
+        db_error = "Database connection failed"
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
     duration = time.monotonic() - start
     response.headers["X-Health-Response-Time"] = f"{duration:.4f}s"

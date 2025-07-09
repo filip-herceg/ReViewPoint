@@ -51,9 +51,18 @@ class TestDocumentationModule:
         """Test that servers are properly configured for different environments."""
         assert len(SERVERS) >= 3  # Production, staging, local
 
+        from urllib.parse import urlparse
+
         server_urls = [server["url"] for server in SERVERS]
-        assert any("api.reviewpoint.org" in url for url in server_urls)  # Production
-        assert any("localhost" in url for url in server_urls)  # Local
+        assert any(
+            urlparse(url).hostname
+            and urlparse(url).hostname.lower() == "api.reviewpoint.org"
+            for url in server_urls
+        )  # Production
+        assert any(
+            urlparse(url).hostname and urlparse(url).hostname.lower() == "localhost"
+            for url in server_urls
+        )  # Local
 
         # Each server should have description and variables
         for server in SERVERS:
@@ -154,8 +163,23 @@ class TestDocumentationModule:
             # Each sample should be non-empty
             for _lang, code in samples.items():
                 assert len(code.strip()) > 0
-                # Check for API domain or localhost in the code
-                assert "api.reviewpoint.org" in code or "localhost" in code
+                # Check for API domain or localhost in the code using proper URL parsing
+                from urllib.parse import urlparse
+
+                def has_valid_domain(code_sample: str) -> bool:
+                    import re
+
+                    urls = re.findall(r'https?://[^\s"\']+', code_sample)
+                    for url in urls:
+                        hostname = urlparse(url).hostname
+                        if hostname and hostname.lower() in (
+                            "api.reviewpoint.org",
+                            "localhost",
+                        ):
+                            return True
+                    return False
+
+                assert has_valid_domain(code)
 
     def test_enhanced_schema_generation(self) -> None:
         """Test the enhanced OpenAPI schema generation."""

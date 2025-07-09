@@ -13,13 +13,13 @@ def test_jwt_secret_key_available():
     print(f"JWT_SECRET env var: {'REVIEWPOINT_JWT_SECRET' in os.environ}")
     
     if 'REVIEWPOINT_JWT_SECRET_KEY' in os.environ:
-        print(f"JWT_SECRET_KEY value: {os.environ['REVIEWPOINT_JWT_SECRET_KEY']}")
+        print("JWT_SECRET_KEY is set (value masked)")
     if 'REVIEWPOINT_JWT_SECRET' in os.environ:
-        print(f"JWT_SECRET value: {os.environ['REVIEWPOINT_JWT_SECRET']}")
+        print("JWT_SECRET is set (value masked)")
     
     settings = get_settings()
-    print(f"Settings JWT secret key: {settings.jwt_secret_key}")
-    print(f"Settings JWT secret (legacy): {settings.jwt_secret}")
+    print(f"Settings JWT secret key is {'set' if settings.jwt_secret_key else 'not set'} (value masked)")
+    print(f"Settings JWT secret (legacy) is {'set' if settings.jwt_secret else 'not set'} (value masked)")
     
     assert settings.jwt_secret_key is not None, "JWT secret key should be available"
 
