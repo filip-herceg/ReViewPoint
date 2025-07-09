@@ -1,0 +1,60 @@
+{
+    "recommendations": [
+        // === ESSENTIAL EXTENSIONS ===
+        "ms-python.python",
+        "ms-python.debugpy",
+        "ms-python.flake8",
+        "charliermarsh.ruff",
+        "biomejs.biome",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-typescript-next",
+        // === DEVELOPMENT TOOLS ===
+        "ms-vscode.vscode-json",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        "ms-vscode.makefile-tools",
+        "ms-vscode-remote.remote-containers",
+        "ms-azuretools.vscode-docker",
+        // === TESTING ===
+        "ms-playwright.playwright",
+        "hbenl.vscode-test-explorer",
+        "littlefoxteam.vscode-python-test-adapter",
+        // === GIT & VERSION CONTROL ===
+        "eamodio.gitlens",
+        "github.vscode-pull-request-github",
+        "github.copilot",
+        "github.copilot-chat",
+        // === PRODUCTIVITY ===
+        "formulahendry.auto-rename-tag",
+        "christian-kohler.path-intellisense",
+        "visualstudioexptteam.vscodeintellicode",
+        "ms-vscode.hexeditor",
+        "gruntfuggly.todo-tree",
+        "aaron-bond.better-comments",
+        // === MARKDOWN & DOCUMENTATION ===
+        "yzhang.markdown-all-in-one",
+        "bierner.markdown-mermaid",
+        "davidanson.vscode-markdownlint",
+        // === SECURITY ===
+        "snyk-security.snyk-vulnerability-scanner",
+        "ms-vscode.vscode-security-scan",
+        // === DATABASE ===
+        "ms-mssql.mssql",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg",
+        "mtxr.sqltools-driver-sqlite",
+        // === API DEVELOPMENT ===
+        "humao.rest-client",
+        "42crunch.vscode-openapi",
+        "rangav.vscode-thunder-client",
+        // === THEME & UI ===
+        "pkief.material-icon-theme",
+        "github.github-vscode-theme",
+        "zhuangtongfa.material-theme",
+        // === OPTIONAL BUT USEFUL ===
+        "ms-vscode.live-server",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-eslint"
+    ]
+}

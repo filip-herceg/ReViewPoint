@@ -1,4 +1,936 @@
 {
-	"version": "2.0.0",
-	"tasks": []
+    "version": "2.0.0",
+    "tasks": [
+        // === DEVELOPMENT TASKS ===
+        {
+            "label": "ReViewPoint: Start Backend",
+            "type": "shell",
+            "command": "uvicorn",
+            "args": [
+                "src.main:app",
+                "--reload",
+                "--host",
+                "0.0.0.0",
+                "--port",
+                "8000"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "isBackground": true,
+            "problemMatcher": [],
+            "detail": "Start the FastAPI backend server with hot reload"
+        },
+        {
+            "label": "ReViewPoint: Start Frontend",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "dev"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/frontend"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "isBackground": true,
+            "problemMatcher": [],
+            "detail": "Start the Vite development server"
+        },
+        {
+            "label": "ReViewPoint: Start Both (Backend + Frontend) - SQLite",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "dev"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "isBackground": true,
+            "problemMatcher": [],
+            "detail": "Start both backend and frontend servers using SQLite database (simple setup)"
+        },
+        {
+            "label": "ReViewPoint: Start Both (Backend + Frontend) - PostgreSQL",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "dev:postgres"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "isBackground": true,
+            "problemMatcher": [],
+            "detail": "Start both backend and frontend servers with PostgreSQL (automatically builds and starts Docker container)"
+        },
+        {
+            "label": "ReViewPoint: Start Frontend with API Types",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "dev:with-types"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/frontend"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "isBackground": true,
+            "problemMatcher": [],
+            "detail": "Generate API types and start frontend dev server"
+        },
+        // === TESTING TASKS ===
+        {
+            "label": "ReViewPoint: Run All Backend Tests",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "-m",
+                "pytest",
+                "-v"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Run all backend tests with pytest"
+        },
+        {
+            "label": "ReViewPoint: Run Fast Backend Tests",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "run-fast-tests.py"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Run fast backend tests (excluding slow/integration tests)"
+        },
+        {
+            "label": "ReViewPoint: Run Backend Tests with Coverage",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "-m",
+                "pytest",
+                "--cov=src",
+                "--cov-report=html",
+                "--cov-report=term"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Run backend tests with coverage report"
+        },
+        {
+            "label": "ReViewPoint: Run Frontend Tests",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "test"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/frontend"
+            },
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Run frontend unit tests with Vitest"
+        },
+        {
+            "label": "ReViewPoint: Run Frontend E2E Tests",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "test:e2e"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/frontend"
+            },
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Run end-to-end tests with Playwright"
+        },
+        {
+            "label": "ReViewPoint: Run Frontend Tests with Coverage",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "test:coverage"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/frontend"
+            },
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Run frontend tests with coverage report"
+        },
+        {
+            "label": "ReViewPoint: Run All Tests",
+            "type": "shell",
+            "command": "npx",
+            "args": [
+                "concurrently",
+                "--names",
+                "BACKEND,FRONTEND",
+                "--prefix-colors",
+                "blue,green",
+                "\"cd backend && python -m pytest -v\"",
+                "\"cd frontend && pnpm run test\""
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Run all backend and frontend tests concurrently"
+        },
+        // === QUALITY & LINTING TASKS ===
+        {
+            "label": "ReViewPoint: Lint Backend",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "-m",
+                "ruff",
+                "check",
+                ".",
+                "--fix"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Lint backend code with Ruff and auto-fix issues"
+        },
+        {
+            "label": "ReViewPoint: Format Backend",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "-m",
+                "ruff",
+                "format",
+                "."
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Format backend code with Ruff"
+        },
+        {
+            "label": "ReViewPoint: Lint Frontend",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "lint"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/frontend"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Lint frontend code with Biome"
+        },
+        {
+            "label": "ReViewPoint: Format Frontend",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "format"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/frontend"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Format frontend code with Biome"
+        },
+        {
+            "label": "ReViewPoint: Type Check Frontend",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "type-check"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/frontend"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Type check frontend code with TypeScript"
+        },
+        // === BUILD & DEPLOY TASKS ===
+        {
+            "label": "ReViewPoint: Build Frontend",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "build"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/frontend"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Build frontend for production"
+        },
+        {
+            "label": "ReViewPoint: Generate API Types",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "generate:all"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/frontend"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Generate TypeScript types from OpenAPI schema"
+        },
+        {
+            "label": "ReViewPoint: Export Backend Schema",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "scripts/export-backend-schema.py"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Export OpenAPI schema from backend"
+        },
+        {
+            "label": "ReViewPoint: Validate API Schema",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "validate:api-schema"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/frontend"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Validate OpenAPI schema"
+        },
+        // === DATABASE TASKS (Manual) ===
+        {
+            "label": "ReViewPoint: Start PostgreSQL (Docker)",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f",
+                "backend/deployment/docker-compose.yml",
+                "up",
+                "-d",
+                "postgres"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "isBackground": true,
+            "problemMatcher": [],
+            "detail": "Start PostgreSQL database in Docker for development"
+        },
+        {
+            "label": "ReViewPoint: Stop PostgreSQL (Docker)",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "compose",
+                "-f",
+                "backend/deployment/docker-compose.yml",
+                "down"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Stop PostgreSQL database Docker container"
+        },
+        {
+            "label": "ReViewPoint: Switch to PostgreSQL",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-Command",
+                "(Get-Content backend/config/.env) -replace '^REVIEWPOINT_DB_URL=.*', 'REVIEWPOINT_DB_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint' | Set-Content backend/config/.env"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Switch database configuration to PostgreSQL"
+        },
+        {
+            "label": "ReViewPoint: Switch to SQLite",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-Command",
+                "(Get-Content backend/config/.env) -replace '^REVIEWPOINT_DB_URL=.*', 'REVIEWPOINT_DB_URL=sqlite+aiosqlite:///./reviewpoint_dev.db' | Set-Content backend/config/.env"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Switch database configuration to SQLite (simpler for development)"
+        },
+        {
+            "label": "ReViewPoint: Run Database Migrations",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "-m",
+                "alembic",
+                "upgrade",
+                "head"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Apply all pending database migrations"
+        },
+        {
+            "label": "ReViewPoint: Create New Migration",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "-m",
+                "alembic",
+                "revision",
+                "--autogenerate",
+                "-m",
+                "${input:migrationMessage}"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Create a new database migration"
+        },
+        // === UTILITY TASKS ===
+        {
+            "label": "ReViewPoint: Install Dependencies",
+            "type": "shell",
+            "command": "npx",
+            "args": [
+                "concurrently",
+                "--names",
+                "ROOT,BACKEND,FRONTEND",
+                "--prefix-colors",
+                "yellow,blue,green",
+                "\"pnpm install\"",
+                "\"cd backend && pip install -e .\"",
+                "\"cd frontend && pnpm install\""
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Install all dependencies for the entire project"
+        },
+        {
+            "label": "ReViewPoint: Clean All",
+            "type": "shell",
+            "command": "npx",
+            "args": [
+                "concurrently",
+                "--names",
+                "CACHE,DEPS,BUILD",
+                "--prefix-colors",
+                "red,yellow,blue",
+                "\"rm -rf .pytest_cache .ruff_cache __pycache__ htmlcov .coverage\"",
+                "\"rm -rf node_modules frontend/node_modules\"",
+                "\"rm -rf frontend/dist backend/dist\""
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Clean all cache, dependencies, and build artifacts"
+        },
+        {
+            "label": "ReViewPoint: Audit Dependencies",
+            "type": "shell",
+            "command": "npx",
+            "args": [
+                "concurrently",
+                "--names",
+                "FRONTEND,BACKEND",
+                "--prefix-colors",
+                "green,blue",
+                "\"cd frontend && pnpm audit\"",
+                "\"cd backend && pip-audit\""
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Audit dependencies for security vulnerabilities"
+        },
+        // === SECURITY TASKS ===
+        {
+            "label": "ReViewPoint: Run Security Scan",
+            "type": "shell",
+            "command": "trivy",
+            "args": [
+                "fs",
+                "--security-checks",
+                "vuln,config,secret",
+                "--format",
+                "table",
+                "."
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Run security scan with Trivy"
+        },
+        // === POSTGRESQL AUTO-SETUP TASKS ===
+        {
+            "label": "ReViewPoint: Start Development with PostgreSQL (Auto-Setup)",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "dev:postgres"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "isBackground": true,
+            "problemMatcher": [],
+            "detail": "Auto-setup PostgreSQL container, run migrations, and start both backend and frontend"
+        },
+        {
+            "label": "ReViewPoint: Start PostgreSQL Container (Auto-Setup)",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "postgres:start"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Auto-setup PostgreSQL container with health checks and migrations"
+        },
+        {
+            "label": "ReViewPoint: Check PostgreSQL Prerequisites",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "postgres:check"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Check if Docker and other prerequisites are available for PostgreSQL auto-setup"
+        },
+        {
+            "label": "ReViewPoint: Stop PostgreSQL Container (pnpm)",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "postgres:stop"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Stop PostgreSQL container using pnpm script"
+        },
+        {
+            "label": "ReViewPoint: Switch to SQLite Database",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "db:sqlite"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Switch database configuration back to SQLite"
+        },
+        {
+            "label": "ReViewPoint: Reset PostgreSQL Database",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/reset-postgres.js"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Completely reset PostgreSQL container and database (removes all data)"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "migrationMessage",
+            "description": "Enter migration message",
+            "default": "Add new migration",
+            "type": "promptString"
+        }
+    ]
 }

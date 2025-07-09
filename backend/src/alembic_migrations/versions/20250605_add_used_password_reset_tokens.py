@@ -11,8 +11,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "20250605_add_used_password_reset_tokens"
-down_revision = "9fc3acc47815"
+revision = "a3b4c5d6e7f8"
+down_revision = "f140e6f46727"
 branch_labels = None
 depends_on = None
 
@@ -21,8 +21,8 @@ def upgrade() -> None:
     op.create_table(
         "used_password_reset_tokens",
         sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
-        sa.Column("email", sa.String(length=255), nullable=False, index=True),
-        sa.Column("nonce", sa.String(length=64), nullable=False, index=True),
+        sa.Column("email", sa.String(length=255), nullable=False),
+        sa.Column("nonce", sa.String(length=64), nullable=False),
         sa.Column("used_at", sa.DateTime, nullable=False, server_default=sa.func.now()),
     )
     op.create_index(

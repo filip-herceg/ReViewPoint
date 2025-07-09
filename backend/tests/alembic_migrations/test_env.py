@@ -75,12 +75,16 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
         def get_main_option_func(key: str) -> str | None:
             return url if key == "sqlalchemy.url" else None
 
+        def set_main_option_func(key: str, value: str) -> None:
+            pass  # Mock implementation
+
         def get_section_func(s: str) -> dict[str, object]:
             return {}
 
         fake_config: types.SimpleNamespace = types.SimpleNamespace()
         fake_config.config_file_name = config_file_name
         fake_config.get_main_option = get_main_option_func
+        fake_config.set_main_option = set_main_option_func
         fake_config.get_section = get_section_func
         fake_config.config_ini_section = section
         fake_context: AlembicContextNamespace = AlembicContextNamespace()
@@ -104,7 +108,14 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
             url=test_db_url
         )
         self.patch_alembic_context(monkeypatch, fake_context)
-        monkeypatch.setattr("logging.config.fileConfig", lambda *a, **k: None)
+        monkeypatch.setitem(
+            sys.modules,
+            "logging.config",
+            types.SimpleNamespace(fileConfig=mock.MagicMock()),
+        )
+        sys.modules.pop("backend.alembic_migrations.env", None)
+        importlib.invalidate_caches()
+        importlib.reload(env)
         env.run_migrations_offline()
         self.assert_called_once(fake_context.configure)
         self.assert_called_once(fake_context.run_migrations)
@@ -117,9 +128,19 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
         """
         from src.alembic_migrations import env
 
+        # Ensure environment variable is not set
+        monkeypatch.delenv("REVIEWPOINT_DB_URL", raising=False)
+
         fake_context: AlembicContextNamespace = self._make_context(url=None)
         self.patch_alembic_context(monkeypatch, fake_context)
-        monkeypatch.setattr("logging.config.fileConfig", lambda *a, **k: None)
+        monkeypatch.setitem(
+            sys.modules,
+            "logging.config",
+            types.SimpleNamespace(fileConfig=mock.MagicMock()),
+        )
+        sys.modules.pop("backend.alembic_migrations.env", None)
+        importlib.invalidate_caches()
+        importlib.reload(env)
         self.assert_raises(ValueError, env.run_migrations_offline)
 
     def test_run_migrations_online_success(
@@ -136,11 +157,15 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
 
         fake_context: AlembicContextNamespace = self._make_context(url=test_db_url)
         self.patch_alembic_context(monkeypatch, fake_context)
+        monkeypatch.setitem(
+            sys.modules,
+            "logging.config",
+            types.SimpleNamespace(fileConfig=mock.MagicMock()),
+        )
+        sys.modules.pop("backend.alembic_migrations.env", None)
+        importlib.invalidate_caches()
+        importlib.reload(env)
 
-        def file_config_lambda(*a: object, **k: object) -> None:
-            return None
-
-        monkeypatch.setattr("logging.config.fileConfig", file_config_lambda)
         mock_connection: mock.MagicMock = mock.MagicMock()
         mock_engine: mock.MagicMock = mock.MagicMock()
         mock_engine.connect.return_value.__enter__.return_value = mock_connection
@@ -162,13 +187,24 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
         from src.alembic_migrations import env
         from src.alembic_migrations.env import EngineFromConfigType
 
-        fake_context: types.SimpleNamespace = self._make_context(url=None)
+        # Ensure environment variable is not set
+        monkeypatch.delenv("REVIEWPOINT_DB_URL", raising=False)
+
+        fake_context: AlembicContextNamespace = self._make_context(url=None)
         self.patch_alembic_context(monkeypatch, fake_context)
-
-        def file_config_lambda(*a: object, **k: object) -> None:
-            return None
-
-        monkeypatch.setattr("logging.config.fileConfig", file_config_lambda)
+        monkeypatch.setitem(
+            sys.modules,
+            "logging.config",
+            types.SimpleNamespace(fileConfig=mock.MagicMock()),
+        )
+        monkeypatch.setitem(
+            sys.modules,
+            "backend.core.logging",
+            types.SimpleNamespace(init_logging=mock.MagicMock()),
+        )
+        sys.modules.pop("backend.alembic_migrations.env", None)
+        importlib.invalidate_caches()
+        importlib.reload(env)
 
         def fake_engine_from_config(
             configuration: object, prefix: str, poolclass: object | None
@@ -217,6 +253,9 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
     ) -> None:
         """Test that missing URL error is properly raised during offline migration."""
         from src.alembic_migrations import env
+
+        # Ensure environment variable is not set
+        monkeypatch.delenv("REVIEWPOINT_DB_URL", raising=False)
 
         context_mod: types.SimpleNamespace = self._make_context(url=None)
         self.patch_alembic_context(monkeypatch, context_mod)
@@ -283,6 +322,9 @@ class TestAlembicEnv(AlembicEnvTestTemplate):
         """Test that missing URL error is properly raised during online migration."""
         from src.alembic_migrations import env
         from src.alembic_migrations.env import EngineFromConfigType
+
+        # Ensure environment variable is not set
+        monkeypatch.delenv("REVIEWPOINT_DB_URL", raising=False)
 
         context_mod: types.SimpleNamespace = self._make_context(url=None)
         self.patch_alembic_context(monkeypatch, context_mod)

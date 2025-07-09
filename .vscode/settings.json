@@ -1,9 +1,72 @@
 {
+    // === EDITOR SETTINGS ===
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
         "source.fixAll": "always"
     },
+    "editor.rulers": [
+        88,
+        120
+    ],
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    // === FRONTEND SETTINGS (Biome) ===
     "biome.enable": true,
     "biome.lint.enable": true,
-    "biome.format.enable": true
+    "biome.format.enable": true,
+    // === BACKEND SETTINGS (Python/Ruff) ===
+    "python.defaultInterpreterPath": "./backend/.venv/bin/python",
+    "python.formatting.provider": "none",
+    "python.linting.enabled": false,
+    "ruff.enable": true,
+    "ruff.format.args": [
+        "--line-length=88"
+    ],
+    "ruff.lint.args": [
+        "--select=E,W,F,I,N,D,UP,YTT,ANN,S,BLE,FBT,B,A,COM,C4,DTZ,T10,DJ,EM,EXE,FA,ISC,ICN,G,INP,PIE,T20,PYI,PT,Q,RSE,RET,SLF,SLOT,SIM,TID,TCH,INT,ARG,PTH,TD,FIX,ERA,PD,PGH,PL,TRY,FLY,NPY,AIR,PERF,FURB,LOG,RUF"
+    ],
+    // === FILE ASSOCIATIONS ===
+    "files.associations": {
+        "*.env*": "dotenv",
+        "Dockerfile*": "dockerfile",
+        "*.toml": "toml"
+    },
+    // === WORKSPACE SETTINGS ===
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "**/node_modules": true,
+        "**/.pytest_cache": true,
+        "**/.ruff_cache": true,
+        "**/htmlcov": true,
+        "**/dist": true,
+        "**/.coverage": true
+    },
+    // === TASK SETTINGS ===
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
+    "terminal.integrated.defaultProfile.osx": "zsh",
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "task.quickOpen.history": 10,
+    "task.quickOpen.showAll": true,
+    // === TESTING SETTINGS ===
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [
+        "--tb=short",
+        "--verbose"
+    ],
+    "python.testing.cwd": "${workspaceFolder}/backend",
+    // === EXTENSIONS SETTINGS ===
+    "emmet.includeLanguages": {
+        "typescript": "html",
+        "typescriptreact": "html"
+    },
+    // === SEARCH SETTINGS ===
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/__pycache__": true,
+        "**/htmlcov": true,
+        "**/dist": true,
+        "**/.pytest_cache": true,
+        "**/.ruff_cache": true
+    }
 }

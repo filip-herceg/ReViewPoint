@@ -1,10 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import federation from '@originjs/vite-plugin-federation';
-import { visualizer } from 'rollup-plugin-visualizer';
-import csp from 'vite-plugin-csp';
 import tsconfigPaths from 'vite-tsconfig-paths';
-
 import { resolve } from 'path';
 
 export default defineConfig({
@@ -16,21 +12,9 @@ export default defineConfig({
     plugins: [
         react(),
         tsconfigPaths(), // Add tsconfigPaths plugin for alias resolution
-        federation({
-            name: 'app',
-            filename: 'remoteEntry.js',
-            exposes: { './Button': './src/components/ui/Button.tsx' },
-            remotes: {},
-            shared: ['react', 'react-dom']
-        }),
-        visualizer({ gzipSize: true }),
-        csp({
-            enabled: true,
-            policy: {
-                'default-src': ["self"],
-                'script-src': ["self"],
-                'object-src': ["none"],
-            }
-        }),
-    ]
+    ],
+    server: {
+        port: 5173,
+        host: true
+    }
 });
