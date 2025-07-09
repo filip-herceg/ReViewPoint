@@ -28,6 +28,30 @@ After cloning the repository:
 pnpm install
 ```
 
+### 4. Choose Your Development Database
+
+**Option A: SQLite (Recommended for beginners)**
+
+- No Docker required
+- Fast startup
+- File-based database
+
+```bash
+pnpm dev
+```
+
+**Option B: PostgreSQL (Production-like)**
+
+- Requires Docker Desktop
+- Auto-setup with containers
+- Production database engine
+
+```bash
+pnpm dev:postgres
+```
+
+For detailed PostgreSQL setup and troubleshooting, see [PostgreSQL Setup Guide](docs/POSTGRES_SETUP.md).
+
 ## Git Hooks
 
 This project no longer uses Husky or pre-commit Git hooks. Please run linting and formatting manually before committing.

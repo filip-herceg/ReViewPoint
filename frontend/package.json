@@ -1,6 +1,7 @@
 {
     "name": "reviewpoint-frontend",
     "version": "0.1.0",
+    "type": "module",
     "description": "Modern React frontend for ReViewPoint with Vite, TypeScript, security, observability, and microfrontend readiness.",
     "author": "ReViewPoint team",
     "license": "MIT",

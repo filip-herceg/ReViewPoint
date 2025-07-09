@@ -6,6 +6,13 @@
   "type": "module",
   "scripts": {
     "prepare": "",
+    "dev": "node scripts/dev.js",
+    "dev:postgres": "node scripts/dev-postgres.js",
+    "dev:pg": "node scripts/dev-postgres.js",
+    "postgres:start": "node scripts/start-postgres.js",
+    "postgres:stop": "docker compose -f backend/deployment/docker-compose.yml down",
+    "postgres:check": "node scripts/check-postgres-setup.js",
+    "db:sqlite": "node scripts/switch-to-sqlite.js",
     "frontend:lint": "cd frontend && pnpm run lint",
     "frontend:format": "cd frontend && pnpm run format",
     "frontend:test": "cd frontend && pnpm run test:run"

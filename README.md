@@ -19,6 +19,7 @@ ReViewPoint is a modular, scalable platform for academic paper evaluation using 
 ## Development
 
 - **[Developer Guidelines](https://filip-herceg.github.io/ReViewPoint/dev-guidelines/):** Coding standards, workflow, PR process, and test mapping.
+- **[IDE Tasks](docs/IDE_TASKS.md):** VS Code tasks for streamlined development, testing, and deployment workflows.
 - **[CI/CD](https://filip-herceg.github.io/ReViewPoint/ci-cd/):** Project-specific continuous integration and deployment info.
 - **[How to Use the Docs](https://filip-herceg.github.io/ReViewPoint/how-to-use-docs/):** Navigation, search, and best practices for contributors.
 
@@ -73,6 +74,8 @@ See the [Architecture Diagram](https://filip-herceg.github.io/ReViewPoint/archit
 
 ## Getting Started
 
+### Quick Development Setup
+
 1. **Clone the repository:**
 
    ```bash
@@ -83,19 +86,32 @@ See the [Architecture Diagram](https://filip-herceg.github.io/ReViewPoint/archit
 2. **Install dependencies:**
 
    ```bash
-   hatch env create
-   hatch run pip install -e .
+   pnpm install
    ```
 
-3. **Activate the environment:**
+3. **Choose your development database:**
+
+   **Option A: SQLite (Simple, no containers)**
 
    ```bash
-   hatch shell
+   pnpm dev
    ```
 
-4. **Configure environment variables** as needed (see `backend/.env.example` if available).
+   **Option B: PostgreSQL (Production-like, auto-setup)**
 
-For full setup details, see the [Setup Guide](https://filip-herceg.github.io/ReViewPoint/setup/).
+   ```bash
+   pnpm dev:postgres
+   ```
+
+   The PostgreSQL option will automatically:
+   - Start Docker container
+   - Setup database and run migrations
+   - Start both backend and frontend servers
+
+For detailed setup and troubleshooting, see:
+
+- [Development Setup](DEVELOPMENT.md)
+- [PostgreSQL Setup Guide](docs/POSTGRES_SETUP.md)
 
 ## Documentation
 

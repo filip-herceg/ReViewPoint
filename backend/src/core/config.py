@@ -45,18 +45,24 @@ _env_path: str | None = os.getenv("ENV_FILE")
 _env_file: Path | None
 if IS_PYTEST:
     _env_file = None  # Always ignore .env during tests
-    if _env_path or Path("backend/.env").exists():
+    if _env_path or Path("config/.env").exists() or Path("backend/config/.env").exists() or Path("backend/.env").exists():
         # Defensive: log if any .env file would have been loaded during tests
         # Only warn, do not print or log debug/devlog
         try:
             logger.warning(
                 f"Prevented .env loading during tests. ENV_FILE={_env_path}, "
+                f"config/.env exists={Path('config/.env').exists()}, "
+                f"backend/config/.env exists={Path('backend/config/.env').exists()}, "
                 f"backend/.env exists={Path('backend/.env').exists()}"
             )
         except Exception:
             pass
 elif _env_path:
     _env_file = Path(_env_path)
+elif Path("config/.env").exists():
+    _env_file = Path("config/.env")
+elif Path("backend/config/.env").exists():
+    _env_file = Path("backend/config/.env")
 elif Path("backend/.env").exists():
     _env_file = Path("backend/.env")
 else:
@@ -175,8 +181,8 @@ class Settings(BaseSettings):
         Ensure the database URL uses a supported scheme and is not empty.
 
         Accepted schemes:
-        - postgresql+asyncpg:// (production)
-        - sqlite+aiosqlite:// (testing only)
+        - postgresql+asyncpg:// (production, dev)
+        - sqlite+aiosqlite:// (dev, testing)
 
         :param v: The database URL string or None.
         :raises RuntimeError: If DB URL is missing in production mode.
@@ -188,17 +194,25 @@ class Settings(BaseSettings):
             or os.environ.get("FAST_TESTS") == "1"
             or os.environ.get("REVIEWPOINT_TEST_MODE") == "1"
         )
+        is_dev_mode: bool = (
+            os.environ.get("REVIEWPOINT_ENVIRONMENT") == "dev"
+        )
+        
         if not v:
             if not is_explicit_test_mode:
                 raise RuntimeError("Missing database URL: set REVIEWPOINT_DB_URL")
             v = "sqlite+aiosqlite:///:memory:"
-        if is_explicit_test_mode and v.startswith("sqlite+aiosqlite://"):
+            
+        if v.startswith("postgresql+asyncpg://"):
             return v
-        elif v.startswith("postgresql+asyncpg://"):
-            return v
+        elif v.startswith("sqlite+aiosqlite://"):
+            if is_explicit_test_mode or is_dev_mode:
+                return v
+            else:
+                raise ValueError("SQLite database is only allowed in dev or test environments")
         else:
             accepted_schemes: str = "postgresql+asyncpg://"
-            if is_explicit_test_mode:
+            if is_explicit_test_mode or is_dev_mode:
                 accepted_schemes += " or sqlite+aiosqlite://"
             raise ValueError(f"db_url must use {accepted_schemes} scheme")
 
