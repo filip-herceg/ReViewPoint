@@ -32,14 +32,18 @@ async function main() {
         // Ensure PostgreSQL is ready
         await ensurePostgresReady();
 
-        // Start backend
+        // Set PostgreSQL environment variables for this session
+        const postgresEnv = {
+            ...process.env,
+            REVIEWPOINT_DB_URL: 'postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint',
+            REVIEWPOINT_ENVIRONMENT: 'dev',
+            ENV_FILE: 'config/.env'
+        };
+
+        // Start backend with PostgreSQL environment
         const backend = spawn('python', ['-m', 'uvicorn', 'src.main:app', '--reload', '--host', '0.0.0.0', '--port', '8000'], {
             cwd: join(rootDir, 'backend'),
-            env: {
-                ...process.env,
-                ENV_FILE: '.env',
-                REVIEWPOINT_ENVIRONMENT: 'dev'
-            },
+            env: postgresEnv,
             shell: true
         });
 

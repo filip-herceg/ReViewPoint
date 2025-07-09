@@ -42,14 +42,21 @@ async function startServices() {
         console.log(`${colors.info}[INFO]${colors.reset} Starting with SQLite (use --postgres to enable PostgreSQL)`);
     }
 
+    // Set environment based on database choice
+    const backendEnv = {
+        ...process.env,
+        REVIEWPOINT_ENVIRONMENT: 'dev',
+        ENV_FILE: 'config/.env'
+    };
+
+    if (usePostgres) {
+        backendEnv.REVIEWPOINT_DB_URL = 'postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint';
+    }
+
     // Start backend
     const backend = spawn('python', ['-m', 'uvicorn', 'src.main:app', '--reload', '--host', '0.0.0.0', '--port', '8000'], {
         cwd: join(rootDir, 'backend'),
-        env: {
-            ...process.env,
-            ENV_FILE: '.env',
-            REVIEWPOINT_ENVIRONMENT: 'dev'
-        },
+        env: backendEnv,
         shell: true
     });
 

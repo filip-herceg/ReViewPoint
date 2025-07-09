@@ -55,12 +55,39 @@
             "detail": "Start the Vite development server"
         },
         {
-            "label": "ReViewPoint: Start Both (Backend + Frontend)",
+            "label": "ReViewPoint: Start Both (Backend + Frontend) - SQLite",
             "type": "shell",
             "command": "pnpm",
             "args": [
                 "run",
                 "dev"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "isBackground": true,
+            "problemMatcher": [],
+            "detail": "Start both backend and frontend servers using SQLite database (simple setup)"
+        },
+        {
+            "label": "ReViewPoint: Start Both (Backend + Frontend) - PostgreSQL",
+            "type": "shell",
+            "command": "pnpm",
+            "args": [
+                "run",
+                "dev:postgres"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -79,7 +106,7 @@
             },
             "isBackground": true,
             "problemMatcher": [],
-            "detail": "Start both backend and frontend servers concurrently using the dev script"
+            "detail": "Start both backend and frontend servers with PostgreSQL (automatically builds and starts Docker container)"
         },
         {
             "label": "ReViewPoint: Start Frontend with API Types",
@@ -874,6 +901,28 @@
             },
             "problemMatcher": [],
             "detail": "Switch database configuration back to SQLite"
+        },
+        {
+            "label": "ReViewPoint: Reset PostgreSQL Database",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/reset-postgres.js"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Completely reset PostgreSQL container and database (removes all data)"
         }
     ],
     "inputs": [

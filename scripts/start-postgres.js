@@ -4,7 +4,6 @@ import { spawn, exec } from 'child_process';
 import { promisify } from 'util';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import { readFileSync, writeFileSync } from 'fs';
 
 const execAsync = promisify(exec);
 
@@ -106,35 +105,17 @@ async function waitForPostgresHealthy() {
     throw new Error('PostgreSQL did not become healthy within 30 seconds');
 }
 
-async function updateEnvToPostgreSQL() {
-    const envPath = join(rootDir, 'backend/config/.env');
-
-    try {
-        let envContent = readFileSync(envPath, 'utf8');
-
-        // Replace SQLite URL with PostgreSQL URL
-        const postgresUrl = 'postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint';
-        envContent = envContent.replace(
-            /^REVIEWPOINT_DB_URL=.*$/m,
-            `REVIEWPOINT_DB_URL=${postgresUrl}`
-        );
-
-        writeFileSync(envPath, envContent, 'utf8');
-        log('POSTGRES', colors.info, 'Updated .env to use PostgreSQL');
-
-        return postgresUrl;
-    } catch (error) {
-        log('POSTGRES', colors.error, `Failed to update .env file: ${error.message}`);
-        throw error;
-    }
-}
-
 async function runMigrations() {
     return new Promise((resolve, reject) => {
         log('POSTGRES', colors.postgres, 'Running database migrations...');
 
         const migration = spawn('python', ['-m', 'alembic', 'upgrade', 'head'], {
             cwd: join(rootDir, 'backend'),
+            env: {
+                ...process.env,
+                REVIEWPOINT_DB_URL: 'postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint',
+                REVIEWPOINT_ENVIRONMENT: 'dev'
+            },
             stdio: 'pipe'
         });
 
@@ -152,9 +133,17 @@ async function runMigrations() {
                 log('POSTGRES', colors.info, 'Database migrations completed successfully');
                 resolve();
             } else {
-                log('POSTGRES', colors.error, `Migration failed (exit code: ${code})`);
-                log('POSTGRES', colors.error, output);
-                reject(new Error(`Migration failed with exit code ${code}`));
+                // Check if this is just a "no changes" or "already applied" scenario
+                if (output.includes('No new upgrade operations to perform') ||
+                    output.includes('already exists') ||
+                    code === 0) {
+                    log('POSTGRES', colors.info, 'Database schema is already up to date');
+                    resolve();
+                } else {
+                    log('POSTGRES', colors.error, `Migration failed (exit code: ${code})`);
+                    log('POSTGRES', colors.error, output);
+                    reject(new Error(`Migration failed with exit code ${code}`));
+                }
             }
         });
     });
@@ -184,10 +173,7 @@ export async function ensurePostgresReady() {
             await waitForPostgresHealthy();
         }
 
-        // Update environment to use PostgreSQL
-        await updateEnvToPostgreSQL();
-
-        // Run migrations
+        // Run migrations with explicit environment
         await runMigrations();
 
         log('POSTGRES', colors.info, 'PostgreSQL setup complete! 🐘');
