@@ -108,7 +108,7 @@ export function createUser(overrides: Partial<User> = {}): User {
     const user: User = {
         id: overrides.id ?? Math.floor(Math.random() * 10000),
         email: overrides.email ?? randomString(5) + '@example.com',
-        name: overrides.name ?? ('user_' + randomString(4)),
+        name: 'name' in overrides ? (overrides.name ?? null) : ('user_' + randomString(4)),
         bio: overrides.bio ?? null,
         avatar_url: overrides.avatar_url ?? null,
         created_at: overrides.created_at ?? new Date().toISOString(),

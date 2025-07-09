@@ -5,6 +5,9 @@ import { ThemeProvider } from '@/lib/theme/theme-provider';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
 import { Toaster } from '@/components/ui/sonner';
 
+// Phase 4: Core UI Components
+import { LiveRegionProvider } from '@/components/ui/aria-live-region';
+
 // Configuration and monitoring
 import { createEnhancedErrorBoundary } from '@/lib/monitoring/errorMonitoring';
 import { useFeatureFlag } from '@/lib/config/featureFlags';
@@ -42,12 +45,14 @@ export default function App() {
 
     return (
         <ThemeProvider defaultTheme={enableDarkMode ? "dark" : "light"}>
-            <EnhancedErrorBoundary>
-                <ErrorBoundary>
-                    <AppRouter />
-                    <Toaster />
-                </ErrorBoundary>
-            </EnhancedErrorBoundary>
+            <LiveRegionProvider>
+                <EnhancedErrorBoundary>
+                    <ErrorBoundary>
+                        <AppRouter />
+                        <Toaster />
+                    </ErrorBoundary>
+                </EnhancedErrorBoundary>
+            </LiveRegionProvider>
         </ThemeProvider>
     );
 }
