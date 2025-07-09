@@ -1,3 +1,5 @@
+from collections.abc import Awaitable, Callable
+
 import pytest
 from pytest_asyncio import fixture
 from sqlalchemy import delete
@@ -12,39 +14,64 @@ from src.utils.errors import (
     UserNotFoundError,
     ValidationError,
 )
+from tests.test_templates import UtilityUnitTestTemplate
 
 
 @fixture(autouse=True)
 async def cleanup_users(async_session: AsyncSession) -> None:
+    """
+    Cleanup all users and reset the user_action_limiter before each test.
+    """
     await async_session.execute(delete(User))
     await async_session.commit()
-
-    # Reset rate limiter between tests
     user_action_limiter.reset()
 
 
-@pytest.mark.asyncio
-async def test_error_handling_utilities(async_session: AsyncSession) -> None:
-    create_user_with_validation = user_repo.create_user_with_validation
-    sensitive_user_action = user_repo.sensitive_user_action
-    safe_get_user_by_id = user_repo.safe_get_user_by_id
+class TestErrorHandlingUtilities(UtilityUnitTestTemplate):
+    @pytest.mark.asyncio
+    async def test_error_handling_utilities(self, async_session: AsyncSession) -> None:
+        """
+        Test that error utilities raise the correct exceptions for user operations.
+        Verifies ValidationError, UserAlreadyExistsError, UserNotFoundError, and RateLimitExceededError.
+        """
+        create_user_with_validation: Callable[
+            [AsyncSession, str, str], Awaitable[User]
+        ] = user_repo.create_user_with_validation
+        sensitive_user_action: Callable[[AsyncSession, int, str], Awaitable[None]] = (
+            user_repo.sensitive_user_action
+        )
+        safe_get_user_by_id: Callable[[AsyncSession, int], Awaitable[User]] = (
+            user_repo.safe_get_user_by_id
+        )
 
-    # ValidationError
-    with pytest.raises(ValidationError):
-        await create_user_with_validation(async_session, "bademail", "pw")
+        # ValidationError
+        async def create_invalid_user() -> None:
+            await create_user_with_validation(async_session, "bademail", "pw")
 
-    # UserAlreadyExistsError
-    user = await create_user_with_validation(async_session, "exists@b.com", "Abc12345")
-    user_id = user.id
-    with pytest.raises(UserAlreadyExistsError):
-        await create_user_with_validation(async_session, "exists@b.com", "Abc12345")
+        await self.assert_async_raises(ValidationError, create_invalid_user)
 
-    # UserNotFoundError
-    with pytest.raises(UserNotFoundError):
-        await safe_get_user_by_id(async_session, 999999)
+        # UserAlreadyExistsError
+        user: User = await create_user_with_validation(
+            async_session, "exists@b.com", "Abc12345"
+        )
+        user_id: int = user.id
 
-    # RateLimitExceededError
-    for _ in range(5):
-        await sensitive_user_action(async_session, user_id, "test")
-    with pytest.raises(RateLimitExceededError):
-        await sensitive_user_action(async_session, user_id, "test")
+        async def create_duplicate_user() -> None:
+            await create_user_with_validation(async_session, "exists@b.com", "Abc12345")
+
+        await self.assert_async_raises(UserAlreadyExistsError, create_duplicate_user)
+
+        # UserNotFoundError
+        async def get_nonexistent_user() -> None:
+            await safe_get_user_by_id(async_session, 999999)
+
+        await self.assert_async_raises(UserNotFoundError, get_nonexistent_user)
+
+        # RateLimitExceededError
+        for _ in range(5):
+            await sensitive_user_action(async_session, user_id, "test")
+
+        async def exceed_rate_limit() -> None:
+            await sensitive_user_action(async_session, user_id, "test")
+
+        await self.assert_async_raises(RateLimitExceededError, exceed_rate_limit)

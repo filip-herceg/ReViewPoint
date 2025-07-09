@@ -1,4 +1,5 @@
-from typing import Any
+from collections.abc import Mapping, Sequence
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -9,8 +10,8 @@ class UserProfile(BaseModel):
     name: str | None = None
     bio: str | None = None
     avatar_url: str | None = None
-    created_at: Any | None = None
-    updated_at: Any | None = None
+    created_at: str | None = None  # Use str for ISO datetime, or datetime if available
+    updated_at: str | None = None
 
     model_config = ConfigDict(extra="forbid")
 
@@ -23,7 +24,9 @@ class UserProfileUpdate(BaseModel):
 
 
 class UserPreferences(BaseModel):
-    theme: str | None = Field(None, description="UI theme, e.g. 'dark' or 'light'")
+    theme: Literal["dark", "light"] | None = Field(
+        None, description="UI theme, e.g. 'dark' or 'light'"
+    )
     locale: str | None = Field(None, description="User locale, e.g. 'en', 'fr'")
     # Add more preference fields as needed
 
@@ -31,8 +34,45 @@ class UserPreferences(BaseModel):
 
 
 class UserPreferencesUpdate(BaseModel):
-    preferences: dict[str, Any]
+    preferences: Mapping[str, object]  # Use object for arbitrary values, not Any
 
 
 class UserAvatarResponse(BaseModel):
     avatar_url: str
+
+
+class UserRead(UserProfile):
+    pass
+
+
+# --- User Creation Request Schema ---
+class UserCreateRequest(BaseModel):
+    email: str
+    password: str
+    name: str
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "email": "user@example.com",
+                    "password": "strongpassword123",
+                    "name": "Jane Doe",
+                }
+            ]
+        }
+    )
+
+
+# --- User List Response Schema ---
+class UserListResponse(BaseModel):
+    users: Sequence[UserProfile]
+    total: int
+
+
+# NOTE: UserResponse is typically UserProfile or UserRead, already defined above.
+# If needed, update the reference accordingly.
+
+# --- Fix for Pydantic forward references ---
+UserResponse = UserProfile  # or UserRead if needed
+UserListResponse.model_rebuild()

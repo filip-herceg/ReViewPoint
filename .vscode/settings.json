@@ -1,0 +1,9 @@
+{
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "always"
+    },
+    "biome.enable": true,
+    "biome.lint.enable": true,
+    "biome.format.enable": true
+}

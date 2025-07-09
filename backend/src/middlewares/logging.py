@@ -14,23 +14,32 @@ Example Usage:
     ```
 """
 
-from __future__ import annotations
-
 import time
 import uuid
-from contextvars import ContextVar
-from typing import Any
+from collections.abc import Awaitable, Callable, Sequence
+from contextvars import ContextVar, Token
+from typing import TYPE_CHECKING, Any, Final, cast
 
 from fastapi import Request, Response
 from loguru import logger
-from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
+if TYPE_CHECKING:
+    from loguru._logger import Logger
+
 # Define sensitive fields as a module-level constant for clarity and efficiency
-SENSITIVE_FIELDS = {"password", "token", "access_token", "refresh_token"}
+SENSITIVE_FIELDS: Final[frozenset[str]] = frozenset(
+    {
+        "password",
+        "token",
+        "access_token",
+        "refresh_token",
+    }
+)
 
 # Thread-local request ID storage
-request_id_var: ContextVar[str | None] = ContextVar("request_id", default=None)
+request_id_var: Final[ContextVar[str | None]] = ContextVar("request_id", default=None)
 
 
 def get_request_id() -> str | None:
@@ -41,12 +50,16 @@ def get_request_id() -> str | None:
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     """Middleware for logging HTTP requests with unique request IDs."""
 
+    exclude_paths: Sequence[str]
+    logger: "Logger"
+    header_name: str
+
     def __init__(
         self,
         app: ASGIApp,
         *,
-        exclude_paths: list[str] | None = None,
-        logger_instance: Any = None,
+        exclude_paths: Sequence[str] | None = None,
+        logger_instance: "Logger | None" = None,
         header_name: str = "X-Request-ID",
     ) -> None:
         """Initialize the middleware.
@@ -55,80 +68,96 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         ----------
         app : ASGIApp
             The ASGI application.
-        exclude_paths : list[str], optional
+        exclude_paths : Sequence[str], optional
             List of paths to exclude from logging, by default None
-        logger_instance : loguru.Logger, optional
+        logger_instance : Logger, optional
             Custom logger to use, by default None (will use 'middleware.request')
         header_name : str, optional
             Name of the header to use for the request ID, by default "X-Request-ID"
+
+        Raises
+        ------
+        Exception
+            If logger_instance is not a Logger or None.
         """
         super().__init__(app)
-        self.exclude_paths = exclude_paths or ["/health", "/metrics"]
-        self.logger: Any = (
-            logger_instance
-            if logger_instance is not None
-            else logger.bind(component="middleware.request")
+        self.exclude_paths: Sequence[str] = (
+            exclude_paths if exclude_paths is not None else ["/health", "/metrics"]
         )
-        self.header_name = header_name
+        if logger_instance is not None:
+            self.logger = logger_instance
+        else:
+            self.logger = cast("Logger", logger.bind(component="middleware.request"))
+        self.header_name: str = header_name
 
     async def dispatch(
-        self, request: Request, call_next: RequestResponseEndpoint
+        self,
+        request: Request,
+        call_next: Callable[[Request], Awaitable[Response]],
     ) -> Response:
-        """Process a request and add logging and request ID tracking.
+        """
+        Process a request and add logging and request ID tracking.
 
         Parameters
         ----------
         request : Request
             The incoming request
-        call_next : RequestResponseEndpoint
+        call_next : Callable[[Request], Awaitable[Response]]
             The next middleware or route handler
 
         Returns
         -------
         Response
             The response with added X-Request-ID header
+
+        Raises
+        ------
+        Exception
+            Any exception raised during request processing is logged and re-raised.
         """
         # Skip excluded paths
         if request.url.path in self.exclude_paths:
             return await call_next(request)
 
         # Generate or extract request ID
-        request_id = request.headers.get(self.header_name, str(uuid.uuid4()))
-        # Set the request ID in the context variable for this request/response
-        # cycle
-        token = request_id_var.set(request_id)
+        request_id: str = request.headers.get(self.header_name, str(uuid.uuid4()))
+        # Set the request ID in the context variable for this request/response cycle
+        token: Token[str | None] = request_id_var.set(request_id)
 
         # Prepare request details for logging
-        start_time = time.time()
+        start_time: float = time.time()
         # Filter sensitive fields from query params
-        filtered_query = [
+        filtered_query: list[tuple[str, str]] = [
             (k, "[FILTERED]") if k.lower() in SENSITIVE_FIELDS else (k, v)
             for k, v in request.query_params.multi_items()
         ]
-        filtered_query_str = "&".join(f"{k}={v}" for k, v in filtered_query)
-        log_extra = {
+        filtered_query_str: str = "&".join(f"{k}={v}" for k, v in filtered_query)
+        log_extra: dict[str, Any] = {
             "request_id": request_id,
             "method": request.method,
             "path": request.url.path,
             "query": filtered_query_str,
         }
 
-        self.logger.bind(**log_extra).info(
+        cast("Logger", self.logger.bind(**log_extra)).info(  # type: ignore[no-untyped-call]
             f"Request {request.method} {request.url.path} | query: {filtered_query_str}"
         )
         try:
             # Process the request
-            response = await call_next(request)
+            response: Response = await call_next(request)
 
             # Calculate request processing time
-            process_time = time.time() - start_time
-            process_time_ms = round(process_time * 1000)
+            process_time: float = time.time() - start_time
+            process_time_ms: int = round(process_time * 1000)
 
             # Log the response
-            self.logger.bind(
-                **log_extra,
-                status_code=response.status_code,
-                process_time_ms=process_time_ms,
+            cast(
+                "Logger",
+                self.logger.bind(  # type: ignore[no-untyped-call]
+                    **log_extra,
+                    status_code=response.status_code,
+                    process_time_ms=process_time_ms,
+                ),
             ).info(
                 f"Response {request.method} {request.url.path} completed with status {response.status_code} in {process_time_ms}ms | query: {filtered_query_str}"
             )
@@ -139,13 +168,16 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 
         except Exception as exc:
             # Log exceptions with request context
-            process_time = time.time() - start_time
-            process_time_ms = round(process_time * 1000)
+            error_process_time: float = time.time() - start_time
+            error_process_time_ms: int = round(error_process_time * 1000)
 
-            self.logger.bind(
-                **log_extra,
-                error=str(exc),
-                process_time_ms=process_time_ms,
+            cast(
+                "Logger",
+                self.logger.bind(  # type: ignore[no-untyped-call]
+                    **log_extra,
+                    error=str(exc),
+                    process_time_ms=error_process_time_ms,
+                ),
             ).exception(
                 f"Error processing request {request.method} {request.url.path}: {exc}"
             )

@@ -3,21 +3,24 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from sqlalchemy import JSON, Boolean, DateTime, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, WriteOnlyMapped, mapped_column, relationship
 
 from src.models.base import BaseModel
 
 if TYPE_CHECKING:
     from .file import File
 
-    files: list[File]
-
 
 class User(BaseModel):
+    """
+    User model.
+    """
+
     __tablename__ = "users"
 
     email: Mapped[str] = mapped_column(
@@ -31,10 +34,42 @@ class User(BaseModel):
     name: Mapped[str | None] = mapped_column(String(128), nullable=True)
     bio: Mapped[str | None] = mapped_column(String(512), nullable=True)
     avatar_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    preferences: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    preferences: Mapped[Mapping[str, Any] | None] = mapped_column(
+        JSON, nullable=True
+    )  # Any is required for arbitrary JSON
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     # created_at, updated_at inherited from BaseModel
 
-    files = relationship("File", back_populates="user")
+    # Use WriteOnlyMapped for the relationship to avoid typing issues
+    files: WriteOnlyMapped[File] = relationship(
+        "File", back_populates="user", passive_deletes=True
+    )
 
-    def __repr__(self) -> str:
+    @property
+    def role(self: User) -> Literal["admin", "user"]:
+        """
+        Returns the role of the user.
+
+        Returns:
+            Literal["admin", "user"]: The user's role.
+        """
+        return "admin" if self.is_admin else "user"
+
+    @role.setter
+    def role(self: User, value: str) -> None:
+        """
+        Allows setting the role dynamically for test/deps purposes only.
+
+        Args:
+            value (str): The role to set ("admin" or "user").
+        """
+        self.is_admin = value == "admin"
+
+    def __repr__(self: User) -> str:
+        """
+        Return a string representation of the User instance.
+
+        Returns:
+            str: String representation of the instance.
+        """
         return f"<User id={self.id} email={self.email}>"

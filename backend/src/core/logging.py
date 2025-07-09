@@ -1,4 +1,5 @@
-"""Logging bootstrap for ReViewPoint backend.
+"""
+Logging bootstrap for ReViewPoint backend.
 
 Repeat-safe initialiser::
 
@@ -12,9 +13,15 @@ output matches expectations.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+from typing import Final, Literal
+
 # ──────────────────────────── colour map ────────────────────────────
-RESET = "\x1b[0m"
-COLOR_MAP = {
+RESET: Final[str] = "\x1b[0m"
+LevelName = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+COLOR_MAP: Final[
+    Mapping[Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], str]
+] = {
     "DEBUG": "\x1b[36m",  # cyan
     "INFO": "\x1b[32m",  # green
     "WARNING": "\x1b[33m",  # yellow
@@ -23,7 +30,19 @@ COLOR_MAP = {
 }
 
 # attribute used to mark handlers we own
-_FLAG = "_rvp_internal"
+_FLAG: Final[str] = "_rvp_internal"
+
+
+def _is_testing() -> bool:
+    """Check if we're currently running in a test environment."""
+    import os
+    import sys
+
+    return (
+        "PYTEST_CURRENT_TEST" in os.environ
+        or "pytest" in sys.modules
+        or any("test" in arg.lower() for arg in sys.argv)
+    )
 
 
 # ───────────────────────── public API ─────────────────────────
@@ -37,7 +56,8 @@ def init_logging(
     json: bool = False,
     logfile: str | None = None,
 ) -> None:
-    """Configure loguru as the main logger for the backend.
+    """
+    Configure loguru as the main logger for the backend.
 
     Parameters
     ----------
@@ -47,17 +67,27 @@ def init_logging(
         Enable ANSI colours for console output.
     json_format : bool
         Emit JSON lines instead of human format.
-    logfile : str | None
+    logfile : Optional[str]
         Optional file to tee logs to.
+
+    Raises
+    ------
+    OSError
+        If logfile directory cannot be created.
     """
     import logging
     import sys
     from pathlib import Path
+    from types import FrameType
 
     from loguru import logger as loguru_logger
 
-    # Remove all existing loguru handlers
-    loguru_logger.remove()
+    # Remove all existing loguru handlers safely
+    try:
+        loguru_logger.remove()
+    except (ValueError, OSError):
+        # Ignore errors during cleanup - handlers might already be removed
+        pass
 
     # Console sink
     if json or json_format:
@@ -70,39 +100,40 @@ def init_logging(
             format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan> | <level>{message}</level>",
         )
 
-    # Optional file sink
-    if logfile is not None:
-        fp = Path(logfile)
+    # Optional file sink - but avoid file logging during tests to prevent handle issues
+    if logfile is not None and not _is_testing():
+        fp: Path = Path(logfile)
         fp.parent.mkdir(parents=True, exist_ok=True)
         loguru_logger.add(
             str(fp), level=level, serialize=(json or json_format), encoding="utf-8"
         )
 
-    # Patch standard logging to route through loguru
     class InterceptHandler(logging.Handler):
         def emit(self, record: logging.LogRecord) -> None:
+            log_level: str
             try:
                 log_level = loguru_logger.level(record.levelname).name
             except ValueError:
                 log_level = str(
                     record.levelno
                 )  # Ensure log_level is always str for mypy
-            from types import FrameType
 
             frame: FrameType | None = logging.currentframe()
-            depth = 2
-            while frame and frame.f_code.co_filename == logging.__file__:
+            depth: int = 2
+            while frame is not None and frame.f_code.co_filename == logging.__file__:
                 frame = frame.f_back
                 depth += 1
             loguru_logger.opt(depth=depth, exception=record.exc_info).log(
                 log_level, record.getMessage()
             )
 
-    logging.root.handlers = [InterceptHandler()]
+    handler: InterceptHandler = InterceptHandler()
+    logging.root.handlers = [handler]
     logging.root.setLevel(level)
 
     # Silence uvicorn access logs if needed
-    logging.getLogger("uvicorn.access").propagate = False
+    uvicorn_access_logger = logging.getLogger("uvicorn.access")
+    uvicorn_access_logger.propagate = False
 
     # Migration note: Use `from loguru import logger` in all modules instead of `logging.getLogger()`
     # Example: logger.info("message")

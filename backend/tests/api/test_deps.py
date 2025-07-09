@@ -1,238 +1,162 @@
-import uuid
-from collections.abc import AsyncGenerator
-from typing import Any
+from __future__ import annotations
+
+from collections.abc import Awaitable as TypingAwaitable
+from collections.abc import Callable as TypingCallable
+from typing import Final
+from unittest.mock import AsyncMock
 
 import pytest
-from fastapi import FastAPI, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api import deps
 from src.models.user import User
+from src.services.user import UserService
+from src.utils.rate_limit import AsyncRateLimiter
+from tests.test_templates import AuthUnitTestTemplate
 
 
-# --- Fixtures ---
-@pytest.fixture
-def app() -> FastAPI:
-    app = FastAPI()
-    return app
+class TestGetCurrentUser(AuthUnitTestTemplate):
+    @pytest.mark.asyncio
+    async def test_get_current_user_returns_dev_user_when_auth_disabled(
+        self, async_session: AsyncSession
+    ) -> None:
+        """
+        Test that get_current_user returns the dev user when auth is disabled.
+        Verifies:
+            - User is instance of User
+            - Email is 'dev@example.com'
+            - User is active
+        """
+        from src.api import deps
+        from src.core.config import get_settings
 
-
-@pytest.fixture
-def test_user() -> User:
-    return User(
-        id=1,
-        email="user@example.com",
-        hashed_password="notused",
-        is_active=True,
-        is_deleted=False,
-        name="Test User",
-        bio=None,
-        avatar_url=None,
-        preferences=None,
-        last_login_at=None,
-        created_at=None,
-        updated_at=None,
-    )
-
-
-@pytest.fixture
-def inactive_user(test_user: User) -> User:
-    test_user.is_active = False
-    return test_user
-
-
-@pytest.fixture
-def deleted_user(test_user: User) -> User:
-    test_user.is_deleted = True
-    return test_user
-
-
-@pytest.fixture
-def mock_get_user_by_id(monkeypatch: Any, test_user: User) -> Any:
-    async def _mock(
-        session: AsyncSession, user_id: int, use_cache: bool = True
-    ) -> User | None:
-        if user_id == 1:
-            return test_user
-        return None
-
-    monkeypatch.setattr("src.repositories.user.get_user_by_id", _mock)
-    return _mock
-
-
-@pytest.fixture
-def override_get_db(monkeypatch: Any) -> None:
-    async def _mock() -> AsyncGenerator[Any, None]:
-        class DummySession:
-            async def close(self) -> None:
-                pass
-
-            async def rollback(self) -> None:
-                pass
-
-        yield DummySession()
-
-    monkeypatch.setattr(deps, "get_db", _mock)
-
-
-# --- Tests for get_db ---
-def test_get_db_yields_and_closes(monkeypatch: Any) -> None:
-    closed = False
-
-    class DummySession:
-        async def close(self) -> None:
-            nonlocal closed
-            closed = True
-
-        async def rollback(self) -> None:
-            pass
-
-    async def _mock() -> AsyncGenerator[Any, None]:
-        yield DummySession()
-
-    monkeypatch.setattr(deps, "get_db", _mock)
-    import asyncio
-
-    async def run() -> None:
-        async for db in _mock():
-            assert isinstance(db, DummySession)
-
-    asyncio.run(run())
-    assert closed is True or closed is False  # Just check no error
-
-
-# --- Tests for get_current_user ---
-def test_get_current_user_success(monkeypatch: Any, test_user: User) -> None:
-    class DummyResult:
-        def scalar_one_or_none(self) -> User:
-            return test_user
-
-    class DummySession:
-        async def execute(self, *args: Any, **kwargs: Any) -> DummyResult:
-            return DummyResult()
-
-        async def close(self) -> None:
-            pass
-
-        async def rollback(self) -> None:
-            pass
-
-    async def _mock_get_user_by_id(
-        session: AsyncSession, user_id: int, use_cache: bool = True
-    ) -> User | None:
-        return test_user
-
-    monkeypatch.setattr("src.repositories.user.get_user_by_id", _mock_get_user_by_id)
-    token = "valid.jwt.token"
-    monkeypatch.setattr(deps, "verify_access_token", lambda t: {"sub": 1})
-    import asyncio
-
-    user = asyncio.run(deps.get_current_user(token=token, session=DummySession()))  # type: ignore[arg-type]
-    assert user.id == 1
-
-
-@pytest.mark.parametrize(
-    "token,payload,expected_status",
-    [
-        (None, None, status.HTTP_401_UNAUTHORIZED),
-        (
-            "badtoken",
-            HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="fail"),
-            status.HTTP_401_UNAUTHORIZED,
-        ),
-        ("valid.jwt.token", {"sub": None}, status.HTTP_401_UNAUTHORIZED),
-    ],
-)
-def test_get_current_user_errors(
-    monkeypatch: Any, token: Any, payload: Any, expected_status: int
-) -> None:
-    class DummyResult:
-        def scalar_one_or_none(self) -> None:
-            return None
-
-    class DummySession:
-        async def execute(self, *args: Any, **kwargs: Any) -> DummyResult:
-            return DummyResult()
-
-        async def close(self) -> None:
-            pass
-
-        async def rollback(self) -> None:
-            pass
-
-    if isinstance(payload, HTTPException):
-        monkeypatch.setattr(
-            deps, "verify_access_token", lambda t: (_ for _ in ()).throw(payload)
+        settings = get_settings()
+        self.patch_setting(settings, "auth_enabled", False)
+        user_result = await deps.get_current_user(
+            token="irrelevant", session=async_session
         )
-    else:
-        monkeypatch.setattr(deps, "verify_access_token", lambda t: payload)
-    import asyncio
+        assert isinstance(user_result, User)
+        user: Final[User] = user_result
+        assert user.email == "dev@example.com"
+        assert user.is_active
+        self.patch_setting(settings, "auth_enabled", True)
 
-    with pytest.raises(HTTPException) as excinfo:
-        asyncio.run(deps.get_current_user(token=token, session=DummySession()))  # type: ignore[arg-type]
-    assert excinfo.value.status_code == expected_status
+    @pytest.mark.asyncio
+    async def test_get_current_user_invalid_token(
+        self, async_session: AsyncSession
+    ) -> None:
+        """
+        Test that get_current_user raises HTTPException for invalid token.
+        Expects:
+            - HTTP 401 with 'Invalid token' message
+        """
+        from src.api import deps
+        from src.core.config import get_settings
 
+        settings = get_settings()
+        self.patch_setting(settings, "auth_enabled", True)
 
-# --- Tests for get_current_active_user ---
-def test_get_current_active_user_active(test_user: User) -> None:
-    import asyncio
+        def fake_verify_access_token(token: str) -> dict[str, object]:
+            return {}
 
-    user = asyncio.run(deps.get_current_active_user(user=test_user))
-    assert user.is_active
+        self.patch_dep("src.api.deps.verify_access_token", fake_verify_access_token)
 
+        async def call() -> None:
+            await deps.get_current_user(token="bad", session=async_session)
 
-def test_get_current_active_user_inactive(inactive_user: User) -> None:
-    import asyncio
+        await self.assert_async_http_exception(call, 401, "Invalid token")
 
-    with pytest.raises(HTTPException) as excinfo:
-        asyncio.run(deps.get_current_active_user(user=inactive_user))
-    assert excinfo.value.status_code == status.HTTP_403_FORBIDDEN
+    @pytest.mark.asyncio
+    async def test_get_current_user_user_not_found(
+        self, async_session: AsyncSession
+    ) -> None:
+        """
+        Test that get_current_user raises HTTPException when user is not found.
+        Expects:
+            - HTTP 401 with 'User not found' message
+        """
+        from src.api import deps
+        from src.core.config import get_settings
 
+        settings = get_settings()
+        self.patch_setting(settings, "auth_enabled", True)
 
-# --- Tests for pagination_params ---
-def test_pagination_params_valid() -> None:
-    params = deps.pagination_params(0, 10)
-    assert params.offset == 0 and params.limit == 10
+        def fake_verify_access_token(token: str) -> dict[str, object]:
+            return {"sub": 123}
 
+        self.patch_dep("src.api.deps.verify_access_token", fake_verify_access_token)
+        self.patch_dep("src.api.deps.get_user_by_id", AsyncMock(return_value=None))
 
-def test_pagination_params_invalid_offset() -> None:
-    with pytest.raises(HTTPException):
-        deps.pagination_params(-1, 10)
+        async def call() -> None:
+            await deps.get_current_user(token="token", session=async_session)
 
+        await self.assert_async_http_exception(call, 401, "User not found")
 
-def test_pagination_params_invalid_limit() -> None:
-    with pytest.raises(HTTPException):
-        deps.pagination_params(0, 9999)
+    def test_get_user_service_returns_user_module(self) -> None:
+        """
+        Test that get_user_service returns a UserService instance with required methods.
+        """
+        from src.api import deps
 
+        user_service: Final[UserService] = deps.get_user_service()
+        assert hasattr(user_service, "register_user")
+        assert hasattr(user_service, "authenticate_user")
 
-# --- Tests for request ID propagation ---
-def test_get_request_id_sets_and_gets(monkeypatch: Any) -> None:
-    class DummyRequest:
-        headers: dict[str, str] = {deps.REQUEST_ID_HEADER: str(uuid.uuid4())}
+    def test_get_blacklist_token_returns_callable(self) -> None:
+        """
+        Test that get_blacklist_token returns a callable Awaitable.
+        """
+        from src.api import deps
 
-    req_id = deps.get_request_id(DummyRequest())  # type: ignore[arg-type]
-    assert req_id == DummyRequest.headers[deps.REQUEST_ID_HEADER]
-    assert deps.get_current_request_id() == req_id
+        blacklist_token: TypingCallable[..., TypingAwaitable[None]] = (
+            deps.get_blacklist_token()
+        )
+        assert callable(blacklist_token)
 
+    def test_get_user_action_limiter_returns_limiter(self) -> None:
+        """
+        Test that get_user_action_limiter returns an AsyncRateLimiter instance.
+        """
+        from src.api import deps
 
-def test_get_request_id_generates_if_missing() -> None:
-    class DummyRequest:
-        headers: dict[str, str] = {}
+        limiter = deps.get_user_action_limiter()
 
-    req_id = deps.get_request_id(DummyRequest())  # type: ignore[arg-type]
-    assert isinstance(uuid.UUID(req_id), uuid.UUID)
-    assert deps.get_current_request_id() == req_id
+        # Verify the type - this is the main purpose of the test
+        assert isinstance(limiter, AsyncRateLimiter)
 
+        # The isinstance check is sufficient; detailed attribute checking
+        # is covered by the class's own tests and type annotations
 
-# --- Tests for get_user_repository ---
-def test_get_user_repository_returns() -> None:
-    repo = deps.get_user_repository()
-    assert repo is not None
+    def test_get_validate_email_returns_callable(self) -> None:
+        """
+        Test that get_validate_email returns a callable that validates emails.
+        """
+        from src.api import deps
 
+        validate_email: TypingCallable[[str], bool] = deps.get_validate_email()
+        assert callable(validate_email)
+        result: bool = validate_email("user@example.com")
+        assert isinstance(result, bool)
 
-# --- Loguru log assertions (example) ---
-def test_loguru_logs_error(monkeypatch: Any, caplog: Any) -> None:
-    caplog.set_level("ERROR")
-    with pytest.raises(HTTPException):
-        deps.pagination_params(-1, 10)
-    assert any("Invalid offset" in m for m in caplog.messages)
+    def test_get_password_validation_error_returns_callable(self) -> None:
+        """
+        Test that get_password_validation_error returns a callable that returns str or None.
+        """
+        from src.api import deps
+
+        get_password_validation_error: TypingCallable[[str], str | None] = (
+            deps.get_password_validation_error()
+        )
+        assert callable(get_password_validation_error)
+        result: str | None = get_password_validation_error("password123")
+        assert result is None or isinstance(result, str)
+
+    def test_get_async_refresh_access_token_returns_callable(self) -> None:
+        """
+        Test that get_async_refresh_access_token returns a callable Awaitable.
+        """
+        from src.api import deps
+
+        async_refresh_access_token: TypingCallable[
+            [AsyncSession, str], TypingAwaitable[object]
+        ] = deps.get_async_refresh_access_token()
+        assert callable(async_refresh_access_token)

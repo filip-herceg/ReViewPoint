@@ -1,0 +1,33 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Hatch
+RUN pip install hatch
+
+# Copy dependency files
+COPY pyproject.toml ./
+
+# Create Hatch environment and install dependencies (including dev dependencies for development)
+RUN hatch env create
+
+# Copy application code
+COPY . .
+
+# Make scripts executable
+RUN chmod +x scripts/*.sh || true
+
+# Set Python path
+ENV PYTHONPATH=/app/src
+
+EXPOSE 8000
+
+# Use Hatch to run the application in development mode
+CMD ["hatch", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

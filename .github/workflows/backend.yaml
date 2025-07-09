@@ -2,12 +2,16 @@ name: Backend CI
 
 on:
   push:
+    branches: [ main, develop ]
     paths:
       - 'backend/**'
-      - '.github/workflows/backend.yml'
+      - '.github/workflows/backend.yaml'
   pull_request:
+    branches: [ main, develop ]
     paths:
       - 'backend/**'
+    # This prevents duplicate runs when pushing to a PR branch
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 permissions:
@@ -16,6 +20,8 @@ permissions:
 jobs:
   test:
     name: Lint, Typecheck & Tests
+    # Skip duplicate workflow runs for PRs from the same repository
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
 
     steps:
@@ -59,4 +65,3 @@ jobs:
         run: |
           cd backend
           hatch run pytest --maxfail=1 --disable-warnings --cov=backend --cov-report=xml --cov-report=term
-

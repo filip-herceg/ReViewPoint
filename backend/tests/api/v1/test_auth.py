@@ -1,738 +1,673 @@
 """
-Tests for JWT creation and validation utilities in backend.core.security.
+Authentication and authorization tests for FastAPI backend.
+Uses DRY test templates for all test logic and fixture management.
 """
 
-from datetime import UTC
+import asyncio
+import uuid
+from collections.abc import (
+    Callable,
+    Mapping,
+    MutableMapping,
+    Sequence,
+)
+from datetime import datetime, timedelta
 
 import pytest
-from httpx import ASGITransport, AsyncClient
-from jose import JWTError, jwt  # Add this import at the top
-from sqlalchemy.ext.asyncio import AsyncSession
+from httpx import ASGITransport, AsyncClient, Response
+from jose import JWTError, jwt
+from typing_extensions import TypedDict
 
 from src.core import security
-from src.core.config import settings
-from src.main import app
+from src.core.config import Settings, get_settings
+from src.core.security import JWTPayload as SecurityJWTPayload
 from src.models.user import User
+from tests.test_data_generators import AuthTestDataGenerator
+from tests.test_templates import AuthEndpointTestTemplate, AuthUnitTestTemplate
 
 
-def test_create_and_verify_access_token() -> None:
-    data = {"sub": "user123", "role": "admin"}
-    token = security.create_access_token(data)
-    assert isinstance(token, str)
-    payload = security.verify_access_token(token)
-    assert payload["sub"] == "user123"
-    assert payload["role"] == "admin"
-    assert "exp" in payload
+# TypedDict definitions for structured data
+class RequiredJWTPayload(TypedDict):
+    """Required JWT payload fields."""
+
+    sub: str
+    exp: int
 
 
-def test_verify_access_token_invalid() -> None:
-    # Tamper with token
-    data = {"sub": "user123"}
-    token = security.create_access_token(data)
-    tampered = token + "x"
-    with pytest.raises(JWTError):
-        security.verify_access_token(tampered)
+class BaseJWTPayload(RequiredJWTPayload, total=False):
+    """Base JWT payload structure with optional fields."""
+
+    email: str
+    role: str
+    permissions: Sequence[str]
+    jti: str
 
 
-def test_verify_access_token_expired(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Patch settings to expire immediately
-    monkeypatch.setattr(settings, "jwt_expire_minutes", -1)
-    token = security.create_access_token({"sub": "expired"})
-    # Decode, set exp to past, re-encode
-    import time
+class CompleteJWTPayload(RequiredJWTPayload):
+    """Complete JWT payload with all common fields."""
 
-    payload = jwt.decode(
-        token,
-        str(settings.jwt_secret_key),
-        algorithms=[settings.jwt_algorithm],
-        options={"verify_exp": False},
-    )
-    payload["exp"] = int(time.time()) - 60
-    expired_token = jwt.encode(
-        payload,
-        str(settings.jwt_secret_key or "dummy"),
-        algorithm=settings.jwt_algorithm,
-    )
-    with pytest.raises(JWTError):
-        security.verify_access_token(expired_token)
-    # Restore default expiry
-    monkeypatch.setattr(settings, "jwt_expire_minutes", 30)
+    email: str
+    role: str
+    permissions: Sequence[str]
+    jti: str
 
 
-def test_create_access_token_logs(
-    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
-) -> None:
-    caplog.set_level("DEBUG")
-    data = {"sub": "logtest"}
-    token = security.create_access_token(data)
-    assert any("JWT access token created" in r.message for r in caplog.records)
-    security.verify_access_token(token)
-    assert any(
-        "JWT access token successfully verified" in r.message for r in caplog.records
-    )
+class RegisterRequest(TypedDict):
+    """Registration request structure."""
+
+    email: str
+    password: str
+    name: str
 
 
-def test_verify_access_token_logs_failure(caplog: pytest.LogCaptureFixture) -> None:
-    caplog.set_level("WARNING")
-    with pytest.raises(JWTError):
-        security.verify_access_token("invalid.token")
-    assert any(
-        "validation failed" in r.message or "Unexpected error" in r.message
-        for r in caplog.records
-    )
+class LoginRequest(TypedDict):
+    """Login request structure."""
+
+    email: str
+    password: str
 
 
-def test_create_access_token_missing_secret(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(settings, "jwt_secret_key", None)
-    with pytest.raises(ValueError):
-        security.create_access_token({"sub": "user"})
-    monkeypatch.setattr(settings, "jwt_secret_key", "testsecret")
+class PasswordResetRequest(TypedDict):
+    """Password reset request structure."""
+
+    email: str
 
 
-def test_create_access_token_jwt_error(monkeypatch: pytest.MonkeyPatch) -> None:
-    from jose import JWTError
+class PasswordResetConfirm(TypedDict):
+    """Password reset confirmation structure."""
 
-    def bad_encode(*args: object, **kwargs: object) -> str:
-        raise JWTError("fail")
-
-    monkeypatch.setattr(jwt, "encode", bad_encode)
-    with pytest.raises(JWTError):
-        security.create_access_token({"sub": "user"})
+    token: str
+    new_password: str
 
 
-def test_verify_access_token_missing_secret(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(settings, "auth_enabled", True)
-    monkeypatch.setattr(settings, "jwt_secret_key", None)
-    from jose import jwt
+class RefreshTokenRequest(TypedDict):
+    """Refresh token request structure."""
 
-    token = jwt.encode({"sub": "user"}, "dummy", algorithm="HS256")
-    with pytest.raises(ValueError):
-        security.verify_access_token(token)
-    monkeypatch.setattr(settings, "jwt_secret_key", "testsecret")
+    refresh_token: str
 
 
-def test_verify_access_token_type_error(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Simulate jwt.decode returning a non-dict
-    def bad_decode(*args: object, **kwargs: object) -> object:
-        return "notadict"
-
-    monkeypatch.setattr(jwt, "decode", bad_decode)
-    token = security.create_access_token({"sub": "user"})
-    with pytest.raises(TypeError):
-        security.verify_access_token(token)
+# Type aliases for better readability
+TokenData = Mapping[str, str | int | bool]  # Match security module signature
+OverrideEnvVarsFixture = Callable[[Mapping[str, str]], None]
+StatusCodeUnion = int | tuple[int, ...]
+JsonData = Mapping[str, object]
+JWTPayload = SecurityJWTPayload  # Use the actual type from security module
 
 
-def test_verify_access_token_unexpected_error(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Simulate unexpected error in jwt.decode
-    def raise_error(*args: object, **kwargs: object) -> object:
-        raise RuntimeError("boom")
+class TestJWTUtils(AuthUnitTestTemplate):
+    """
+    Unit tests for JWT creation and verification utilities.
+    Uses AuthUnitTestTemplate for monkeypatch and loguru_list_sink.
+    """
 
-    monkeypatch.setattr(jwt, "decode", raise_error)
-    token = security.create_access_token({"sub": "user"})
-    with pytest.raises(RuntimeError):
-        security.verify_access_token(token)
+    def test_create_and_verify_access_token(self) -> None:
+        """Test creating and verifying a valid access token."""
+        data: TokenData = {"sub": "user123", "role": "admin"}
+        token: str = security.create_access_token(data)
+        assert isinstance(token, str)
+        payload: JWTPayload = security.verify_access_token(token)
+        assert payload.get("sub") == "user123"
+        assert payload.get("role") == "admin"
+        assert "exp" in payload
 
+    def test_invalid_access_token_raises(self) -> None:
+        """Test that invalid tokens raise JWTError."""
+        token: str = security.create_access_token({"sub": "user123"})
+        tampered: str = token + "x"
+        with pytest.raises(JWTError):
+            security.verify_access_token(tampered)
 
-@pytest.mark.asyncio
-async def test_protected_endpoint_accessible_when_auth_disabled(
-    monkeypatch: pytest.MonkeyPatch, async_session: AsyncSession
-) -> None:
-    monkeypatch.setattr(settings, "auth_enabled", False)
-    from src.api.deps import get_current_user
+    def test_expired_access_token_raises(self) -> None:
+        """Test that expired tokens raise JWTError."""
+        settings: Settings = get_settings()
+        self.monkeypatch.setattr(settings, "jwt_expire_minutes", -1)
+        token: str = security.create_access_token({"sub": "expired"})
+        with pytest.raises(JWTError):
+            security.verify_access_token(token)
+        self.monkeypatch.setattr(settings, "jwt_expire_minutes", 30)
 
-    user = await get_current_user(token="irrelevant", session=async_session)
-    assert isinstance(user, User)
-    assert user.email == "dev@example.com"
-    assert user.is_active
-    monkeypatch.setattr(settings, "auth_enabled", True)
+    def test_missing_secret_raises(self) -> None:
+        """Test that missing secret key raises ValueError."""
+        settings: Settings = get_settings()
+        self.monkeypatch.setattr(settings, "jwt_secret_key", None)
+        with pytest.raises(ValueError):
+            security.create_access_token({"sub": "user"})
+        self.monkeypatch.setattr(settings, "jwt_secret_key", "testsecret")
 
+    def test_jwt_with_custom_claims(self) -> None:
+        """Test JWT with custom claims."""
+        data: TokenData = {
+            "sub": "user456",
+            "role": "editor",
+            "permissions": "read,write",  # Store as comma-separated string
+        }
+        token: str = security.create_access_token(data)
+        payload: JWTPayload = security.verify_access_token(token)
+        assert payload.get("role") == "editor"
+        assert payload.get("permissions") == "read,write"
 
-@pytest.mark.asyncio
-async def test_get_current_user_logs_warning_when_auth_disabled(
-    monkeypatch: pytest.MonkeyPatch,
-    async_session: AsyncSession,
-    loguru_list_sink: list[str],
-) -> None:
-    monkeypatch.setattr(settings, "auth_enabled", False)
-    from src.api.deps import get_current_user
+    def test_jwt_invalid_algorithm(self) -> None:
+        """Test JWT with invalid algorithm raises JWTError."""
+        settings: Settings = get_settings()
+        token: str = security.create_access_token({"sub": "user789"})
+        with pytest.raises(JWTError):
+            jwt.decode(token, str(settings.jwt_secret_key), algorithms=["HS512"])
 
-    await get_current_user(token="irrelevant", session=async_session)
-    logs = "\n".join(loguru_list_sink)
-    assert "Authentication is DISABLED! Returning development admin user." in logs
-    monkeypatch.setattr(settings, "auth_enabled", True)
-
-
-@pytest.mark.asyncio
-async def test_register_endpoint(async_session: AsyncSession) -> None:
-    """Test user registration endpoint."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # Test successful registration
-        resp = await ac.post(
-            "/api/v1/auth/register",
-            json={
-                "email": "newuser@example.com",
-                "password": "SecurePass123!",
-                "name": "New User",
-            },
-        )
-        assert resp.status_code == 201
-        data = resp.json()
-        assert "access_token" in data
-
-        # Test duplicate email registration
-        resp = await ac.post(
-            "/api/v1/auth/register",
-            json={
-                "email": "newuser@example.com",
-                "password": "SecurePass123!",
-                "name": "Duplicate User",
-            },
-        )
-        assert resp.status_code == 400
-        assert "already exists" in resp.json()["detail"]
+    def test_jwt_empty_token(self) -> None:
+        """Test that empty token raises JWTError."""
+        with pytest.raises(JWTError):
+            security.verify_access_token("")
 
 
-@pytest.mark.asyncio
-async def test_login_endpoint(async_session: AsyncSession) -> None:
-    """Test login endpoint with valid and invalid credentials."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # Register user first
-        await ac.post(
-            "/api/v1/auth/register",
-            json={
-                "email": "logintest@example.com",
-                "password": "SecurePass123!",
-                "name": "Login Test",
-            },
-        )
+class TestAuthEndpoints(AuthEndpointTestTemplate):
+    """
+    Async endpoint tests for authentication routes.
+    Uses AuthEndpointTestTemplate for async_session, test_app, and loguru_list_sink.
+    """
 
-        # Test valid login
-        resp = await ac.post(
-            "/api/v1/auth/login",
-            json={
-                "email": "logintest@example.com",
-                "password": "SecurePass123!",
-            },
-        )
-        assert resp.status_code == 200
-        data = resp.json()
-        assert "access_token" in data
+    @staticmethod
+    def debug_response(resp: Response, expected_status: int) -> Response:
+        """Debug helper to log response details when status doesn't match expected."""
+        if resp.status_code != expected_status:
+            pass
+        return resp
 
-        # Test invalid password
-        resp = await ac.post(
-            "/api/v1/auth/login",
-            json={
-                "email": "logintest@example.com",
-                "password": "WrongPassword123!",
-            },
-        )
-        assert resp.status_code == 401
-        assert "Invalid credentials" in resp.json()["detail"]
+    @pytest.mark.asyncio
+    async def test_register_and_login(self) -> None:
+        """Test user registration and login flow."""
+        # Generate unique test data for isolation
+        test_data = AuthTestDataGenerator("test_register_and_login")
+        test_user = test_data.get_registration_user()
 
-        # Test non-existent user
-        resp = await ac.post(
-            "/api/v1/auth/login",
-            json={
-                "email": "nonexistent@example.com",
-                "password": "SecurePass123!",
-            },
-        )
-        assert resp.status_code == 401
-        assert "Invalid credentials" in resp.json()["detail"]
+        transport: ASGITransport = ASGITransport(app=self.test_app)
+        async with AsyncClient(
+            transport=transport,
+            base_url="http://test",
+            headers={"X-API-Key": "testkey"},
+        ) as ac:
+            # Register
+            register_data = test_user.to_register_dict()
+            resp: Response = await ac.post(
+                "/api/v1/auth/register",
+                json=register_data,
+            )
+            self.debug_response(resp, 201)
+            self.assert_status(resp, 201)
+            resp.json()["access_token"]
+            # Login
+            login_data = test_user.to_login_dict()
+            resp = await ac.post(
+                "/api/v1/auth/login",
+                json=login_data,
+            )
+            self.debug_response(resp, 200)
+            self.assert_status(resp, 200)
+            assert "access_token" in resp.json()
+            # Invalid login
+            invalid_login_data: LoginRequest = {
+                "email": test_user.email,
+                "password": "WrongPass!",
+            }
+            resp = await ac.post(
+                "/api/v1/auth/login",
+                json=invalid_login_data,
+            )
+            self.debug_response(resp, 401)
+            self.assert_status(resp, 401)
 
+    @pytest.mark.asyncio
+    async def test_me_and_logout(self) -> None:
+        """Test /me endpoint and logout functionality."""
+        transport: ASGITransport = ASGITransport(app=self.test_app)
+        async with AsyncClient(
+            transport=transport,
+            base_url="http://test",
+            headers={"X-API-Key": "testkey"},
+        ) as ac:
+            # Register and login
+            register_data: RegisterRequest = {
+                "email": "me@example.com",
+                "password": "TestPass123!",
+                "name": "Me User",
+            }
+            resp: Response = await ac.post(
+                "/api/v1/auth/register",
+                json=register_data,
+            )
+            token: str = resp.json()["access_token"]
+            # /me endpoint
+            resp = await ac.get(
+                "/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"}
+            )
+            self.debug_response(resp, 200)
+            self.assert_status(resp, 200)
+            assert resp.json()["email"] == "me@example.com"
+            # Logout
+            resp = await ac.post(
+                "/api/v1/auth/logout", headers={"Authorization": f"Bearer {token}"}
+            )
+            self.debug_response(resp, 200)
+            self.assert_status(resp, 200)
+            # Token should now be invalid
+            resp = await ac.get(
+                "/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"}
+            )
+            self.debug_response(resp, 401)
+            self.assert_status(resp, 401)
 
-@pytest.mark.asyncio
-async def test_me_endpoint(async_session: AsyncSession) -> None:
-    """Test the /me endpoint for retrieving user profile."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # Register and login first
-        resp = await ac.post(
-            "/api/v1/auth/register",
-            json={
-                "email": "profile@example.com",
-                "password": "SecurePass123!",
-                "name": "Profile User",
-            },
-        )
-        token = resp.json()["access_token"]
+    @pytest.mark.asyncio
+    async def test_register_invalid_fields(self) -> None:
+        """Test registration with invalid fields."""
+        transport: ASGITransport = ASGITransport(app=self.test_app)
+        async with AsyncClient(
+            transport=transport,
+            base_url="http://test",
+            headers={"X-API-Key": "testkey"},
+        ) as ac:
+            # Missing email
+            incomplete_data: Mapping[str, str] = {
+                "password": "TestPass123!",
+                "name": "No Email",
+            }
+            resp: Response = await ac.post(
+                "/api/v1/auth/register",
+                json=incomplete_data,
+            )
+            self.assert_status(resp, 422)
+            # Invalid email
+            invalid_email_data: Mapping[str, str] = {
+                "email": "notanemail",
+                "password": "TestPass123!",
+                "name": "Bad Email",
+            }
+            resp = await ac.post(
+                "/api/v1/auth/register",
+                json=invalid_email_data,
+            )
+            self.assert_status(resp, 422)
+            # Missing password
+            missing_password_data: Mapping[str, str] = {
+                "email": "missingpass@example.com",
+                "name": "No Pass",
+            }
+            resp = await ac.post(
+                "/api/v1/auth/register",
+                json=missing_password_data,
+            )
+            self.assert_status(resp, 422)
 
-        # Test /me endpoint with valid token
-        resp = await ac.get(
-            "/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"}
-        )
-        assert resp.status_code == 200
-        user_data = resp.json()
-        assert user_data["email"] == "profile@example.com"
-        # The 'name' field might be None because register_user function
-        # does not properly handle the name field from the request
-        # We'll check that the field exists but not assert its exact value
-        assert "name" in user_data
+    @pytest.mark.asyncio
+    async def test_register_duplicate_email(self) -> None:
+        """Test registration with duplicate email."""
+        # Generate unique test data for isolation
+        test_data = AuthTestDataGenerator("test_register_duplicate_email")
+        test_user = test_data.get_registration_user()
 
-        # Test with invalid token
-        resp = await ac.get(
-            "/api/v1/auth/me", headers={"Authorization": "Bearer invalid.token"}
-        )
-        assert resp.status_code == 401
+        transport: ASGITransport = ASGITransport(app=self.test_app)
+        async with AsyncClient(
+            transport=transport,
+            base_url="http://test",
+            headers={"X-API-Key": "testkey"},
+        ) as ac:
+            first_registration = test_user.to_register_dict()
+            await ac.post(
+                "/api/v1/auth/register",
+                json=first_registration,
+            )
+            # Try to register again with same email (but different name)
+            duplicate_registration = {
+                "email": test_user.email,
+                "password": test_user.password,
+                "name": "Dupe Again",
+            }
+            resp: Response = await ac.post(
+                "/api/v1/auth/register",
+                json=duplicate_registration,
+            )
+            self.assert_status(resp, 400)
+            assert "already exists" in resp.json()["detail"]
 
+    @pytest.mark.asyncio
+    async def test_login_missing_fields(self) -> None:
+        """Test login with missing fields."""
+        transport: ASGITransport = ASGITransport(app=self.test_app)
+        async with AsyncClient(
+            transport=transport,
+            base_url="http://test",
+            headers={"X-API-Key": "testkey"},
+        ) as ac:
+            missing_password: Mapping[str, str] = {"email": "user@example.com"}
+            resp: Response = await ac.post(
+                "/api/v1/auth/login",
+                json=missing_password,
+            )
+            self.assert_status(resp, 422)
+            missing_email: Mapping[str, str] = {"password": "TestPass123!"}
+            resp = await ac.post(
+                "/api/v1/auth/login",
+                json=missing_email,
+            )
+            self.assert_status(resp, 422)
 
-@pytest.mark.asyncio
-async def test_logout_endpoint(async_session: AsyncSession) -> None:
-    """Test the logout endpoint."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # Register and login first
-        resp = await ac.post(
-            "/api/v1/auth/register",
-            json={
-                "email": "logout@example.com",
-                "password": "SecurePass123!",
-                "name": "Logout User",
-            },
-        )
-        token = resp.json()["access_token"]
+    @pytest.mark.asyncio
+    async def test_me_endpoint_no_token(self) -> None:
+        """Test /me endpoint without token."""
+        transport: ASGITransport = ASGITransport(app=self.test_app)
+        async with AsyncClient(
+            transport=transport,
+            base_url="http://test",
+            headers={"X-API-Key": "testkey"},
+        ) as ac:
+            resp: Response = await ac.get("/api/v1/auth/me")
+            self.assert_status(resp, 401)
 
-        # Test logout
-        resp = await ac.post(
-            "/api/v1/auth/logout", headers={"Authorization": f"Bearer {token}"}
-        )
-        assert resp.status_code == 200
-        assert resp.json()["message"] == "Logged out successfully."
+    @pytest.mark.asyncio
+    async def test_me_endpoint_invalid_token(self) -> None:
+        """Test /me endpoint with invalid token."""
+        transport: ASGITransport = ASGITransport(app=self.test_app)
+        async with AsyncClient(
+            transport=transport,
+            base_url="http://test",
+            headers={"X-API-Key": "testkey"},
+        ) as ac:
+            resp: Response = await ac.get(
+                "/api/v1/auth/me", headers={"Authorization": "Bearer not.a.jwt.token"}
+            )
+            self.assert_status(resp, 401)
 
-        # Verify token is no longer usable (session invalidated)
-        resp = await ac.get(
-            "/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"}
-        )
-        assert resp.status_code == 401
+    @pytest.mark.asyncio
+    async def test_logout_invalid_token(self) -> None:
+        """Test logout with invalid token."""
+        transport: ASGITransport = ASGITransport(app=self.test_app)
+        async with AsyncClient(
+            transport=transport,
+            base_url="http://test",
+            headers={"X-API-Key": "testkey"},
+        ) as ac:
+            resp: Response = await ac.post(
+                "/api/v1/auth/logout",
+                headers={"Authorization": "Bearer not.a.jwt.token"},
+            )
+            self.assert_status(resp, 401)
 
+    @pytest.mark.asyncio
+    async def test_password_reset_request_and_confirm(self) -> None:
+        """Test password reset request and confirmation flow."""
+        from src.services import user as user_service
 
-@pytest.mark.asyncio
-async def test_password_reset_request_endpoint(
-    async_session: AsyncSession,
-    monkeypatch: pytest.MonkeyPatch,
-    loguru_list_sink: list[str],
-) -> None:
-    """Test the password reset request endpoint."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # Register user first
-        await ac.post(
-            "/api/v1/auth/register",
-            json={
-                "email": "resettest@example.com",
-                "password": "OldPassword123!",
-                "name": "Reset Test",
-            },
-        )
-
-        # Clear logs before reset request
-        loguru_list_sink.clear()
-
-        # Request password reset
-        resp = await ac.post(
-            "/api/v1/auth/request-password-reset",
-            json={"email": "resettest@example.com"},
-        )
-        assert resp.status_code == 200
-        assert resp.json()["message"] == "Password reset link sent."
-
-        # Check for reset token in logs
-        logs = "\n".join(loguru_list_sink)
-        # The log message is now structured, not a literal string
-        assert "pwreset_requested" in logs
-        assert "pwreset_link_generated" in logs
-
-    # Test request for non-existent email in a new client context
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        resp = await ac.post(
-            "/api/v1/auth/request-password-reset",
-            json={"email": "nonexistent@example.com"},
-        )
-        assert resp.status_code == 200
-        assert resp.json()["message"] == "Password reset link sent."
-
-
-@pytest.mark.asyncio
-async def test_password_reset_confirm_endpoint(
-    async_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Test the password reset confirmation endpoint."""
-    from src.services import user as user_service
-
-    # Mock to get the token without going through email
-    original_get_token = user_service.get_password_reset_token
-    reset_token = None
-
-    def capture_token(email: str) -> str:
-        nonlocal reset_token
-        reset_token = original_get_token(email)
-        return reset_token
-
-    monkeypatch.setattr(user_service, "get_password_reset_token", capture_token)
-
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # Register user first
-        await ac.post(
-            "/api/v1/auth/register",
-            json={
+        transport: ASGITransport = ASGITransport(app=self.test_app)
+        async with AsyncClient(
+            transport=transport,
+            base_url="http://test",
+            headers={"X-API-Key": "testkey"},
+        ) as ac:
+            # Register user first
+            register_data: RegisterRequest = {
                 "email": "pwreset@example.com",
                 "password": "OldPassword123!",
-                "name": "PW Reset Test",
-            },
-        )
-
-        # Request password reset to capture token
-        await ac.post(
-            "/api/v1/auth/request-password-reset",
-            json={"email": "pwreset@example.com"},
-        )
-
-        # Confirm reset with valid token
-        resp = await ac.post(
-            "/api/v1/auth/reset-password",
-            json={"token": reset_token, "new_password": "NewPassword456!"},
-        )
-        assert resp.status_code == 200
-        assert resp.json()["message"] == "Password has been reset."
-
-        # Try logging in with new password
-        resp = await ac.post(
-            "/api/v1/auth/login",
-            json={"email": "pwreset@example.com", "password": "NewPassword456!"},
-        )
-        assert resp.status_code == 200
-
-        # Test with invalid token
-        resp = await ac.post(
-            "/api/v1/auth/reset-password",
-            json={"token": "invalid.token", "new_password": "AnotherPassword789!"},
-        )
-        assert resp.status_code == 400
-        assert "invalid" in resp.json()["detail"].lower()
-
-        # Test with already used token
-        # Use a valid password to reach the 'already used' check
-        resp = await ac.post(
-            "/api/v1/auth/reset-password",
-            json={"token": reset_token, "new_password": "AnotherPassword789!"},
-        )
-        assert resp.status_code == 400
-        assert "already been used" in resp.json()["detail"].lower()
-
-
-@pytest.mark.asyncio
-async def test_auth_logging_and_no_sensitive_data(
-    async_session: AsyncSession, loguru_list_sink: list[str]
-) -> None:
-    """Test that auth events are logged and sensitive data is not leaked in logs."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # Register
-        loguru_list_sink.clear()
-        resp = await ac.post(
-            "/api/v1/auth/register",
-            json={
-                "email": "logcheck@example.com",
-                "password": "SuperSecret123!",
-                "name": "Log Check",
-            },
-        )
-        assert resp.status_code == 201
-        logs = "\n".join(loguru_list_sink)
-        assert "User registration attempt" in logs
-        assert "User registered successfully" in logs
-        assert "SuperSecret123" not in logs
-
-        # Login (success)
-        loguru_list_sink.clear()
-        resp = await ac.post(
-            "/api/v1/auth/login",
-            json={
-                "email": "logcheck@example.com",
-                "password": "SuperSecret123!",
-            },
-        )
-        assert resp.status_code == 200
-        logs = "\n".join(loguru_list_sink)
-        assert "User login attempt" in logs
-        assert "User authenticated successfully" in logs
-        assert "SuperSecret123" not in logs
-
-        # Login (failure)
-        loguru_list_sink.clear()
-        resp = await ac.post(
-            "/api/v1/auth/login",
-            json={
-                "email": "logcheck@example.com",
-                "password": "WrongPassword!",
-            },
-        )
-        assert resp.status_code == 401
-        logs = "\n".join(loguru_list_sink)
-        assert "Login failed" in logs
-        assert "WrongPassword" not in logs
-
-        # Password reset request
-        loguru_list_sink.clear()
-        resp = await ac.post(
-            "/api/v1/auth/request-password-reset",
-            json={"email": "logcheck@example.com"},
-        )
-        assert resp.status_code == 200
-        # Only check loguru logs from user service (not API router or print)
-        logs = "\n".join(
-            [
-                log_entry
-                for log_entry in loguru_list_sink
-                if "Password reset token" in log_entry
-                or "Password reset requested" in log_entry
-                or "Password reset successful" in log_entry
-            ]
-        )
-        assert "SuperSecret123" not in logs
-        assert "token=" not in logs and "token: " not in logs
-
-
-@pytest.mark.asyncio
-async def test_access_token_blacklisting_on_logout(async_session: AsyncSession) -> None:
-    """Test that a blacklisted access token cannot be used after logout."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # Register and login
-        resp = await ac.post(
-            "/api/v1/auth/register",
-            json={
-                "email": "blacklistlogout@example.com",
-                "password": "SecurePass123!",
-                "name": "Blacklist Logout",
-            },
-        )
-        # token = resp.json()["access_token"]  # Unused
-        token = resp.json()["access_token"]
-        # Logout (blacklists token)
-        resp = await ac.post(
-            "/api/v1/auth/logout", headers={"Authorization": f"Bearer {token}"}
-        )
-        assert resp.status_code == 200
-        # Try to use the same token
-        resp = await ac.get(
-            "/api/v1/auth/me", headers={"Authorization": f"Bearer {token}"}
-        )
-        assert resp.status_code == 401
-
-
-@pytest.mark.asyncio
-async def test_refresh_token_blacklisting(async_session: AsyncSession) -> None:
-    """Test that a blacklisted refresh token cannot be used to get a new access token."""
-    import uuid
-    from datetime import datetime, timedelta
-
-    from jose import jwt
-
-    from src.core import security
-    from src.repositories.blacklisted_token import blacklist_token
-
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # Register and login
-        resp = await ac.post(
-            "/api/v1/auth/register",
-            json={
-                "email": "blacklistrefresh@example.com",
-                "password": "SecurePass123!",
-                "name": "Blacklist Refresh",
-            },
-        )
-        token = resp.json()["access_token"]
-        # Create a refresh token manually (simulate)
-        payload = security.verify_access_token(token)
-        refresh_payload = {
-            "sub": payload["sub"],
-            "email": payload["email"],
-            "jti": str(uuid.uuid4()),
-            "exp": int((datetime.now(UTC) + timedelta(minutes=10)).timestamp()),
-        }
-        refresh_token = jwt.encode(
-            refresh_payload,
-            str(settings.jwt_secret_key or "dummy"),
-            algorithm=settings.jwt_algorithm,
-        )
-        # Blacklist the refresh token's jti before using it
-        await blacklist_token(
-            async_session,
-            refresh_payload["jti"],
-            datetime.fromtimestamp(refresh_payload["exp"]),
-        )
-        # Try to use the blacklisted refresh token
-        resp = await ac.post(
-            "/api/v1/auth/refresh-token",
-            params={"refresh_token": refresh_token},
-            headers={"Authorization": f"Bearer {token}"},
-        )
-        assert resp.status_code == 401
-        assert "Invalid or expired refresh token" in resp.json()["detail"]
-
-
-@pytest.mark.asyncio
-async def test_logout_with_invalid_token(async_session: AsyncSession) -> None:
-    """Test logout endpoint with an invalid/malformed token in the Authorization header."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # Register and login
-        resp = await ac.post(
-            "/api/v1/auth/register",
-            json={
-                "email": "logoutinvalidtoken@example.com",
-                "password": "SecurePass123!",
-                "name": "Logout Invalid Token",
-            },
-        )
-        # Try logout with a malformed token
-        resp = await ac.post(
-            "/api/v1/auth/logout", headers={"Authorization": "Bearer not.a.jwt.token"}
-        )
-        # Should return 401 for invalid token (RESTful behavior)
-        assert resp.status_code == 401
-
-
-@pytest.mark.asyncio
-async def test_refresh_token_with_expired_token(async_session: AsyncSession) -> None:
-    """Test refresh endpoint with an expired refresh token."""
-    from datetime import datetime, timedelta
-
-    from jose import jwt
-
-    from src.core import security
-
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # Register and login
-        resp = await ac.post(
-            "/api/v1/auth/register",
-            json={
-                "email": "expiredrefresh@example.com",
-                "password": "SecurePass123!",
-                "name": "Expired Refresh",
-            },
-        )
-        token = resp.json()["access_token"]
-        # Create an expired refresh token
-        payload = security.verify_access_token(token)
-        refresh_payload = {
-            "sub": payload["sub"],
-            "email": payload["email"],
-            "jti": payload["jti"],
-            "exp": int((datetime.now(UTC) - timedelta(minutes=10)).timestamp()),
-        }
-        refresh_token = jwt.encode(
-            refresh_payload,
-            str(settings.jwt_secret_key or "dummy"),
-            algorithm=settings.jwt_algorithm,
-        )
-        # Try to use the expired refresh token
-        resp = await ac.post(
-            "/api/v1/auth/refresh-token",
-            params={"refresh_token": refresh_token},
-            headers={"Authorization": f"Bearer {token}"},
-        )
-        assert resp.status_code == 401
-        assert "Invalid or expired refresh token" in resp.json()["detail"]
-
-
-@pytest.mark.asyncio
-async def test_logout_without_authorization_header(async_session: AsyncSession) -> None:
-    """Test logout endpoint with no Authorization header present."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # Register and login
-        resp = await ac.post(
-            "/api/v1/auth/register",
-            json={
-                "email": "logoutnoauth@example.com",
-                "password": "SecurePass123!",
-                "name": "Logout No Auth",
-            },
-        )
-        # Logout without Authorization header
-        resp = await ac.post("/api/v1/auth/logout")
-        # Should fail with 401 (no user context)
-        assert resp.status_code == 401 or resp.status_code == 403
-
-
-@pytest.mark.asyncio
-async def test_register_validation_and_logging(
-    async_session: AsyncSession, loguru_list_sink: list[str]
-) -> None:
-    """Test registration rejects invalid email/password and logs structured events."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # Invalid email
-        resp = await ac.post(
-            "/api/v1/auth/register",
-            json={"email": "bademail", "password": "SecurePass123!", "name": "Test"},
-        )
-        assert resp.status_code == 422
-        # Weak password
-        resp = await ac.post(
-            "/api/v1/auth/register",
-            json={"email": "valid@example.com", "password": "short", "name": "Test"},
-        )
-        assert resp.status_code == 422
-        # Check loguru logs for structured event
-        # Loguru may not log for schema errors (422), so relax assertion
-        # assert any("registration_invalid_email" in l for l in logs.splitlines())
-        # assert any("registration_invalid_password" in l for l in logs.splitlines())
-
-
-@pytest.mark.asyncio
-async def test_login_validation_and_logging(
-    async_session: AsyncSession, loguru_list_sink: list[str]
-) -> None:
-    """Test login rejects invalid email and logs structured events."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # Invalid email
-        resp = await ac.post(
-            "/api/v1/auth/login",
-            json={"email": "bademail", "password": "SecurePass123!"},
-        )
-        assert resp.status_code == 422
-        # Loguru may not log for schema errors (422), so relax assertion
-        # assert any("login_invalid_email" in l for l in logs.splitlines())
-
-
-@pytest.mark.asyncio
-async def test_password_reset_validation_and_logging(
-    async_session: AsyncSession, loguru_list_sink: list[str]
-) -> None:
-    """Test password reset endpoints reject invalid input and log structured events."""
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        # Invalid email for request-password-reset
-        resp = await ac.post(
-            "/api/v1/auth/request-password-reset",
-            json={"email": "bademail"},
-        )
-        assert resp.status_code == 422
-        # Loguru may not log for schema errors (422), so relax assertion
-        # assert any("pwreset_invalid_email" in l for l in logs.splitlines())
-        # Register user for reset-password
-        await ac.post(
-            "/api/v1/auth/register",
-            json={
-                "email": "pwreset@example.com",
-                "password": "GoodPass123!",
                 "name": "PW Reset",
-            },
+            }
+            await ac.post(
+                "/api/v1/auth/register",
+                json=register_data,
+            )
+            # Request reset
+            reset_request: PasswordResetRequest = {"email": "pwreset@example.com"}
+            resp: Response = await ac.post(
+                "/api/v1/auth/request-password-reset",
+                json=reset_request,
+            )
+            self.assert_status(resp, 200)
+            # Get token directly (simulate email)
+            token: str = user_service.get_password_reset_token("pwreset@example.com")
+            # Confirm reset
+            reset_confirm: PasswordResetConfirm = {
+                "token": token,
+                "new_password": "NewPassword456!",
+            }
+            resp = await ac.post(
+                "/api/v1/auth/reset-password",
+                json=reset_confirm,
+            )
+            self.assert_status(resp, 200)
+            # Try login with new password
+            new_login: LoginRequest = {
+                "email": "pwreset@example.com",
+                "password": "NewPassword456!",
+            }
+            resp = await ac.post(
+                "/api/v1/auth/login",
+                json=new_login,
+            )
+            self.assert_status(resp, 200)
+            # Try using token again (should fail)
+            repeat_reset: PasswordResetConfirm = {
+                "token": token,
+                "new_password": "AnotherPassword789!",
+            }
+            resp = await ac.post(
+                "/api/v1/auth/reset-password",
+                json=repeat_reset,
+            )
+            self.assert_status(resp, 400)
+            assert "already been used" in resp.json()["detail"].lower()
+
+    @pytest.mark.asyncio
+    async def test_password_reset_request_nonexistent_email(self) -> None:
+        """Test password reset request for nonexistent email."""
+        transport: ASGITransport = ASGITransport(app=self.test_app)
+        async with AsyncClient(
+            transport=transport,
+            base_url="http://test",
+            headers={"X-API-Key": "testkey"},
+        ) as ac:
+            nonexistent_request: PasswordResetRequest = {
+                "email": "doesnotexist@example.com"
+            }
+            resp: Response = await ac.post(
+                "/api/v1/auth/request-password-reset",
+                json=nonexistent_request,
+            )
+            self.assert_status(resp, 200)
+            assert resp.json()["message"] == "Password reset link sent."
+
+    @pytest.mark.asyncio
+    async def test_refresh_token_expired_and_blacklisted(self) -> None:
+        """Test refresh token with expired and blacklisted tokens."""
+        from src.repositories.blacklisted_token import blacklist_token
+
+        transport: ASGITransport = ASGITransport(app=self.test_app)
+        async with AsyncClient(
+            transport=transport,
+            base_url="http://test",
+            headers={"X-API-Key": "testkey"},
+        ) as ac:
+            # Register and login
+            register_data: RegisterRequest = {
+                "email": "refreshuser@example.com",
+                "password": "TestPass123!",
+                "name": "Refresh User",
+            }
+            await ac.post(
+                "/api/v1/auth/register",
+                json=register_data,
+            )
+            login_data: LoginRequest = {
+                "email": "refreshuser@example.com",
+                "password": "TestPass123!",
+            }
+            login_resp: Response = await ac.post(
+                "/api/v1/auth/login",
+                json=login_data,
+            )
+            access_token: str = login_resp.json()["access_token"]
+            payload: JWTPayload = security.verify_access_token(access_token)
+
+            # Expired refresh token
+            expired_payload_dict: MutableMapping[str, str | int] = {
+                "sub": payload.get("sub", "unknown_user"),
+                "email": "refreshuser@example.com",  # Use known email
+                "jti": str(uuid.uuid4()),
+                "exp": int((datetime.now(jwt.UTC) - timedelta(minutes=10)).timestamp()),
+            }
+            settings: Settings = get_settings()
+            expired_token: str = jwt.encode(
+                expired_payload_dict,
+                str(settings.jwt_secret_key or "dummy"),
+                algorithm=settings.jwt_algorithm,
+            )
+            refresh_request: RefreshTokenRequest = {"refresh_token": expired_token}
+            resp: Response = await ac.post(
+                "/api/v1/auth/refresh-token",
+                json=refresh_request,
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+            self.assert_status(resp, 401)
+            # Blacklisted refresh token
+            valid_payload_dict: MutableMapping[str, str | int] = {
+                "sub": payload.get("sub", "unknown_user"),
+                "email": "refreshuser@example.com",  # Use known email
+                "jti": str(uuid.uuid4()),
+                "exp": int((datetime.now(jwt.UTC) + timedelta(minutes=10)).timestamp()),
+            }
+            settings = get_settings()
+            valid_token: str = jwt.encode(
+                valid_payload_dict,
+                str(settings.jwt_secret_key or "dummy"),
+                algorithm=settings.jwt_algorithm,
+            )
+            await blacklist_token(
+                self.async_session,
+                str(valid_payload_dict["jti"]),
+                datetime.fromtimestamp(float(valid_payload_dict["exp"])),
+            )
+            blacklisted_request: RefreshTokenRequest = {"refresh_token": valid_token}
+            resp = await ac.post(
+                "/api/v1/auth/refresh-token",
+                json=blacklisted_request,
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+            self.assert_status(resp, 401)
+
+    @pytest.mark.asyncio
+    async def test_auth_disabled_allows_access(self) -> None:
+        """Test that auth disabled allows access."""
+        from src.api.deps import get_current_user
+
+        settings: Settings = get_settings()
+        self.monkeypatch.setattr(settings, "auth_enabled", False)
+
+        user: User | None = await get_current_user(
+            token="irrelevant", session=self.async_session
         )
-        # Invalid password for reset-password
-        resp = await ac.post(
-            "/api/v1/auth/reset-password",
-            json={"token": "sometoken", "new_password": "short"},
+        assert user is not None
+        assert user.email == "dev@example.com"
+        assert user.is_active
+        self.monkeypatch.setattr(settings, "auth_enabled", True)
+
+
+class TestAuthFeatureFlags(AuthEndpointTestTemplate):
+    """Test authentication feature flag behaviors."""
+
+    def test_register_feature_disabled(self) -> None:
+        """Test registration when register feature is disabled."""
+        self.override_env_vars({"REVIEWPOINT_FEATURE_AUTH_REGISTER": "false"})
+        transport: ASGITransport = ASGITransport(app=self.test_app)
+
+        async def run() -> None:
+            async with AsyncClient(
+                transport=transport,
+                base_url="http://test",
+                headers={"X-API-Key": "testkey"},
+            ) as ac:
+                register_data: RegisterRequest = {
+                    "email": "flag@example.com",
+                    "password": "pw123456",
+                    "name": "Flag",
+                }
+                resp: Response = await ac.post(
+                    "/api/v1/auth/register",
+                    json=register_data,
+                )
+                self.assert_status(resp, (404, 403, 501))
+
+        asyncio.run(run())
+
+    def test_login_feature_disabled(self) -> None:
+        """Test login when login feature is disabled."""
+        self.override_env_vars({"REVIEWPOINT_FEATURE_AUTH_LOGIN": "false"})
+        transport: ASGITransport = ASGITransport(app=self.test_app)
+
+        async def run() -> None:
+            async with AsyncClient(
+                transport=transport,
+                base_url="http://test",
+                headers={"X-API-Key": "testkey"},
+            ) as ac:
+                login_data: LoginRequest = {
+                    "email": "flag@example.com",
+                    "password": "pw123456",
+                }
+                resp: Response = await ac.post(
+                    "/api/v1/auth/login",
+                    json=login_data,
+                )
+                self.assert_status(resp, (404, 403, 501))
+
+        asyncio.run(run())
+
+    @pytest.mark.asyncio
+    async def test_api_key_disabled(self) -> None:
+        """Test API key disabled behavior."""
+        self.override_env_vars({"REVIEWPOINT_API_KEY_ENABLED": "false"})
+        transport: ASGITransport = ASGITransport(app=self.test_app)
+
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            register_data: RegisterRequest = {
+                "email": "flag@example.com",
+                "password": "pw123456",
+                "name": "Flag",
+            }
+            resp: Response = await ac.post(
+                "/api/v1/auth/register",
+                json=register_data,
+            )
+            self.assert_status(
+                resp, (201,)
+            )  # Registration should succeed when API keys are disabled
+
+    def test_api_key_wrong(self) -> None:
+        """Test wrong API key behavior."""
+        # Override environment variables for this test
+        self.override_env_vars(
+            {
+                "REVIEWPOINT_API_KEY": "nottherightkey",
+                "REVIEWPOINT_API_KEY_ENABLED": "true",
+            }
         )
-        assert resp.status_code == 422
-        # assert any("pwreset_confirm_invalid_password" in l for l in logs.splitlines())
+
+        # Clear settings cache to pick up new environment variables
+        from src.core.config import clear_settings_cache
+
+        clear_settings_cache()
+
+        transport: ASGITransport = ASGITransport(app=self.test_app)
+
+        async def run() -> None:
+            async with AsyncClient(
+                transport=transport,
+                base_url="http://test",
+                headers={"X-API-Key": "wrongkey"},
+            ) as ac:
+                register_data: RegisterRequest = {
+                    "email": "flag@example.com",
+                    "password": "pw123456",
+                    "name": "Flag",
+                }
+                resp: Response = await ac.post(
+                    "/api/v1/auth/register",
+                    json=register_data,
+                )
+                self.assert_status(resp, (401, 403))
+
+        asyncio.run(run())

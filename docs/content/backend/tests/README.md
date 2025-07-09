@@ -33,6 +33,27 @@ hatch run test
 
 Or use `pytest` directly if preferred.
 
+### Controlling Log Levels
+
+You can control the verbosity of test output using pytest CLI flags:
+
+```sh
+# Default minimal output (WARNING level)
+hatch run pytest
+
+# Debug level for detailed troubleshooting
+hatch run pytest --log-level=DEBUG
+
+# Info level for development
+hatch run pytest --log-level=INFO
+
+# Convenient scripts
+hatch run test-debug    # DEBUG with live output
+hatch run test-quiet    # WARNING (minimal)
+```
+
+Available log levels: DEBUG, INFO, WARNING (default), ERROR, CRITICAL
+
 ## Related Documentation
 
 - [Backend Source Guide](../../backend-source-guide.md)

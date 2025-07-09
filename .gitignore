@@ -1,3 +1,29 @@
+# =====================
+# Frontend (Vite/React)
+# =====================
+# Build output
+frontend/dist/
+# Vite preview output (if any)
+frontend/.vite/
+# Coverage reports
+frontend/coverage/
+frontend/htmlcov/
+# Playwright and Vitest reports
+frontend/playwright-report/
+frontend/test-results/
+# Local dev server logs (if any)
+frontend/*.log
+# IDE/editor config
+frontend/.env.local
+frontend/.env.*.local
+# Node modules (already covered globally, but explicit for clarity)
+frontend/node_modules/
+# Misc cache
+frontend/.cache/
+frontend/.turbo/
+frontend/.eslintcache
+frontend/.biome/
+frontend/.vite-inspect/
 # filepath: /workspaces/ReViewPoint/.gitignore
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -146,6 +172,7 @@ celerybeat.pid
 # Python environments
 .env
 .env.*
+!.env.template
 .venv
 .venv*/
 venv/

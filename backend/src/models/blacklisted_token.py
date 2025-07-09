@@ -1,12 +1,14 @@
-from sqlalchemy import Column, DateTime, Integer, String, func
+from datetime import datetime
 
-from src.models.base import Base
+from sqlalchemy import DateTime, String
+from sqlalchemy.orm import Mapped, mapped_column
+
+from src.models.base import BaseModel
 
 
-class BlacklistedToken(Base):
+class BlacklistedToken(BaseModel):
     __tablename__ = "blacklisted_tokens"
-    id = Column(Integer, primary_key=True, index=True)
-    jti = Column(String, unique=True, index=True, nullable=False)
-    expires_at = Column(DateTime(timezone=True), nullable=False)
-    created_at = Column(DateTime(timezone=True), default=func.now())
-    # Ensure no subclassing of both Column and datetime
+    jti: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )

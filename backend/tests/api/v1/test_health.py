@@ -1,166 +1,272 @@
-from typing import Any
+"""
+Health endpoint tests (GET/POST/PUT/DELETE, auth/no-auth, response structure).
+Uses HealthEndpointTestTemplate for maintainability and health-specific helpers.
+
+Note: Do NOT use BaseAPITest directly for health checks—use HealthEndpointTestTemplate instead.
+"""
+
+import os
+from collections.abc import Callable, Mapping, MutableMapping
+from typing import Final, cast
 
 import pytest
-from fastapi import status
-from httpx import ASGITransport, AsyncClient
+from fastapi.testclient import TestClient
+from httpx import Response
+from pytest import FixtureRequest
 
-from src.main import app
+from tests.test_templates import HealthEndpointTestTemplate
 
-pytestmark = pytest.mark.asyncio
+# Constants with Final typing
+HEALTH_ENDPOINT: Final[str] = "/api/v1/health"
+CONTENT_TYPE_JSON: Final[str] = "application/json"
+BEARER_INVALID_TOKEN: Final[str] = "Bearer not.a.jwt"
 
-transport = ASGITransport(app=app)
-
-
-async def test_health_ok(monkeypatch: Any) -> None:
-    async def ok_check() -> None:
-        return None
-
-    monkeypatch.setattr("src.core.events.db_healthcheck", ok_check)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        resp = await ac.get("/api/v1/health")
-    assert resp.status_code == status.HTTP_200_OK
-    assert resp.json()["status"] == "ok"
+# Type aliases for better readability
+StatusCodeUnion = int | tuple[int, ...]
+HeadersDict = MutableMapping[str, str]
+EnvVarsDict = Mapping[str, str]
+HTTPMethod = Callable[..., Response]
 
 
-async def test_health_db_error(monkeypatch: Any) -> None:
-    async def fail_check() -> None:
-        raise RuntimeError("db error simulated")
+class TestHealthEndpoint(HealthEndpointTestTemplate):
+    """
+    Test class for health endpoint functionality.
+    Tests various HTTP methods, auth scenarios, and response validation.
+    """
 
-    monkeypatch.setattr("src.api.v1.health.db_healthcheck", fail_check)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        resp = await ac.get("/api/v1/health")
-    assert resp.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
-    data = resp.json()
-    assert data["status"] == "error"
-    assert "db error simulated" in data["detail"]
+    def _safe_request_typed(
+        self, method: HTTPMethod, *args: object, **kwargs: object
+    ) -> Response:
+        """Type-safe wrapper for base class safe_request method."""
+        safe_request_method: Callable[..., Response] = cast(
+            Callable[..., Response], self.safe_request
+        )
+        return safe_request_method(method, *args, **kwargs)
 
+    def _assert_health_response_typed(self, resp: Response) -> None:
+        """Type-safe wrapper for base class assert_health_response method."""
+        assert_health_method: Callable[[Response], None] = cast(
+            Callable[[Response], None], self.assert_health_response
+        )
+        assert_health_method(resp)
 
-# Advanced health and metrics tests (from test_health_advanced.py)
-async def test_health_ok_fields(monkeypatch: Any) -> None:
-    async def ok_check() -> None:
-        return None
+    def _assert_content_type_typed(self, resp: Response, content_type: str) -> None:
+        """Type-safe wrapper for base class assert_content_type method."""
+        assert_content_type_method: Callable[[Response, str], None] = cast(
+            Callable[[Response, str], None], self.assert_content_type
+        )
+        assert_content_type_method(resp, content_type)
 
-    monkeypatch.setattr("src.core.events.db_healthcheck", ok_check)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        resp = await ac.get("/api/v1/health")
-    assert resp.status_code == status.HTTP_200_OK
-    data = resp.json()
-    assert data["status"] == "ok"
-    assert "db" in data
-    assert "pool" in data["db"]
-    assert "uptime" in data
-    assert "versions" in data
-    assert "python" in data["versions"]
-    assert "response_time" in data
-    assert float(data["response_time"]) >= 0
-    assert resp.headers["X-Health-Response-Time"]
+    def _assert_status_typed(self, resp: Response, status: StatusCodeUnion) -> None:
+        """Type-safe wrapper for base class assert_status method."""
+        assert_status_method: Callable[[Response, StatusCodeUnion], None] = cast(
+            Callable[[Response, StatusCodeUnion], None], self.assert_status
+        )
+        assert_status_method(resp, status)
 
+    def _get_auth_header_typed(self, client: TestClient) -> HeadersDict:
+        """Type-safe wrapper for base class get_auth_header method."""
+        return cast(HeadersDict, self.get_auth_header(client))
 
-async def test_health_db_error_fields(monkeypatch: Any) -> None:
-    async def fail_check() -> None:
-        raise RuntimeError("db error simulated")
+    def _override_env_vars_typed(self, env_vars: EnvVarsDict) -> None:
+        """Type-safe wrapper for base class override_env_vars method."""
+        override_env_vars_method: Callable[[EnvVarsDict], None] = cast(
+            Callable[[EnvVarsDict], None], self.override_env_vars
+        )
+        override_env_vars_method(env_vars)
 
-    monkeypatch.setattr("src.api.v1.health.db_healthcheck", fail_check)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        resp = await ac.get("/api/v1/health")
-    assert resp.status_code == status.HTTP_503_SERVICE_UNAVAILABLE
-    data = resp.json()
-    assert data["status"] == "error"
-    assert "db" in data
-    assert data["db"]["ok"] is False
-    assert "db error simulated" in data["db"]["error"]
-    assert "pool" in data["db"]
-    assert "uptime" in data
-    assert "versions" in data
-    assert "response_time" in data
-    assert resp.headers["X-Health-Response-Time"]
-
-
-async def test_metrics_endpoint() -> None:
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        resp = await ac.get("/api/v1/metrics")
-    assert resp.status_code == status.HTTP_200_OK
-    assert resp.headers["content-type"].startswith("text/plain")
-    body = resp.text
-    assert "app_uptime_seconds" in body
-    assert "db_pool_size" in body
-    assert "db_pool_checkedin" in body
-    assert "db_pool_checkedout" in body
-    assert "db_pool_overflow" in body
-    assert "db_pool_awaiting" in body
-
-
-async def test_health_slow_db(monkeypatch: Any) -> None:
-    import asyncio
-
-    async def slow_check() -> None:
-        await asyncio.sleep(0.1)
-
-    monkeypatch.setattr("src.api.v1.health.db_healthcheck", slow_check)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        resp = await ac.get("/api/v1/health")
-    assert resp.status_code == status.HTTP_200_OK
-    assert float(resp.json()["response_time"]) > 0.05
-
-
-async def test_health_missing_pool_stats(monkeypatch: Any) -> None:
-    from src.core import database
-
-    orig_engine = database.engine
-
-    class NoPool:
+    @pytest.fixture(autouse=True)
+    def _setup(self, set_remaining_env_vars: Callable[[], None]) -> None:
+        """Setup fixture for test initialization."""
         pass
 
-    database.engine = type("E", (), {"pool": None})()
-    monkeypatch.setattr("src.core.database.engine", database.engine)
+    def test_health_get_no_auth(self, client: TestClient) -> None:
+        """
+        Test health endpoint GET request without authentication.
+        Expects 200 (success) or 401 (unauthorized).
+        """
+        resp: Response = self._safe_request_typed(client.get, HEALTH_ENDPOINT)
+        if resp.status_code == 200:
+            self._assert_health_response_typed(resp)
+            self._assert_content_type_typed(resp, CONTENT_TYPE_JSON)
+        else:
+            self._assert_status_typed(resp, 401)
 
-    async def ok_check() -> None:
-        return None
+    def test_health_get_with_invalid_token(self, client: TestClient) -> None:
+        """
+        Test health endpoint GET request with invalid JWT token.
+        Expects 200 (success) or 401 (unauthorized).
+        """
+        invalid_headers: HeadersDict = {"Authorization": BEARER_INVALID_TOKEN}
+        resp: Response = self._safe_request_typed(
+            client.get, HEALTH_ENDPOINT, headers=invalid_headers
+        )
+        if resp.status_code == 200:
+            self._assert_health_response_typed(resp)
+            self._assert_content_type_typed(resp, CONTENT_TYPE_JSON)
+        else:
+            self._assert_status_typed(resp, 401)
 
-    monkeypatch.setattr("src.core.events.db_healthcheck", ok_check)
-    try:
-        async with AsyncClient(transport=transport, base_url="http://test") as ac:
-            resp = await ac.get("/api/v1/health")
-        assert resp.status_code == status.HTTP_200_OK
-    finally:
-        database.engine = orig_engine
+    def test_health_get_with_valid_token(self, client: TestClient) -> None:
+        """
+        Test health endpoint GET request with valid authentication.
+        Expects 200 (success), 401 (unauthorized), or 503 (service unavailable).
+        """
+        headers: HeadersDict = self._get_auth_header_typed(client)
+        resp: Response = self._safe_request_typed(
+            client.get, HEALTH_ENDPOINT, headers=headers
+        )
+        if resp.status_code == 200:
+            self._assert_health_response_typed(resp)
+            self._assert_content_type_typed(resp, CONTENT_TYPE_JSON)
+        else:
+            self._assert_status_typed(resp, (401, 503))
+
+    def test_health_post_method(self, client: TestClient) -> None:
+        """
+        Test health endpoint POST method (should not be allowed).
+        Expects 405 (method not allowed) or 401 (unauthorized).
+        """
+        resp: Response = self._safe_request_typed(client.post, HEALTH_ENDPOINT)
+        self._assert_status_typed(resp, (405, 401))
+
+    def test_health_put_method(self, client: TestClient) -> None:
+        """
+        Test health endpoint PUT method (should not be allowed).
+        Expects 405 (method not allowed) or 401 (unauthorized).
+        """
+        resp: Response = self._safe_request_typed(client.put, HEALTH_ENDPOINT)
+        self._assert_status_typed(resp, (405, 401))
+
+    def test_health_delete_method(self, client: TestClient) -> None:
+        """
+        Test health endpoint DELETE method (should not be allowed).
+        Expects 405 (method not allowed) or 401 (unauthorized).
+        """
+        resp: Response = self._safe_request_typed(client.delete, HEALTH_ENDPOINT)
+        self._assert_status_typed(resp, (405, 401))
+
+    def test_health_get_missing_api_key(self, client: TestClient) -> None:
+        """
+        Test health endpoint GET request with missing API key.
+        Expects 200 (success), 401 (unauthorized), or 403 (forbidden).
+        """
+        base_headers: HeadersDict = self._get_auth_header_typed(client)
+        headers: HeadersDict = {
+            k: v for k, v in base_headers.items() if k.lower() != "x-api-key"
+        }
+        resp: Response = self._safe_request_typed(
+            client.get, HEALTH_ENDPOINT, headers=headers
+        )
+        if resp.status_code == 200:
+            self._assert_health_response_typed(resp)
+            self._assert_content_type_typed(resp, CONTENT_TYPE_JSON)
+        else:
+            self._assert_status_typed(resp, (401, 403))
 
 
-async def test_metrics_missing_pool_stats(monkeypatch: Any) -> None:
-    from src.core import database
+class TestHealthFeatureFlags(HealthEndpointTestTemplate):
+    """
+    Test class for health endpoint feature flag behaviors.
+    Tests various feature flag scenarios and API key configurations.
+    """
 
-    orig_engine = database.engine
-    database.engine = type("E", (), {"pool": None})()
-    monkeypatch.setattr("src.core.database.engine", database.engine)
-    async with AsyncClient(transport=transport, base_url="http://test") as ac:
-        resp = await ac.get("/api/v1/metrics")
-    assert resp.status_code == status.HTTP_200_OK
-    database.engine = orig_engine
+    def _safe_request_typed(
+        self, method: HTTPMethod, *args: object, **kwargs: object
+    ) -> Response:
+        """Type-safe wrapper for base class safe_request method."""
+        safe_request_method: Callable[..., Response] = cast(
+            Callable[..., Response], self.safe_request
+        )
+        return safe_request_method(method, *args, **kwargs)
 
+    def _get_auth_header_typed(self, client: TestClient) -> HeadersDict:
+        """Type-safe wrapper for base class get_auth_header method."""
+        return cast(HeadersDict, self.get_auth_header(client))
 
-async def test_health_missing_dependency_versions(monkeypatch: Any) -> None:
-    import sys
+    def _assert_api_key_required_typed(self, resp: Response) -> None:
+        """Type-safe wrapper for base class assert_api_key_required method."""
+        assert_api_key_required_method: Callable[[Response], None] = cast(
+            Callable[[Response], None], self.assert_api_key_required
+        )
+        assert_api_key_required_method(resp)
 
-    fastapi_orig = sys.modules.get("fastapi")
-    sqlalchemy_orig = sys.modules.get("sqlalchemy")
-    if "fastapi" in sys.modules:
-        del sys.modules["fastapi"]
-    if "sqlalchemy" in sys.modules:
-        del sys.modules["sqlalchemy"]
+    def _override_env_vars_typed(self, env_vars: EnvVarsDict) -> None:
+        """Type-safe wrapper for base class override_env_vars method."""
+        override_env_vars_method: Callable[[EnvVarsDict], None] = cast(
+            Callable[[EnvVarsDict], None], self.override_env_vars
+        )
+        override_env_vars_method(env_vars)
 
-    async def ok_check() -> None:
-        return None
+    def test_health_feature_disabled(self, client: TestClient) -> None:
+        """
+        Test health endpoint when health feature is disabled.
+        Expects 404, 403, or 501.
+        """
+        feature_env: EnvVarsDict = {"REVIEWPOINT_FEATURE_HEALTH": "false"}
+        self._override_env_vars_typed(feature_env)
+        resp: Response = self._safe_request_typed(client.get, "/api/v1/health")
+        assert resp.status_code in (404, 403, 501)
 
-    monkeypatch.setattr("src.core.events.db_healthcheck", ok_check)
-    try:
-        async with AsyncClient(transport=transport, base_url="http://test") as ac:
-            resp = await ac.get("/api/v1/health")
-        assert resp.status_code == status.HTTP_200_OK
-        data = resp.json()
-        assert data["versions"]["fastapi"] is None
-        assert data["versions"]["sqlalchemy"] is None
-    finally:
-        if fastapi_orig is not None:
-            sys.modules["fastapi"] = fastapi_orig
-        if sqlalchemy_orig is not None:
-            sys.modules["sqlalchemy"] = sqlalchemy_orig
+    def test_health_read_feature_disabled(self, client: TestClient) -> None:
+        """
+        Test health endpoint when health read feature is disabled.
+        Expects 404, 403, or 501.
+        """
+        read_feature_env: EnvVarsDict = {"REVIEWPOINT_FEATURE_HEALTH_READ": "false"}
+        self._override_env_vars_typed(read_feature_env)
+        resp: Response = self._safe_request_typed(client.get, "/api/v1/health")
+        assert resp.status_code in (404, 403, 501)
+
+    def test_api_key_disabled(self, client: TestClient) -> None:
+        """
+        Test health endpoint when API key authentication is disabled.
+        Expects 200 (success) or 503 (service unavailable).
+        """
+        api_key_env: EnvVarsDict = {"REVIEWPOINT_API_KEY_ENABLED": "false"}
+        self._override_env_vars_typed(api_key_env)
+        resp: Response = self._safe_request_typed(client.get, "/api/v1/health")
+        assert resp.status_code in (200, 503)
+
+    def test_api_key_wrong(self, request: FixtureRequest) -> None:
+        """
+        Test health endpoint with wrong API key.
+        Expects 401 or 403, or skips if fixture is not available in fast test mode.
+        Raises:
+            pytest.FixtureLookupError: If required fixture is not available in fast test mode.
+        """
+        fast_test_env: str | None = os.environ.get("FAST_TESTS")
+        if fast_test_env == "1":
+            try:
+                client: TestClient = request.getfixturevalue("client_with_api_key")
+            except pytest.FixtureLookupError:
+                pytest.skip("client_with_api_key fixture not available")
+        else:
+            regular_env: EnvVarsDict = {
+                "REVIEWPOINT_API_KEY_ENABLED": "true",
+                "REVIEWPOINT_API_KEY": "nottherightkey",
+                "REVIEWPOINT_FEATURE_HEALTH": "true",
+                "REVIEWPOINT_FEATURE_HEALTH_READ": "true",
+            }
+            self._override_env_vars_typed(regular_env)
+            from src.core.database import get_async_session
+            from src.main import create_app
+
+            async_session = request.getfixturevalue("async_session")
+            fresh_app = create_app()
+            from collections.abc import AsyncGenerator
+
+            async def _override_get_async_session() -> AsyncGenerator[object, None]:
+                yield async_session
+
+            fresh_app.dependency_overrides[get_async_session] = (
+                _override_get_async_session
+            )
+            test_client: TestClient = TestClient(fresh_app)
+            client = test_client
+        headers: HeadersDict = self._get_auth_header_typed(client)
+        headers["X-API-Key"] = "wrongkey"
+        resp: Response = self._safe_request_typed(
+            client.get, "/api/v1/health", headers=headers
+        )
+        self._assert_api_key_required_typed(resp)

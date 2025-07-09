@@ -34,6 +34,8 @@
 <h3>🛠️ Development</h3>
 <ul>
   <li><a href="dev-guidelines/">Developer Guidelines</a></li>
+  <li><a href="test-instructions/">Test Instructions</a></li>
+  <li><a href="test-log-levels/">Test Log Level Control</a></li>
   <li><a href="ci-cd/">CI/CD</a></li>
   <li><a href="backend/api-reference/">Backend API Reference</a></li>
 </ul>
