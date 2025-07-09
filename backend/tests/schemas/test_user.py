@@ -203,13 +203,12 @@ class TestUserProfileSchema(ModelUnitTestTemplate):
         profile: UserProfile = UserProfile(
             id=104, email="date@example.com", created_at=future_str, updated_at=past_str
         )
-        import dateutil.parser
 
         if profile.created_at is not None:
-            created_at_dt: datetime = dateutil.parser.isoparse(profile.created_at)
+            created_at_dt: datetime = datetime.fromisoformat(profile.created_at)
             self.assert_is_true(created_at_dt > now)
         if profile.updated_at is not None:
-            updated_at_dt: datetime = dateutil.parser.isoparse(profile.updated_at)
+            updated_at_dt: datetime = datetime.fromisoformat(profile.updated_at)
             self.assert_is_true(updated_at_dt < now)
 
     def test_unicode_everywhere(self) -> None:
