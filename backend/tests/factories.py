@@ -3,14 +3,11 @@ Reusable test data factories for fast, consistent test data creation.
 Use these factories in tests to avoid slow DB setup and reduce duplication.
 """
 
-
-
 from datetime import UTC, datetime
-from typing import TypedDict
-from factory.base import Factory
-from factory.declarations import Sequence, LazyFunction
-from typing import Any
+from typing import Any, TypedDict
 
+from factory.base import Factory
+from factory.declarations import LazyFunction, Sequence
 
 
 class UserDict(TypedDict, total=False):
@@ -22,6 +19,7 @@ class UserDict(TypedDict, total=False):
 
 class UserFactory(Factory[dict[str, Any]]):
     """Factory for building user dicts for tests (not DB objects)."""
+
     model = dict
 
     email = Sequence(lambda n: f"user{n}@example.com")  # type: ignore

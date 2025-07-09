@@ -25,11 +25,11 @@ class TestOpenAPI(OpenAPITestTemplate):
         _ENDPOINT_TEST_CASES,
     )
     def test_endpoint_docs(
-        self, 
-        path: str, 
-        method: Literal["get", "post", "put", "delete", "patch"], 
-        summary: str, 
-        status_code: int
+        self,
+        path: str,
+        method: Literal["get", "post", "put", "delete", "patch"],
+        summary: str,
+        status_code: int,
     ) -> None:
         """Test that each endpoint has correct OpenAPI documentation."""
         self.assert_endpoint_doc(path, method, summary, status_code)

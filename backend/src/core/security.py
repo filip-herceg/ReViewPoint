@@ -6,7 +6,6 @@ import uuid
 from collections.abc import Mapping, MutableMapping, Sequence
 from datetime import UTC, datetime, timedelta
 from typing import (
-    Optional,
     TypedDict,
     cast,
 )
@@ -61,7 +60,7 @@ def create_access_token(data: Mapping[str, str | int | bool]) -> str:
     if not settings.jwt_secret_key:
         logger.error("JWT secret key is not configured. Cannot create access token.")
         raise ValueError("JWT secret key is not configured.")
-    
+
     try:
         token: str = jwt.encode(
             to_encode,
@@ -142,13 +141,13 @@ def decode_access_token(token: str) -> JWTPayload:
     """
     Alias for verify_access_token for backward compatibility.
     Decode and validate a JWT access token and return the payload.
-    
+
     Args:
         token: The JWT token to decode and validate
-        
+
     Returns:
         JWTPayload: The decoded and validated token payload
-        
+
     Raises:
         JWTError: If the token is invalid or cannot be decoded.
         ValueError: If the JWT secret key is not configured.

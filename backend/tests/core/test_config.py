@@ -9,10 +9,10 @@ import os
 import sys
 import time
 import unittest.mock
-from collections.abc import Callable, Generator, Iterator, Mapping
+from collections.abc import Callable, Mapping
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Final
+from typing import Final
 from unittest.mock import patch
 
 import pytest
@@ -36,9 +36,9 @@ class ConfigTestTemplate:
 
     @pytest.fixture(autouse=True)
     def _setup_env(
-        self, 
-        monkeypatch: MonkeyPatch, 
-        override_env_vars: Callable[[dict[str, str]], None]
+        self,
+        monkeypatch: MonkeyPatch,
+        override_env_vars: Callable[[dict[str, str]], None],
     ) -> None:
         self.override_env_vars = override_env_vars
         self.monkeypatch = monkeypatch
@@ -111,7 +111,7 @@ class TestConfig(ConfigTestTemplate):
         In test mode, the config always overrides db_url to SQLite for safety.
         This test should expect SQLite in test mode, and only test precedence in non-test mode.
         """
-        envfile: Path = self.create_env_file(
+        self.create_env_file(
             tmp_path,
             (
                 "REVIEWPOINT_DB_URL=postgresql+asyncpg://dotenv\n"

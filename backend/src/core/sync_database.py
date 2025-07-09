@@ -1,6 +1,22 @@
 from collections.abc import Generator
+
 from sqlalchemy.engine import Engine
+from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy.orm import Session, sessionmaker
+
+
+def _validate_sync_engine(engine: Engine | AsyncEngine | None) -> Engine:
+    """Helper function to validate and return a sync engine."""
+    if engine is None:
+        raise RuntimeError("No SQLAlchemy engine is configured.")
+
+    if isinstance(engine, AsyncEngine):
+        raise RuntimeError(
+            "Synchronous session requested, but engine is an AsyncEngine. Use async session for AsyncEngine."
+        )
+
+    return engine
+
 
 def get_sync_session_factory() -> sessionmaker[Session]:
     """
@@ -8,13 +24,12 @@ def get_sync_session_factory() -> sessionmaker[Session]:
     Raises RuntimeError if the engine is not a synchronous Engine.
     """
     from src.core.database import engine
-    if engine is None:
-        raise RuntimeError("No SQLAlchemy engine is configured.")
-    # Only allow synchronous Engine, not AsyncEngine
-    from sqlalchemy.ext.asyncio import AsyncEngine
-    if isinstance(engine, AsyncEngine):
-        raise RuntimeError("Synchronous session requested, but engine is an AsyncEngine. Use async session for AsyncEngine.")
-    return sessionmaker(bind=engine)
+
+    # Validate and get sync engine
+    sync_engine = _validate_sync_engine(engine)
+
+    # Create and return sessionmaker
+    return sessionmaker(bind=sync_engine)
 
 
 def get_session() -> Generator[Session, None, None]:

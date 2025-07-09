@@ -1,19 +1,13 @@
-
 # Simple module-level async test to verify pytest discovery
-import pytest
-
-@pytest.mark.asyncio
-async def test_pytest_asyncio_discovery() -> None:
-    assert True
 import json
 from datetime import UTC, datetime, timedelta
-from typing import Final, Optional, Callable, Type, Any
+from typing import Any
 from unittest.mock import AsyncMock, patch
+
 import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
-from tests.test_data_generators import get_unique_email, get_test_user
-from tests.test_data_generators import get_unique_email, get_test_user
+
 from src.models.file import File
 from src.models.user import User
 from src.repositories.user import (
@@ -63,6 +57,12 @@ from src.utils.errors import (
     UserNotFoundError,
     ValidationError,
 )
+from tests.test_data_generators import get_unique_email
+
+
+@pytest.mark.asyncio
+async def test_pytest_asyncio_discovery() -> None:
+    assert True
 
 
 @pytest.mark.usefixtures("async_session")
@@ -81,7 +81,7 @@ class TestUserRepository:
         async_session: AsyncSession,
         email: str,
         password: str,
-        expected_exc: Optional[Type[Exception]],
+        expected_exc: type[Exception] | None,
     ) -> None:
         """Test user creation validation for email and password, expecting ValidationError or success."""
         if expected_exc is not None:
@@ -93,15 +93,13 @@ class TestUserRepository:
             assert user.is_active is True
 
     @pytest.mark.asyncio
-    async def test_create_user_duplicate_email(self, async_session: AsyncSession) -> None:
+    async def test_create_user_duplicate_email(
+        self, async_session: AsyncSession
+    ) -> None:
         test_email = get_unique_email()
-        await create_user_with_validation(
-            async_session, test_email, "Password123!"
-        )
+        await create_user_with_validation(async_session, test_email, "Password123!")
         with pytest.raises(UserAlreadyExistsError):
-            await create_user_with_validation(
-                async_session, test_email, "Password123!"
-            )
+            await create_user_with_validation(async_session, test_email, "Password123!")
         await async_session.rollback()
 
     @pytest.mark.asyncio
@@ -145,7 +143,9 @@ class TestUserRepository:
         assert found.email == user.email
 
     @pytest.mark.asyncio
-    async def test_safe_get_user_by_id_not_found(self, async_session: AsyncSession) -> None:
+    async def test_safe_get_user_by_id_not_found(
+        self, async_session: AsyncSession
+    ) -> None:
         with pytest.raises(UserNotFoundError):
             await safe_get_user_by_id(async_session, 999999)
 
@@ -187,14 +187,18 @@ class TestUserRepository:
         assert found[0].email == "page2@ex.com"
 
     @pytest.mark.asyncio
-    async def test_list_users_paginated_invalid_limit(self, async_session: AsyncSession) -> None:
+    async def test_list_users_paginated_invalid_limit(
+        self, async_session: AsyncSession
+    ) -> None:
         found = await list_users_paginated(async_session, offset=0, limit=0)
         assert found == []
         found = await list_users_paginated(async_session, offset=0, limit=-1)
         assert found == []
 
     @pytest.mark.asyncio
-    async def test_list_users_filters_and_sort(self, async_session: AsyncSession) -> None:
+    async def test_list_users_filters_and_sort(
+        self, async_session: AsyncSession
+    ) -> None:
         now = datetime.now(UTC).replace(tzinfo=None)
         users = []
         for i in range(5):
@@ -216,12 +220,8 @@ class TestUserRepository:
         # Test email filter
         email1 = get_unique_email()
         email2 = f"emailfilter-{get_unique_email()}"  # This will contain "emailfilter"
-        user1 = await create_user_with_validation(
-            async_session, email1, "Password123!"
-        )
-        user2 = await create_user_with_validation(
-            async_session, email2, "Password123!"
-        )
+        user1 = await create_user_with_validation(async_session, email1, "Password123!")
+        await create_user_with_validation(async_session, email2, "Password123!")
         await async_session.commit()
 
         listed, total = await list_users(async_session, email="emailfilter")
@@ -242,11 +242,11 @@ class TestUserRepository:
         assert total >= 2
 
     @pytest.mark.asyncio
-    async def test_search_users_by_name_or_email(self, async_session: AsyncSession) -> None:
+    async def test_search_users_by_name_or_email(
+        self, async_session: AsyncSession
+    ) -> None:
         test_email = f"searchme-{get_unique_email()}"  # This will contain "searchme"
-        await create_user_with_validation(
-            async_session, test_email, "Password123!"
-        )
+        await create_user_with_validation(async_session, test_email, "Password123!")
         found = await search_users_by_name_or_email(async_session, "searchme")
         assert any("searchme" in u.email for u in found)
 
@@ -274,9 +274,7 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_get_users_created_within(self, async_session: AsyncSession) -> None:
         test_email = get_unique_email()
-        user = await create_user_with_validation(
-            async_session, test_email, "Password123!"
-        )
+        await create_user_with_validation(async_session, test_email, "Password123!")
         await async_session.commit()
 
         start = datetime.now(UTC) - timedelta(hours=1)
@@ -290,7 +288,7 @@ class TestUserRepository:
         await async_session.execute(text("DELETE FROM users"))
         await async_session.commit()
 
-        user1 = await create_user_with_validation(
+        await create_user_with_validation(
             async_session, get_unique_email(), "Password123!"
         )
         user2 = await create_user_with_validation(
@@ -412,7 +410,9 @@ class TestUserRepository:
         assert result is False
 
     @pytest.mark.asyncio
-    async def test_soft_delete_user_not_found(self, async_session: AsyncSession) -> None:
+    async def test_soft_delete_user_not_found(
+        self, async_session: AsyncSession
+    ) -> None:
         result = await soft_delete_user(async_session, 999999)
         assert result is False
 
@@ -453,7 +453,9 @@ class TestUserRepository:
 
         # Test update (same email should update the existing user)
         user2 = await upsert_user(
-            async_session, test_email, {"name": "Updated Name", "hashed_password": "hash123"}
+            async_session,
+            test_email,
+            {"name": "Updated Name", "hashed_password": "hash123"},
         )
         assert user2.id == user.id  # Should be the same user
         assert user2.name == "Updated Name"
@@ -481,7 +483,9 @@ class TestUserRepository:
         assert updated.bio == "New bio"
 
     @pytest.mark.asyncio
-    async def test_partial_update_user_not_found(self, async_session: AsyncSession) -> None:
+    async def test_partial_update_user_not_found(
+        self, async_session: AsyncSession
+    ) -> None:
         result = await partial_update_user(async_session, 999999, {"name": "Test"})
         assert result is None
 
@@ -531,7 +535,9 @@ class TestUserRepository:
         assert user.hashed_password == "newhash123"
 
     @pytest.mark.asyncio
-    async def test_change_user_password_not_found(self, async_session: AsyncSession) -> None:
+    async def test_change_user_password_not_found(
+        self, async_session: AsyncSession
+    ) -> None:
         result = await change_user_password(async_session, 999999, "newhash")
         assert result is False
 
@@ -578,7 +584,9 @@ class TestUserRepository:
         begin_mock.__aenter__ = AsyncMock(return_value=None)
         begin_mock.__aexit__ = AsyncMock(return_value=None)
 
-        with patch.object(async_session, "begin", return_value=begin_mock) as mock_begin:
+        with patch.object(
+            async_session, "begin", return_value=begin_mock
+        ) as mock_begin:
             async with db_transaction(async_session):
                 # This should work without error
                 pass
@@ -610,16 +618,16 @@ class TestUserRepository:
             pytest.skip("User.files is not iterable; cannot test file presence.")
 
     @pytest.mark.asyncio
-    async def test_get_user_with_files_not_found(self, async_session: AsyncSession) -> None:
+    async def test_get_user_with_files_not_found(
+        self, async_session: AsyncSession
+    ) -> None:
         found = await get_user_with_files(async_session, 999999)
         assert found is None
 
     @pytest.mark.asyncio
     async def test_export_users_to_csv(self, async_session: AsyncSession) -> None:
         test_email = get_unique_email()
-        user = await create_user_with_validation(
-            async_session, test_email, "Password123!"
-        )
+        await create_user_with_validation(async_session, test_email, "Password123!")
         await async_session.commit()
 
         csv_data = await export_users_to_csv(async_session)
@@ -629,9 +637,7 @@ class TestUserRepository:
     @pytest.mark.asyncio
     async def test_export_users_to_json(self, async_session: AsyncSession) -> None:
         test_email = get_unique_email()
-        user = await create_user_with_validation(
-            async_session, test_email, "Password123!"
-        )
+        await create_user_with_validation(async_session, test_email, "Password123!")
         await async_session.commit()
 
         json_data = await export_users_to_json(async_session)
@@ -726,7 +732,9 @@ class TestUserRepository:
         assert result is True
 
     @pytest.mark.asyncio
-    async def test_update_last_login_not_found(self, async_session: AsyncSession) -> None:
+    async def test_update_last_login_not_found(
+        self, async_session: AsyncSession
+    ) -> None:
         result = await update_last_login(async_session, 999999)
         assert result is False
 
@@ -753,7 +761,9 @@ class TestUserRepository:
         assert result is False
 
     @pytest.mark.asyncio
-    async def test_anonymize_user_already_deleted(self, async_session: AsyncSession) -> None:
+    async def test_anonymize_user_already_deleted(
+        self, async_session: AsyncSession
+    ) -> None:
         user = await create_user_with_validation(
             async_session, get_unique_email(), "Password123!"
         )
@@ -804,7 +814,9 @@ class TestUserRepository:
             await sensitive_user_action(async_session, user.id, "test_action")
 
     @pytest.mark.asyncio
-    async def test_sensitive_user_action_rate_limited(self, async_session: AsyncSession) -> None:
+    async def test_sensitive_user_action_rate_limited(
+        self, async_session: AsyncSession
+    ) -> None:
         user = await create_user_with_validation(
             async_session, get_unique_email(), "Password123!"
         )
@@ -822,26 +834,36 @@ class TestUserRepository:
                 await sensitive_user_action(async_session, user.id, "test_action")
 
     @pytest.mark.asyncio
-    async def test_sensitive_user_action_user_not_found(self, async_session: AsyncSession) -> None:
+    async def test_sensitive_user_action_user_not_found(
+        self, async_session: AsyncSession
+    ) -> None:
         with pytest.raises(UserNotFoundError):
             await sensitive_user_action(async_session, 999999, "test_action")
 
     @pytest.mark.asyncio
-    async def test_create_user_with_validation_rollback_on_error(self, async_session: AsyncSession) -> None:
+    async def test_create_user_with_validation_rollback_on_error(
+        self, async_session: AsyncSession
+    ) -> None:
         # Mock the commit to raise an exception
         with patch.object(async_session, "commit", side_effect=Exception("DB Error")):
-            with pytest.raises(Exception):
+            with pytest.raises(
+                (Exception,)
+            ):  # Explicitly testing rollback behavior on any exception
                 await create_user_with_validation(
                     async_session, get_unique_email(), "Password123!"
                 )
 
     @pytest.mark.asyncio
-    async def test_bulk_operations_rollback_on_error(self, async_session: AsyncSession) -> None:
+    async def test_bulk_operations_rollback_on_error(
+        self, async_session: AsyncSession
+    ) -> None:
         users = [
             User(email=get_unique_email(), hashed_password="hash1", is_active=True),
         ]
 
         # Mock commit to raise an exception
         with patch.object(async_session, "commit", side_effect=Exception("DB Error")):
-            with pytest.raises(Exception):
+            with pytest.raises(
+                (Exception,)
+            ):  # Explicitly testing rollback behavior on any exception
                 await bulk_create_users(async_session, users)

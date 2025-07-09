@@ -1,7 +1,6 @@
 import os
 import sys
-from collections.abc import Callable
-from typing import Final, Literal, TypedDict
+from typing import Any, Final, Literal, TypedDict, cast
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.openapi.utils import get_openapi
@@ -219,9 +218,6 @@ class SecuritySchemeDict(TypedDict, total=False):
 # Note: OpenAPISchemaDict is for documentation only. At runtime, use dict[str, Any] for compatibility with FastAPI.
 
 
-from typing import Any, cast
-
-
 def custom_openapi() -> dict[str, Any]:
     """
     Generate custom OpenAPI schema with additional features like:
@@ -323,7 +319,7 @@ def custom_openapi() -> dict[str, Any]:
                 if not isinstance(path_item, dict):
                     continue
                 if "/api/v1/auth" in path:
-                    for method, method_item in path_item.items():
+                    for _method, method_item in path_item.items():
                         if not isinstance(method_item, dict):
                             continue
                         if "tags" not in method_item:
@@ -336,20 +332,20 @@ def custom_openapi() -> dict[str, Any]:
                         ]:
                             method_item["security"] = []
                 elif "/api/v1/users" in path:
-                    for method, method_item in path_item.items():
+                    for _method, method_item in path_item.items():
                         if not isinstance(method_item, dict):
                             continue
                         if "tags" not in method_item:
                             method_item["tags"] = ["Users"]
                 elif "/api/v1/health" in path or "/api/v1/metrics" in path:
-                    for method, method_item in path_item.items():
+                    for _method, method_item in path_item.items():
                         if not isinstance(method_item, dict):
                             continue
                         if "tags" not in method_item:
                             method_item["tags"] = ["Health"]
                         method_item["security"] = []
                 elif "/api/v1/uploads" in path:
-                    for method, method_item in path_item.items():
+                    for _method, method_item in path_item.items():
                         if not isinstance(method_item, dict):
                             continue
                         if "tags" not in method_item:

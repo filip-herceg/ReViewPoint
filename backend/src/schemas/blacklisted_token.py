@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Final
 
 from pydantic import BaseModel, ConfigDict
 

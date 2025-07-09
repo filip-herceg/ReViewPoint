@@ -2,7 +2,6 @@
 User CRUD endpoints: create, list, get, update, delete.
 """
 
-import traceback
 from collections.abc import Sequence
 from typing import Any, Final, cast
 
@@ -68,7 +67,7 @@ async def create_user(
             "user_created", extra={"user_id": db_user.id, "email": db_user.email}
         )
         return UserResponse(id=db_user.id, email=db_user.email, name=db_user.name)
-    except UserAlreadyExistsError:
+    except UserAlreadyExistsError as e:
         # Idempotent: fetch and return the existing user
         from src.repositories.user import list_users
 
@@ -83,15 +82,15 @@ async def create_user(
             raise HTTPException(
                 status_code=409,
                 detail="Email already exists.",
-            )
-        raise HTTPException(status_code=409, detail="Email already exists.")
-    except InvalidDataError:
-        raise HTTPException(status_code=400, detail="Invalid user data.")
+            ) from e
+        raise HTTPException(status_code=409, detail="Email already exists.") from e
+    except InvalidDataError as e:
+        raise HTTPException(status_code=400, detail="Invalid user data.") from e
     except CustomValidationError as e:
-        raise HTTPException(status_code=422, detail=str(e))
+        raise HTTPException(status_code=422, detail=str(e)) from e
     except Exception as e:
         logger.error(f"Unexpected error in create_user: {e}")
-        raise HTTPException(status_code=500, detail="Unexpected error.")
+        raise HTTPException(status_code=500, detail="Unexpected error.") from e
 
 
 @router.get(
@@ -202,7 +201,7 @@ async def get_user_by_id(
         raise exc
     except Exception as e:
         logger.error(f"Unexpected error in get_user_by_id: {e}")
-        raise HTTPException(status_code=500, detail="Unexpected error.")
+        raise HTTPException(status_code=500, detail="Unexpected error.") from e
     # Defensive: function must always return UserResponse or raise
     raise HTTPException(status_code=500, detail="Unreachable code in get_user_by_id")
 
@@ -233,16 +232,32 @@ async def update_user(
             id=updated_user.id, email=updated_user.email, name=updated_user.name
         )
     except UserNotFoundError as e:
-        http_error(404, "User not found.", logger.warning, cast(ExtraLogInfo, {"user_id": user_id}), e)
-        raise HTTPException(status_code=404, detail="User not found.")
+        http_error(
+            404,
+            "User not found.",
+            logger.warning,
+            cast(ExtraLogInfo, {"user_id": user_id}),
+            e,
+        )
+        raise HTTPException(status_code=404, detail="User not found.") from e
     except UserAlreadyExistsError as e:
         http_error(
-            409, "Email already exists.", logger.warning, cast(ExtraLogInfo, {"email": user.email}), e
+            409,
+            "Email already exists.",
+            logger.warning,
+            cast(ExtraLogInfo, {"email": user.email}),
+            e,
         )
-        raise HTTPException(status_code=409, detail="Email already exists.")
+        raise HTTPException(status_code=409, detail="Email already exists.") from e
     except InvalidDataError as e:
-        http_error(400, "Invalid user data.", logger.warning, cast(ExtraLogInfo, {"user_id": user_id}), e)
-        raise HTTPException(status_code=400, detail="Invalid user data.")
+        http_error(
+            400,
+            "Invalid user data.",
+            logger.warning,
+            cast(ExtraLogInfo, {"user_id": user_id}),
+            e,
+        )
+        raise HTTPException(status_code=400, detail="Invalid user data.") from e
     except Exception as e:
         http_error(
             500,
@@ -251,7 +266,7 @@ async def update_user(
             cast(ExtraLogInfo, {"user_id": user_id, "error": str(e)}),
             e,
         )
-        raise HTTPException(status_code=500, detail="Unexpected error.")
+        raise HTTPException(status_code=500, detail="Unexpected error.") from e
     # Defensive: function must always return UserResponse or raise
     raise HTTPException(status_code=500, detail="Unreachable code in update_user")
 

@@ -7,8 +7,8 @@ Merged from test_core_fixed.py and test_core_async.py.
 """
 
 import uuid
-from collections.abc import Mapping, Sequence
-from typing import Final, Literal, Union
+from collections.abc import Sequence
+from typing import Final
 
 import pytest
 from httpx import ASGITransport, AsyncClient, Response
@@ -18,19 +18,19 @@ from tests.test_templates import UserCoreEndpointTestTemplate
 USER_ENDPOINT: Final[str] = "/api/v1/users"
 
 # Type aliases for clarity
-HTTPStatusCode = Union[int, tuple[int, ...]]
-JsonDict = dict[str, Union[str, int, bool, None]]
+HTTPStatusCode = int | tuple[int, ...]
+JsonDict = dict[str, str | int | bool | None]
 AuthHeaders = dict[str, str]
 
 
 class TestUserCRUDAsync(UserCoreEndpointTestTemplate):
     """
     Test class for asynchronous user CRUD operations.
-    
+
     Tests user creation, duplicate email handling, and proper HTTP responses
     for the users endpoint using async HTTP clients.
     """
-    
+
     endpoint: Final[str] = USER_ENDPOINT
     create_payload: Final[JsonDict] = {
         "email": f"u2_{uuid.uuid4().hex[:8]}@example.com",
@@ -43,12 +43,12 @@ class TestUserCRUDAsync(UserCoreEndpointTestTemplate):
     async def test_create(self) -> None:
         """
         Test successful user creation via POST endpoint.
-        
+
         Verifies:
         - HTTP 201 status code on successful creation
         - Response contains correct email address
         - API key authentication works properly
-        
+
         Raises:
             AssertionError: If response status or data doesn't match expectations
         """
@@ -70,7 +70,10 @@ class TestUserCRUDAsync(UserCoreEndpointTestTemplate):
             if register_resp.status_code == 201:
                 response_json: JsonDict = register_resp.json()
                 token: str = str(response_json["access_token"])
-                headers: AuthHeaders = {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
+                headers: AuthHeaders = {
+                    "Authorization": f"Bearer {token}",
+                    "X-API-Key": "testkey",
+                }
             else:
                 # Fallback to API key only if registration fails
                 headers = {"X-API-Key": "testkey"}
@@ -83,7 +86,7 @@ class TestUserCRUDAsync(UserCoreEndpointTestTemplate):
             )
             self.assert_status(resp, 201)
             response_data: JsonDict = resp.json()
-            user_id: str = str(response_data["id"])
+            str(response_data["id"])
 
             # Verify the created user has correct email
             assert response_data["email"] == self.create_payload["email"]
@@ -98,12 +101,12 @@ class TestUserCRUDAsync(UserCoreEndpointTestTemplate):
     async def test_create_user_duplicate_email(self) -> None:
         """
         Test duplicate email handling during user creation.
-        
+
         Verifies:
         - First user creation succeeds
         - Second user creation with same email fails
         - Proper HTTP error status codes (409, 400, or 401)
-        
+
         Raises:
             AssertionError: If response status codes don't match expectations
         """
@@ -113,7 +116,11 @@ class TestUserCRUDAsync(UserCoreEndpointTestTemplate):
             base_url="http://test",
             headers={"X-API-Key": "testkey"},
         ) as ac:
-            data: JsonDict = {"email": "dupe@example.com", "password": "pw123456", "name": "Dupe"}
+            data: JsonDict = {
+                "email": "dupe@example.com",
+                "password": "pw123456",
+                "name": "Dupe",
+            }
 
             # Register admin user for auth
             register_resp: Response = await ac.post(
@@ -127,7 +134,10 @@ class TestUserCRUDAsync(UserCoreEndpointTestTemplate):
             if register_resp.status_code == 201:
                 response_json: JsonDict = register_resp.json()
                 token: str = str(response_json["access_token"])
-                headers: AuthHeaders = {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
+                headers: AuthHeaders = {
+                    "Authorization": f"Bearer {token}",
+                    "X-API-Key": "testkey",
+                }
             else:
                 headers = {"X-API-Key": "testkey"}
 
@@ -142,11 +152,11 @@ class TestUserCRUDAsync(UserCoreEndpointTestTemplate):
     async def test_create_user_invalid_email(self) -> None:
         """
         Test user creation with invalid email format.
-        
+
         Verifies:
         - Invalid email format is rejected
         - Proper HTTP error status codes (400, 422, or 401)
-        
+
         Raises:
             AssertionError: If response status doesn't match expectations
         """
@@ -156,7 +166,11 @@ class TestUserCRUDAsync(UserCoreEndpointTestTemplate):
             base_url="http://test",
             headers={"X-API-Key": "testkey"},
         ) as ac:
-            data: JsonDict = {"email": "not-an-email", "password": "pw123456", "name": "Bad"}
+            data: JsonDict = {
+                "email": "not-an-email",
+                "password": "pw123456",
+                "name": "Bad",
+            }
 
             # Register admin user for auth
             register_resp: Response = await ac.post(
@@ -170,7 +184,10 @@ class TestUserCRUDAsync(UserCoreEndpointTestTemplate):
             if register_resp.status_code == 201:
                 response_json: JsonDict = register_resp.json()
                 token: str = str(response_json["access_token"])
-                headers: AuthHeaders = {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
+                headers: AuthHeaders = {
+                    "Authorization": f"Bearer {token}",
+                    "X-API-Key": "testkey",
+                }
             else:
                 headers = {"X-API-Key": "testkey"}
 
@@ -181,11 +198,11 @@ class TestUserCRUDAsync(UserCoreEndpointTestTemplate):
     async def test_create_user_weak_password(self) -> None:
         """
         Test user creation with weak password.
-        
+
         Verifies:
         - Weak passwords are rejected
         - Proper HTTP error status codes (400, 422, or 401)
-        
+
         Raises:
             AssertionError: If response status doesn't match expectations
         """
@@ -195,7 +212,11 @@ class TestUserCRUDAsync(UserCoreEndpointTestTemplate):
             base_url="http://test",
             headers={"X-API-Key": "testkey"},
         ) as ac:
-            data: JsonDict = {"email": "weakpw@example.com", "password": "123", "name": "Weak"}
+            data: JsonDict = {
+                "email": "weakpw@example.com",
+                "password": "123",
+                "name": "Weak",
+            }
 
             # Register admin user for auth
             register_resp: Response = await ac.post(
@@ -209,7 +230,10 @@ class TestUserCRUDAsync(UserCoreEndpointTestTemplate):
             if register_resp.status_code == 201:
                 response_json: JsonDict = register_resp.json()
                 token: str = str(response_json["access_token"])
-                headers: AuthHeaders = {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
+                headers: AuthHeaders = {
+                    "Authorization": f"Bearer {token}",
+                    "X-API-Key": "testkey",
+                }
             else:
                 headers = {"X-API-Key": "testkey"}
 
@@ -220,13 +244,13 @@ class TestUserCRUDAsync(UserCoreEndpointTestTemplate):
     async def test_create_user_missing_fields(self) -> None:
         """
         Test user creation with missing required fields.
-        
+
         Verifies:
         - Missing password field is rejected
         - Missing email field is rejected
         - Missing name field is rejected
         - Proper HTTP error status codes (400, 422)
-        
+
         Raises:
             AssertionError: If response status doesn't match expectations
         """
@@ -248,7 +272,10 @@ class TestUserCRUDAsync(UserCoreEndpointTestTemplate):
             if register_resp.status_code == 201:
                 response_json: JsonDict = register_resp.json()
                 token: str = str(response_json["access_token"])
-                headers: AuthHeaders = {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
+                headers: AuthHeaders = {
+                    "Authorization": f"Bearer {token}",
+                    "X-API-Key": "testkey",
+                }
             else:
                 headers = {"X-API-Key": "testkey"}
 
@@ -271,12 +298,12 @@ class TestUserCRUDAsync(UserCoreEndpointTestTemplate):
 # Additional comprehensive test classes
 class TestUserList(UserCoreEndpointTestTemplate):
     """Test class for user listing and retrieval operations."""
-    
+
     @pytest.mark.asyncio
     async def test_list_users(self) -> None:
         """
         Test listing users endpoint.
-        
+
         Raises:
             AssertionError: If response status or structure doesn't match expectations
         """
@@ -299,7 +326,10 @@ class TestUserList(UserCoreEndpointTestTemplate):
             if register_resp.status_code == 201:
                 response_json: JsonDict = register_resp.json()
                 token: str = str(response_json["access_token"])
-                headers: AuthHeaders = {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
+                headers: AuthHeaders = {
+                    "Authorization": f"Bearer {token}",
+                    "X-API-Key": "testkey",
+                }
 
                 # Test GET /api/v1/users (list users)
                 resp: Response = await ac.get(USER_ENDPOINT, headers=headers)
@@ -307,14 +337,14 @@ class TestUserList(UserCoreEndpointTestTemplate):
                 assert resp.status_code in [200, 401, 403, 404]
 
                 if resp.status_code == 200:
-                    data: Union[JsonDict, list[JsonDict]] = resp.json()
+                    data: JsonDict | list[JsonDict] = resp.json()
                     assert "users" in data or isinstance(data, list)
 
     @pytest.mark.asyncio
     async def test_list_users_pagination(self) -> None:
         """
         Test user listing with pagination.
-        
+
         Raises:
             AssertionError: If response status doesn't match expectations
         """
@@ -337,7 +367,10 @@ class TestUserList(UserCoreEndpointTestTemplate):
             if register_resp.status_code == 201:
                 response_json: JsonDict = register_resp.json()
                 token: str = str(response_json["access_token"])
-                headers: AuthHeaders = {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
+                headers: AuthHeaders = {
+                    "Authorization": f"Bearer {token}",
+                    "X-API-Key": "testkey",
+                }
 
                 # Test pagination parameters
                 resp: Response = await ac.get(
@@ -350,7 +383,7 @@ class TestUserList(UserCoreEndpointTestTemplate):
     async def test_get_user_by_id(self) -> None:
         """
         Test getting a user by ID.
-        
+
         Raises:
             AssertionError: If response status doesn't match expectations
         """
@@ -373,7 +406,10 @@ class TestUserList(UserCoreEndpointTestTemplate):
             if register_resp.status_code == 201:
                 response_json: JsonDict = register_resp.json()
                 token: str = str(response_json["access_token"])
-                headers: AuthHeaders = {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
+                headers: AuthHeaders = {
+                    "Authorization": f"Bearer {token}",
+                    "X-API-Key": "testkey",
+                }
 
                 # Test getting a user by ID
                 resp: Response = await ac.get(f"{USER_ENDPOINT}/1", headers=headers)
@@ -384,7 +420,7 @@ class TestUserList(UserCoreEndpointTestTemplate):
     async def test_update_user(self) -> None:
         """
         Test updating a user.
-        
+
         Raises:
             AssertionError: If response status doesn't match expectations
         """
@@ -407,7 +443,10 @@ class TestUserList(UserCoreEndpointTestTemplate):
             if register_resp.status_code == 201:
                 response_json: JsonDict = register_resp.json()
                 token: str = str(response_json["access_token"])
-                headers: AuthHeaders = {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
+                headers: AuthHeaders = {
+                    "Authorization": f"Bearer {token}",
+                    "X-API-Key": "testkey",
+                }
 
                 # First create a user to update
                 create_resp: Response = await ac.post(
@@ -440,7 +479,7 @@ class TestUserList(UserCoreEndpointTestTemplate):
     async def test_delete_user(self) -> None:
         """
         Test deleting a user.
-        
+
         Raises:
             AssertionError: If response status doesn't match expectations
         """
@@ -463,7 +502,10 @@ class TestUserList(UserCoreEndpointTestTemplate):
             if register_resp.status_code == 201:
                 response_json: JsonDict = register_resp.json()
                 token: str = str(response_json["access_token"])
-                headers: AuthHeaders = {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
+                headers: AuthHeaders = {
+                    "Authorization": f"Bearer {token}",
+                    "X-API-Key": "testkey",
+                }
 
                 # First create a user to delete
                 create_resp: Response = await ac.post(
@@ -490,12 +532,13 @@ class TestUserList(UserCoreEndpointTestTemplate):
 
 class TestUserAuthRequired(UserCoreEndpointTestTemplate):
     """Test class for authentication requirements on user endpoints."""
+
     @pytest.mark.asyncio
     @pytest.mark.skip_if_fast_tests("Authentication is disabled in fast test mode")
     async def test_auth_required_for_create(self) -> None:
         """
         Test that authentication is required for creating users.
-        
+
         Raises:
             AssertionError: If response status doesn't match expectations
         """
@@ -518,7 +561,7 @@ class TestUserAuthRequired(UserCoreEndpointTestTemplate):
     async def test_auth_required_for_list(self) -> None:
         """
         Test that authentication is required for listing users.
-        
+
         Raises:
             AssertionError: If response status doesn't match expectations
         """
@@ -536,7 +579,7 @@ class TestUserAuthRequired(UserCoreEndpointTestTemplate):
     async def test_auth_required_for_update(self) -> None:
         """
         Test that authentication is required for updating users.
-        
+
         Raises:
             AssertionError: If response status doesn't match expectations
         """
@@ -559,7 +602,7 @@ class TestUserAuthRequired(UserCoreEndpointTestTemplate):
     async def test_auth_required_for_delete(self) -> None:
         """
         Test that authentication is required for deleting users.
-        
+
         Raises:
             AssertionError: If response status doesn't match expectations
         """
@@ -576,11 +619,12 @@ class TestUserAuthRequired(UserCoreEndpointTestTemplate):
 
 class TestUserFeatureFlags(UserCoreEndpointTestTemplate):
     """Test class for user feature flags and API key validation."""
+
     @pytest.mark.asyncio
     async def test_api_key_required(self) -> None:
         """
         Test that API key is required for all endpoints.
-        
+
         Raises:
             AssertionError: If response status doesn't match expectations
         """
@@ -623,7 +667,7 @@ class TestUserFeatureFlags(UserCoreEndpointTestTemplate):
     async def test_invalid_api_key(self) -> None:
         """
         Test behavior with invalid API key.
-        
+
         Raises:
             AssertionError: If response status doesn't match expectations
         """
@@ -646,11 +690,12 @@ class TestUserFeatureFlags(UserCoreEndpointTestTemplate):
 
 class TestUserValidation(UserCoreEndpointTestTemplate):
     """Test class for user input validation and edge cases."""
+
     @pytest.mark.asyncio
     async def test_email_validation_edge_cases(self) -> None:
         """
         Test various email validation edge cases.
-        
+
         Raises:
             AssertionError: If email validation doesn't work as expected
         """
@@ -673,7 +718,10 @@ class TestUserValidation(UserCoreEndpointTestTemplate):
             if register_resp.status_code == 201:
                 response_json: JsonDict = register_resp.json()
                 token: str = str(response_json["access_token"])
-                headers: AuthHeaders = {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
+                headers: AuthHeaders = {
+                    "Authorization": f"Bearer {token}",
+                    "X-API-Key": "testkey",
+                }
 
                 # Test various invalid email formats
                 invalid_emails: Final[Sequence[str]] = [
@@ -686,8 +734,14 @@ class TestUserValidation(UserCoreEndpointTestTemplate):
                 ]
 
                 for email in invalid_emails:
-                    data: JsonDict = {"email": email, "password": "Password123!", "name": "Test"}
-                    resp: Response = await ac.post(USER_ENDPOINT, json=data, headers=headers)
+                    data: JsonDict = {
+                        "email": email,
+                        "password": "Password123!",
+                        "name": "Test",
+                    }
+                    resp: Response = await ac.post(
+                        USER_ENDPOINT, json=data, headers=headers
+                    )
                     # Should reject invalid emails
                     assert resp.status_code in [
                         400,
@@ -698,7 +752,7 @@ class TestUserValidation(UserCoreEndpointTestTemplate):
     async def test_password_validation_edge_cases(self) -> None:
         """
         Test various password validation edge cases.
-        
+
         Raises:
             AssertionError: If password validation doesn't work as expected
         """
@@ -721,7 +775,10 @@ class TestUserValidation(UserCoreEndpointTestTemplate):
             if register_resp.status_code == 201:
                 response_json: JsonDict = register_resp.json()
                 token: str = str(response_json["access_token"])
-                headers: AuthHeaders = {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
+                headers: AuthHeaders = {
+                    "Authorization": f"Bearer {token}",
+                    "X-API-Key": "testkey",
+                }
 
                 # Test various invalid passwords
                 invalid_passwords: Final[Sequence[str]] = [
@@ -739,7 +796,9 @@ class TestUserValidation(UserCoreEndpointTestTemplate):
                         "password": password,
                         "name": "Test",
                     }
-                    resp: Response = await ac.post(USER_ENDPOINT, json=data, headers=headers)
+                    resp: Response = await ac.post(
+                        USER_ENDPOINT, json=data, headers=headers
+                    )
                     # Should reject weak passwords
                     assert resp.status_code in [
                         400,
@@ -750,7 +809,7 @@ class TestUserValidation(UserCoreEndpointTestTemplate):
     async def test_name_validation(self) -> None:
         """
         Test name field validation.
-        
+
         Raises:
             AssertionError: If name validation doesn't work as expected
         """
@@ -773,7 +832,10 @@ class TestUserValidation(UserCoreEndpointTestTemplate):
             if register_resp.status_code == 201:
                 response_json: JsonDict = register_resp.json()
                 token: str = str(response_json["access_token"])
-                headers: AuthHeaders = {"Authorization": f"Bearer {token}", "X-API-Key": "testkey"}
+                headers: AuthHeaders = {
+                    "Authorization": f"Bearer {token}",
+                    "X-API-Key": "testkey",
+                }
 
                 # Test empty name
                 data: JsonDict = {
@@ -781,7 +843,9 @@ class TestUserValidation(UserCoreEndpointTestTemplate):
                     "password": "Password123!",
                     "name": "",
                 }
-                resp: Response = await ac.post(USER_ENDPOINT, json=data, headers=headers)
+                resp: Response = await ac.post(
+                    USER_ENDPOINT, json=data, headers=headers
+                )
                 # Should reject empty name
                 assert resp.status_code in [400, 422]
 

@@ -14,13 +14,14 @@ import json
 import os
 import uuid
 from collections.abc import AsyncGenerator, Callable, Mapping, Sequence
-from typing import Final, Literal, TypedDict, TypeVar, Union, cast, Generator
+from typing import Final, Literal, TypedDict, cast
 
 import pytest
 import pytest_asyncio
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from httpx import ASGITransport, AsyncClient, Response as HttpxResponse
+from httpx import ASGITransport, AsyncClient
+from httpx import Response as HttpxResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import Response
 
@@ -34,15 +35,16 @@ ROOT_TEST_ENDPOINT: Final[str] = "/api/v1/uploads/root-test"
 EXPORT_ALIVE_ENDPOINT: Final[str] = "/api/v1/uploads/export-alive"
 EXPORT_TEST_ENDPOINT: Final[str] = "/api/v1/uploads/export-test"
 
-# Type aliases for better readability  
-StatusCodeTuple = Union[tuple[int, ...], tuple[int]]
+# Type aliases for better readability
+StatusCodeTuple = tuple[int, ...] | tuple[int]
 HTTPMethod = Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
 HeadersDict = dict[str, str]
-ResponseDict = dict[str, Union[str, int, bool, list[object], dict[str, object]]]
+ResponseDict = dict[str, str | int | bool | list[object] | dict[str, object]]
 FilesDict = dict[str, tuple[str, bytes, str]]
 
 # Use Union type for responses from both TestClient and AsyncClient
-TestResponse = Union[Response, HttpxResponse]
+TestResponse = Response | HttpxResponse
+
 
 # Helper functions for type-safe response handling
 def get_response_json(response: TestResponse) -> ResponseDict:
@@ -51,9 +53,10 @@ def get_response_json(response: TestResponse) -> ResponseDict:
         return cast(ResponseDict, response.json())
     else:
         # For starlette Response, we need to parse JSON manually
-        body_bytes: bytes = bytes(response.body) if hasattr(response, 'body') else b''
-        json_data = json.loads(body_bytes.decode('utf-8'))
+        body_bytes: bytes = bytes(response.body) if hasattr(response, "body") else b""
+        json_data = json.loads(body_bytes.decode("utf-8"))
         return cast(ResponseDict, json_data)
+
 
 def get_response_text(response: TestResponse) -> str:
     """Type-safe wrapper for getting text from either response type."""
@@ -61,25 +64,27 @@ def get_response_text(response: TestResponse) -> str:
         return response.text
     else:
         # For starlette Response, decode the body
-        body_bytes: bytes = bytes(response.body) if hasattr(response, 'body') else b''
-        return body_bytes.decode('utf-8')
+        body_bytes: bytes = bytes(response.body) if hasattr(response, "body") else b""
+        return body_bytes.decode("utf-8")
+
 
 def get_response_headers(response: TestResponse) -> Mapping[str, str]:
     """Type-safe wrapper for getting headers from either response type."""
     return response.headers  # Both Response and HttpxResponse have .headers
+
 
 def get_response_content_type(response: TestResponse) -> str:
     """Type-safe wrapper for getting content-type header from either response type."""
     headers = get_response_headers(response)
     return headers.get("content-type", "")
 
+
 # Typed wrapper for safe_request method
 RequestMethod = Callable[..., TestResponse]
 
+
 def typed_safe_request(
-    method: RequestMethod,
-    *args: object,
-    **kwargs: object
+    method: RequestMethod, *args: object, **kwargs: object
 ) -> TestResponse:
     """Type-safe wrapper for the safe_request method from base class."""
     try:
@@ -87,23 +92,28 @@ def typed_safe_request(
     except Exception as e:
         pytest.xfail(f"Connection/DB error: {e}")
 
+
 # TypedDicts for structured response data
 class StatusResponseDict(TypedDict):
     status: str
     router: str
+
 
 class FileResponseDict(TypedDict):
     filename: str
     url: str
     id: str
 
+
 class UploadResponseDict(TypedDict):
     filename: str
     url: str
 
+
 class FileListResponseDict(TypedDict):
     files: Sequence[FileResponseDict]
     total: int
+
 
 class AliveResponseDict(TypedDict):
     status: Literal["alive", "uploads export alive"]
@@ -111,12 +121,12 @@ class AliveResponseDict(TypedDict):
 
 class TypedExportEndpointTestTemplate(ExportEndpointTestTemplate):
     """Extended test template with strict typing for safe_request and response handling."""
-    
+
     def safe_request(
         self,
         func: object,  # Match base class signature
         *args: object,
-        **kwargs: object
+        **kwargs: object,
     ) -> TestResponse:
         """Type-safe wrapper for the safe_request method."""
         return typed_safe_request(cast(RequestMethod, func), *args, **kwargs)
@@ -151,7 +161,9 @@ class TestUploads(TypedExportEndpointTestTemplate):
         """Test unauthenticated file upload fails."""
         file_content: bytes = b"unauthenticated upload"
         files: FilesDict = {"file": ("unauth.txt", file_content, "text/plain")}
-        resp: TestResponse = self.safe_request(client.post, UPLOAD_ENDPOINT, files=files)
+        resp: TestResponse = self.safe_request(
+            client.post, UPLOAD_ENDPOINT, files=files
+        )
         self.assert_status(resp, (401, 403))
 
     def test_upload_file_invalid_filename(self, client: TestClient) -> None:
@@ -164,10 +176,7 @@ class TestUploads(TypedExportEndpointTestTemplate):
         )
         self.assert_status(resp, 400)
         response_text: str = get_response_text(resp).lower()
-        assert (
-            "path traversal" in response_text
-            or "invalid filename" in response_text
-        )
+        assert "path traversal" in response_text or "invalid filename" in response_text
 
     def test_upload_file_too_large(self, client: TestClient) -> None:
         """Test upload with file too large."""
@@ -183,7 +192,9 @@ class TestUploads(TypedExportEndpointTestTemplate):
         """Test upload with unsupported file type."""
         headers: HeadersDict = self.get_auth_header(client)
         file_content: bytes = b"%PDF-1.4 fake pdf"
-        files: FilesDict = {"file": ("file.exe", file_content, "application/octet-stream")}
+        files: FilesDict = {
+            "file": ("file.exe", file_content, "application/octet-stream")
+        }
         resp: TestResponse = self.safe_request(
             client.post, UPLOAD_ENDPOINT, files=files, headers=headers
         )
@@ -205,7 +216,9 @@ class TestUploads(TypedExportEndpointTestTemplate):
 
     def test_get_file_info_unauthenticated(self, client: TestClient) -> None:
         """Test getting file info when unauthenticated fails."""
-        resp: TestResponse = self.safe_request(client.get, f"{UPLOAD_ENDPOINT}/info.txt")
+        resp: TestResponse = self.safe_request(
+            client.get, f"{UPLOAD_ENDPOINT}/info.txt"
+        )
         self.assert_status(resp, (401, 403))
 
     def test_delete_file_authenticated(self, client: TestClient) -> None:
@@ -221,13 +234,17 @@ class TestUploads(TypedExportEndpointTestTemplate):
 
     def test_delete_file_unauthenticated(self, client: TestClient) -> None:
         """Test deleting file when unauthenticated fails."""
-        resp: TestResponse = self.safe_request(client.delete, f"{UPLOAD_ENDPOINT}/delete.txt")
+        resp: TestResponse = self.safe_request(
+            client.delete, f"{UPLOAD_ENDPOINT}/delete.txt"
+        )
         self.assert_status(resp, (401, 403))
 
     def test_list_files_authenticated(self, client: TestClient) -> None:
         """Test listing files when authenticated."""
         headers: HeadersDict = self.get_auth_header(client)
-        resp: TestResponse = self.safe_request(client.get, UPLOAD_ENDPOINT, headers=headers)
+        resp: TestResponse = self.safe_request(
+            client.get, UPLOAD_ENDPOINT, headers=headers
+        )
         self.assert_status(resp, 200)
         data: FileListResponseDict = cast(FileListResponseDict, get_response_json(resp))
         assert "files" in data
@@ -271,19 +288,18 @@ class TestUploads(TypedExportEndpointTestTemplate):
     def test_list_files_with_created_after_before(self, client: TestClient) -> None:
         """Test listing files with date filters."""
         headers: HeadersDict = self.get_auth_header(client)
-        
+
         # Use naive datetime (no tzinfo) to match backend expectation
-        now: datetime.datetime = (
-            datetime.datetime.now(datetime.UTC)
-            .replace(tzinfo=None)
+        now: datetime.datetime = datetime.datetime.now(datetime.UTC).replace(
+            tzinfo=None
         )
         now_iso: str = now.isoformat(timespec="microseconds")
-        
+
         resp: TestResponse = self.safe_request(
             client.get, f"{UPLOAD_ENDPOINT}?created_before={now_iso}", headers=headers
         )
         self.assert_status(resp, 200)
-        
+
         resp = self.safe_request(
             client.get,
             f"{UPLOAD_ENDPOINT}?created_after=2000-01-01T00:00:00",
@@ -294,7 +310,9 @@ class TestUploads(TypedExportEndpointTestTemplate):
     def test_export_files_csv_authenticated(self, client: TestClient) -> None:
         """Test CSV export when authenticated."""
         headers: HeadersDict = self.get_auth_header(client)
-        resp: TestResponse = self.safe_request(client.get, EXPORT_ENDPOINT, headers=headers)
+        resp: TestResponse = self.safe_request(
+            client.get, EXPORT_ENDPOINT, headers=headers
+        )
         self.assert_status(resp, 200)
         self.assert_content_type(resp, "text/csv")
         response_text: str = get_response_text(resp)
@@ -326,7 +344,9 @@ class TestUploads(TypedExportEndpointTestTemplate):
 
     def test_catch_all_uploads(self, client: TestClient) -> None:
         """Test catch-all route for uploads."""
-        resp: TestResponse = self.safe_request(client.get, f"{UPLOAD_ENDPOINT}/this/does/not/exist")
+        resp: TestResponse = self.safe_request(
+            client.get, f"{UPLOAD_ENDPOINT}/this/does/not/exist"
+        )
         self.assert_status(resp, 418)
         response_text: str = get_response_text(resp)
         assert "uploads catch-all" in response_text
@@ -374,7 +394,9 @@ class TestUploadsFeatureFlags(TypedExportEndpointTestTemplate):
         env_vars: dict[str, str] = {"REVIEWPOINT_FEATURE_UPLOADS_LIST": "false"}
         self.override_env_vars(env_vars)
         headers: HeadersDict = self.get_auth_header(client)
-        resp: TestResponse = self.safe_request(client.get, "/api/v1/uploads", headers=headers)
+        resp: TestResponse = self.safe_request(
+            client.get, "/api/v1/uploads", headers=headers
+        )
         self.assert_status(resp, (404, 403, 501))
 
     def test_uploads_export_feature_disabled(self, client: TestClient) -> None:
@@ -382,7 +404,9 @@ class TestUploadsFeatureFlags(TypedExportEndpointTestTemplate):
         env_vars: dict[str, str] = {"REVIEWPOINT_FEATURE_UPLOADS_EXPORT": "false"}
         self.override_env_vars(env_vars)
         headers: HeadersDict = self.get_auth_header(client)
-        resp: TestResponse = self.safe_request(client.get, "/api/v1/uploads/export", headers=headers)
+        resp: TestResponse = self.safe_request(
+            client.get, "/api/v1/uploads/export", headers=headers
+        )
         self.assert_status(resp, (404, 403, 501))
 
     def test_api_key_disabled(self, client: TestClient) -> None:
@@ -390,12 +414,14 @@ class TestUploadsFeatureFlags(TypedExportEndpointTestTemplate):
         env_vars: dict[str, str] = {"REVIEWPOINT_API_KEY_ENABLED": "false"}
         self.override_env_vars(env_vars)
         headers: HeadersDict = self.get_auth_header(client)
-        resp: TestResponse = self.safe_request(client.get, "/api/v1/uploads", headers=headers)
+        resp: TestResponse = self.safe_request(
+            client.get, "/api/v1/uploads", headers=headers
+        )
         self.assert_status(resp, (200, 401, 403))
 
     def test_api_key_wrong(self, request: pytest.FixtureRequest) -> None:
         """Test wrong API key handling with proper fixture typing."""
-        
+
         client: TestClient
         # Use appropriate fixture based on environment
         if os.environ.get("FAST_TESTS") == "1":
@@ -417,11 +443,14 @@ class TestUploadsFeatureFlags(TypedExportEndpointTestTemplate):
 
         headers: HeadersDict = self.get_auth_header(client)
         headers["X-API-Key"] = "wrongkey"
-        resp: TestResponse = self.safe_request(client.get, "/api/v1/uploads", headers=headers)
+        resp: TestResponse = self.safe_request(
+            client.get, "/api/v1/uploads", headers=headers
+        )
         self.assert_status(resp, (401, 403))
 
 
 # Async fixtures and test classes merged from test_uploads_async.py, test_uploads_fast.py, and test_uploads_optimized.py
+
 
 @pytest_asyncio.fixture
 async def async_client(test_app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
@@ -461,7 +490,10 @@ async def fast_admin_client(
 
     test_app.dependency_overrides[get_current_user] = override_get_current_user
 
-    token_payload: Final[dict[str, str | int]] = {"sub": str(real_user.id), "role": "admin"}
+    token_payload: Final[dict[str, str | int]] = {
+        "sub": str(real_user.id),
+        "role": "admin",
+    }
     valid_token: Final[str] = create_access_token(token_payload)
 
     try:
@@ -492,7 +524,9 @@ class TestUploadsAsync(TypedExportEndpointTestTemplate):
     """Async upload tests with fast authentication fixtures and strict typing."""
 
     @pytest.mark.asyncio
-    async def test_uploads_router_registered(self, fast_anon_client: AsyncClient) -> None:
+    async def test_uploads_router_registered(
+        self, fast_anon_client: AsyncClient
+    ) -> None:
         """Test that uploads router is properly registered - async version."""
         resp: HttpxResponse = await fast_anon_client.get(ROOT_TEST_ENDPOINT)
         self.assert_status(resp, 200)
@@ -501,7 +535,9 @@ class TestUploadsAsync(TypedExportEndpointTestTemplate):
         assert data["router"] == "uploads"
 
     @pytest.mark.asyncio
-    async def test_upload_file_authenticated(self, fast_admin_client: AsyncClient) -> None:
+    async def test_upload_file_authenticated(
+        self, fast_admin_client: AsyncClient
+    ) -> None:
         """Test file upload with authentication - async version."""
         file_content: bytes = b"authenticated upload async"
         files: FilesDict = {"file": ("auth_async.txt", file_content, "text/plain")}
@@ -510,10 +546,14 @@ class TestUploadsAsync(TypedExportEndpointTestTemplate):
         if resp.status_code == 201:
             data: ResponseDict = get_response_json(resp)
             # Check the actual response structure - adjust expectations based on real response
-            assert "file" in data or "filename" in data  # Flexible check for upload success
+            assert (
+                "file" in data or "filename" in data
+            )  # Flexible check for upload success
 
     @pytest.mark.asyncio
-    async def test_upload_file_unauthenticated(self, fast_anon_client: AsyncClient) -> None:
+    async def test_upload_file_unauthenticated(
+        self, fast_anon_client: AsyncClient
+    ) -> None:
         """Test unauthenticated upload fails - async version."""
         file_content: bytes = b"unauthenticated upload async"
         files: FilesDict = {"file": ("unauth_async.txt", file_content, "text/plain")}
@@ -521,7 +561,9 @@ class TestUploadsAsync(TypedExportEndpointTestTemplate):
         self.assert_status(resp, (401, 403))
 
     @pytest.mark.asyncio
-    async def test_upload_file_invalid_filename(self, fast_admin_client: AsyncClient) -> None:
+    async def test_upload_file_invalid_filename(
+        self, fast_admin_client: AsyncClient
+    ) -> None:
         """Test upload with invalid filename - async version."""
         file_content: bytes = b"invalid filename async"
         files: FilesDict = {"file": ("../../../etc/passwd", file_content, "text/plain")}
@@ -537,18 +579,28 @@ class TestUploadsAsync(TypedExportEndpointTestTemplate):
         self.assert_status(resp, (413, 422, 400))
 
     @pytest.mark.asyncio
-    async def test_get_file_info_authenticated(self, fast_admin_client: AsyncClient) -> None:
+    async def test_get_file_info_authenticated(
+        self, fast_admin_client: AsyncClient
+    ) -> None:
         """Test getting file info - async version."""
         # First upload a file
         file_content: bytes = b"file for info test async"
         files: FilesDict = {"file": ("info_test_async.txt", file_content, "text/plain")}
-        upload_resp: HttpxResponse = await fast_admin_client.post(UPLOAD_ENDPOINT, files=files)
-        
+        upload_resp: HttpxResponse = await fast_admin_client.post(
+            UPLOAD_ENDPOINT, files=files
+        )
+
         if upload_resp.status_code == 201:
             upload_data: ResponseDict = get_response_json(upload_resp)
-            file_id_raw: Union[str, int, bool, list[object], dict[str, object]] = upload_data.get("id", "info_test_async.txt")
-            file_id: str = str(file_id_raw) if file_id_raw is not None else "info_test_async.txt"
-            resp: HttpxResponse = await fast_admin_client.get(f"{UPLOAD_ENDPOINT}/{file_id}")
+            file_id_raw: str | int | bool | list[object] | dict[str, object] = (
+                upload_data.get("id", "info_test_async.txt")
+            )
+            file_id: str = (
+                str(file_id_raw) if file_id_raw is not None else "info_test_async.txt"
+            )
+            resp: HttpxResponse = await fast_admin_client.get(
+                f"{UPLOAD_ENDPOINT}/{file_id}"
+            )
             self.assert_status(resp, (200, 404))
         else:
             # If upload failed, just test the endpoint exists
@@ -556,18 +608,30 @@ class TestUploadsAsync(TypedExportEndpointTestTemplate):
             self.assert_status(resp, (404, 401, 403))
 
     @pytest.mark.asyncio
-    async def test_delete_file_authenticated(self, fast_admin_client: AsyncClient) -> None:
+    async def test_delete_file_authenticated(
+        self, fast_admin_client: AsyncClient
+    ) -> None:
         """Test deleting a file - async version."""
         # First upload a file to delete
         file_content: bytes = b"file to delete async"
-        files: FilesDict = {"file": ("delete_test_async.txt", file_content, "text/plain")}
-        upload_resp: HttpxResponse = await fast_admin_client.post(UPLOAD_ENDPOINT, files=files)
-        
+        files: FilesDict = {
+            "file": ("delete_test_async.txt", file_content, "text/plain")
+        }
+        upload_resp: HttpxResponse = await fast_admin_client.post(
+            UPLOAD_ENDPOINT, files=files
+        )
+
         if upload_resp.status_code == 201:
             upload_data: ResponseDict = get_response_json(upload_resp)
-            file_id_raw: Union[str, int, bool, list[object], dict[str, object]] = upload_data.get("id", "delete_test_async.txt")
-            file_id: str = str(file_id_raw) if file_id_raw is not None else "delete_test_async.txt"
-            resp: HttpxResponse = await fast_admin_client.delete(f"{UPLOAD_ENDPOINT}/{file_id}")
+            file_id_raw: str | int | bool | list[object] | dict[str, object] = (
+                upload_data.get("id", "delete_test_async.txt")
+            )
+            file_id: str = (
+                str(file_id_raw) if file_id_raw is not None else "delete_test_async.txt"
+            )
+            resp: HttpxResponse = await fast_admin_client.delete(
+                f"{UPLOAD_ENDPOINT}/{file_id}"
+            )
             self.assert_status(resp, (200, 204, 404))
         else:
             # If upload failed, just test the endpoint exists
@@ -575,7 +639,9 @@ class TestUploadsAsync(TypedExportEndpointTestTemplate):
             self.assert_status(resp, (404, 401, 403))
 
     @pytest.mark.asyncio
-    async def test_list_files_authenticated(self, fast_admin_client: AsyncClient) -> None:
+    async def test_list_files_authenticated(
+        self, fast_admin_client: AsyncClient
+    ) -> None:
         """Test listing files - async version."""
         resp: HttpxResponse = await fast_admin_client.get(UPLOAD_ENDPOINT)
         self.assert_status(resp, 200)
@@ -584,13 +650,17 @@ class TestUploadsAsync(TypedExportEndpointTestTemplate):
         assert isinstance(data["files"], list)
 
     @pytest.mark.asyncio
-    async def test_list_files_unauthenticated(self, fast_anon_client: AsyncClient) -> None:
+    async def test_list_files_unauthenticated(
+        self, fast_anon_client: AsyncClient
+    ) -> None:
         """Test listing files without auth - async version."""
         resp: HttpxResponse = await fast_anon_client.get(UPLOAD_ENDPOINT)
         self.assert_status(resp, (401, 403))
 
     @pytest.mark.asyncio
-    async def test_list_files_with_query_and_fields(self, fast_admin_client: AsyncClient) -> None:
+    async def test_list_files_with_query_and_fields(
+        self, fast_admin_client: AsyncClient
+    ) -> None:
         """Test listing files with query parameters - async version."""
         resp: HttpxResponse = await fast_admin_client.get(
             f"{UPLOAD_ENDPOINT}?q=test&fields=filename,size"
@@ -600,7 +670,9 @@ class TestUploadsAsync(TypedExportEndpointTestTemplate):
         assert "files" in data
 
     @pytest.mark.asyncio
-    async def test_export_files_csv_authenticated(self, fast_admin_client: AsyncClient) -> None:
+    async def test_export_files_csv_authenticated(
+        self, fast_admin_client: AsyncClient
+    ) -> None:
         """Test CSV export - async version."""
         resp: HttpxResponse = await fast_admin_client.get(EXPORT_ENDPOINT)
         self.assert_status(resp, 200)
@@ -608,7 +680,9 @@ class TestUploadsAsync(TypedExportEndpointTestTemplate):
         assert content_type == "text/csv; charset=utf-8"
 
     @pytest.mark.asyncio
-    async def test_export_files_csv_unauthenticated(self, fast_anon_client: AsyncClient) -> None:
+    async def test_export_files_csv_unauthenticated(
+        self, fast_anon_client: AsyncClient
+    ) -> None:
         """Test CSV export without auth - async version."""
         resp: HttpxResponse = await fast_anon_client.get(EXPORT_ENDPOINT)
         self.assert_status(resp, (401, 403))
@@ -660,25 +734,33 @@ class TestUploadsFast(TypedExportEndpointTestTemplate):
         """Test unauthenticated upload fails - fast version."""
         file_content: bytes = b"unauthorized upload fast"
         files: FilesDict = {"file": ("unauth_fast.txt", file_content, "text/plain")}
-        resp: TestResponse = self.safe_request(client.post, UPLOAD_ENDPOINT, files=files)
+        resp: TestResponse = self.safe_request(
+            client.post, UPLOAD_ENDPOINT, files=files
+        )
         self.assert_status(resp, (401, 403))
 
     def test_get_file_info_fast(self, client: TestClient) -> None:
         """Test getting file info - fast version."""
         headers: HeadersDict = self.get_auth_header(client)
-        resp: TestResponse = self.safe_request(client.get, f"{UPLOAD_ENDPOINT}/nonexistent", headers=headers)
+        resp: TestResponse = self.safe_request(
+            client.get, f"{UPLOAD_ENDPOINT}/nonexistent", headers=headers
+        )
         self.assert_status(resp, (404, 401, 403))
 
     def test_delete_file_fast(self, client: TestClient) -> None:
         """Test deleting a file - fast version."""
         headers: HeadersDict = self.get_auth_header(client)
-        resp: TestResponse = self.safe_request(client.delete, f"{UPLOAD_ENDPOINT}/nonexistent", headers=headers)
+        resp: TestResponse = self.safe_request(
+            client.delete, f"{UPLOAD_ENDPOINT}/nonexistent", headers=headers
+        )
         self.assert_status(resp, (404, 401, 403))
 
     def test_list_files_fast(self, client: TestClient) -> None:
         """Test listing files - fast version."""
         headers: HeadersDict = self.get_auth_header(client)
-        resp: TestResponse = self.safe_request(client.get, UPLOAD_ENDPOINT, headers=headers)
+        resp: TestResponse = self.safe_request(
+            client.get, UPLOAD_ENDPOINT, headers=headers
+        )
         self.assert_status(resp, 200)
         data: FileListResponseDict = cast(FileListResponseDict, get_response_json(resp))
         assert "files" in data
@@ -687,7 +769,9 @@ class TestUploadsFast(TypedExportEndpointTestTemplate):
     def test_export_files_csv_authenticated_fast(self, client: TestClient) -> None:
         """Test CSV export - fast version."""
         headers: HeadersDict = self.get_auth_header(client)
-        resp: TestResponse = self.safe_request(client.get, EXPORT_ENDPOINT, headers=headers)
+        resp: TestResponse = self.safe_request(
+            client.get, EXPORT_ENDPOINT, headers=headers
+        )
         self.assert_status(resp, 200)
         content_type: str = resp.headers["content-type"]
         assert content_type == "text/csv; charset=utf-8"
@@ -700,7 +784,9 @@ class TestUploadsFast(TypedExportEndpointTestTemplate):
     def test_export_alive_fast(self, client: TestClient) -> None:
         """Test export alive endpoint - fast version."""
         headers: HeadersDict = self.get_auth_header(client)
-        resp: TestResponse = self.safe_request(client.get, EXPORT_ALIVE_ENDPOINT, headers=headers)
+        resp: TestResponse = self.safe_request(
+            client.get, EXPORT_ALIVE_ENDPOINT, headers=headers
+        )
         self.assert_status(resp, 200)
         data: AliveResponseDict = cast(AliveResponseDict, get_response_json(resp))
         assert data["status"] == "uploads export alive"
@@ -708,7 +794,9 @@ class TestUploadsFast(TypedExportEndpointTestTemplate):
     def test_test_alive_fast(self, client: TestClient) -> None:
         """Test alive endpoint - fast version."""
         headers: HeadersDict = self.get_auth_header(client)
-        resp: TestResponse = self.safe_request(client.get, ALIVE_ENDPOINT, headers=headers)
+        resp: TestResponse = self.safe_request(
+            client.get, ALIVE_ENDPOINT, headers=headers
+        )
         self.assert_status(resp, 200)
         data: AliveResponseDict = cast(AliveResponseDict, get_response_json(resp))
         assert data["status"] == "alive"
@@ -718,7 +806,9 @@ class TestUploadsOptimized(TypedExportEndpointTestTemplate):
     """Optimized async tests using direct JWT token creation for maximum speed with strict typing."""
 
     @pytest.mark.asyncio
-    async def test_uploads_router_registered_optimized(self, async_client: AsyncClient) -> None:
+    async def test_uploads_router_registered_optimized(
+        self, async_client: AsyncClient
+    ) -> None:
         """Test that uploads router is properly registered - optimized version."""
         resp: HttpxResponse = await async_client.get(ROOT_TEST_ENDPOINT)
         self.assert_status(resp, 200)
@@ -727,7 +817,9 @@ class TestUploadsOptimized(TypedExportEndpointTestTemplate):
         assert data["router"] == "uploads"
 
     @pytest.mark.asyncio
-    async def test_upload_file_authenticated_optimized(self, fast_admin_client: AsyncClient) -> None:
+    async def test_upload_file_authenticated_optimized(
+        self, fast_admin_client: AsyncClient
+    ) -> None:
         """Test file upload with authentication - optimized version."""
         file_content: bytes = b"optimized upload test"
         files: FilesDict = {"file": ("optimized_test.txt", file_content, "text/plain")}
@@ -738,7 +830,9 @@ class TestUploadsOptimized(TypedExportEndpointTestTemplate):
             assert "filename" in data or "file" in data
 
     @pytest.mark.asyncio
-    async def test_upload_file_unauthenticated_optimized(self, async_client: AsyncClient) -> None:
+    async def test_upload_file_unauthenticated_optimized(
+        self, async_client: AsyncClient
+    ) -> None:
         """Test unauthenticated upload fails - optimized version."""
         file_content: bytes = b"unauthorized optimized upload"
         files: FilesDict = {"file": ("unauth_opt.txt", file_content, "text/plain")}
@@ -746,15 +840,21 @@ class TestUploadsOptimized(TypedExportEndpointTestTemplate):
         self.assert_status(resp, (401, 403))
 
     @pytest.mark.asyncio
-    async def test_get_file_info_optimized(self, fast_admin_client: AsyncClient) -> None:
+    async def test_get_file_info_optimized(
+        self, fast_admin_client: AsyncClient
+    ) -> None:
         """Test getting file info - optimized version."""
-        resp: HttpxResponse = await fast_admin_client.get(f"{UPLOAD_ENDPOINT}/nonexistent")
+        resp: HttpxResponse = await fast_admin_client.get(
+            f"{UPLOAD_ENDPOINT}/nonexistent"
+        )
         self.assert_status(resp, (404, 401, 403))
 
     @pytest.mark.asyncio
     async def test_delete_file_optimized(self, fast_admin_client: AsyncClient) -> None:
         """Test deleting a file - optimized version."""
-        resp: HttpxResponse = await fast_admin_client.delete(f"{UPLOAD_ENDPOINT}/nonexistent")
+        resp: HttpxResponse = await fast_admin_client.delete(
+            f"{UPLOAD_ENDPOINT}/nonexistent"
+        )
         self.assert_status(resp, (404, 401, 403))
 
     @pytest.mark.asyncio
@@ -767,7 +867,9 @@ class TestUploadsOptimized(TypedExportEndpointTestTemplate):
         assert isinstance(data["files"], list)
 
     @pytest.mark.asyncio
-    async def test_export_files_csv_authenticated_optimized(self, fast_admin_client: AsyncClient) -> None:
+    async def test_export_files_csv_authenticated_optimized(
+        self, fast_admin_client: AsyncClient
+    ) -> None:
         """Test CSV export - optimized version."""
         resp: HttpxResponse = await fast_admin_client.get(EXPORT_ENDPOINT)
         self.assert_status(resp, 200)
@@ -775,7 +877,9 @@ class TestUploadsOptimized(TypedExportEndpointTestTemplate):
         assert content_type == "text/csv; charset=utf-8"
 
     @pytest.mark.asyncio
-    async def test_export_files_csv_unauthenticated_optimized(self, async_client: AsyncClient) -> None:
+    async def test_export_files_csv_unauthenticated_optimized(
+        self, async_client: AsyncClient
+    ) -> None:
         """Test CSV export without auth - optimized version."""
         resp: HttpxResponse = await async_client.get(EXPORT_ENDPOINT)
         self.assert_status(resp, (401, 403))

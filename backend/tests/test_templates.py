@@ -10,37 +10,52 @@ Note: This file is not a test itself and should be excluded from pytest plugins 
 from __future__ import annotations
 
 import asyncio
-import shutil
 import subprocess
 import sys
-from collections.abc import AsyncGenerator, Awaitable, Callable, Generator, MutableMapping, Sequence
+from collections.abc import (
+    Awaitable,
+    Callable,
+    Generator,
+    Sequence,
+)
 from pathlib import Path
-from typing import Final, Literal, Protocol, TypedDict, Union
+from typing import Protocol
 from unittest.mock import Mock
-from starlette.responses import Response as StarletteResponse
-from httpx import Response as HttpxResponse
 
 import pytest
 from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
-from httpx import Response
+from httpx import Response as HttpxResponse
 from loguru import logger
-from sqlalchemy import Table, inspect, text
+from sqlalchemy import inspect, text
 from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
+from starlette.responses import Response as StarletteResponse
+
 
 # Protocol for mock objects to provide type safety
 class MockProtocol(Protocol):
     """Protocol for mock objects with common attributes."""
+
     called: bool
     call_count: int
 
-TestResponse = Union[StarletteResponse, HttpxResponse, Mock]
-AppType = Union[FastAPI, Mock]
-MockType = Union[Mock, MockProtocol]
-ValueType = Union[str, int, float, bool, dict[str, object], list[object], None, Callable[..., object]]
-ClaimsDict = dict[str, Union[str, int, float, bool]]
-StatusCodeType = Union[int, list[int], tuple[int, ...], set[int]]
+
+TestResponse = StarletteResponse | HttpxResponse | Mock
+AppType = FastAPI | Mock
+MockType = Mock | MockProtocol
+ValueType = (
+    str
+    | int
+    | float
+    | bool
+    | dict[str, object]
+    | list[object]
+    | None
+    | Callable[..., object]
+)
+ClaimsDict = dict[str, str | int | float | bool]
+StatusCodeType = int | list[int] | tuple[int, ...] | set[int]
 
 # Type for SQLAlchemy model classes (not Table instances)
 ModelType = type[object]
@@ -53,7 +68,9 @@ class BaseAPITest:
     Inherit from this class in your test classes to get auth helpers.
     """
 
-    def safe_request(self, func: Callable[..., TestResponse], *args: object, **kwargs: object) -> TestResponse:
+    def safe_request(
+        self, func: Callable[..., TestResponse], *args: object, **kwargs: object
+    ) -> TestResponse:
         """
         Helper to make HTTP requests robust to connection errors.
         Usage: resp = self.safe_request(client.get, ...)
@@ -64,7 +81,11 @@ class BaseAPITest:
             pytest.xfail(f"Connection/DB error: {e}")
 
     @pytest.fixture(autouse=True)
-    def _setup_base_fixtures(self, override_env_vars: Callable[[dict[str, str]], None], loguru_list_sink: list[str]) -> None:
+    def _setup_base_fixtures(
+        self,
+        override_env_vars: Callable[[dict[str, str]], None],
+        loguru_list_sink: list[str],
+    ) -> None:
         """Set up base fixtures for environment variables and logging."""
         self.override_env_vars = override_env_vars
         self.loguru_list_sink = loguru_list_sink
@@ -85,6 +106,7 @@ class BaseAPITest:
         """
         try:
             from .conftest import get_auth_header
+
             return get_auth_header(client, email=email, password=password)
         except (ImportError, AttributeError):
             # Fallback if conftest not available or function not found
@@ -95,7 +117,7 @@ class BaseAPITest:
         Assert that a response is HTTP 401 Unauthorized.
         """
         assert response.status_code == 401
-        if hasattr(response, 'json'):
+        if hasattr(response, "json"):
             assert "detail" in response.json()
         else:
             # For mock responses, skip json check
@@ -116,14 +138,16 @@ class BaseAPITest:
                 "such as AuthUnitTestTemplate, or add it to your template."
             )
 
-    def assert_status(self, response: TestResponse, expected_statuses: StatusCodeType) -> None:
+    def assert_status(
+        self, response: TestResponse, expected_statuses: StatusCodeType
+    ) -> None:
         """
         Assert that a response status code is in the expected set.
         """
         statuses: list[int]
         if isinstance(expected_statuses, int):
             statuses = [expected_statuses]
-        elif isinstance(expected_statuses, (tuple, set)):
+        elif isinstance(expected_statuses, tuple | set):
             statuses = list(expected_statuses)
         else:
             statuses = expected_statuses
@@ -149,7 +173,9 @@ class BaseAPITest:
         """Assert that an expression is truthy."""
         assert expr, msg or f"Expected expression to be true, got {expr!r}"
 
-    def assert_is_instance(self, obj: object, cls: type[object], msg: str | None = None) -> None:
+    def assert_is_instance(
+        self, obj: object, cls: type[object], msg: str | None = None
+    ) -> None:
         """Assert that an object is an instance of a class."""
         assert isinstance(obj, cls), (
             msg or f"Expected {obj!r} to be instance of {cls!r}"
@@ -163,7 +189,7 @@ class BaseAPITest:
             401,
             403,
         ), f"Expected 401 or 403, got {response.status_code}"
-        if hasattr(response, 'json'):
+        if hasattr(response, "json"):
             body = response.json()
             assert (
                 "api key" in str(body.get("detail", "")).lower()
@@ -175,7 +201,7 @@ class BaseAPITest:
         Assert that a response is HTTP 403 Forbidden.
         """
         assert response.status_code == 403, f"Expected 403, got {response.status_code}"
-        if hasattr(response, 'json'):
+        if hasattr(response, "json"):
             body = response.json()
             assert (
                 "forbidden" in str(body.get("detail", "")).lower()
@@ -195,7 +221,9 @@ class CRUDTestTemplate(BaseAPITest):
     create_payload: dict[str, object] = {}
     update_payload: dict[str, object] = {}
 
-    def test_create(self, client: TestClient, loguru_list_sink: list[str]) -> dict[str, object]:
+    def test_create(
+        self, client: TestClient, loguru_list_sink: list[str]
+    ) -> dict[str, object]:
         """
         Test creating a resource via POST. Captures logs for assertion if needed.
         """
@@ -318,7 +346,11 @@ class LogCaptureTestTemplate(BaseAPITest):
     """
 
     @pytest.fixture(autouse=True)
-    def _setup_env_and_logs(self, loguru_list_sink: list[str], override_env_vars: Callable[[dict[str, str]], None]) -> None:
+    def _setup_env_and_logs(
+        self,
+        loguru_list_sink: list[str],
+        override_env_vars: Callable[[dict[str, str]], None],
+    ) -> None:
         """Set up environment and logging fixtures."""
         self.loguru_list_sink = loguru_list_sink
         self.override_env_vars = override_env_vars
@@ -333,7 +365,10 @@ class AuthUnitTestTemplate(BaseAPITest):
 
     @pytest.fixture(autouse=True)
     def _setup_monkeypatch_and_logs(
-        self, monkeypatch: pytest.MonkeyPatch, loguru_list_sink: list[str], override_env_vars: Callable[[dict[str, str]], None]
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        loguru_list_sink: list[str],
+        override_env_vars: Callable[[dict[str, str]], None],
     ) -> Generator[None, None, None]:
         """Set up monkeypatch and logging fixtures."""
         self.monkeypatch = monkeypatch
@@ -343,9 +378,11 @@ class AuthUnitTestTemplate(BaseAPITest):
         yield
         # Restore all patched attributes after each test
         import re
+
         for target, attr, orig in self._patches:
             if isinstance(target, str) and target.startswith("os.environ["):
                 import os
+
                 key = target.split('["')[1].split('"]')[0]
                 if orig is None:
                     os.environ.pop(key, None)
@@ -355,7 +392,7 @@ class AuthUnitTestTemplate(BaseAPITest):
             elif (
                 isinstance(target, str)
                 and "." in target
-                and re.match(r'^[a-zA-Z_][\w\.]*\.[a-zA-Z_][\w]*$', target)
+                and re.match(r"^[a-zA-Z_][\w\.]*\.[a-zA-Z_][\w]*$", target)
             ):
                 try:
                     module, attr_name = target.rsplit(".", 1)
@@ -402,7 +439,12 @@ class AuthUnitTestTemplate(BaseAPITest):
             else:
                 raise
 
-    def assert_http_exception(self, func: Callable[[], object], status_code: int, detail_substr: str | None = None) -> None:
+    def assert_http_exception(
+        self,
+        func: Callable[[], object],
+        status_code: int,
+        detail_substr: str | None = None,
+    ) -> None:
         """Assert that a function raises an HTTP exception with expected status."""
         with pytest.raises(HTTPException) as exc:
             func()
@@ -410,7 +452,12 @@ class AuthUnitTestTemplate(BaseAPITest):
         if detail_substr:
             assert detail_substr in str(exc.value.detail)
 
-    async def assert_async_http_exception(self, func: Callable[[], Awaitable[object]], status_code: int, detail_substr: str | None = None) -> None:
+    async def assert_async_http_exception(
+        self,
+        func: Callable[[], Awaitable[object]],
+        status_code: int,
+        detail_substr: str | None = None,
+    ) -> None:
         """Assert that an async function raises an HTTP exception with expected status."""
         with pytest.raises(HTTPException) as exc:
             await func()
@@ -440,7 +487,7 @@ class AuthUnitTestTemplate(BaseAPITest):
         """Restore an environment variable to its original value."""
         import os
 
-        for i, (target, attr, orig) in enumerate(self._patches):
+        for i, (target, _attr, orig) in enumerate(self._patches):
             if isinstance(target, str) and target == f'os.environ["{key}"]':
                 if orig is None:
                     os.environ.pop(key, None)
@@ -482,7 +529,11 @@ class HealthEndpointTestTemplate(BaseAPITest):
     """
 
     @pytest.fixture(autouse=True)
-    def _setup_env(self, override_env_vars: Callable[[dict[str, str]], None], loguru_list_sink: list[str]) -> None:
+    def _setup_env(
+        self,
+        override_env_vars: Callable[[dict[str, str]], None],
+        loguru_list_sink: list[str],
+    ) -> None:
         """Set up environment fixtures for health tests."""
         self.override_env_vars = override_env_vars
         self.loguru_list_sink = loguru_list_sink
@@ -490,7 +541,7 @@ class HealthEndpointTestTemplate(BaseAPITest):
     def assert_health_response(self, resp: TestResponse) -> None:
         """Assert that a health response is valid."""
         assert resp.status_code == 200
-        if hasattr(resp, 'json'):
+        if hasattr(resp, "json"):
             data = resp.json()
             assert "status" in data
             assert data["status"] in ("ok", "healthy", "alive")
@@ -523,13 +574,18 @@ class DatabaseTestTemplate(BaseAPITest):
         await self._enable_sqlite_fk(self.engine)
         return AsyncSession(self.engine, expire_on_commit=False)
 
-    async def run_concurrent_operations(self, operations: list[Callable[[AsyncSession], Awaitable[object]]]) -> list[object]:
+    async def run_concurrent_operations(
+        self, operations: list[Callable[[AsyncSession], Awaitable[object]]]
+    ) -> list[object]:
         """
         Run multiple database operations concurrently with separate sessions.
         Args:
             operations: List of async callables that take a session parameter
         """
-        async def run_with_session(operation: Callable[[AsyncSession], Awaitable[object]]) -> object:
+
+        async def run_with_session(
+            operation: Callable[[AsyncSession], Awaitable[object]],
+        ) -> object:
             # get_independent_session is now async
             session = await self.get_independent_session()
             try:
@@ -540,14 +596,20 @@ class DatabaseTestTemplate(BaseAPITest):
 
         return await asyncio.gather(*[run_with_session(op) for op in operations])
 
-    async def assert_healthcheck_ok(self, healthcheck_func: Callable[[], Awaitable[None]]) -> None:
+    async def assert_healthcheck_ok(
+        self, healthcheck_func: Callable[[], Awaitable[None]]
+    ) -> None:
         """Assert that a database healthcheck function completes without error."""
         try:
             await healthcheck_func()
         except Exception as exc:
             pytest.fail(f"db_healthcheck raised unexpectedly: {exc}")
 
-    async def assert_session_context_ok(self, get_session_func: Callable[[], AsyncSession], session_type: type[AsyncSession]) -> None:
+    async def assert_session_context_ok(
+        self,
+        get_session_func: Callable[[], AsyncSession],
+        session_type: type[AsyncSession],
+    ) -> None:
         """Assert that a session context manager works correctly."""
         session: AsyncSession | None = None
         try:
@@ -567,7 +629,9 @@ class DatabaseTestTemplate(BaseAPITest):
                 raise
 
     async def assert_session_rollback(
-        self, session_factory: Callable[[], AsyncSession], error_sql: str = "SELECT invalid_column_name"
+        self,
+        session_factory: Callable[[], AsyncSession],
+        error_sql: str = "SELECT invalid_column_name",
     ) -> None:
         """Assert that session rollback works correctly after an error."""
         session = session_factory()
@@ -587,7 +651,9 @@ class DatabaseTestTemplate(BaseAPITest):
                 await session.rollback()
             except Exception:
                 pass  # Ignore rollback errors in case of connection issues
-            raise AssertionError(f"Unexpected error during session rollback test: {e}")
+            raise AssertionError(
+                f"Unexpected error during session rollback test: {e}"
+            ) from e
         finally:
             # Safely close the session, ignoring any connection cleanup errors
             try:
@@ -595,34 +661,46 @@ class DatabaseTestTemplate(BaseAPITest):
             except Exception:
                 pass  # Ignore close errors during cleanup
 
-    async def assert_table_exists(self, session_factory: Callable[[], AsyncSession], table_name: str) -> None:
+    async def assert_table_exists(
+        self, session_factory: Callable[[], AsyncSession], table_name: str
+    ) -> None:
         """Assert that a database table exists."""
         async with session_factory() as session:
             conn = await session.connection()
+
             def get_tables(sync_conn: object) -> list[str]:
                 inspector = inspect(sync_conn)
-                if inspector is not None and hasattr(inspector, 'get_table_names'):
-                    table_names = getattr(inspector, 'get_table_names')()
+                if inspector is not None and hasattr(inspector, "get_table_names"):
+                    table_names = inspector.get_table_names()
                     return table_names if isinstance(table_names, list) else []
                 return []
+
             tables = await conn.run_sync(get_tables)
             assert table_name in tables, f"Table '{table_name}' does not exist"
 
-    async def assert_table_not_exists(self, session_factory: Callable[[], AsyncSession], table_name: str) -> None:
+    async def assert_table_not_exists(
+        self, session_factory: Callable[[], AsyncSession], table_name: str
+    ) -> None:
         """Assert that a database table does not exist."""
         async with session_factory() as session:
             conn = await session.connection()
+
             def get_tables(sync_conn: object) -> list[str]:
                 insp = inspect(sync_conn)
-                if insp is not None and hasattr(insp, 'get_table_names'):
-                    table_names = getattr(insp, 'get_table_names')()
+                if insp is not None and hasattr(insp, "get_table_names"):
+                    table_names = insp.get_table_names()
                     return table_names if isinstance(table_names, list) else []
                 return []
+
             tables = await conn.run_sync(get_tables)
             assert table_name not in tables, f"Table '{table_name}' should not exist"
 
     async def assert_can_insert_and_query(
-        self, session_factory: Callable[[], AsyncSession], table: ModelType, insert_dict: dict[str, object], query_filter: dict[str, object]
+        self,
+        session_factory: Callable[[], AsyncSession],
+        table: ModelType,
+        insert_dict: dict[str, object],
+        query_filter: dict[str, object],
     ) -> None:
         """Assert that data can be inserted and queried from a table."""
         async with session_factory() as session:
@@ -635,7 +713,12 @@ class DatabaseTestTemplate(BaseAPITest):
             row = result.scalar_one_or_none()
             assert row is not None, f"Row not found for filter {query_filter}"
 
-    async def assert_transaction_isolation(self, session_factory: Callable[[], AsyncSession], table: ModelType, insert_dict: dict[str, object]) -> None:
+    async def assert_transaction_isolation(
+        self,
+        session_factory: Callable[[], AsyncSession],
+        table: ModelType,
+        insert_dict: dict[str, object],
+    ) -> None:
         """Assert that transaction isolation works correctly."""
         async with session_factory() as session:
             trans = await session.begin()
@@ -648,11 +731,16 @@ class DatabaseTestTemplate(BaseAPITest):
             row = result.scalar_one_or_none()
             assert row is None, "Row should not exist after rollback"
 
-    def simulate_db_disconnect(self, session_factory: Callable[[], AsyncSession]) -> None:
+    def simulate_db_disconnect(
+        self, session_factory: Callable[[], AsyncSession]
+    ) -> None:
         """Simulate a database disconnection by patching session creation."""
+
         # Patch the session/engine to raise on connect (works for async/SQLite)
         def raise_disconnect(*a: object, **kw: object) -> None:
-            raise OperationalError("Simulated disconnect", None, RuntimeError("Connection failed"))
+            raise OperationalError(
+                "Simulated disconnect", None, RuntimeError("Connection failed")
+            )
 
         self.patch_var(
             f"{session_factory.__module__}.AsyncSession.__init__", raise_disconnect
@@ -665,7 +753,12 @@ class DatabaseTestTemplate(BaseAPITest):
         except Exception:
             pass
 
-    async def assert_db_integrity_error(self, session_factory: Callable[[], AsyncSession], table: ModelType, insert_dict: dict[str, object]) -> None:
+    async def assert_db_integrity_error(
+        self,
+        session_factory: Callable[[], AsyncSession],
+        table: ModelType,
+        insert_dict: dict[str, object],
+    ) -> None:
         """Assert that database integrity constraints are enforced."""
         async with session_factory() as session:
             obj = table(**insert_dict)
@@ -674,7 +767,9 @@ class DatabaseTestTemplate(BaseAPITest):
                 await session.commit()
             await session.rollback()
 
-    async def run_raw_sql(self, session_factory: Callable[[], AsyncSession], sql: str) -> Sequence[object]:
+    async def run_raw_sql(
+        self, session_factory: Callable[[], AsyncSession], sql: str
+    ) -> Sequence[object]:
         """Execute raw SQL and return results."""
         async with session_factory() as session:
             result = await session.execute(text(sql))
@@ -682,24 +777,38 @@ class DatabaseTestTemplate(BaseAPITest):
 
     def assert_db_url_config(self, cfg: object, expected_url: str) -> None:
         """Assert that database URL configuration is correct."""
-        assert getattr(cfg, "settings", None) is not None, "Config object must have settings attribute"
+        assert (
+            getattr(cfg, "settings", None) is not None
+        ), "Config object must have settings attribute"
         assert getattr(cfg.settings, "db_url", None) == expected_url  # type: ignore[attr-defined]
 
     # --- Migration Helpers ---
-    def assert_migration_applied(self, session_factory: Callable[[], AsyncSession], table_name: str | None = None, version: str | None = None) -> None:
+    def assert_migration_applied(
+        self,
+        session_factory: Callable[[], AsyncSession],
+        table_name: str | None = None,
+        version: str | None = None,
+    ) -> None:
         """Assert that a database migration has been applied."""
+
         # Checks for table or migration version presence
         async def _check() -> None:
             async with session_factory() as session:
                 conn = await session.connection()
+
                 def check_tables(sync_conn: object) -> dict[str, object]:
                     inspector = inspect(sync_conn)
                     result: dict[str, object] = {}
-                    if table_name and inspector is not None and hasattr(inspector, 'get_table_names'):
-                        tables = getattr(inspector, 'get_table_names')()
+                    if (
+                        table_name
+                        and inspector is not None
+                        and hasattr(inspector, "get_table_names")
+                    ):
+                        tables = inspector.get_table_names()
                         if isinstance(tables, list):
                             result["tables"] = tables
                     return result
+
                 result = await conn.run_sync(check_tables)
                 if table_name:
                     tables = result["tables"]
@@ -712,9 +821,8 @@ class DatabaseTestTemplate(BaseAPITest):
                         text("SELECT version_num FROM alembic_version")
                     )
                     found = [row[0] for row in versions]
-                    assert (
-                        version in found
-                    ), f"Migration version {version} not applied"
+                    assert version in found, f"Migration version {version} not applied"
+
         asyncio.run(_check())
 
     @pytest.mark.requires_real_db(
@@ -726,7 +834,9 @@ class DatabaseTestTemplate(BaseAPITest):
         import tempfile
         from pathlib import Path
 
-        migrations_path = str(Path(__file__).parent.parent / "src" / "alembic_migrations")
+        migrations_path = str(
+            Path(__file__).parent.parent / "src" / "alembic_migrations"
+        )
         db_url = os.environ.get("REVIEWPOINT_DB_URL")
         assert db_url, "REVIEWPOINT_DB_URL must be set for Alembic migrations"
 
@@ -743,9 +853,12 @@ sqlalchemy.url = {db_url}
         try:
             result = subprocess.run(
                 ["alembic", "-c", tmp_ini_path] + command.split(),
-                capture_output=True, text=True
+                capture_output=True,
+                text=True,
             )
-            assert result.returncode == 0, f"Migration failed: {result.stderr}\n{result.stdout}"
+            assert (
+                result.returncode == 0
+            ), f"Migration failed: {result.stderr}\n{result.stdout}"
         finally:
             try:
                 os.remove(tmp_ini_path)
@@ -753,21 +866,29 @@ sqlalchemy.url = {db_url}
                 pass
 
     # --- Latency/Slow Query Simulation ---
-    def simulate_db_latency(self, session_factory: Callable[[], AsyncSession], delay: float = 0.5) -> None:
+    def simulate_db_latency(
+        self, session_factory: Callable[[], AsyncSession], delay: float = 0.5
+    ) -> None:
         """Simulate database latency by adding delays to queries."""
         # This is a placeholder implementation since proper patching would require
         # more complex type handling. In practice, this would mock the execute method.
         # For strict typing, we'll use a simpler approach with a warning.
         import warnings
+
         warnings.warn(
             f"Database latency simulation enabled with {delay}s delay. "
             "Actual implementation would require runtime patching.",
             UserWarning,
-            stacklevel=2
+            stacklevel=2,
         )
 
     # --- Bulk Insert/Batch Operation Helpers ---
-    async def bulk_insert(self, session_factory: Callable[[], AsyncSession], table: ModelType, rows: list[dict[str, object]]) -> list[object]:
+    async def bulk_insert(
+        self,
+        session_factory: Callable[[], AsyncSession],
+        table: ModelType,
+        rows: list[dict[str, object]],
+    ) -> list[object]:
         """Bulk insert rows into a table."""
         async with session_factory() as session:
             objs = [table(**row) for row in rows]
@@ -776,7 +897,11 @@ sqlalchemy.url = {db_url}
             return objs
 
     async def assert_bulk_query(
-        self, session_factory: Callable[[], AsyncSession], table: ModelType, filter_dict: dict[str, object], expected_count: int
+        self,
+        session_factory: Callable[[], AsyncSession],
+        table: ModelType,
+        filter_dict: dict[str, object],
+        expected_count: int,
     ) -> None:
         """Assert that a bulk query returns the expected number of rows."""
         async with session_factory() as session:
@@ -789,26 +914,33 @@ sqlalchemy.url = {db_url}
             ), f"Expected {expected_count} rows, got {len(rows)}"
 
     # --- Database Seeding/Cleanup ---
-    async def seed_database(self, session_factory: Callable[[], AsyncSession], table: ModelType, rows: list[dict[str, object]]) -> list[object]:
+    async def seed_database(
+        self,
+        session_factory: Callable[[], AsyncSession],
+        table: ModelType,
+        rows: list[dict[str, object]],
+    ) -> list[object]:
         """Seed the database with test data."""
         return await self.bulk_insert(session_factory, table, rows)
 
-    async def truncate_tables(self, session_factory: Callable[[], AsyncSession], tables: list[str]) -> None:
+    async def truncate_tables(
+        self, session_factory: Callable[[], AsyncSession], tables: list[str]
+    ) -> None:
         """Truncate database tables."""
         async with session_factory() as session:
             # Detect SQLite and use DELETE FROM instead of TRUNCATE
             # Note: session.bind might be AsyncConnection, need to check engine
             bind = session.get_bind()
             engine_url = "unknown"
-            
+
             # Try different ways to get the URL depending on the bind type
-            if hasattr(bind, 'url'):
-                engine_url = str(getattr(bind, 'url'))
-            elif hasattr(bind, 'engine'):
-                engine = getattr(bind, 'engine')
-                if hasattr(engine, 'url'):
-                    engine_url = str(getattr(engine, 'url'))
-            
+            if hasattr(bind, "url"):
+                engine_url = str(bind.url)
+            elif hasattr(bind, "engine"):
+                engine = bind.engine
+                if hasattr(engine, "url"):
+                    engine_url = str(engine.url)
+
             if engine_url.startswith("sqlite"):
                 for table in tables:
                     await session.execute(text(f"DELETE FROM {table}"))
@@ -820,7 +952,9 @@ sqlalchemy.url = {db_url}
             await session.commit()
 
     # --- Connection Pool/State Helpers ---
-    def assert_connection_pool_size(self, engine: AsyncEngine, expected_size: int) -> None:
+    def assert_connection_pool_size(
+        self, engine: AsyncEngine, expected_size: int
+    ) -> None:
         """Assert that connection pool has expected size."""
         pool = engine.pool
         # SQLite in-memory uses StaticPool, which lacks checkedin/checkedout
@@ -831,14 +965,24 @@ sqlalchemy.url = {db_url}
             return
         # For other pool types, attempt to get size if attributes exist
         try:
-            size = getattr(pool, 'checkedin', lambda: 0)() + getattr(pool, 'checkedout', lambda: 0)()
-            assert size == expected_size, f"Expected pool size {expected_size}, got {size}"
+            size = (
+                getattr(pool, "checkedin", lambda: 0)()
+                + getattr(pool, "checkedout", lambda: 0)()
+            )
+            assert (
+                size == expected_size
+            ), f"Expected pool size {expected_size}, got {size}"
         except (AttributeError, TypeError):
             # If attributes don't exist or aren't callable, skip the check
             pass
 
     # --- Multi-DB/Shard Helpers ---
-    async def assert_cross_db_query(self, session_factories: list[Callable[[], AsyncSession]], sql: str, expected_results: list[object]) -> None:
+    async def assert_cross_db_query(
+        self,
+        session_factories: list[Callable[[], AsyncSession]],
+        sql: str,
+        expected_results: list[object],
+    ) -> None:
         """Assert that queries across multiple databases return expected results."""
         for i, (session_factory, expected) in enumerate(
             zip(session_factories, expected_results, strict=False)
@@ -897,8 +1041,10 @@ class EventTestTemplate:
 
     def get_loguru_text(self) -> str:
         """Get text from loguru log file, ensuring all logs are flushed."""
-        from loguru import logger
         import time
+
+        from loguru import logger
+
         # Flush loguru handlers to ensure all logs are written
         logger.complete()
         time.sleep(0.05)  # Small delay to allow async file handler to flush
@@ -954,7 +1100,7 @@ class OpenAPITestTemplate(BaseAPITest):
     def assert_openapi_metadata(self, resp: TestResponse) -> None:
         """Assert that OpenAPI metadata is correct."""
         self.assert_status(resp, 200)
-        if hasattr(resp, 'json'):
+        if hasattr(resp, "json"):
             data = resp.json()
             assert data["info"]["title"] == "ReViewPoint Core API"
             assert data["info"]["description"].startswith(
@@ -965,7 +1111,9 @@ class OpenAPITestTemplate(BaseAPITest):
             assert "license" in data["info"]
             assert "servers" in data
             assert any(s["url"] == "http://localhost:8000" for s in data["servers"])
-            assert any(s["url"] == "https://api.reviewpoint.org" for s in data["servers"])
+            assert any(
+                s["url"] == "https://api.reviewpoint.org" for s in data["servers"]
+            )
 
     def assert_docs_accessible(self) -> None:
         """Assert that documentation endpoints are accessible."""
@@ -1016,7 +1164,10 @@ class SecurityUnitTestTemplate(BaseAPITest):
 
     @pytest.fixture(autouse=True)
     def _setup_security_fixtures(
-        self, monkeypatch: pytest.MonkeyPatch, override_env_vars: Callable[[dict[str, str]], None], loguru_list_sink: list[str]
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        override_env_vars: Callable[[dict[str, str]], None],
+        loguru_list_sink: list[str],
     ) -> None:
         """Set up security testing fixtures."""
         self.monkeypatch = monkeypatch
@@ -1062,14 +1213,18 @@ class ModelUnitTestTemplate:
     Centralizes model test patterns for DRYness and maintainability.
     """
 
-    def assert_to_dict(self, model: object, expected_dict: dict[str, object], msg: str | None = None) -> None:
+    def assert_to_dict(
+        self, model: object, expected_dict: dict[str, object], msg: str | None = None
+    ) -> None:
         """Assert that model.to_dict() returns the expected dictionary."""
-        actual: dict[str, object] = getattr(model, 'to_dict', lambda: {})()
+        actual: dict[str, object] = getattr(model, "to_dict", lambda: {})()
         assert actual == expected_dict, (
             msg or f"Expected to_dict() to return {expected_dict!r}, got {actual!r}"
         )
 
-    def assert_model_attrs(self, model: object, attrs: dict[str, object], msg: str | None = None) -> None:
+    def assert_model_attrs(
+        self, model: object, attrs: dict[str, object], msg: str | None = None
+    ) -> None:
         """Assert that a model has expected attribute values."""
         for k, v in attrs.items():
             actual = getattr(model, k, None)
@@ -1083,11 +1238,15 @@ class ModelUnitTestTemplate:
         """Assert that two values are not equal."""
         assert a != b, msg or f"Expected {a!r} != {b!r}"
 
-    def assert_in(self, member: object, container: object, msg: str | None = None) -> None:
+    def assert_in(
+        self, member: object, container: object, msg: str | None = None
+    ) -> None:
         """Assert that a member is in a container."""
         assert member in container, msg or f"Expected {member!r} in {container!r}"  # type: ignore[operator]
 
-    def assert_not_in(self, member: object, container: object, msg: str | None = None) -> None:
+    def assert_not_in(
+        self, member: object, container: object, msg: str | None = None
+    ) -> None:
         """Assert that a member is not in a container."""
         assert member not in container, (  # type: ignore[operator]
             msg or f"Expected {member!r} not in {container!r}"
@@ -1109,7 +1268,13 @@ class ModelUnitTestTemplate:
         """Assert that a value is False."""
         assert value is False, msg or f"Expected value to be False, got {value!r}"
 
-    def assert_raises(self, exc_type: type[BaseException], func: Callable[..., object], *args: object, **kwargs: object) -> None:
+    def assert_raises(
+        self,
+        exc_type: type[BaseException],
+        func: Callable[..., object],
+        *args: object,
+        **kwargs: object,
+    ) -> None:
         """Assert that a function raises a specific exception."""
         with pytest.raises(exc_type):
             func(*args, **kwargs)
@@ -1129,7 +1294,10 @@ class AsyncModelTestTemplate(ModelUnitTestTemplate):
 
     @pytest.fixture(autouse=True)
     def _setup_async_model_fixtures(
-        self, async_session: AsyncSession, override_env_vars: Callable[[dict[str, str]], None], loguru_list_sink: list[str]
+        self,
+        async_session: AsyncSession,
+        override_env_vars: Callable[[dict[str, str]], None],
+        loguru_list_sink: list[str],
     ) -> None:
         """Set up async model testing fixtures."""
         self.async_session = async_session
@@ -1180,17 +1348,23 @@ class UtilityUnitTestTemplate:
         """Assert that two values are not equal."""
         assert a != b, msg or f"Expected {a!r} != {b!r}"
 
-    def assert_in(self, member: object, container: object, msg: str | None = None) -> None:
+    def assert_in(
+        self, member: object, container: object, msg: str | None = None
+    ) -> None:
         """Assert that a member is in a container."""
         assert member in container, msg or f"Expected {member!r} in {container!r}"  # type: ignore[operator]
 
-    def assert_not_in(self, member: object, container: object, msg: str | None = None) -> None:
+    def assert_not_in(
+        self, member: object, container: object, msg: str | None = None
+    ) -> None:
         """Assert that a member is not in a container."""
         assert member not in container, (  # type: ignore[operator]
             msg or f"Expected {member!r} not in {container!r}"
         )
 
-    def assert_almost_equal(self, a: float, b: float, tol: float = 1e-7, msg: str | None = None) -> None:
+    def assert_almost_equal(
+        self, a: float, b: float, tol: float = 1e-7, msg: str | None = None
+    ) -> None:
         """Assert that two floating point numbers are approximately equal."""
         assert abs(a - b) <= tol, msg or f"Expected {a!r} ≈ {b!r} (tol={tol})"
 
@@ -1210,24 +1384,40 @@ class UtilityUnitTestTemplate:
         """Assert that a value is not None."""
         assert value is not None, msg or "Expected value to not be None"
 
-    def assert_is_instance(self, obj: object, cls: type[object], msg: str | None = None) -> None:
+    def assert_is_instance(
+        self, obj: object, cls: type[object], msg: str | None = None
+    ) -> None:
         """Assert that an object is an instance of a class."""
         assert isinstance(obj, cls), (
             msg or f"Expected {obj!r} to be instance of {cls!r}"
         )
 
-    def assert_is_not_instance(self, obj: object, cls: type[object], msg: str | None = None) -> None:
+    def assert_is_not_instance(
+        self, obj: object, cls: type[object], msg: str | None = None
+    ) -> None:
         """Assert that an object is not an instance of a class."""
         assert not isinstance(obj, cls), (
             msg or f"Expected {obj!r} to not be instance of {cls!r}"
         )
 
-    def assert_raises(self, exc_type: type[BaseException], func: Callable[..., object], *args: object, **kwargs: object) -> None:
+    def assert_raises(
+        self,
+        exc_type: type[BaseException],
+        func: Callable[..., object],
+        *args: object,
+        **kwargs: object,
+    ) -> None:
         """Assert that a function raises a specific exception."""
         with pytest.raises(exc_type):
             func(*args, **kwargs)
 
-    async def assert_async_raises(self, exc_type: type[BaseException], func: Callable[..., Awaitable[object]], *args: object, **kwargs: object) -> None:
+    async def assert_async_raises(
+        self,
+        exc_type: type[BaseException],
+        func: Callable[..., Awaitable[object]],
+        *args: object,
+        **kwargs: object,
+    ) -> None:
         """Assert that an async function raises a specific exception."""
         with pytest.raises(exc_type):
             await func(*args, **kwargs)
@@ -1236,7 +1426,9 @@ class UtilityUnitTestTemplate:
         """Assert that a > b."""
         assert a > b, msg or f"Expected {a!r} > {b!r}"  # type: ignore[operator]
 
-    def assert_greater_equal(self, a: object, b: object, msg: str | None = None) -> None:
+    def assert_greater_equal(
+        self, a: object, b: object, msg: str | None = None
+    ) -> None:
         """Assert that a >= b."""
         assert a >= b, msg or f"Expected {a!r} >= {b!r}"  # type: ignore[operator]
 
@@ -1248,17 +1440,23 @@ class UtilityUnitTestTemplate:
         """Assert that a <= b."""
         assert a <= b, msg or f"Expected {a!r} <= {b!r}"  # type: ignore[operator]
 
-    def assert_dict_equal(self, d1: dict[str, object], d2: dict[str, object], msg: str | None = None) -> None:
+    def assert_dict_equal(
+        self, d1: dict[str, object], d2: dict[str, object], msg: str | None = None
+    ) -> None:
         """Assert that two dictionaries are equal."""
         assert d1 == d2, msg or f"Expected dicts to be equal: {d1!r} == {d2!r}"
 
-    def assert_list_equal(self, l1: Sequence[object], l2: Sequence[object], msg: str | None = None) -> None:
+    def assert_list_equal(
+        self, l1: Sequence[object], l2: Sequence[object], msg: str | None = None
+    ) -> None:
         """Assert that two sequences are equal."""
         assert list(l1) == list(l2), (
             msg or f"Expected lists to be equal: {l1!r} == {l2!r}"
         )
 
-    def assert_set_equal(self, s1: set[object], s2: set[object], msg: str | None = None) -> None:
+    def assert_set_equal(
+        self, s1: set[object], s2: set[object], msg: str | None = None
+    ) -> None:
         """Assert that two sets are equal."""
         assert set(s1) == set(s2), msg or f"Expected sets to be equal: {s1!r} == {s2!r}"
 
@@ -1272,7 +1470,9 @@ class UtilityUnitTestTemplate:
         """Assert that a string ends with a suffix."""
         assert str(s).endswith(suffix), msg or f"Expected {s!r} to end with {suffix!r}"
 
-    def assert_between(self, value: float, low: float, high: float, msg: str | None = None) -> None:
+    def assert_between(
+        self, value: float, low: float, high: float, msg: str | None = None
+    ) -> None:
         """Assert that a value is between low and high (inclusive)."""
         assert low <= value <= high, (
             msg or f"Expected {value!r} to be between {low!r} and {high!r}"
@@ -1291,7 +1491,7 @@ class UtilityUnitTestTemplate:
         func: Callable[..., bool],
         *args: object,
         msg: str | None = None,
-        **kwargs: object
+        **kwargs: object,
     ) -> None:
         """
         Assert that a predicate function returns True.
@@ -1311,7 +1511,7 @@ class UtilityUnitTestTemplate:
         func: Callable[..., bool],
         *args: object,
         msg: str | None = None,
-        **kwargs: object
+        **kwargs: object,
     ) -> None:
         """
         Assert that a predicate function returns False.
@@ -1338,7 +1538,9 @@ class UtilityUnitTestTemplate:
                 msg or f"Expected all True, but got {value!r} at index {i}"
             )
 
-    def assert_all_false(self, iterable: Sequence[bool], msg: str | None = None) -> None:
+    def assert_all_false(
+        self, iterable: Sequence[bool], msg: str | None = None
+    ) -> None:
         """
         Assert that all values in an iterable are False.
         Args:
@@ -1357,17 +1559,20 @@ class MainAppTestTemplate(BaseAPITest):
     Inherit from this class for all main app tests. Add app-specific helpers here.
     """
 
-    def assert_middleware_present(self, app: AppType, middleware_name: str, msg: str | None = None) -> None:
+    def assert_middleware_present(
+        self, app: AppType, middleware_name: str, msg: str | None = None
+    ) -> None:
         """Assert that a specific middleware is present in the app."""
-        if hasattr(app, 'user_middleware'):
-            names = [getattr(m, "cls", type(m)).__name__ for m in getattr(app, 'user_middleware', [])]
+        if hasattr(app, "user_middleware"):
+            names = [
+                getattr(m, "cls", type(m)).__name__
+                for m in getattr(app, "user_middleware", [])
+            ]
         else:
             names = []
         assert middleware_name in names, (
             msg or f"Expected middleware {middleware_name!r} in {names!r}"
         )
-
-
 
 
 # --- AlembicEnvTestTemplate (restored from backup) ---
@@ -1377,17 +1582,14 @@ class AlembicEnvTestTemplate:
     Provides helpers for patching alembic context, asserting migration calls, and error assertions.
     """
 
-
     def patch_alembic_context(
-        self,
-        monkeypatch: "pytest.MonkeyPatch",
-        context_mod: object
+        self, monkeypatch: pytest.MonkeyPatch, context_mod: object
     ) -> None:
         """
         Strictly typed patch for Alembic context in tests.
         """
-        import sys
         import types
+
         monkeypatch.setitem(sys.modules, "alembic.context", context_mod)
         monkeypatch.setitem(sys.modules, "alembic_migrations.context", context_mod)
         monkeypatch.setitem(
@@ -1399,23 +1601,18 @@ class AlembicEnvTestTemplate:
             types.SimpleNamespace(context=context_mod),
         )
 
-
     from unittest import mock
+
     def assert_called_once(
-        self,
-        mock_obj: mock.Mock | mock.MagicMock,
-        msg: str | None = None
+        self, mock_obj: mock.Mock | mock.MagicMock, msg: str | None = None
     ) -> None:
         assert mock_obj.called, msg or "Expected mock to be called"
         assert mock_obj.call_count == 1, (
             msg or f"Expected mock to be called once, got {mock_obj.call_count}"
         )
 
-
     def assert_not_called(
-        self,
-        mock_obj: mock.Mock | mock.MagicMock,
-        msg: str | None = None
+        self, mock_obj: mock.Mock | mock.MagicMock, msg: str | None = None
     ) -> None:
         assert not mock_obj.called, msg or "Expected mock to not be called"
 
@@ -1425,9 +1622,10 @@ class AlembicEnvTestTemplate:
         func: Callable[..., object],
         *args: object,
         match: str | None = None,
-        **kwargs: object
+        **kwargs: object,
     ) -> None:
         import pytest
+
         if match is not None:
             with pytest.raises(exc_type, match=match):
                 func(*args, **kwargs)
@@ -1435,19 +1633,15 @@ class AlembicEnvTestTemplate:
             with pytest.raises(exc_type):
                 func(*args, **kwargs)
 
-
     def assert_true(self, expr: object, msg: str | None = None) -> None:
         assert expr, msg or f"Expected expression to be True, got {expr}"
 
-
     def assert_is_instance(
-        self,
-        obj: object,
-        cls: type[object],
-        msg: str | None = None
+        self, obj: object, cls: type[object], msg: str | None = None
     ) -> None:
         assert isinstance(obj, cls), (
             msg or f"Expected {obj!r} to be instance of {cls!r}, got {type(obj)}"
         )
+
 
 # pytest: disable=pytest_plugin_missing_source_or_test

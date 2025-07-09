@@ -1,7 +1,8 @@
 """Test to verify the fast testing setup works correctly."""
 
 import os
-from typing import Final, Literal
+from typing import Final
+
 import pytest
 
 

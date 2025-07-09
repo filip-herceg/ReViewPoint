@@ -1,5 +1,7 @@
+from collections.abc import Callable
 from datetime import datetime, timedelta
-from typing import Final, Callable
+from typing import Final
+
 from src.utils import datetime as dt_utils
 from tests.test_templates import UtilityUnitTestTemplate
 

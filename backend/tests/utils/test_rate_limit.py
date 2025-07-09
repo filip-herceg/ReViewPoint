@@ -1,6 +1,8 @@
 import asyncio
-from typing import Final, List
+from typing import Final
+
 import pytest
+
 from src.utils.rate_limit import AsyncRateLimiter
 from tests.test_templates import UtilityUnitTestTemplate
 
@@ -15,9 +17,11 @@ class TestAsyncRateLimiter(UtilityUnitTestTemplate):
         Test AsyncRateLimiter allows up to max_calls within the period, blocks further calls,
         and allows again after the period. Also tests reset for a single key and global reset.
         """
-        limiter: Final[AsyncRateLimiter[str]] = AsyncRateLimiter(max_calls=2, period=0.5)
+        limiter: Final[AsyncRateLimiter[str]] = AsyncRateLimiter(
+            max_calls=2, period=0.5
+        )
         key: Final[str] = "user:1:test"
-        results: List[bool] = [await limiter.is_allowed(key) for _ in range(2)]
+        results: list[bool] = [await limiter.is_allowed(key) for _ in range(2)]
         self.assert_all_true(results)
         self.assert_is_false(await limiter.is_allowed(key))
         await asyncio.sleep(0.6)
@@ -33,6 +37,6 @@ class TestAsyncRateLimiter(UtilityUnitTestTemplate):
         key3: Final[str] = "user:3:test"
         self.assert_is_true(await limiter.is_allowed(key3))
         limiter.reset()
-        all_keys: List[str] = [key, key2, key3]
+        all_keys: list[str] = [key, key2, key3]
         results = [await limiter.is_allowed(k) for k in all_keys]
         self.assert_all_true(results)

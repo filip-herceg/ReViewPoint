@@ -4,7 +4,6 @@ from typing import (
     Final,
     Literal,
     TypedDict,
-    cast,
 )
 
 from pydantic import BaseModel, EmailStr, Field, field_validator

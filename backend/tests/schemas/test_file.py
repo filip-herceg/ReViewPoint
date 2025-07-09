@@ -1,11 +1,11 @@
-
 from datetime import UTC, datetime
-from typing import Any, Dict, Generator, Optional, Type, cast, Final
+from typing import Any, cast
+
 import pytest
 from pydantic import ValidationError
+
 from src.schemas.file import FileSchema
 from tests.test_templates import ModelUnitTestTemplate
-
 
 
 class TestFileSchema(ModelUnitTestTemplate):
@@ -25,7 +25,7 @@ class TestFileSchema(ModelUnitTestTemplate):
         self.assert_equal(schema.user_id, 42)
         self.assert_equal(schema.created_at, now)
         # Test from dict (orm_mode)
-        dummy: Dict[str, Any] = {
+        dummy: dict[str, Any] = {
             "id": 2,
             "filename": "b.txt",
             "content_type": "text/csv",
@@ -52,11 +52,11 @@ class TestFileSchema(ModelUnitTestTemplate):
     )
     def test_schema_missing_fields(
         self,
-        id: Optional[int],
-        filename: Optional[str],
-        content_type: Optional[str],
-        user_id: Optional[int],
-        created_at: Optional[datetime],
+        id: int | None,
+        filename: str | None,
+        content_type: str | None,
+        user_id: int | None,
+        created_at: datetime | None,
         should_raise: bool,
     ) -> None:
         """Test that FileSchema raises ValidationError if required fields are missing."""
@@ -83,7 +83,6 @@ class TestFileSchema(ModelUnitTestTemplate):
             self.assert_equal(schema.content_type, content_type)
             self.assert_equal(schema.user_id, user_id)
             self.assert_equal(schema.created_at, created_at)
-
 
     @pytest.mark.parametrize(
         "id,filename,content_type,user_id,created_at",
@@ -114,7 +113,6 @@ class TestFileSchema(ModelUnitTestTemplate):
             created_at=created_at,
         )
 
-
     def test_schema_repr_and_to_dict(self) -> None:
         """Test __repr__ and model_dump for FileSchema."""
         now: datetime = datetime.now(UTC)
@@ -126,12 +124,11 @@ class TestFileSchema(ModelUnitTestTemplate):
             created_at=now,
         )
         self.assert_repr(schema, "FileSchema")
-        d: Dict[str, Any] = schema.model_dump()
+        d: dict[str, Any] = schema.model_dump()
         self.assert_equal(d["filename"], "repr.txt")
         self.assert_equal(d["content_type"], "text/plain")
         self.assert_equal(d["user_id"], 1)
         self.assert_equal(d["created_at"], now)
-
 
     def test_schema_equality(self) -> None:
         """Test equality and inequality of FileSchema instances."""
@@ -160,7 +157,6 @@ class TestFileSchema(ModelUnitTestTemplate):
         )
         self.assert_not_equal(s1, s3)
 
-
     def test_schema_copy_and_update(self) -> None:
         """Test model_copy and update for FileSchema."""
         now: datetime = datetime.now(UTC)
@@ -177,7 +173,6 @@ class TestFileSchema(ModelUnitTestTemplate):
         self.assert_equal(s2.user_id, 1)
         self.assert_equal(s2.created_at, now)
 
-
     def test_schema_json_serialization(self) -> None:
         """Test model_dump_json for FileSchema."""
         now: datetime = datetime.now(UTC)
@@ -192,7 +187,6 @@ class TestFileSchema(ModelUnitTestTemplate):
         self.assert_in("json.txt", json_str)
         self.assert_in(str(now.year), json_str)
 
-
     def test_schema_from_orm(self) -> None:
         """Test model_validate with from_attributes=True for FileSchema."""
         now: datetime = datetime.now(UTC)
@@ -204,7 +198,14 @@ class TestFileSchema(ModelUnitTestTemplate):
             user_id: int
             created_at: datetime
 
-            def __init__(self, id: int, filename: str, content_type: str, user_id: int, created_at: datetime) -> None:
+            def __init__(
+                self,
+                id: int,
+                filename: str,
+                content_type: str,
+                user_id: int,
+                created_at: datetime,
+            ) -> None:
                 self.id = id
                 self.filename = filename
                 self.content_type = content_type
@@ -218,7 +219,6 @@ class TestFileSchema(ModelUnitTestTemplate):
         self.assert_equal(schema.content_type, "text/plain")
         self.assert_equal(schema.user_id, 2)
         self.assert_equal(schema.created_at, now)
-
 
     def test_schema_str(self) -> None:
         """Test __str__ for FileSchema."""

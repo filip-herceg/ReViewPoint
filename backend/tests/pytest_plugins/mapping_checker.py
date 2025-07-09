@@ -5,12 +5,11 @@ Pytest plugin to enforce 1:1 mapping between backend source files and test files
 - Reports missing, extra, or multiply-mapped files as pytest warnings/errors.
 """
 
-
 import os
 import pathlib
+from typing import Final
+
 import pytest
-from typing import Final, Optional, Callable, Any
-from collections.abc import Generator
 
 SRC_ROOT: Final[pathlib.Path] = pathlib.Path(__file__).parents[2] / "src"
 TESTS_ROOT: Final[pathlib.Path] = pathlib.Path(__file__).parents[1]
@@ -26,25 +25,24 @@ EXCLUDED_MAPPINGS: Final[list[tuple[str, str]]] = [
 ]
 
 
-
-def src_to_test_path(src_path: pathlib.Path) -> Optional[pathlib.Path]:
+def src_to_test_path(src_path: pathlib.Path) -> pathlib.Path | None:
     """Given a src file path, return the expected test file path."""
     rel: pathlib.Path = src_path.relative_to(SRC_ROOT)
     if rel.name in IGNORED_FILES:
         return None
-    test_name: str = f"test_{rel.name}" if not rel.name.startswith("test_") else rel.name
+    test_name: str = (
+        f"test_{rel.name}" if not rel.name.startswith("test_") else rel.name
+    )
     return TESTS_ROOT / rel.parent / test_name
 
 
-
-def test_to_src_path(test_path: pathlib.Path) -> Optional[pathlib.Path]:
+def test_to_src_path(test_path: pathlib.Path) -> pathlib.Path | None:
     """Given a test file path, return the expected src file path."""
     rel: pathlib.Path = test_path.relative_to(TESTS_ROOT)
     if rel.name in IGNORED_TEST_FILES:
         return None
     src_name: str = rel.name[5:] if rel.name.startswith("test_") else rel.name
     return SRC_ROOT / rel.parent / src_name
-
 
 
 def collect_py_files(root: pathlib.Path, ignored: set[str]) -> set[pathlib.Path]:
@@ -69,9 +67,9 @@ def collect_py_files(root: pathlib.Path, ignored: set[str]) -> set[pathlib.Path]
     }
 
 
-
 class MappingCheckResult:
     """Result container for mapping check between source and test files."""
+
     missing_tests: list[tuple[pathlib.Path, pathlib.Path]]
     missing_sources: list[tuple[pathlib.Path, pathlib.Path]]
     multiply_mapped: list[pathlib.Path]
@@ -88,7 +86,6 @@ class MappingCheckResult:
         self.checked = False
 
 
-
 def pytest_sessionstart(session: pytest.Session) -> None:
     """Pytest hook: check 1:1 mapping between source and test files at session start."""
     result: MappingCheckResult = MappingCheckResult()
@@ -102,7 +99,7 @@ def pytest_sessionstart(session: pytest.Session) -> None:
 
     # Check src -> test
     for src in src_files:
-        test: Optional[pathlib.Path] = src_to_test_path(src)
+        test: pathlib.Path | None = src_to_test_path(src)
         if test is not None:
             src_to_test[src] = test
             if not test.exists():
@@ -110,7 +107,7 @@ def pytest_sessionstart(session: pytest.Session) -> None:
 
     # Check test -> src
     for test in test_files:
-        src_path: Optional[pathlib.Path] = test_to_src_path(test)
+        src_path: pathlib.Path | None = test_to_src_path(test)
         if src_path is not None:
             test_to_src[test] = src_path
             if not src_path.exists():
@@ -120,6 +117,7 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     test_targets: list[pathlib.Path] = list(src_to_test.values())
     if len(test_targets) != len(set(test_targets)):
         from collections import Counter
+
         c: Counter[pathlib.Path] = Counter(test_targets)
         for t, count in c.items():
             if count > 1:
@@ -127,16 +125,15 @@ def pytest_sessionstart(session: pytest.Session) -> None:
 
     result.checked = True
     # Attach result to config using setattr to avoid type errors
-    setattr(session.config, "_mapping_check_result", result)
+    session.config._mapping_check_result = result
     # Do not print or exit here; summary will be shown at the end.
-
 
 
 def pytest_terminal_summary(
     terminalreporter: "pytest.TerminalReporter", exitstatus: int, config: object
 ) -> None:
     """Pytest hook: print summary of 1:1 mapping check between source and test files."""
-    result: Optional[MappingCheckResult] = getattr(config, "_mapping_check_result", None)
+    result: MappingCheckResult | None = getattr(config, "_mapping_check_result", None)
     if not result or not result.checked:
         return
     term = terminalreporter

@@ -1,4 +1,5 @@
-from typing import Final, Optional
+from typing import Final
+
 from src.utils.validation import (
     get_password_validation_error,
     validate_email,

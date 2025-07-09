@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import ClassVar
-
 from sqlalchemy import ForeignKey, Index, String
 from sqlalchemy.orm import (
     Mapped,
@@ -18,9 +16,7 @@ class File(BaseModel):
     """
 
     __tablename__ = "files"
-    __table_args__ = (
-        Index("ix_files_user_id", "user_id"),
-    )
+    __table_args__ = (Index("ix_files_user_id", "user_id"),)
 
     filename: Mapped[str] = mapped_column(String(255), nullable=False)
     content_type: Mapped[str] = mapped_column(String(128), nullable=False)

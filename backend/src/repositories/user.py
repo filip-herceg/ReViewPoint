@@ -5,7 +5,10 @@ import logging
 from collections.abc import AsyncIterator, Mapping, Sequence
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
+
+# Example: rate limiter for user actions (5 per minute per user)
 from typing import (
+    Any,
     Final,
     Literal,
     TypedDict,
@@ -17,8 +20,8 @@ from sqlalchemy import (
     or_,
     select,
 )
+from sqlalchemy.engine import Row
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from src.models.user import User
 from src.utils.cache import user_cache
@@ -34,8 +37,6 @@ from src.utils.validation import (
     validate_email,
 )
 
-# Example: rate limiter for user actions (5 per minute per user)
-from typing import Any
 user_action_limiter: Final[AsyncRateLimiter[Any]] = AsyncRateLimiter(
     max_calls=5, period=60.0
 )
@@ -51,7 +52,9 @@ async def get_user_by_id(
     cache_key: Final[str] = f"user_id:{user_id}"
     if use_cache:
         cached_id_obj = await user_cache.get(cache_key)
-        cached_id: int | None = cached_id_obj if isinstance(cached_id_obj, int) else None
+        cached_id: int | None = (
+            cached_id_obj if isinstance(cached_id_obj, int) else None
+        )
         if cached_id is not None:
             result = await session.execute(select(User).where(User.id == cached_id))
             return result.scalar_one_or_none()
@@ -524,25 +527,22 @@ async def db_transaction(session: AsyncSession) -> AsyncIterator[AsyncSession]:
 async def get_user_with_files(session: AsyncSession, user_id: int) -> User | None:
     """Fetch a user and their files separately (WriteOnlyMapped doesn't support eager loading)."""
     from src.models.file import File
-    
+
     # Get the user first
-    result = await session.execute(
-        select(User).where(User.id == user_id)
-    )
+    result = await session.execute(select(User).where(User.id == user_id))
     user: User | None = result.scalar_one_or_none()
-    
+
     if user is None:
         return None
-    
+
     # Get files separately and attach them as a list
-    files_result = await session.execute(
-        select(File).where(File.user_id == user_id)
-    )
+    files_result = await session.execute(select(File).where(File.user_id == user_id))
     files_list = files_result.scalars().all()
-    
+
     # Store files in a way the test can access
-    setattr(user, '_files', files_list)
-    
+    # For test access only; not a real model field
+    user._files = files_list  # type: ignore[attr-defined]
+
     return user
 
 
@@ -717,9 +717,6 @@ async def anonymize_user(session: AsyncSession, user_id: int) -> bool:
         await session.rollback()
         raise exc
     return True
-
-
-from sqlalchemy.engine import Row
 
 
 async def user_signups_per_month(session: AsyncSession, year: int) -> dict[int, int]:

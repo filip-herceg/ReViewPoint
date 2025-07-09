@@ -19,9 +19,7 @@ class Base(DeclarativeBase):
 
 class BaseModel(Base):
     __abstract__: Final[bool] = True
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=func.now(), nullable=False
     )

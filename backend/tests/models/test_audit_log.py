@@ -7,6 +7,7 @@ This module tests database auditing functionality including:
 
 Note: Currently skipped as audit_log table and triggers are not implemented.
 """
+
 from __future__ import annotations
 
 from collections.abc import Sequence
@@ -51,9 +52,7 @@ class TestAuditLog(DatabaseTestTemplate):
         """
         # Insert a user using SQLAlchemy model
         user: User = User(
-            email="audit@example.com",
-            name="Audit User",
-            hashed_password="hash"
+            email="audit@example.com", name="Audit User", hashed_password="hash"
         )
         async_session.add(user)
         await async_session.commit()
@@ -75,7 +74,8 @@ class TestAuditLog(DatabaseTestTemplate):
             "SELECT operation FROM audit_log "
             "WHERE new_data->>'email' = 'audit@example.com' "
             "OR old_data->>'email' = 'audit@example.com' "
-            "ORDER BY id"        )
+            "ORDER BY id"
+        )
 
         result: Result[Any] = await async_session.execute(text(audit_query))
         rows: Sequence[Row[Any]] = result.fetchall()

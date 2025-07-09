@@ -10,8 +10,6 @@ import sys
 from pathlib import Path
 
 
-
-
 def check_file_exists(path: str, description: str) -> bool:
     """Check if a file exists and report status."""
     if Path(path).exists():
@@ -20,8 +18,6 @@ def check_file_exists(path: str, description: str) -> bool:
     else:
         print(f"❌ {description}: {path} (NOT FOUND)")
         return False
-
-
 
 
 def check_hatch_env() -> bool:
@@ -58,8 +54,6 @@ def check_hatch_env() -> bool:
     except Exception as e:
         print(f"❌ Error checking hatch: {e}")
         return False
-
-
 
 
 def main() -> int:

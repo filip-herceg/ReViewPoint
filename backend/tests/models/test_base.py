@@ -6,6 +6,7 @@ This module tests the base SQLAlchemy model classes including:
 - Model representation and attribute handling
 - Edge cases for model operations
 """
+
 from __future__ import annotations
 
 from typing import Any, Final
@@ -23,16 +24,19 @@ class TestBaseModel(ModelUnitTestTemplate):
         """Type-safe wrapper for assert_to_dict method."""
         # Use cast to handle the untyped method call
         from typing import cast
+
         cast(Any, self.assert_to_dict)(model, expected_dict)
 
     def _assert_model_attrs_typed(self, model: Any, attrs: dict[str, Any]) -> None:
         """Type-safe wrapper for assert_model_attrs method."""
         from typing import cast
+
         cast(Any, self.assert_model_attrs)(model, attrs)
 
     def _assert_repr_typed(self, obj: Any, class_name: str) -> None:
         """Type-safe wrapper for assert_repr method."""
         from typing import cast
+
         cast(Any, self.assert_repr)(obj, class_name)
 
     def test_base_to_dict(self) -> None:
@@ -42,6 +46,7 @@ class TestBaseModel(ModelUnitTestTemplate):
         class properly returns the expected dictionary representation when
         all attributes are set to non-None values.
         """
+
         class DummyToDict(Base):
             __tablename__ = "dummy_to_dict"
             __table_args__ = {"extend_existing": True}
@@ -66,6 +71,7 @@ class TestBaseModel(ModelUnitTestTemplate):
         the to_dict method properly includes the None value in the
         returned dictionary.
         """
+
         class DummyToDict(Base):
             __tablename__ = "dummy_to_dict_none"
             __table_args__ = {"extend_existing": True}
@@ -89,6 +95,7 @@ class TestBaseModel(ModelUnitTestTemplate):
         for SQLAlchemy models includes the class name in the string
         representation, which is useful for debugging.
         """
+
         class DummyRepr(Base):
             __tablename__ = "dummy_repr"
             __table_args__ = {"extend_existing": True}
@@ -108,6 +115,7 @@ class TestBaseModel(ModelUnitTestTemplate):
         when the model has fewer attributes than other test cases, ensuring
         the method only returns the attributes it's designed to handle.
         """
+
         class DummyMissing(Base):
             __tablename__ = "dummy_missing"
             __table_args__ = {"extend_existing": True}
@@ -130,6 +138,7 @@ class TestBaseModel(ModelUnitTestTemplate):
         even when model attributes haven't been set, which can happen
         when creating model instances without immediately populating them.
         """
+
         class DummyUnset(Base):
             __tablename__ = "dummy_unset"
             __table_args__ = {"extend_existing": True}
@@ -149,6 +158,7 @@ class TestBaseModel(ModelUnitTestTemplate):
         include computed or derived values that aren't directly mapped
         to database columns, providing flexibility in API responses.
         """
+
         class DummyExtra(Base):
             __tablename__ = "dummy_extra"
             __table_args__ = {"extend_existing": True}
@@ -172,6 +182,7 @@ class TestBaseModel(ModelUnitTestTemplate):
         different data types including integers, booleans, and floats,
         ensuring type preservation in the serialized representation.
         """
+
         class DummyTypes(Base):
             __tablename__ = "dummy_types"
             __table_args__ = {"extend_existing": True}
@@ -197,6 +208,7 @@ class TestBaseModel(ModelUnitTestTemplate):
         for minimal model classes and when primary key attributes
         are not set, which is common during model instantiation.
         """
+
         class DummyEdge(Base):
             __tablename__ = "dummy_edge"
             __table_args__ = {"extend_existing": True}

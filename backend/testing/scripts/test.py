@@ -12,8 +12,6 @@ import time
 from pathlib import Path
 
 
-
-
 def run_command(cmd: list[str], description: str = "") -> int:
     """Run a command and return the result."""
     if description:
@@ -36,8 +34,6 @@ def run_command(cmd: list[str], description: str = "") -> int:
     return result.returncode
 
 
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="ReViewPoint Backend Test Runner",
@@ -45,7 +41,7 @@ def main() -> int:
         epilog="""
 Examples:
   python test.py fast                    # Run fast tests
-  python test.py full                    # Run full test suite  
+  python test.py full                    # Run full test suite
   python test.py fast tests/test_auth.py # Run specific fast tests
   python test.py watch                   # Run fast tests in watch mode
   python test.py coverage                # Run fast tests with coverage

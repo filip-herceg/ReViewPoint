@@ -1,6 +1,8 @@
 import asyncio
 from typing import Final
+
 import pytest
+
 from src.utils.cache import AsyncInMemoryCache
 from tests.test_templates import UtilityUnitTestTemplate
 

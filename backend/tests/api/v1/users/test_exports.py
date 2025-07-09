@@ -3,7 +3,7 @@
 
 from collections.abc import AsyncGenerator, Callable, Mapping, MutableMapping, Sequence
 from datetime import UTC, datetime
-from typing import Final, Literal, Union
+from typing import Final
 
 import pytest
 import pytest_asyncio
@@ -23,7 +23,7 @@ EXPORT_SIMPLE_ENDPOINT: Final[str] = "/api/v1/users/export-simple"
 OverrideEnvVarsFixture = Callable[[Mapping[str, str]], None]
 MockListUsersReturn = tuple[Sequence[object], int]
 MockListUsersCallable = Callable[..., MockListUsersReturn]
-StatusCodeUnion = Union[int, tuple[int, ...]]
+StatusCodeUnion = int | tuple[int, ...]
 
 
 @pytest_asyncio.fixture
@@ -233,7 +233,9 @@ class TestUserExports(ExportEndpointTestTemplate):
         get_settings.cache_clear()
 
         # Mock the list_users function to avoid async database issues
-        async def mock_list_users(session: object, **kwargs: object) -> MockListUsersReturn:
+        async def mock_list_users(
+            session: object, **kwargs: object
+        ) -> MockListUsersReturn:
             from src.models.user import User
 
             mock_users: Sequence[User] = [
@@ -284,7 +286,9 @@ class TestUserExports(ExportEndpointTestTemplate):
         get_settings.cache_clear()
 
         # Mock the list_users function to avoid async database issues
-        async def mock_list_users(session: object, **kwargs: object) -> MockListUsersReturn:
+        async def mock_list_users(
+            session: object, **kwargs: object
+        ) -> MockListUsersReturn:
             from src.models.user import User
 
             mock_users: Sequence[User] = [
@@ -313,7 +317,9 @@ class TestUserExports(ExportEndpointTestTemplate):
             "X-API-Key": "testkey",
         }
 
-        resp: Response = client.get(f"{EXPORT_ENDPOINT}?fields=id,email", headers=headers)
+        resp: Response = client.get(
+            f"{EXPORT_ENDPOINT}?fields=id,email", headers=headers
+        )
         self.assert_status(resp, 200)
         first_line: str = resp.text.splitlines()[0]
         assert first_line.startswith("id,email")
@@ -334,7 +340,9 @@ class TestUserExports(ExportEndpointTestTemplate):
         get_settings.cache_clear()
 
         # Mock the list_users function to return empty results
-        async def mock_list_users(session: object, **kwargs: object) -> MockListUsersReturn:
+        async def mock_list_users(
+            session: object, **kwargs: object
+        ) -> MockListUsersReturn:
             empty_users: Sequence[object] = []
             return empty_users, 0
 
@@ -371,7 +379,9 @@ class TestUserExports(ExportEndpointTestTemplate):
         get_settings.cache_clear()
 
         # Mock the list_users function to avoid async database issues
-        async def mock_list_users(session: object, **kwargs: object) -> MockListUsersReturn:
+        async def mock_list_users(
+            session: object, **kwargs: object
+        ) -> MockListUsersReturn:
             from src.models.user import User
 
             mock_user: User = User(
@@ -412,7 +422,9 @@ class TestUserExports(ExportEndpointTestTemplate):
         get_settings.cache_clear()
 
         # Mock the list_users function to avoid async database issues
-        async def mock_list_users(session: object, **kwargs: object) -> MockListUsersReturn:
+        async def mock_list_users(
+            session: object, **kwargs: object
+        ) -> MockListUsersReturn:
             from src.models.user import User
 
             mock_users: Sequence[User] = [
@@ -472,7 +484,9 @@ class TestUserExports(ExportEndpointTestTemplate):
         get_settings.cache_clear()
 
         # Mock the list_users function to avoid async database issues
-        async def mock_list_users(session: object, **kwargs: object) -> MockListUsersReturn:
+        async def mock_list_users(
+            session: object, **kwargs: object
+        ) -> MockListUsersReturn:
             from src.models.user import User
 
             mock_users: Sequence[User] = [
@@ -583,7 +597,7 @@ class TestUserExports(ExportEndpointTestTemplate):
 class TestUserExportsAsync(ExportEndpointTestTemplate):
     """
     Async version of user export tests with improved performance.
-    
+
     These tests use async patterns for better performance and resource management.
     Includes async client fixtures and proper settings cache handling.
     """
@@ -838,7 +852,7 @@ class TestUserExportsFeatureFlags(ExportEndpointTestTemplate):
 class TestUserExportsFeatureFlagsAsync:
     """
     Async feature flags and test patterns for export functionality.
-    
+
     These tests focus on feature flag behavior and export permissions
     using async patterns for improved performance.
     """

@@ -37,6 +37,7 @@ def _is_testing() -> bool:
     """Check if we're currently running in a test environment."""
     import os
     import sys
+
     return (
         "PYTEST_CURRENT_TEST" in os.environ
         or "pytest" in sys.modules
