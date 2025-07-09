@@ -76,6 +76,7 @@ dependencies = [
   "pytest-loguru>=0.2.0",
   "types-passlib>=1.7.7.20240901",
   "types-python-jose",
+  "types-python-dateutil",
   "testcontainers",
 ]
 env-vars = { PYTHONPATH = "src", REVIEWPOINT_TEST_LOG_LEVEL = "INFO" }
