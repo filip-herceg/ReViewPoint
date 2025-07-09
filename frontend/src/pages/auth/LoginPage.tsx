@@ -1,74 +1,81 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import { useAuthStore } from '@/lib/store/authStore';
+import { useAuth } from '@/hooks/useAuth';
+import { loginSchema, type LoginFormData } from '@/lib/validation/authSchemas';
+import logger from '@/logger';
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { login } = useAuthStore();
+    const { login, isLoading, error, clearError } = useAuth();
 
-    const [formData, setFormData] = useState({
-        email: '',
-        password: ''
-    });
     const [showPassword, setShowPassword] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
 
     // Get the intended destination from location state
     const from = (location.state as any)?.from?.pathname || '/dashboard';
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-        setIsLoading(true);
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isSubmitting },
+        setError: setFormError,
+        clearErrors,
+        watch,
+    } = useForm<LoginFormData>({
+        resolver: zodResolver(loginSchema),
+        mode: 'onBlur',
+        defaultValues: {
+            email: '',
+            password: '',
+            rememberMe: false,
+        }
+    });
+
+    const watchedValues = watch();
+
+    const onSubmit = async (data: LoginFormData) => {
+        logger.info('Login form submitted', { email: data.email });
 
         try {
-            // TODO: Replace with actual API call
-            if (formData.email && formData.password) {
-                // Mock login success
-                await new Promise(resolve => setTimeout(resolve, 1000));
+            clearError();
+            clearErrors();
 
-                // Mock user data
-                const mockUser = {
-                    id: 1,
-                    email: formData.email,
-                    name: 'Demo User',
-                    bio: null,
-                    avatar_url: null,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                };
+            // Extract the login credentials for the API
+            const loginCredentials = {
+                email: data.email,
+                password: data.password,
+            };
 
-                const mockTokens = {
-                    access_token: 'mock-access-token',
-                    refresh_token: 'mock-refresh-token',
-                    token_type: 'bearer' as const
-                };
+            await login(loginCredentials, data.rememberMe || false);
 
-                await login(mockUser, mockTokens);
-                navigate(from, { replace: true });
-            } else {
-                throw new Error('Please fill in all fields');
-            }
+            logger.info('Login successful, navigating to dashboard');
+            navigate(from, { replace: true });
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
-        } finally {
-            setIsLoading(false);
+            const errorMessage = err instanceof Error ? err.message : 'Login failed. Please try again.';
+            logger.error('Login failed', { error: errorMessage, email: data.email });
+
+            // Set form-level error for specific validation issues
+            if (errorMessage.toLowerCase().includes('email')) {
+                setFormError('email', { message: errorMessage });
+            } else if (errorMessage.toLowerCase().includes('password')) {
+                setFormError('password', { message: errorMessage });
+            }
+            // General errors are handled by useAuth error state
         }
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData(prev => ({
-            ...prev,
-            [e.target.name]: e.target.value
-        }));
-        // Clear error when user starts typing
-        if (error) setError('');
+    const handleInputChange = () => {
+        // Clear general error when user starts typing
+        if (error) {
+            clearError();
+        }
+        clearErrors();
     };
 
     return (
@@ -81,7 +88,7 @@ const LoginPage: React.FC = () => {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         {error && (
                             <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
                                 {error}
@@ -95,18 +102,20 @@ const LoginPage: React.FC = () => {
                             <div className="relative">
                                 <Input
                                     id="email"
-                                    name="email"
                                     type="email"
                                     autoComplete="email"
-                                    required
                                     placeholder="Enter your email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    disabled={isLoading}
+                                    disabled={isLoading || isSubmitting}
                                     className="pl-10"
+                                    {...register('email', {
+                                        onChange: handleInputChange
+                                    })}
                                 />
                                 <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                             </div>
+                            {errors.email && (
+                                <p className="text-sm text-red-600">{errors.email.message}</p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
@@ -116,22 +125,21 @@ const LoginPage: React.FC = () => {
                             <div className="relative">
                                 <Input
                                     id="password"
-                                    name="password"
                                     type={showPassword ? 'text' : 'password'}
                                     autoComplete="current-password"
-                                    required
                                     placeholder="Enter your password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    disabled={isLoading}
+                                    disabled={isLoading || isSubmitting}
                                     className="pl-10 pr-10"
+                                    {...register('password', {
+                                        onChange: handleInputChange
+                                    })}
                                 />
                                 <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                                    disabled={isLoading}
+                                    disabled={isLoading || isSubmitting}
                                 >
                                     {showPassword ? (
                                         <EyeOff className="h-4 w-4" />
@@ -140,15 +148,18 @@ const LoginPage: React.FC = () => {
                                     )}
                                 </button>
                             </div>
+                            {errors.password && (
+                                <p className="text-sm text-red-600">{errors.password.message}</p>
+                            )}
                         </div>
 
                         <div className="flex items-center justify-between">
                             <div className="flex items-center">
                                 <input
                                     id="remember-me"
-                                    name="remember-me"
                                     type="checkbox"
                                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                    {...register('rememberMe')}
                                 />
                                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
                                     Remember me
@@ -165,10 +176,10 @@ const LoginPage: React.FC = () => {
 
                         <Button
                             type="submit"
-                            disabled={isLoading || !formData.email || !formData.password}
+                            disabled={isLoading || isSubmitting || !watchedValues.email || !watchedValues.password}
                             className="w-full"
                         >
-                            {isLoading ? (
+                            {(isLoading || isSubmitting) ? (
                                 <>
                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                                     Signing in...

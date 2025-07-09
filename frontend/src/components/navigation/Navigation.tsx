@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuthStore } from '@/lib/store/authStore';
-import { getNavigationRoutes } from '@/lib/router/routes';
+import { useAuth } from '@/hooks/useAuth';
+import { getRoleBasedNavigationRoutes } from '@/lib/router/routes';
 import { cn } from '@/lib/utils';
 import * as Icons from 'lucide-react';
 
@@ -12,12 +12,15 @@ const iconMap: Record<string, React.ComponentType<any>> = {
     FileText: Icons.FileText,
     User: Icons.User,
     Settings: Icons.Settings,
+    Shield: Icons.Shield,
+    UserCheck: Icons.UserCheck,
 };
 
 export function Navigation() {
     const location = useLocation();
-    const { isAuthenticated, user, logout } = useAuthStore();
-    const navigationRoutes = getNavigationRoutes();
+    const { isAuthenticated, user, logout } = useAuth();
+    const userRoles = user?.roles || [];
+    const navigationRoutes = getRoleBasedNavigationRoutes(userRoles);
 
     return (
         <nav className="flex items-center space-x-4">

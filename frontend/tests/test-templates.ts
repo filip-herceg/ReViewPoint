@@ -30,6 +30,10 @@ import type {
     PaginatedResponse,
 } from '@/lib/api/types';
 
+import {
+    AuthErrorType,
+} from '@/lib/api/types';
+
 // Utility to clear all react-query caches for test isolation
 export function clearReactQueryCache() {
     // If you use a global QueryClient, clear it here. Otherwise, clear all caches in your test setup.
@@ -243,10 +247,6 @@ export function createCardProps(overrides: Partial<CardProps> = {}): CardProps {
 
 // API Types Templates
 // Templates for testing API types and responses
-
-import {
-    AuthErrorType,
-} from '@/lib/api/types';
 
 // Auth Templates
 export function createAuthTokens(overrides: Partial<AuthTokens> = {}): AuthTokens {
@@ -1018,4 +1018,153 @@ export function createFeatureFlagUpdates(overrides: Partial<FeatureFlags> = {}):
 
     testLogger.debug('Created feature flag updates', updates);
     return updates;
+}
+
+// ===========================
+// Authentication Form Test Templates
+// ===========================
+
+// Login form data template
+export interface LoginFormData {
+    email: string;
+    password: string;
+    rememberMe?: boolean;
+}
+
+export function createLoginFormData(overrides: Partial<LoginFormData> = {}): LoginFormData {
+    const formData: LoginFormData = {
+        email: overrides.email ?? `user${randomString(4)}@example.com`,
+        password: overrides.password ?? `Password${randomInt(100, 999)}!`,
+        rememberMe: overrides.rememberMe ?? false,
+        ...overrides,
+    };
+    testLogger.debug('Created login form data', {
+        email: formData.email,
+        hasPassword: !!formData.password,
+        rememberMe: formData.rememberMe
+    });
+    return formData;
+}
+
+// Register form data template
+export interface RegisterFormData {
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+}
+
+export function createRegisterFormData(overrides: Partial<RegisterFormData> = {}): RegisterFormData {
+    const password = overrides.password ?? `Password${randomInt(100, 999)}!`;
+    const formData: RegisterFormData = {
+        name: overrides.name ?? `User ${randomString(4)}`,
+        email: overrides.email ?? `user${randomString(6)}@example.com`,
+        password,
+        confirmPassword: overrides.confirmPassword ?? password,
+        ...overrides,
+    };
+    testLogger.debug('Created register form data', {
+        name: formData.name,
+        email: formData.email,
+        hasPassword: !!formData.password,
+        passwordsMatch: formData.password === formData.confirmPassword
+    });
+    return formData;
+}
+
+// Forgot password form data template
+export interface ForgotPasswordFormData {
+    email: string;
+}
+
+export function createForgotPasswordFormData(overrides: Partial<ForgotPasswordFormData> = {}): ForgotPasswordFormData {
+    const formData: ForgotPasswordFormData = {
+        email: overrides.email ?? `user${randomString(6)}@example.com`,
+        ...overrides,
+    };
+    testLogger.debug('Created forgot password form data', { email: formData.email });
+    return formData;
+}
+
+// Reset password form data template
+export interface ResetPasswordFormData {
+    token: string;
+    password: string;
+    confirmPassword: string;
+}
+
+export function createResetPasswordFormData(overrides: Partial<ResetPasswordFormData> = {}): ResetPasswordFormData {
+    const password = overrides.password ?? `NewPassword${randomInt(100, 999)}!`;
+    const formData: ResetPasswordFormData = {
+        token: overrides.token ?? `reset_${randomString(32)}`,
+        password,
+        confirmPassword: overrides.confirmPassword ?? password,
+        ...overrides,
+    };
+    testLogger.debug('Created reset password form data', {
+        hasToken: !!formData.token,
+        hasPassword: !!formData.password,
+        passwordsMatch: formData.password === formData.confirmPassword
+    });
+    return formData;
+}
+
+// Invalid form data templates for testing validation
+export function createInvalidLoginFormData(invalidField: 'email' | 'password' | 'both' = 'email'): LoginFormData {
+    const baseData = createLoginFormData();
+
+    switch (invalidField) {
+        case 'email':
+            return { ...baseData, email: 'invalid-email' };
+        case 'password':
+            return { ...baseData, password: '' };
+        case 'both':
+            return { ...baseData, email: 'invalid-email', password: '' };
+        default:
+            return baseData;
+    }
+}
+
+export function createInvalidRegisterFormData(
+    invalidField: 'email' | 'password' | 'confirmPassword' | 'name' = 'email'
+): RegisterFormData {
+    const baseData = createRegisterFormData();
+
+    switch (invalidField) {
+        case 'email':
+            return { ...baseData, email: 'invalid-email' };
+        case 'password':
+            return { ...baseData, password: '123' }; // Too short
+        case 'confirmPassword':
+            return { ...baseData, confirmPassword: 'different-password' };
+        case 'name':
+            return { ...baseData, name: '' };
+        default:
+            return baseData;
+    }
+}
+
+// Form validation error templates
+export interface FormValidationError {
+    field: string;
+    message: string;
+}
+
+export function createFormValidationError(
+    field: string,
+    message?: string
+): FormValidationError {
+    const defaultMessages: Record<string, string> = {
+        email: 'Please enter a valid email address',
+        password: 'Password must be at least 8 characters long',
+        confirmPassword: 'Passwords do not match',
+        name: 'Name is required',
+    };
+
+    const error: FormValidationError = {
+        field,
+        message: message ?? defaultMessages[field] ?? `${field} is invalid`,
+    };
+    testLogger.debug('Created form validation error', error);
+    return error;
 }
