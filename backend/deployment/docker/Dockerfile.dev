@@ -9,16 +9,14 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Poetry
-RUN pip install poetry
+# Install Hatch
+RUN pip install hatch
 
 # Copy dependency files
-COPY pyproject.toml poetry.lock* ./
+COPY pyproject.toml ./
 
-# Configure poetry and install dependencies
-RUN poetry config virtualenvs.create true \
-    && poetry config virtualenvs.in-project true \
-    && poetry install --no-dev
+# Create Hatch environment and install dependencies (including dev dependencies for development)
+RUN hatch env create
 
 # Copy application code
 COPY . .
@@ -31,4 +29,5 @@ ENV PYTHONPATH=/app/src
 
 EXPOSE 8000
 
-CMD ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Use Hatch to run the application in development mode
+CMD ["hatch", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

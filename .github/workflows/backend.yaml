@@ -10,6 +10,7 @@ on:
     branches: [ main, develop ]
     paths:
       - 'backend/**'
+    # This prevents duplicate runs when pushing to a PR branch
     types: [opened, synchronize, reopened]
   workflow_dispatch:
 
@@ -64,4 +65,3 @@ jobs:
         run: |
           cd backend
           hatch run pytest --maxfail=1 --disable-warnings --cov=backend --cov-report=xml --cov-report=term
-

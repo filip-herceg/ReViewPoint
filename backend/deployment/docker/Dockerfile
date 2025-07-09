@@ -1,5 +1,5 @@
 # Base image for building dependencies
-FROM python:3.11-slim AS builder
+FROM python:3.11-slim-bullseye AS builder
 
 WORKDIR /app
 
@@ -8,24 +8,38 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Hatch and upgrade setuptools for security
-RUN pip install --upgrade setuptools>=78.1.1 pip \
-    && pip install hatch
+# Install pip and upgrade setuptools for security
+RUN pip install --no-cache-dir --upgrade setuptools>=78.1.1 pip
 
 # Copy dependency files
 COPY pyproject.toml ./
-COPY README.md ./
 
-# Use Hatch to install dependencies with fallback
+# Create a simple README.md and modify pyproject.toml if needed
 RUN echo "Contents of current directory:" && ls -la && \
-    (hatch env create || \
-    (echo "WARNING: Hatch env creation failed, creating a virtual environment manually" && \
-    python -m venv .venv && \
+    echo "# Backend Project" > README.md && \
+    echo "This is a placeholder README file for Docker build." >> README.md && \
+    echo "Created README.md successfully" && \
+    cat README.md && \
+    echo "Checking pyproject.toml:" && \
+    if grep -q "readme =" pyproject.toml; then \
+    echo "Removing readme reference from pyproject.toml"; \
+    sed -i '/readme =/d' pyproject.toml; \
+    fi && \
+    if grep -q "dynamic =" pyproject.toml; then \
+    echo "Removing dynamic version from pyproject.toml"; \
+    sed -i '/dynamic =/d' pyproject.toml; \
+    echo "Adding static version to pyproject.toml"; \
+    sed -i '/name = "backend"/a version = "0.1.0"' pyproject.toml; \
+    fi
+
+# Use pip directly for installation
+RUN python -m venv .venv && \
     . .venv/bin/activate && \
-    pip install -e .))
+    pip install --no-cache-dir --upgrade pip setuptools && \
+    pip install --no-cache-dir .
 
 # Runtime image
-FROM python:3.11-slim
+FROM python:3.11-slim-bullseye AS runtime
 
 WORKDIR /app
 
@@ -33,27 +47,48 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/* \
-    && pip install --upgrade setuptools>=78.1.1 pip
+    && pip install --no-cache-dir --upgrade setuptools>=78.1.1 pip
 
 # Copy virtual environment from builder
 COPY --from=builder /app/.venv /app/.venv
 
-# Debug: List root directory contents
-RUN echo "Root directory contents:" && ls -la /
-
-# Copy all files from build context to /app
+# Copy source code and configuration files from build context to /app
 COPY . /app/
 
 # Debug: List app directory contents
-RUN echo "App directory contents:" && ls -la /app/
+RUN echo "App directory contents:" && ls -la /app/ && \
+    if [ -d "/app/src" ]; then echo "Source directory found"; else echo "Source directory missing!"; fi && \
+    if [ -f "/app/alembic.ini" ]; then echo "Alembic config found"; else echo "Alembic config missing!"; fi
 
 # Make entrypoint script executable if it exists
 RUN if [ -f "/app/docker-entrypoint.sh" ]; then \
     chmod +x /app/docker-entrypoint.sh && \
     echo "Entrypoint script made executable"; \
     else \
-    echo "WARNING: Entrypoint script not found"; \
-    find /app -type f -name "*.sh" | sort; \
+    echo "WARNING: Entrypoint script not found, creating a fallback"; \
+    echo '#!/bin/bash' > /app/docker-entrypoint.sh && \
+    echo 'set -e' >> /app/docker-entrypoint.sh && \
+    echo '' >> /app/docker-entrypoint.sh && \
+    echo '# Wait for database if configured' >> /app/docker-entrypoint.sh && \
+    echo 'if [ -n "$REVIEWPOINT_DB_URL" ]; then' >> /app/docker-entrypoint.sh && \
+    echo '    echo "Waiting for database to be ready..."' >> /app/docker-entrypoint.sh && \
+    echo '    until pg_isready -h $(echo $REVIEWPOINT_DB_URL | sed "s/.*@\([^:]*\):.*/\1/") -p $(echo $REVIEWPOINT_DB_URL | sed "s/.*:\([0-9]*\)\/.*/\1/") -U postgres; do' >> /app/docker-entrypoint.sh && \
+    echo '        echo "Database is unavailable - sleeping"' >> /app/docker-entrypoint.sh && \
+    echo '        sleep 2' >> /app/docker-entrypoint.sh && \
+    echo '    done' >> /app/docker-entrypoint.sh && \
+    echo '    echo "Database is ready!"' >> /app/docker-entrypoint.sh && \
+    echo 'fi' >> /app/docker-entrypoint.sh && \
+    echo '' >> /app/docker-entrypoint.sh && \
+    echo '# Run database migrations if alembic.ini exists' >> /app/docker-entrypoint.sh && \
+    echo 'if [ -f alembic.ini ]; then' >> /app/docker-entrypoint.sh && \
+    echo '    echo "Running database migrations..."' >> /app/docker-entrypoint.sh && \
+    echo '    alembic upgrade head' >> /app/docker-entrypoint.sh && \
+    echo 'fi' >> /app/docker-entrypoint.sh && \
+    echo '' >> /app/docker-entrypoint.sh && \
+    echo '# Execute the main command' >> /app/docker-entrypoint.sh && \
+    echo 'exec "$@"' >> /app/docker-entrypoint.sh && \
+    chmod +x /app/docker-entrypoint.sh && \
+    echo "Created fallback entrypoint script"; \
     fi
 
 # Make scripts in scripts directory executable
@@ -76,14 +111,6 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 EXPOSE 8000
 
-# Set the entrypoint script with fallback
-CMD ["/bin/bash", "-c", "if [ -f /app/docker-entrypoint.sh ]; then /app/docker-entrypoint.sh python -m uvicorn src.main:app --host 0.0.0.0 --port 8000; else echo 'Entrypoint not found, running default command'; exec python -m uvicorn src.main:app --host 0.0.0.0 --port 8000; fi"]
-
-# Set Python path and environment
-ENV PYTHONPATH=/app/src
-ENV PATH="/app/.venv/bin:$PATH"
-
-EXPOSE 8000
-
-ENTRYPOINT ["./docker-entrypoint.sh"]
+# Use the entrypoint script
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 CMD ["python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
