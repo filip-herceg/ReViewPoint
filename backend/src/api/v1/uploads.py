@@ -1375,13 +1375,10 @@ async def list_files(
 
         if selected_fields:
             # Use cast to FileDict for type safety
+            # Always include filename as it's the primary identifier
             file_data = cast(
                 FileDict,
-                {
-                    k: v
-                    for k, v in file_data.items()
-                    if k in selected_fields or k in ["filename", "url"]
-                },
+                {k: v for k, v in file_data.items() if k in selected_fields},
             )
         file_responses.append(file_data)
 
