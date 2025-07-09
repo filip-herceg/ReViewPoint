@@ -12,13 +12,13 @@ from typing import (
     TypeVar,
     cast,
 )
-from typing_extensions import TypedDict
 
 from fastapi import Depends, Header, HTTPException, Query, Request, Security, status
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
 from jose import JWTError
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing_extensions import TypedDict
 
 from src.core.config import get_settings
 from src.core.database import get_async_session

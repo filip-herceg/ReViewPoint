@@ -12,7 +12,6 @@ from typing import (
     Final,
     Literal,
 )
-from typing_extensions import TypedDict
 
 from sqlalchemy import (
     extract,
@@ -22,6 +21,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.engine import Row
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing_extensions import TypedDict
 
 from src.models.user import User
 from src.utils.cache import user_cache

@@ -1,12 +1,12 @@
 from collections.abc import Awaitable, Callable, Mapping
 from datetime import UTC, datetime
 from typing import Final, cast
-from typing_extensions import TypedDict
 
 from fastapi import APIRouter, Body, Depends, Request, status
 from jose import jwt
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing_extensions import TypedDict
 
 from src.api.deps import (
     get_async_refresh_access_token,

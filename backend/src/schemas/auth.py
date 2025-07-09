@@ -4,9 +4,9 @@ from typing import (
     Final,
     Literal,
 )
-from typing_extensions import TypedDict
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
+from typing_extensions import TypedDict
 
 from src.utils.validation import get_password_validation_error, validate_email
 

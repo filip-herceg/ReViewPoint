@@ -14,13 +14,13 @@ from collections.abc import (
 from datetime import UTC, datetime, timedelta
 from enum import Enum
 from typing import Final, Literal, cast
-from typing_extensions import TypedDict
 
 from fastapi import UploadFile
 from jose import JWTError, jwt
 from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing_extensions import TypedDict
 
 from src.core.config import get_settings
 from src.core.security import (

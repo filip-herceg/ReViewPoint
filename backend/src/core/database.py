@@ -6,7 +6,6 @@ import time
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Final
-from typing_extensions import TypedDict
 
 from loguru import logger
 from sqlalchemy import text
@@ -18,6 +17,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
+from typing_extensions import TypedDict
 
 from src.core.config import get_settings
 

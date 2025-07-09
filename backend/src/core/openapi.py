@@ -7,10 +7,10 @@ File renamed from openapi_fix.py to openapi.py for clarity and 1:1 mapping with 
 
 from collections.abc import Callable, Mapping, Sequence
 from typing import Final, Literal, cast
-from typing_extensions import TypedDict
 
 from fastapi import FastAPI
 from loguru import logger
+from typing_extensions import TypedDict
 
 
 # --- TypedDicts for OpenAPI structure ---

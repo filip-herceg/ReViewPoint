@@ -4,6 +4,7 @@ Strict static typing for file utility functions.
 
 import re
 from typing import Final, Literal, TypeAlias
+
 from typing_extensions import TypedDict
 
 # Type aliases for stricter typing

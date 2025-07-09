@@ -3,9 +3,9 @@ import sys
 import time
 from collections.abc import Callable
 from typing import Final, Literal
-from typing_extensions import TypedDict
 
 from fastapi import APIRouter, Depends, Response, status
+from typing_extensions import TypedDict
 
 from src.api.deps import get_request_id, require_api_key, require_feature
 from src.core.database import engine

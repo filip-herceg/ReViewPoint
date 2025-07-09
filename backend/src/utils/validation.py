@@ -1,6 +1,7 @@
 import re
 from re import Pattern
 from typing import Final, Literal
+
 from typing_extensions import TypedDict
 
 # Strict constant for the email regex pattern

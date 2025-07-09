@@ -3,13 +3,13 @@ Test-only endpoints for user management (e.g., promote to admin).
 """
 
 from typing import Final
-from typing_extensions import TypedDict
 
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.routing import APIRouter as APIRouterType
 from sqlalchemy import select
 from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing_extensions import TypedDict
 
 from src.core.database import get_async_session
 from src.models.user import User
