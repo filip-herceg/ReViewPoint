@@ -52,7 +52,8 @@ dependencies = [
   "asyncpg>=0.29.0",
   "pytest-xdist>=3.6.1",
   "typing_extensions>=4.0.0",
-  "python-dateutil>=2.8.0"
+  "python-dateutil>=2.8.0",
+  "setuptools>=78.1.1",  # Security fix for CVE-2024-6345 and CVE-2025-47273
 ]
 
 [project.urls]

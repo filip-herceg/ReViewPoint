@@ -7,8 +7,9 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Poetry
-RUN pip install poetry
+# Install Poetry and upgrade setuptools for security
+RUN pip install --upgrade setuptools>=78.1.1 \
+    && pip install poetry
 
 # Copy dependency files
 COPY pyproject.toml poetry.lock ./
@@ -22,10 +23,11 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install runtime dependencies
+# Install runtime dependencies and upgrade setuptools for security
 RUN apt-get update && apt-get install -y \
     postgresql-client \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --upgrade setuptools>=78.1.1
 
 # Copy virtual environment from builder
 COPY --from=builder /app/.venv /app/.venv
