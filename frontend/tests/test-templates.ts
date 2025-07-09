@@ -1168,3 +1168,288 @@ export function createFormValidationError(
     testLogger.debug('Created form validation error', error);
     return error;
 }
+
+// Enhanced upload templates for Phase 5.2 File Upload Interface
+
+import type {
+    UploadQueueItem,
+    UploadChunkInfo,
+    FileValidationResult,
+    FileValidationError,
+    FileValidationWarning,
+    FileMetadataExtract,
+    AdvancedUploadOptions,
+    FilePreviewInfo
+} from '@/lib/api/types/upload';
+
+/**
+ * Create mock File object for testing
+ */
+export function createMockFile(overrides: Partial<{
+    name: string;
+    size: number;
+    type: string;
+    lastModified: number;
+}> = {}): File {
+    const fileName = overrides.name || `test-file-${randomString(6)}.pdf`;
+    const size = overrides.size || randomInt(1024, 10 * 1024 * 1024); // 1KB to 10MB
+    const type = overrides.type || 'application/pdf';
+    const lastModified = overrides.lastModified || Date.now();
+
+    // Create a proper mock that matches the File interface
+    const mockFile = Object.create(File.prototype);
+    Object.defineProperties(mockFile, {
+        name: { value: fileName, writable: false },
+        size: { value: size, writable: false },
+        type: { value: type, writable: false },
+        lastModified: { value: lastModified, writable: false },
+        slice: {
+            value: vi.fn().mockReturnValue(new Blob()),
+            writable: false
+        },
+        stream: {
+            value: vi.fn().mockReturnValue(new ReadableStream()),
+            writable: false
+        },
+        text: {
+            value: vi.fn().mockResolvedValue('mock file content'),
+            writable: false
+        },
+        arrayBuffer: {
+            value: vi.fn().mockResolvedValue(new ArrayBuffer(size)),
+            writable: false
+        }
+    });
+
+    testLogger.debug('Created mock file', { name: fileName, size, type });
+    return mockFile as File;
+}
+
+/**
+ * Create upload queue item for testing
+ */
+export function createUploadQueueItem(overrides: Partial<UploadQueueItem> = {}): UploadQueueItem {
+    const id = overrides.id || `queue-item-${randomString(8)}`;
+    const file = overrides.file || createMockFile();
+    const statusOptions = ['pending', 'uploading', 'completed', 'error', 'cancelled', 'paused'] as const;
+    const status = overrides.status || randomStatus(statusOptions);
+
+    const queueItem: UploadQueueItem = {
+        id,
+        file,
+        priority: overrides.priority ?? randomInt(1, 10),
+        status,
+        progress: overrides.progress ?? (status === 'completed' ? 100 : randomInt(0, 99)),
+        startTime: overrides.startTime || (status !== 'pending' ? Date.now() - randomInt(1000, 60000) : undefined),
+        endTime: overrides.endTime || (status === 'completed' ? Date.now() : undefined),
+        speed: overrides.speed ?? (status === 'uploading' ? randomInt(100000, 5000000) : undefined),
+        eta: overrides.eta ?? (status === 'uploading' ? randomInt(5, 300) : undefined),
+        error: overrides.error || (status === 'error' ? {
+            message: `Upload failed: ${randomString(10)}`,
+            code: 'UPLOAD_ERROR',
+            retryable: true,
+            retryCount: randomInt(0, 3)
+        } : undefined),
+        result: overrides.result || (status === 'completed' ? {
+            filename: file.name,
+            url: `https://example.com/files/${file.name}`
+        } : undefined),
+        chunks: overrides.chunks,
+        ...overrides
+    };
+
+    testLogger.debug('Created upload queue item', { id, status, progress: queueItem.progress });
+    return queueItem;
+}
+
+/**
+ * Create upload chunk info for testing
+ */
+export function createUploadChunkInfo(overrides: Partial<UploadChunkInfo> = {}): UploadChunkInfo {
+    const index = overrides.index ?? randomInt(0, 10);
+    const chunkSize = 1024 * 1024; // 1MB chunks
+    const start = overrides.start ?? index * chunkSize;
+    const end = overrides.end ?? start + chunkSize - 1;
+    const statusOptions = ['pending', 'uploading', 'completed', 'error'] as const;
+    const status = overrides.status || randomStatus(statusOptions);
+
+    const chunkInfo: UploadChunkInfo = {
+        index,
+        start,
+        end,
+        size: end - start + 1,
+        status,
+        progress: overrides.progress ?? (status === 'completed' ? 100 : randomInt(0, 99)),
+        error: overrides.error || (status === 'error' ? `Chunk ${index} failed` : undefined),
+        retryCount: overrides.retryCount ?? (status === 'error' ? randomInt(1, 3) : 0),
+        etag: overrides.etag || (status === 'completed' ? `"${randomString(32)}"` : undefined),
+        ...overrides
+    };
+
+    testLogger.debug('Created upload chunk info', { index, status, progress: chunkInfo.progress });
+    return chunkInfo;
+}
+
+/**
+ * Create file validation result for testing
+ */
+export function createFileValidationResult(overrides: Partial<FileValidationResult> = {}): FileValidationResult {
+    const isValid = overrides.isValid ?? Math.random() > 0.2; // 80% valid by default
+    const errors = overrides.errors || (isValid ? [] : [createFileValidationError()]);
+    const warnings = overrides.warnings || (Math.random() > 0.7 ? [createFileValidationWarning()] : []);
+
+    const result: FileValidationResult = {
+        isValid,
+        errors,
+        warnings,
+        metadata: overrides.metadata || createFileMetadataExtract(),
+        ...overrides
+    };
+
+    testLogger.debug('Created file validation result', { isValid, errorCount: errors.length, warningCount: warnings.length });
+    return result;
+}
+
+/**
+ * Create file validation error for testing
+ */
+export function createFileValidationError(overrides: Partial<FileValidationError> = {}): FileValidationError {
+    const codes = ['FILE_TOO_LARGE', 'INVALID_TYPE', 'CORRUPTED_FILE', 'VIRUS_DETECTED', 'ENCRYPTED_FILE'];
+    const code = overrides.code || codes[randomInt(0, codes.length - 1)];
+
+    const error: FileValidationError = {
+        code,
+        message: overrides.message || `Validation error: ${code.toLowerCase().replace(/_/g, ' ')}`,
+        field: overrides.field || 'file',
+        severity: overrides.severity || 'error',
+        ...overrides
+    };
+
+    testLogger.warn('Created file validation error', error);
+    return error;
+}
+
+/**
+ * Create file validation warning for testing
+ */
+export function createFileValidationWarning(overrides: Partial<FileValidationWarning> = {}): FileValidationWarning {
+    const codes = ['LARGE_FILE_SIZE', 'UNUSUAL_FORMAT', 'OLD_FORMAT', 'NO_METADATA', 'POTENTIAL_SECURITY_RISK'];
+    const code = overrides.code || codes[randomInt(0, codes.length - 1)];
+
+    const warning: FileValidationWarning = {
+        code,
+        message: overrides.message || `Warning: ${code.toLowerCase().replace(/_/g, ' ')}`,
+        field: overrides.field || 'file',
+        suggestion: overrides.suggestion || 'Consider reviewing this file before proceeding',
+        ...overrides
+    };
+
+    testLogger.debug('Created file validation warning', warning);
+    return warning;
+}
+
+/**
+ * Create file metadata extract for testing
+ */
+export function createFileMetadataExtract(overrides: Partial<FileMetadataExtract> = {}): FileMetadataExtract {
+    const categories = ['document', 'image', 'video', 'audio', 'pdf', 'text'] as const;
+    const category = overrides.category || categories[randomInt(0, categories.length - 1)];
+
+    const metadata: FileMetadataExtract = {
+        size: overrides.size ?? randomInt(1024, 50 * 1024 * 1024),
+        mimeType: overrides.mimeType || 'application/pdf',
+        extension: overrides.extension || '.pdf',
+        category,
+        dimensions: overrides.dimensions || (category === 'image' || category === 'video' ? {
+            width: randomInt(640, 1920),
+            height: randomInt(480, 1080)
+        } : undefined),
+        duration: overrides.duration || (category === 'audio' || category === 'video' ? randomInt(30, 3600) : undefined),
+        pageCount: overrides.pageCount || (category === 'document' || category === 'pdf' ? randomInt(1, 50) : undefined),
+        isEncrypted: overrides.isEncrypted ?? Math.random() > 0.9, // 10% encrypted
+        createdDate: overrides.createdDate || randomDate(),
+        modifiedDate: overrides.modifiedDate || randomDate(),
+        ...overrides
+    };
+
+    testLogger.debug('Created file metadata extract', { category, size: metadata.size, mimeType: metadata.mimeType });
+    return metadata;
+}
+
+/**
+ * Create advanced upload options for testing
+ */
+export function createAdvancedUploadOptions(overrides: Partial<AdvancedUploadOptions> = {}): AdvancedUploadOptions {
+    const options: AdvancedUploadOptions = {
+        enableChunked: overrides.enableChunked ?? true,
+        chunkSize: overrides.chunkSize ?? 1024 * 1024, // 1MB
+        maxConcurrentChunks: overrides.maxConcurrentChunks ?? 3,
+        enableBackground: overrides.enableBackground ?? false,
+        priority: overrides.priority ?? randomInt(1, 10),
+        metadata: overrides.metadata || { source: 'test', timestamp: Date.now() },
+        onProgress: overrides.onProgress || vi.fn(),
+        onChunkComplete: overrides.onChunkComplete || vi.fn(),
+        ...overrides
+    };
+
+    testLogger.debug('Created advanced upload options', {
+        enableChunked: options.enableChunked,
+        chunkSize: options.chunkSize,
+        priority: options.priority
+    });
+    return options;
+}
+
+/**
+ * Create file preview info for testing
+ */
+export function createFilePreviewInfo(overrides: Partial<FilePreviewInfo> = {}): FilePreviewInfo {
+    const types = ['image', 'pdf', 'text', 'video', 'audio', 'none'] as const;
+    const type = overrides.type || types[randomInt(0, types.length - 1)];
+    const available = overrides.available ?? (type !== 'none');
+
+    const preview: FilePreviewInfo = {
+        available,
+        type,
+        url: overrides.url || (available ? `https://example.com/preview/${randomString(8)}` : undefined),
+        thumbnailUrl: overrides.thumbnailUrl || (available ? `https://example.com/thumb/${randomString(8)}` : undefined),
+        dimensions: overrides.dimensions || (type === 'image' || type === 'video' ? {
+            width: randomInt(200, 800),
+            height: randomInt(150, 600)
+        } : undefined),
+        ...overrides
+    };
+
+    testLogger.debug('Created file preview info', { available, type });
+    return preview;
+}
+
+/**
+ * Create multiple upload queue items for testing
+ */
+export function createUploadQueueItemList(count = 3, overrides: Partial<UploadQueueItem> = {}): UploadQueueItem[] {
+    const items = Array.from({ length: count }, (_, index) =>
+        createUploadQueueItem({ ...overrides, priority: overrides.priority ?? (count - index) })
+    );
+
+    testLogger.info(`Created upload queue item list of ${count} items`);
+    return items;
+}
+
+/**
+ * Create multiple upload chunks for testing
+ */
+export function createUploadChunkList(totalChunks = 5, overrides: Partial<UploadChunkInfo> = {}): UploadChunkInfo[] {
+    const chunkSize = 1024 * 1024; // 1MB
+    const chunks = Array.from({ length: totalChunks }, (_, index) =>
+        createUploadChunkInfo({
+            ...overrides,
+            index,
+            start: index * chunkSize,
+            end: (index + 1) * chunkSize - 1
+        })
+    );
+
+    testLogger.info(`Created upload chunk list of ${totalChunks} chunks`);
+    return chunks;
+}

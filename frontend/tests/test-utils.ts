@@ -106,11 +106,15 @@ export function randomInt(min: number, max: number): number {
 }
 
 // Utility: Pick a random upload status
-export function randomStatus(): 'pending' | 'completed' | 'failed' {
-    const statuses = ['pending', 'completed', 'failed'] as const;
+export function randomStatus(): 'pending' | 'completed' | 'failed';
+export function randomStatus<T extends readonly string[]>(options: T): T[number];
+export function randomStatus<T extends readonly string[]>(options?: T): T[number] | 'pending' | 'completed' | 'failed' {
+    const defaultStatuses = ['pending', 'completed', 'failed'] as const;
+    const statuses = options || defaultStatuses;
     const status = statuses[randomInt(0, statuses.length - 1)];
-    if (status === 'failed') {
-        testLogger.warn('Picked random status: failed');
+
+    if (status === 'failed' || status === 'error') {
+        testLogger.warn('Picked random status:', status);
     } else {
         testLogger.debug('Picked random status:', status);
     }
