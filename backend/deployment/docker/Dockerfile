@@ -34,10 +34,11 @@ COPY --from=builder /app/.venv /app/.venv
 # Copy application code
 COPY src/ ./src/
 COPY scripts/ ./scripts/
-COPY docker/docker-entrypoint.sh ./
+COPY docker-entrypoint.sh ./
 
 # Make scripts executable
-RUN chmod +x scripts/*.sh docker-entrypoint.sh || true
+RUN chmod +x docker-entrypoint.sh || true
+RUN if [ -d "scripts" ] && [ -n "$(find scripts -name '*.sh' 2>/dev/null)" ]; then chmod +x scripts/*.sh; fi
 
 # Create non-root user
 RUN groupadd -r appuser && useradd -r -g appuser appuser

@@ -73,32 +73,36 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      # Fix Docker paths
-      - name: Copy necessary files to correct location
+      # Set up build context with all necessary files
+      - name: Set up build context
         run: |
-          mkdir -p ./backend/deployment/build_context
-          cp ./backend/pyproject.toml ./backend/deployment/build_context/
+          # Create a clean build context directory
+          mkdir -p ./build_context
           
-          # Create necessary directories
-          mkdir -p ./backend/deployment/build_context/src
-          cp -r ./backend/src/* ./backend/deployment/build_context/src/ || echo "No source files found"
-          mkdir -p ./backend/deployment/build_context/scripts
-          cp -r ./backend/scripts/* ./backend/deployment/build_context/scripts/ || echo "No scripts found"
-          mkdir -p ./backend/deployment/build_context/docker
-          cp ./backend/deployment/docker/docker-entrypoint.sh ./backend/deployment/build_context/docker/ || echo "No entrypoint script found"
+          # Copy essential files
+          cp ./backend/pyproject.toml ./build_context/
+          cp ./backend/alembic.ini ./build_context/ || echo "No alembic.ini found"
           
-          # Copy __about__.py for version information if it exists
-          mkdir -p ./backend/deployment/build_context/src/__about__.py || true
-          cp ./backend/src/__about__.py ./backend/deployment/build_context/src/__about__.py || echo "No __about__.py file found"
+          # Create source directory
+          mkdir -p ./build_context/src
+          cp -r ./backend/src/* ./build_context/src/ || echo "No source files found"
           
+          # Create scripts directory
+          mkdir -p ./build_context/scripts
+          cp -r ./backend/scripts/* ./build_context/scripts/ || echo "No scripts found"
+          
+          # Copy docker-entrypoint.sh to the root level
+          cp ./backend/deployment/docker/docker-entrypoint.sh ./build_context/ || echo "No entrypoint script found"
+          
+          # Show the build context structure
           echo "Build context contents:"
-          find ./backend/deployment/build_context -type f | sort
+          find ./build_context -type f | sort
 
       - name: Build Docker image
         id: docker_build
         uses: docker/build-push-action@v5
         with:
-          context: ./backend/deployment/build_context
+          context: ./build_context
           file: ./backend/deployment/docker/Dockerfile
           push: false
           load: true
