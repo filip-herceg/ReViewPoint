@@ -28,15 +28,15 @@ function logWithPrefix(prefix, color, data) {
 
 async function startServices() {
     // Check for --postgres flag
-    const usePostgres = process.argv.includes('--postgres') || process.argv.includes('--pg');
+    let usePostgres = process.argv.includes('--postgres') || process.argv.includes('--pg');
 
     if (usePostgres) {
         console.log(`${colors.info}[INFO]${colors.reset} Starting with PostgreSQL support...`);
 
-        try {
-            await ensurePostgresReady();
-        } catch (error) {
+        const postgresReady = await ensurePostgresReady();
+        if (!postgresReady) {
             console.log(`${colors.warn}[WARN]${colors.reset} PostgreSQL setup failed, continuing with SQLite`);
+            usePostgres = false;
         }
     } else {
         console.log(`${colors.info}[INFO]${colors.reset} Starting with SQLite (use --postgres to enable PostgreSQL)`);

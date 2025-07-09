@@ -135,8 +135,7 @@ async function runMigrations() {
             } else {
                 // Check if this is just a "no changes" or "already applied" scenario
                 if (output.includes('No new upgrade operations to perform') ||
-                    output.includes('already exists') ||
-                    code === 0) {
+                    output.includes('already exists')) {
                     log('POSTGRES', colors.info, 'Database schema is already up to date');
                     resolve();
                 } else {
