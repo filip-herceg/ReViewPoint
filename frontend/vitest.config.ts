@@ -26,6 +26,9 @@ export default defineConfig({
             // PERMANENTLY EXCLUDED - DO NOT REMOVE
             'tests/lib/monitoring/errorMonitoring.test.ts', // Causes infinite loops
         ],
+        env: {
+            LOG_LEVEL: 'error', // Only show errors during tests
+        },
         coverage: {
             reporter: ['text', 'html'],
         },

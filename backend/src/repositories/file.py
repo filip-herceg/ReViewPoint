@@ -19,7 +19,7 @@ async def get_file_by_filename(session: AsyncSession, filename: str) -> File | N
 
 
 async def create_file(
-    session: AsyncSession, filename: str, content_type: str, user_id: int
+    session: AsyncSession, filename: str, content_type: str, user_id: int, size: int = 0
 ) -> File:
     """
     Create a new File record in the database.
@@ -30,7 +30,12 @@ async def create_file(
     if not filename:
         raise ValidationError("Filename is required.")
 
-    file: File = File(filename=filename, content_type=content_type, user_id=user_id)
+    file: File = File(
+        filename=filename, 
+        content_type=content_type, 
+        user_id=user_id,
+        size=size
+    )
 
     try:
         session.add(file)
@@ -56,6 +61,36 @@ async def delete_file(session: AsyncSession, filename: str) -> bool:
     await session.delete(file)
     # Note: Don't flush here - let the endpoint handle the commit
     return True
+
+
+async def bulk_delete_files(session: AsyncSession, filenames: list[str], user_id: int) -> tuple[list[str], list[str]]:
+    """
+    Bulk delete files by filenames for a specific user.
+    Returns:
+        tuple[list[str], list[str]]: (successfully_deleted, failed_to_delete)
+    Raises:
+        Exception: If the database operation fails.
+    """
+    deleted: list[str] = []
+    failed: list[str] = []
+    
+    for filename in filenames:
+        try:
+            # Check if file exists and belongs to the user
+            result = await session.execute(
+                select(File).where(File.filename == filename, File.user_id == user_id)
+            )
+            file: File | None = result.scalar_one_or_none()
+            
+            if file:
+                await session.delete(file)
+                deleted.append(filename)
+            else:
+                failed.append(filename)
+        except Exception:
+            failed.append(filename)
+    
+    return deleted, failed
 
 
 async def list_files(

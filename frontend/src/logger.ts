@@ -16,7 +16,15 @@ function getLogLevel(): LogLevel {
     if (typeof globalThis !== 'undefined' && (globalThis as any).LOG_LEVEL) {
         return (globalThis as any).LOG_LEVEL;
     }
-    return 'info';
+    // Check for environment variable (works in both Node.js and Vite)
+    if (typeof process !== 'undefined' && process.env?.LOG_LEVEL) {
+        return process.env.LOG_LEVEL as LogLevel;
+    }
+    // Check if we're in test environment
+    if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') {
+        return 'error'; // Only show errors in tests
+    }
+    return 'warn'; // Default to warn level instead of info
 }
 
 function shouldLog(level: LogLevel): boolean {

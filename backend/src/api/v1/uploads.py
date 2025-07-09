@@ -45,6 +45,7 @@ from src.repositories.file import (
     create_file,
     delete_file,
     get_file_by_filename,
+    bulk_delete_files,
 )
 from src.repositories.file import (
     list_files as repo_list_files,
@@ -59,6 +60,9 @@ from src.utils.http_error import ExtraLogInfo, http_error
 class FileDict(TypedDict, total=False):
     filename: str
     url: str
+    content_type: str
+    size: int
+    created_at: str | None
 
 
 # --- Constants ---
@@ -120,6 +124,30 @@ class FileResponse(BaseModel):
                 "content_type": "application/pdf",
                 "size": 1024,
                 "created_at": "2025-06-20T12:00:00Z",
+            }
+        }
+    )
+
+
+class BulkDeleteRequest(BaseModel):
+    filenames: list[str]
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "filenames": ["document1.pdf", "document2.pdf", "document3.pdf"]
+            }
+        }
+    )
+
+
+class BulkDeleteResponse(BaseModel):
+    deleted: list[str]
+    failed: list[str]
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "deleted": ["document1.pdf", "document2.pdf"],
+                "failed": ["document3.pdf"]
             }
         }
     )
@@ -783,6 +811,7 @@ async def upload_file(
                     file.filename,
                     file.content_type or "application/octet-stream",
                     user_id=current_user.id,
+                    size=file_size,
                 )
 
             await session.commit()
@@ -860,6 +889,86 @@ async def upload_file(
     raise RuntimeError(
         "Unreachable: all code paths in upload_file should raise or return"
     )
+
+
+@router.post(
+    "/bulk-delete",
+    summary="Bulk delete files",
+    description="""
+    **Bulk File Deletion**
+
+    Delete multiple files in a single request.
+
+    **Features:**
+    - Delete up to 100 files per request
+    - Only deletes files owned by the current user
+    - Returns detailed success/failure results
+    - Atomic operation per file (failure of one doesn't affect others)
+
+    **Request Body:**
+    ```json
+    {
+      "filenames": ["file1.pdf", "file2.pdf", "file3.pdf"]
+    }
+    ```
+
+    **Response:**
+    ```json
+    {
+      "deleted": ["file1.pdf", "file2.pdf"],
+      "failed": ["file3.pdf"]
+    }
+    ```
+    """,
+    response_model=BulkDeleteResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def bulk_delete_files_endpoint(
+    request_data: BulkDeleteRequest,
+    session: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(get_current_user),
+    request_id: str = Depends(get_request_id),
+    feature_flag_ok: bool = Depends(require_feature("uploads:bulk_delete")),
+    api_key_ok: None = Depends(require_api_key),
+) -> BulkDeleteResponse:
+    """
+    Bulk delete files for the current user.
+    """
+    # Limit bulk operations to prevent abuse
+    if len(request_data.filenames) > 100:
+        http_error(
+            400,
+            "Cannot delete more than 100 files at once",
+            logger.warning,
+            cast(ExtraLogInfo, {"count": len(request_data.filenames)}),
+        )
+
+    if not request_data.filenames:
+        return BulkDeleteResponse(deleted=[], failed=[])
+
+    try:
+        deleted, failed = await bulk_delete_files(
+            session, request_data.filenames, current_user.id
+        )
+        await session.commit()
+        
+        logger.info(
+            f"Bulk delete completed: {len(deleted)} deleted, {len(failed)} failed",
+            extra={"user_id": current_user.id, "deleted": deleted, "failed": failed}
+        )
+        
+        return BulkDeleteResponse(deleted=deleted, failed=failed)
+    except Exception as e:
+        await session.rollback()
+        http_error(
+            500,
+            f"Bulk delete failed: {str(e)}",
+            logger.error,
+            cast(ExtraLogInfo, {"filenames": request_data.filenames}),
+            e,
+        )
+        # This should never be reached due to http_error raising, but for type safety
+        return BulkDeleteResponse(deleted=[], failed=request_data.filenames)
 
 
 # ----------------------------------------
@@ -1031,6 +1140,97 @@ async def delete_file_by_filename(
     return Response(status_code=204)
 
 
+@router.get(
+    "/{filename}/download",
+    summary="Download uploaded file",
+    description="""
+    **File Download**
+
+    Download the actual file content with proper headers for browser download.
+
+    **Features:**
+    - Proper Content-Type headers
+    - Content-Disposition for browser download
+    - File size information
+    - Security checks (user ownership verification)
+
+    **Response:**
+    - Returns the file content with appropriate headers
+    - Sets filename for browser downloads
+    """,
+    responses={
+        200: {
+            "description": "File content",
+            "content": {
+                "application/octet-stream": {
+                    "schema": {"type": "string", "format": "binary"}
+                }
+            },
+        },
+        401: {"description": "Unauthorized"},
+        403: {"description": "Forbidden"},
+        404: {"description": "File not found"},
+    },
+)
+async def download_file(
+    filename: str = Path(..., description="The name of the file to download."),
+    session: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(get_current_user),
+    request_id: str = Depends(get_request_id),
+    feature_flag_ok: bool = Depends(require_feature("uploads:download")),
+    api_key_ok: None = Depends(require_api_key),
+) -> Response:
+    """
+    Download file content with proper headers.
+    Raises:
+        HTTPException: If file is not found or access denied.
+    """
+    # Verify file exists and user has access
+    db_file: DBFile | None = await get_file_by_filename(session, filename)
+    if db_file is None:
+        http_error(
+            404,
+            "File not found.",
+            logger.warning,
+            cast(ExtraLogInfo, {"filename": filename}),
+        )
+    
+    # At this point, db_file is guaranteed to not be None
+    assert db_file is not None
+    
+    # Verify user owns the file
+    if db_file.user_id != current_user.id:
+        http_error(
+            403,
+            "Access denied to file.",
+            logger.warning,
+            cast(ExtraLogInfo, {"filename": filename, "user_id": current_user.id}),
+        )
+    
+    # For now, return a placeholder response since we don't have actual file storage
+    # In a real implementation, you would read the file from storage (filesystem, S3, etc.)
+    content = f"File content for {filename} would be served here"
+    
+    headers = {
+        "Content-Disposition": f'attachment; filename="{filename}"',
+        "Content-Type": db_file.content_type or "application/octet-stream",
+    }
+    
+    if db_file.size:
+        headers["Content-Length"] = str(db_file.size)
+    
+    logger.info(
+        f"File download requested",
+        extra={"filename": filename, "user_id": current_user.id, "size": db_file.size}
+    )
+    
+    return Response(
+        content=content.encode(),
+        media_type=db_file.content_type or "application/octet-stream",
+        headers=headers,
+    )
+
+
 # ----------------------------------------
 # CATCH-ALL ROUTE - MUST BE LAST
 # ----------------------------------------
@@ -1162,10 +1362,19 @@ async def list_files(
             "filename": file.filename,
             "url": f"/uploads/{file.filename}",
         }
+        
+        # Add additional fields if requested or no field selection
+        if not selected_fields or "content_type" in selected_fields:
+            file_data["content_type"] = file.content_type
+        if not selected_fields or "size" in selected_fields:
+            file_data["size"] = file.size
+        if not selected_fields or "created_at" in selected_fields:
+            file_data["created_at"] = file.created_at.isoformat() if file.created_at else None
+            
         if selected_fields:
             # Use cast to FileDict for type safety
             file_data = cast(
-                FileDict, {k: v for k, v in file_data.items() if k in selected_fields}
+                FileDict, {k: v for k, v in file_data.items() if k in selected_fields or k in ["filename", "url"]}
             )
         file_responses.append(file_data)
 

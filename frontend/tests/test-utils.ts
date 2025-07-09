@@ -134,6 +134,21 @@ export function randomDate(): string {
     return date;
 }
 
+// Utility: Generate a random ISO date string with specific day offset
+export function randomDateWithOffset(daysOffset: number = 0): string {
+    const now = Date.now();
+    const dayInMs = 24 * 60 * 60 * 1000;
+    const offset = daysOffset * dayInMs;
+    const date = new Date(now + offset).toISOString();
+
+    if (Math.abs(daysOffset) > 7) {
+        testLogger.info(`Generated random date with ${daysOffset} days offset:`, date);
+    } else {
+        testLogger.debug(`Generated random date with ${daysOffset} days offset:`, date);
+    }
+    return date;
+}
+
 // Utility: Deep clone an object (for test isolation)
 export function deepClone<T>(obj: T): T {
     const clone = JSON.parse(JSON.stringify(obj));

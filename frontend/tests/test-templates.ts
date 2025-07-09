@@ -14,7 +14,7 @@ export function createTestError(message: string | Error = 'Test error'): Error {
 // Use these to generate consistent test data in all tests
 // You can import utilities from test-utils as needed
 
-import { randomString, randomInt, randomDate, testLogger } from './test-utils';
+import { randomString, randomInt, randomDate, randomDateWithOffset, testLogger } from './test-utils';
 import { QueryClient } from '@tanstack/react-query';
 import type {
     User,
@@ -1452,4 +1452,232 @@ export function createUploadChunkList(totalChunks = 5, overrides: Partial<Upload
 
     testLogger.info(`Created upload chunk list of ${totalChunks} chunks`);
     return chunks;
+}
+
+// File Management Templates
+
+/**
+ * File item template for file management tests
+ */
+export type TestFileItem = {
+    filename: string;
+    url: string;
+    status?: string;
+    progress?: number;
+    createdAt?: string;
+    size?: number;
+    contentType?: string;
+};
+
+export function createTestFileItem(overrides: Partial<TestFileItem> = {}): TestFileItem {
+    const extensions = ['.pdf', '.jpg', '.png', '.docx', '.txt'];
+    const statuses = ['pending', 'uploading', 'completed', 'error'];
+    const contentTypes = ['application/pdf', 'image/jpeg', 'image/png', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+
+    const extIndex = randomInt(0, extensions.length - 1);
+    const extension = extensions[extIndex];
+    const contentType = contentTypes[extIndex];
+
+    const file: TestFileItem = {
+        filename: overrides.filename || `test-file-${randomString(6)}${extension}`,
+        url: overrides.url || `/uploads/${randomString(10)}${extension}`,
+        status: overrides.status || statuses[randomInt(0, statuses.length - 1)],
+        progress: overrides.progress ?? (overrides.status === 'completed' ? 100 : randomInt(0, 99)),
+        createdAt: overrides.createdAt || randomDate(),
+        size: overrides.size || randomInt(1024, 10 * 1024 * 1024), // 1KB to 10MB
+        contentType: overrides.contentType || contentType,
+        ...overrides,
+    };
+
+    if (file.status === 'error') {
+        testLogger.error('Created file item with error status', file);
+    } else if (file.progress === 100) {
+        testLogger.info('Created completed file item', file);
+    } else {
+        testLogger.debug('Created file item', file);
+    }
+
+    return file;
+}
+
+/**
+ * File list response template
+ */
+export type TestFileListResponse = {
+    files: TestFileItem[];
+    total: number;
+};
+
+export function createTestFileListResponse(overrides: Partial<TestFileListResponse> = {}): TestFileListResponse {
+    const count = overrides.files?.length || randomInt(3, 15);
+    const files = overrides.files || Array.from({ length: count }, () => createTestFileItem());
+
+    const response: TestFileListResponse = {
+        files,
+        total: overrides.total || files.length,
+        ...overrides,
+    };
+
+    testLogger.info(`Created file list response with ${response.files.length} files (total: ${response.total})`);
+    return response;
+}
+
+/**
+ * File management state template
+ */
+export type TestFileManagementState = {
+    selectedFiles: string[];
+    viewMode: 'list' | 'grid' | 'table';
+    filters: Record<string, any>;
+    sort: {
+        field?: string;
+        order?: 'asc' | 'desc';
+    };
+    bulkOperation: {
+        type: string | null;
+        inProgress: boolean;
+        error: string | null;
+    };
+};
+
+export function createTestFileManagementState(overrides: Partial<TestFileManagementState> = {}): TestFileManagementState {
+    const viewModes = ['list', 'grid', 'table'] as const;
+    const sortFields = ['filename', 'created_at', 'size', 'content_type'];
+    const sortOrders = ['asc', 'desc'] as const;
+    const bulkOperations = ['delete', 'archive', 'restore'];
+
+    const state: TestFileManagementState = {
+        selectedFiles: overrides.selectedFiles || [],
+        viewMode: overrides.viewMode || viewModes[randomInt(0, viewModes.length - 1)],
+        filters: overrides.filters || {},
+        sort: {
+            field: overrides.sort?.field || sortFields[randomInt(0, sortFields.length - 1)],
+            order: overrides.sort?.order || sortOrders[randomInt(0, sortOrders.length - 1)],
+        },
+        bulkOperation: {
+            type: overrides.bulkOperation?.type ?? (randomInt(0, 1) ? bulkOperations[randomInt(0, bulkOperations.length - 1)] : null),
+            inProgress: overrides.bulkOperation?.inProgress ?? false,
+            error: overrides.bulkOperation?.error ?? null,
+        },
+        ...overrides,
+    };
+
+    if (state.selectedFiles.length > 0) {
+        testLogger.info(`Created file management state with ${state.selectedFiles.length} selected files`);
+    } else {
+        testLogger.debug('Created file management state with no selection');
+    }
+
+    return state;
+}
+
+/**
+ * File action result template
+ */
+export type TestFileActionResult = {
+    success: boolean;
+    message: string;
+    count?: number;
+    processedIds?: string[];
+    failedIds?: string[];
+};
+
+export function createTestFileActionResult(overrides: Partial<TestFileActionResult> = {}): TestFileActionResult {
+    const success = overrides.success ?? randomInt(0, 1) === 1;
+    const count = overrides.count || randomInt(1, 10);
+
+    const result: TestFileActionResult = {
+        success,
+        message: overrides.message || (success ? 'Operation completed successfully' : 'Operation failed'),
+        count: overrides.count || count,
+        processedIds: overrides.processedIds || (success ? Array.from({ length: count }, () => `file-${randomString(8)}`) : []),
+        failedIds: overrides.failedIds || (!success ? Array.from({ length: count }, () => `file-${randomString(8)}`) : []),
+        ...overrides,
+    };
+
+    if (result.success) {
+        testLogger.info('Created successful file action result', result);
+    } else {
+        testLogger.error('Created failed file action result', result);
+    }
+
+    return result;
+}
+
+/**
+ * File management config template
+ */
+export type TestFileManagementConfig = {
+    pageSize: number;
+    realTimeUpdates: boolean;
+    bulkOperations: boolean;
+    previews: boolean;
+    maxBulkSelection: number;
+    refreshInterval?: number;
+};
+
+export function createTestFileManagementConfig(overrides: Partial<TestFileManagementConfig> = {}): TestFileManagementConfig {
+    const config: TestFileManagementConfig = {
+        pageSize: overrides.pageSize || randomInt(10, 50),
+        realTimeUpdates: overrides.realTimeUpdates ?? true,
+        bulkOperations: overrides.bulkOperations ?? true,
+        previews: overrides.previews ?? true,
+        maxBulkSelection: overrides.maxBulkSelection || randomInt(10, 100),
+        refreshInterval: overrides.refreshInterval || randomInt(10000, 60000),
+        ...overrides,
+    };
+
+    testLogger.debug('Created file management config', config);
+    return config;
+}
+
+/**
+ * File selection helper template
+ */
+export function createTestFileSelection(files: TestFileItem[], selectCount = 0): string[] {
+    if (selectCount === 0) {
+        return [];
+    }
+
+    const actualCount = Math.min(selectCount, files.length);
+    const selectedFilenames = files.slice(0, actualCount).map(f => f.filename);
+
+    testLogger.debug(`Created file selection with ${selectedFilenames.length} files`);
+    return selectedFilenames;
+}
+
+/**
+ * File search/filter params template
+ */
+export type TestFileSearchParams = {
+    query?: string;
+    content_type?: string;
+    extension?: string;
+    created_after?: string;
+    created_before?: string;
+    sort_by?: string;
+    sort_order?: 'asc' | 'desc';
+};
+
+export function createTestFileSearchParams(overrides: Partial<TestFileSearchParams> = {}): TestFileSearchParams {
+    const contentTypes = ['application/pdf', 'image/jpeg', 'image/png', 'text/plain'];
+    const extensions = ['.pdf', '.jpg', '.png', '.txt'];
+    const sortFields = ['filename', 'created_at', 'size', 'content_type'];
+    const sortOrders = ['asc', 'desc'] as const;
+
+    const params: TestFileSearchParams = {
+        query: overrides.query || (randomInt(0, 1) ? `search-${randomString(5)}` : undefined),
+        content_type: overrides.content_type || (randomInt(0, 1) ? contentTypes[randomInt(0, contentTypes.length - 1)] : undefined),
+        extension: overrides.extension || (randomInt(0, 1) ? extensions[randomInt(0, extensions.length - 1)] : undefined),
+        created_after: overrides.created_after || (randomInt(0, 1) ? randomDateWithOffset(-30) : undefined),
+        created_before: overrides.created_before || (randomInt(0, 1) ? randomDateWithOffset(0) : undefined),
+        sort_by: overrides.sort_by || sortFields[randomInt(0, sortFields.length - 1)],
+        sort_order: overrides.sort_order || sortOrders[randomInt(0, sortOrders.length - 1)],
+        ...overrides,
+    };
+
+    const activeFilters = Object.values(params).filter(v => v !== undefined).length;
+    testLogger.debug(`Created file search params with ${activeFilters} active filters`);
+
+    return params;
 }
