@@ -1,7 +1,8 @@
 from datetime import datetime
-from typing import Final, TypedDict
+from typing import Final
 
 import pytest
+from typing_extensions import TypedDict
 
 from src.utils.datetime import parse_flexible_datetime
 from src.utils.filters import filter_fields, process_user_filters

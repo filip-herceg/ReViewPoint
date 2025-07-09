@@ -12,11 +12,11 @@ from collections.abc import (
     Sequence,
 )
 from datetime import datetime, timedelta
-from typing import TypedDict
 
 import pytest
 from httpx import ASGITransport, AsyncClient, Response
 from jose import JWTError, jwt
+from typing_extensions import TypedDict
 
 from src.core import security
 from src.core.config import Settings, get_settings

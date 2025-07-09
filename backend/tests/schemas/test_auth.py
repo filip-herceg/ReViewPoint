@@ -1,8 +1,8 @@
 from collections.abc import AsyncGenerator
-from typing import TypedDict
 
 import pytest
 from fastapi import FastAPI
+from typing_extensions import TypedDict
 
 from tests.test_data_generators import get_unique_email
 from tests.test_templates import AuthEndpointTestTemplate

@@ -7,7 +7,6 @@ from io import StringIO
 from typing import (
     Final,
     Literal,
-    TypedDict,
     cast,
 )
 
@@ -28,6 +27,7 @@ from fastapi.responses import StreamingResponse
 from loguru import logger
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing_extensions import TypedDict
 
 from src.api.deps import (
     get_current_user_with_api_key as get_current_user,

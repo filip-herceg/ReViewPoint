@@ -10,10 +10,11 @@ import os
 import sys
 import types
 from collections.abc import Callable, Generator
-from typing import Final, TypedDict
+from typing import Final
 from unittest import mock
 
 import pytest
+from typing_extensions import TypedDict
 
 from tests.test_templates import AlembicEnvTestTemplate
 

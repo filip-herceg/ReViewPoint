@@ -14,7 +14,7 @@ import json
 import os
 import uuid
 from collections.abc import AsyncGenerator, Callable, Mapping, Sequence
-from typing import Final, Literal, TypedDict, cast
+from typing import Final, Literal, cast
 
 import pytest
 import pytest_asyncio
@@ -24,6 +24,7 @@ from httpx import ASGITransport, AsyncClient
 from httpx import Response as HttpxResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import Response
+from typing_extensions import TypedDict
 
 from tests.test_templates import ExportEndpointTestTemplate
 

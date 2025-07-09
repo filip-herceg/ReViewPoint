@@ -14,13 +14,14 @@ from __future__ import annotations
 
 import re
 from collections.abc import Awaitable, Callable
-from typing import Final, TypedDict
+from typing import Final
 
 import pytest
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
 from httpx import Response as HttpxResponse
 from starlette.responses import Response
+from typing_extensions import TypedDict
 
 
 class ResponseDataDict(TypedDict):

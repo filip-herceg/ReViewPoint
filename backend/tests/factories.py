@@ -4,10 +4,11 @@ Use these factories in tests to avoid slow DB setup and reduce duplication.
 """
 
 from datetime import UTC, datetime
-from typing import Any, TypedDict
+from typing import Any
 
 from factory.base import Factory
 from factory.declarations import LazyFunction, Sequence
+from typing_extensions import TypedDict
 
 
 class UserDict(TypedDict, total=False):
