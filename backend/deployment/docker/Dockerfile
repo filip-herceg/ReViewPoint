@@ -7,17 +7,16 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Poetry and upgrade setuptools for security
-RUN pip install --upgrade setuptools>=78.1.1 \
-    && pip install poetry
+# Install Hatch and upgrade setuptools for security
+RUN pip install --upgrade setuptools>=78.1.1 pip \
+    && pip install hatch
 
 # Copy dependency files
-COPY pyproject.toml poetry.lock ./
+COPY pyproject.toml ./
 
-# Configure poetry and install dependencies
-RUN poetry config virtualenvs.create true \
-    && poetry config virtualenvs.in-project true \
-    && poetry install --only=main --no-dev
+# Use Hatch to install dependencies
+RUN hatch env create && \
+    cp -r $(hatch env find) ./.venv
 
 FROM python:3.11-slim
 
@@ -27,7 +26,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/* \
-    && pip install --upgrade setuptools>=78.1.1
+    && pip install --upgrade setuptools>=78.1.1 pip
 
 # Copy virtual environment from builder
 COPY --from=builder /app/.venv /app/.venv

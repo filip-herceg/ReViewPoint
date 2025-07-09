@@ -71,13 +71,20 @@ jobs:
         run: |
           mkdir -p ./backend/deployment/build_context
           cp ./backend/pyproject.toml ./backend/deployment/build_context/
-          cp ./backend/poetry.lock ./backend/deployment/build_context/ || touch ./backend/deployment/build_context/poetry.lock
+          
+          # Create necessary directories
           mkdir -p ./backend/deployment/build_context/src
           cp -r ./backend/src/* ./backend/deployment/build_context/src/ || echo "No source files found"
           mkdir -p ./backend/deployment/build_context/scripts
           cp -r ./backend/scripts/* ./backend/deployment/build_context/scripts/ || echo "No scripts found"
           mkdir -p ./backend/deployment/build_context/docker
           cp ./backend/deployment/docker/docker-entrypoint.sh ./backend/deployment/build_context/docker/ || echo "No entrypoint script found"
+          
+          # Copy __about__.py for version information if it exists
+          mkdir -p ./backend/deployment/build_context/src/__about__.py || true
+          cp ./backend/src/__about__.py ./backend/deployment/build_context/src/__about__.py || echo "No __about__.py file found"
+          
+          echo "Build context contents:"
           find ./backend/deployment/build_context -type f | sort
 
       - name: Build Docker image
@@ -97,13 +104,13 @@ jobs:
         
       - name: List dependencies from the image
         run: |
-          docker run --rm reviewpoint-backend:latest /app/.venv/bin/pip freeze > image-dependencies.txt
+          docker run --rm reviewpoint-backend:latest /bin/bash -c "source /app/.venv/bin/activate && pip freeze" > image-dependencies.txt || docker run --rm reviewpoint-backend:latest /app/.venv/bin/pip freeze > image-dependencies.txt
           echo "Python dependencies in the built image:"
           cat image-dependencies.txt
           
       - name: Check for outdated dependencies
         run: |
-          docker run --rm reviewpoint-backend:latest /app/.venv/bin/pip list --outdated || echo "No outdated packages found"
+          docker run --rm reviewpoint-backend:latest /bin/bash -c "source /app/.venv/bin/activate && pip list --outdated" || docker run --rm reviewpoint-backend:latest /app/.venv/bin/pip list --outdated || echo "No outdated packages found"
 
       - name: Verify Docker image
         run: |
