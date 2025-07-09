@@ -42,10 +42,10 @@ from src.core.database import get_async_session
 from src.models.file import File as DBFile  # Renamed to avoid conflict
 from src.models.user import User
 from src.repositories.file import (
+    bulk_delete_files,
     create_file,
     delete_file,
     get_file_by_filename,
-    bulk_delete_files,
 )
 from src.repositories.file import (
     list_files as repo_list_files,
@@ -147,7 +147,7 @@ class BulkDeleteResponse(BaseModel):
         json_schema_extra={
             "example": {
                 "deleted": ["document1.pdf", "document2.pdf"],
-                "failed": ["document3.pdf"]
+                "failed": ["document3.pdf"],
             }
         }
     )
@@ -951,12 +951,12 @@ async def bulk_delete_files_endpoint(
             session, request_data.filenames, current_user.id
         )
         await session.commit()
-        
+
         logger.info(
             f"Bulk delete completed: {len(deleted)} deleted, {len(failed)} failed",
-            extra={"user_id": current_user.id, "deleted": deleted, "failed": failed}
+            extra={"user_id": current_user.id, "deleted": deleted, "failed": failed},
         )
-        
+
         return BulkDeleteResponse(deleted=deleted, failed=failed)
     except Exception as e:
         await session.rollback()
@@ -1194,10 +1194,10 @@ async def download_file(
             logger.warning,
             cast(ExtraLogInfo, {"filename": filename}),
         )
-    
+
     # At this point, db_file is guaranteed to not be None
     assert db_file is not None
-    
+
     # Verify user owns the file
     if db_file.user_id != current_user.id:
         http_error(
@@ -1206,24 +1206,24 @@ async def download_file(
             logger.warning,
             cast(ExtraLogInfo, {"filename": filename, "user_id": current_user.id}),
         )
-    
+
     # For now, return a placeholder response since we don't have actual file storage
     # In a real implementation, you would read the file from storage (filesystem, S3, etc.)
     content = f"File content for {filename} would be served here"
-    
+
     headers = {
         "Content-Disposition": f'attachment; filename="{filename}"',
         "Content-Type": db_file.content_type or "application/octet-stream",
     }
-    
+
     if db_file.size:
         headers["Content-Length"] = str(db_file.size)
-    
+
     logger.info(
-        f"File download requested",
-        extra={"filename": filename, "user_id": current_user.id, "size": db_file.size}
+        "File download requested",
+        extra={"filename": filename, "user_id": current_user.id, "size": db_file.size},
     )
-    
+
     return Response(
         content=content.encode(),
         media_type=db_file.content_type or "application/octet-stream",
@@ -1362,19 +1362,26 @@ async def list_files(
             "filename": file.filename,
             "url": f"/uploads/{file.filename}",
         }
-        
+
         # Add additional fields if requested or no field selection
         if not selected_fields or "content_type" in selected_fields:
             file_data["content_type"] = file.content_type
         if not selected_fields or "size" in selected_fields:
             file_data["size"] = file.size
         if not selected_fields or "created_at" in selected_fields:
-            file_data["created_at"] = file.created_at.isoformat() if file.created_at else None
-            
+            file_data["created_at"] = (
+                file.created_at.isoformat() if file.created_at else None
+            )
+
         if selected_fields:
             # Use cast to FileDict for type safety
             file_data = cast(
-                FileDict, {k: v for k, v in file_data.items() if k in selected_fields or k in ["filename", "url"]}
+                FileDict,
+                {
+                    k: v
+                    for k, v in file_data.items()
+                    if k in selected_fields or k in ["filename", "url"]
+                },
             )
         file_responses.append(file_data)
 

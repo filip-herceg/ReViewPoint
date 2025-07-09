@@ -20,7 +20,9 @@ class File(BaseModel):
 
     filename: Mapped[str] = mapped_column(String(255), nullable=False)
     content_type: Mapped[str] = mapped_column(String(128), nullable=False)
-    size: Mapped[int] = mapped_column(BigInteger, nullable=True, default=0)  # File size in bytes
+    size: Mapped[int] = mapped_column(
+        BigInteger, nullable=True, default=0
+    )  # File size in bytes
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 
     from typing import TYPE_CHECKING

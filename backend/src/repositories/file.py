@@ -31,10 +31,7 @@ async def create_file(
         raise ValidationError("Filename is required.")
 
     file: File = File(
-        filename=filename, 
-        content_type=content_type, 
-        user_id=user_id,
-        size=size
+        filename=filename, content_type=content_type, user_id=user_id, size=size
     )
 
     try:
@@ -63,7 +60,9 @@ async def delete_file(session: AsyncSession, filename: str) -> bool:
     return True
 
 
-async def bulk_delete_files(session: AsyncSession, filenames: list[str], user_id: int) -> tuple[list[str], list[str]]:
+async def bulk_delete_files(
+    session: AsyncSession, filenames: list[str], user_id: int
+) -> tuple[list[str], list[str]]:
     """
     Bulk delete files by filenames for a specific user.
     Returns:
@@ -73,7 +72,7 @@ async def bulk_delete_files(session: AsyncSession, filenames: list[str], user_id
     """
     deleted: list[str] = []
     failed: list[str] = []
-    
+
     for filename in filenames:
         try:
             # Check if file exists and belongs to the user
@@ -81,7 +80,7 @@ async def bulk_delete_files(session: AsyncSession, filenames: list[str], user_id
                 select(File).where(File.filename == filename, File.user_id == user_id)
             )
             file: File | None = result.scalar_one_or_none()
-            
+
             if file:
                 await session.delete(file)
                 deleted.append(filename)
@@ -89,7 +88,7 @@ async def bulk_delete_files(session: AsyncSession, filenames: list[str], user_id
                 failed.append(filename)
         except Exception:
             failed.append(filename)
-    
+
     return deleted, failed
 
 
