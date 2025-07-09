@@ -5,7 +5,16 @@ User CRUD endpoints: create, list, get, update, delete.
 from collections.abc import Sequence
 from typing import Any, Final, cast
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, Response, status
+from fastapi import (
+    APIRouter,
+    Body,
+    Depends,
+    HTTPException,
+    Path,
+    Query,
+    Response,
+    status,
+)
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -37,22 +46,22 @@ router: Final[APIRouter] = APIRouter()
     summary="Create a new user",
     description="""
     Create a new user account in the system.
-    
+
     **Requirements:**
     - Valid API key in Authorization header
     - Feature flag 'users:create' must be enabled
     - Admin privileges required
-    
+
     **Request Body:**
     - `email`: Valid email address (unique)
     - `password`: Secure password (minimum 8 characters)
     - `name`: User's display name
-    
+
     **Behavior:**
     - Returns 409 if email already exists
     - Validates password strength and email format
     - Automatically assigns user role and default settings
-    
+
     **Example Request:**
     ```json
     {
@@ -61,7 +70,7 @@ router: Final[APIRouter] = APIRouter()
         "name": "John Doe"
     }
     ```
-    
+
     **Example Response:**
     ```json
     {
@@ -89,17 +98,17 @@ router: Final[APIRouter] = APIRouter()
                         "bio": None,
                         "avatar_url": None,
                         "created_at": "2025-01-08T10:30:00Z",
-                        "updated_at": "2025-01-08T10:30:00Z"
+                        "updated_at": "2025-01-08T10:30:00Z",
                     }
                 }
-            }
+            },
         },
         400: {"description": "Invalid user data"},
         401: {"description": "Invalid API key"},
         403: {"description": "Admin access required"},
         409: {"description": "Email already exists"},
         422: {"description": "Validation error"},
-        500: {"description": "Internal server error"}
+        500: {"description": "Internal server error"},
     },
     tags=["User Management"],
     dependencies=[
@@ -108,11 +117,14 @@ router: Final[APIRouter] = APIRouter()
     ],
 )
 async def create_user(
-    user: UserCreateRequest = Body(..., example={
-        "email": "newuser@example.com",
-        "password": "SecurePass123!",
-        "name": "John Doe"
-    }),
+    user: UserCreateRequest = Body(
+        ...,
+        example={
+            "email": "newuser@example.com",
+            "password": "SecurePass123!",
+            "name": "John Doe",
+        },
+    ),
     session: AsyncSession = Depends(get_async_session),
     user_service: UserService = Depends(get_user_service),
 ) -> UserResponse:
@@ -165,28 +177,28 @@ async def create_user(
     summary="List users with filtering and pagination",
     description="""
     Retrieve a paginated list of users with optional filtering capabilities.
-    
+
     **Requirements:**
     - Valid API key in Authorization header
     - Feature flag 'users:list' must be enabled
     - Admin privileges required
-    
+
     **Query Parameters:**
     - `offset`: Number of records to skip (default: 0)
     - `limit`: Maximum records to return (default: 50, max: 100)
     - `email`: Filter by email address (partial match)
     - `name`: Filter by user name (partial match)
     - `created_after`: Filter users created after date (ISO format)
-    
+
     **Response:**
     - `users`: Array of user objects
     - `total`: Total number of matching users
-    
+
     **Example Request:**
     ```
     GET /api/v1/users?offset=0&limit=10&name=john&created_after=2025-01-01
     ```
-    
+
     **Example Response:**
     ```json
     {
@@ -221,17 +233,17 @@ async def create_user(
                                 "bio": "Software developer",
                                 "avatar_url": "https://example.com/avatar.jpg",
                                 "created_at": "2025-01-08T10:30:00Z",
-                                "updated_at": "2025-01-08T10:30:00Z"
+                                "updated_at": "2025-01-08T10:30:00Z",
                             }
                         ],
-                        "total": 1
+                        "total": 1,
                     }
                 }
-            }
+            },
         },
         401: {"description": "Invalid API key"},
         403: {"description": "Admin access required"},
-        500: {"description": "Internal server error"}
+        500: {"description": "Internal server error"},
     },
     tags=["User Management"],
     dependencies=[
@@ -241,12 +253,12 @@ async def create_user(
 )
 async def list_users(
     params: PaginationParams = Depends(pagination_params),
-    email: str | None = Query(None, description="Filter by email address (partial match)", example="john@example.com"),
-    name: str | None = Query(None, description="Filter by user name (partial match)", example="John"),
+    email: str | None = Query(
+        None, description="Filter by email address (partial match)"
+    ),
+    name: str | None = Query(None, description="Filter by user name (partial match)"),
     created_after: str | None = Query(
-        None, 
-        description="Filter users created after this date (ISO format)", 
-        example="2025-01-01T00:00:00Z"
+        None, description="Filter users created after this date (ISO format)"
     ),
     session: AsyncSession = Depends(get_async_session),
     user_service: UserService = Depends(get_user_service),
@@ -303,23 +315,23 @@ async def list_users(
     summary="Get user by ID",
     description="""
     Retrieve detailed information for a specific user by their ID.
-    
+
     **Requirements:**
     - Valid API key in Authorization header
     - Feature flag 'users:read' must be enabled
     - Admin privileges required
-    
+
     **Path Parameters:**
     - `user_id`: Unique identifier of the user (integer)
-    
+
     **Response:**
     Returns complete user profile including metadata.
-    
+
     **Example Request:**
     ```
     GET /api/v1/users/123
     ```
-    
+
     **Example Response:**
     ```json
     {
@@ -347,15 +359,15 @@ async def list_users(
                         "bio": "Software developer passionate about clean code",
                         "avatar_url": "https://example.com/avatars/123.jpg",
                         "created_at": "2025-01-08T10:30:00Z",
-                        "updated_at": "2025-01-08T15:45:00Z"
+                        "updated_at": "2025-01-08T15:45:00Z",
                     }
                 }
-            }
+            },
         },
         401: {"description": "Invalid API key"},
         403: {"description": "Admin access required"},
         404: {"description": "User not found"},
-        500: {"description": "Internal server error"}
+        500: {"description": "Internal server error"},
     },
     tags=["User Management"],
     dependencies=[
@@ -364,7 +376,7 @@ async def list_users(
     ],
 )
 async def get_user_by_id(
-    user_id: int = Path(..., description="User ID", example=123, gt=0),
+    user_id: int = Path(..., description="User ID", gt=0),
     session: AsyncSession = Depends(get_async_session),
     user_service: UserService = Depends(get_user_service),
     current_user: UserResponse = Depends(require_admin),
@@ -400,25 +412,25 @@ async def get_user_by_id(
     summary="Update user information",
     description="""
     Update an existing user's information.
-    
+
     **Requirements:**
     - Valid API key in Authorization header
     - Admin privileges required
-    
+
     **Path Parameters:**
     - `user_id`: Unique identifier of the user to update
-    
+
     **Request Body:**
     - `email`: New email address (must be unique)
     - `password`: New password (will be hashed)
     - `name`: Updated display name
-    
+
     **Behavior:**
     - Validates new email uniqueness
     - Hashes new password securely
     - Updates modification timestamp
     - Returns updated user profile
-    
+
     **Example Request:**
     ```json
     {
@@ -427,7 +439,7 @@ async def get_user_by_id(
         "name": "Updated Name"
     }
     ```
-    
+
     **Example Response:**
     ```json
     {
@@ -454,27 +466,30 @@ async def get_user_by_id(
                         "bio": None,
                         "avatar_url": None,
                         "created_at": "2025-01-08T10:30:00Z",
-                        "updated_at": "2025-01-08T16:20:00Z"
+                        "updated_at": "2025-01-08T16:20:00Z",
                     }
                 }
-            }
+            },
         },
         400: {"description": "Invalid user data"},
         401: {"description": "Invalid API key"},
         403: {"description": "Admin access required"},
         404: {"description": "User not found"},
         409: {"description": "Email already exists"},
-        500: {"description": "Internal server error"}
+        500: {"description": "Internal server error"},
     },
     tags=["User Management"],
 )
 async def update_user(
-    user_id: int = Path(..., description="User ID to update", example=123, gt=0),
-    user: UserCreateRequest = Body(..., example={
-        "email": "updated@example.com",
-        "password": "NewSecurePass123!",
-        "name": "Updated Name"
-    }),
+    user_id: int = Path(..., description="User ID to update", gt=0),
+    user: UserCreateRequest = Body(
+        ...,
+        example={
+            "email": "updated@example.com",
+            "password": "NewSecurePass123!",
+            "name": "Updated Name",
+        },
+    ),
     session: AsyncSession = Depends(get_async_session),
     user_service: UserService = Depends(get_user_service),
     current_user: UserResponse = Depends(require_admin),
@@ -535,25 +550,25 @@ async def update_user(
     summary="Delete user",
     description="""
     Permanently delete a user account from the system.
-    
+
     **Requirements:**
     - Valid API key in Authorization header
     - Admin privileges required
-    
+
     **Path Parameters:**
     - `user_id`: Unique identifier of the user to delete
-    
+
     **Behavior:**
     - Permanently removes user from database
     - Cascades deletion to related records
     - Cannot be undone
     - Returns 204 No Content on success
-    
+
     **Example Request:**
     ```
     DELETE /api/v1/users/123
     ```
-    
+
     **Response:**
     - Success: 204 No Content (empty body)
     - User not found: 404 with error message
@@ -564,12 +579,12 @@ async def update_user(
         401: {"description": "Invalid API key"},
         403: {"description": "Admin access required"},
         404: {"description": "User not found"},
-        500: {"description": "Internal server error"}
+        500: {"description": "Internal server error"},
     },
     tags=["User Management"],
 )
 async def delete_user(
-    user_id: int = Path(..., description="User ID to delete", example=123, gt=0),
+    user_id: int = Path(..., description="User ID to delete", gt=0),
     session: AsyncSession = Depends(get_async_session),
     user_service: UserService = Depends(),
     current_user: UserResponse = Depends(require_admin),

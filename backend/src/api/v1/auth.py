@@ -102,7 +102,7 @@ Creates a new user account and returns authentication tokens for immediate login
 
 **Error Codes:**
 - `400`: Invalid input data
-- `409`: Email already registered  
+- `409`: Email already registered
 - `429`: Too many registration attempts
 - `422`: Validation errors
 """
@@ -138,10 +138,11 @@ Authenticates user credentials and returns JWT tokens for API access.
 
 **Usage Examples:**
 
+
 *Request:*
 ```json
 {
-  "email": "user@example.com", 
+  "email": "user@example.com",
   "password": "yourpassword"
 }
 ```

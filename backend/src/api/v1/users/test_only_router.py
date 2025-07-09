@@ -27,42 +27,42 @@ class PromoteAdminResponse(TypedDict):
     summary="Promote user to admin (TEST ONLY)",
     description="""
     **🚨 TEST ENVIRONMENT ONLY - NOT AVAILABLE IN PRODUCTION 🚨**
-    
+
     Promote a regular user to admin status by email address.
     This endpoint is restricted to test environments for testing admin functionality.
-    
+
     **Requirements:**
     - Must be running in test mode (TEST_MODE=true)
     - User must exist in the database
     - No authentication required (test endpoint)
-    
+
     **Request Body:**
     ```json
     {
         "email": "user@example.com"
     }
     ```
-    
+
     **Behavior:**
     - Finds user by email address
     - Sets `is_admin` flag to `true`
     - Commits changes to database
     - Returns confirmation message
-    
+
     **Example Request:**
     ```json
     {
         "email": "john.doe@example.com"
     }
     ```
-    
+
     **Example Response:**
     ```json
     {
         "detail": "User john.doe@example.com promoted to admin."
     }
     ```
-    
+
     **Security Notes:**
     - Automatically disabled in production environments
     - Returns 403 Forbidden if not in test mode
@@ -78,22 +78,22 @@ class PromoteAdminResponse(TypedDict):
                         "detail": "User john.doe@example.com promoted to admin."
                     }
                 }
-            }
+            },
         },
         403: {"description": "Not allowed in production environment"},
         404: {"description": "User not found"},
         422: {"description": "Invalid email format"},
-        500: {"description": "Internal server error"}
+        500: {"description": "Internal server error"},
     },
     tags=["Test Utilities"],
 )
 async def promote_user_to_admin_async(
-    email: str = Body(..., embed=True, description="Email address of user to promote", example="john.doe@example.com"),
+    email: str = Body(..., embed=True, description="Email address of user to promote"),
     session: AsyncSession = Depends(get_async_session),
 ) -> PromoteAdminResponse:
     """
     Promote a user to admin status - TEST ENVIRONMENT ONLY.
-    
+
     This endpoint is designed for test automation and setup.
     It's automatically disabled in production environments.
     """

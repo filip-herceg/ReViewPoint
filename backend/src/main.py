@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import Any, Final, Literal, TypedDict, cast
+from typing import Any, Final, Literal
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.openapi.utils import get_openapi
@@ -202,7 +202,7 @@ def create_app() -> FastAPI:
 def custom_openapi() -> dict[str, Any]:
     """
     Generate custom OpenAPI schema with comprehensive documentation.
-    
+
     Features:
     - Enhanced API metadata with contact and license info
     - Multiple server environments (dev, staging, prod)
@@ -210,16 +210,16 @@ def custom_openapi() -> dict[str, Any]:
     - Detailed endpoint tags and descriptions
     - Code samples and examples for common operations
     - Proper error response documentation
-    
+
     Returns:
         dict[str, Any]: Enhanced OpenAPI schema dictionary
-        
+
     Raises:
         Exception: If schema generation fails
     """
     try:
         logger.info("Generating custom OpenAPI schema with enhanced documentation")
-        
+
         # Generate base schema from FastAPI
         base_schema: dict[str, Any] = get_openapi(
             title=app.title,
@@ -228,26 +228,40 @@ def custom_openapi() -> dict[str, Any]:
             routes=app.routes,
             tags=[
                 {"name": "Auth", "description": "Authentication operations"},
-                {"name": "User Management", "description": "User management operations"}, 
-                {"name": "File", "description": "File upload and management operations"},
-                {"name": "Health", "description": "Health check and monitoring endpoints"},
-                {"name": "WebSocket", "description": "Real-time communication endpoints"},
+                {
+                    "name": "User Management",
+                    "description": "User management operations",
+                },
+                {
+                    "name": "File",
+                    "description": "File upload and management operations",
+                },
+                {
+                    "name": "Health",
+                    "description": "Health check and monitoring endpoints",
+                },
+                {
+                    "name": "WebSocket",
+                    "description": "Real-time communication endpoints",
+                },
             ],
         )
-        
+
         # Use comprehensive documentation module to enhance schema
         enhanced_schema = get_enhanced_openapi_schema(base_schema)
-        
-        logger.info("Custom OpenAPI schema generated successfully with enhanced documentation")
+
+        logger.info(
+            "Custom OpenAPI schema generated successfully with enhanced documentation"
+        )
         return enhanced_schema
-        
+
     except Exception as e:
         logger.error(f"Failed to generate custom OpenAPI schema: {e}")
         # Fallback to basic schema if enhancement fails
         logger.warning("Falling back to basic OpenAPI schema")
         return get_openapi(
             title=app.title,
-            version=app.version, 
+            version=app.version,
             description=app.description,
             routes=app.routes,
         )

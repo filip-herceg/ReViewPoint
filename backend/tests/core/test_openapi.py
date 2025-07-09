@@ -11,7 +11,7 @@ _ENDPOINT_TEST_CASES: Final[list[tuple[str, str, str, int]]] = [
     ("/api/v1/auth/login", "post", "User login", 200),
     ("/api/v1/auth/logout", "post", "Logout user", 200),
     ("/api/v1/auth/me", "get", "Get current user profile", 200),
-    ("/api/v1/users", "get", "List users", 200),
+    ("/api/v1/users", "get", "List users with filtering and pagination", 200),
     ("/api/v1/users/{user_id}", "get", "Get user by ID", 200),
     ("/api/v1/uploads", "get", "List all uploaded files", 200),
     ("/api/v1/uploads", "post", "Upload a file", 201),

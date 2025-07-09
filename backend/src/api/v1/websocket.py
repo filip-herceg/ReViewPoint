@@ -267,22 +267,22 @@ async def authenticate_websocket(token: str) -> User:
 async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
     """
     **Real-time WebSocket Communication Endpoint**
-    
+
     Establishes a persistent WebSocket connection for real-time bidirectional communication
     between client and server. Supports file upload progress, notifications, and system events.
-    
+
     **Authentication:**
     - JWT token passed in URL path: `/ws/{token}`
     - Token must be valid and non-expired
     - User must be active and authenticated
-    
+
     **Connection Flow:**
     1. Client connects with JWT token in path
     2. Server validates token and extracts user info
     3. Connection registered in connection manager
     4. Welcome message sent to client
     5. Bidirectional message exchange begins
-    
+
     **Message Format:**
     All messages follow this JSON structure:
     ```json
@@ -293,9 +293,9 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
         "id": "unique_message_id"
     }
     ```
-    
+
     **Client → Server Message Types:**
-    
+
     **Heartbeat (ping):**
     ```json
     {
@@ -305,7 +305,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
         "id": "msg_123"
     }
     ```
-    
+
     **Event Subscription:**
     ```json
     {
@@ -317,9 +317,9 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
         "id": "msg_124"
     }
     ```
-    
+
     **Server → Client Message Types:**
-    
+
     **Connection Established:**
     ```json
     {
@@ -333,7 +333,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
         "id": "msg_001"
     }
     ```
-    
+
     **Heartbeat Response:**
     ```json
     {
@@ -345,7 +345,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
         "id": "msg_002"
     }
     ```
-    
+
     **Upload Progress:**
     ```json
     {
@@ -359,7 +359,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
         "id": "msg_003"
     }
     ```
-    
+
     **Upload Completed:**
     ```json
     {
@@ -377,7 +377,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
         "id": "msg_004"
     }
     ```
-    
+
     **System Notification:**
     ```json
     {
@@ -391,29 +391,29 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
         "id": "msg_005"
     }
     ```
-    
+
     **Error Handling:**
     - Authentication failures close connection with code 1008
     - Internal errors close connection with code 1011
     - Invalid JSON messages are logged but connection continues
     - Unknown message types are logged and ignored
-    
+
     **Connection Management:**
     - Multiple connections per user supported
     - Automatic cleanup on disconnect
     - Connection statistics tracked
     - Graceful handling of network interruptions
-    
+
     **Usage Examples:**
-    
+
     **JavaScript Client:**
     ```javascript
     const token = "your-jwt-token";
     const ws = new WebSocket(`ws://localhost:8000/api/v1/websocket/ws/${token}`);
-    
+
     ws.onopen = function() {
         console.log("Connected to WebSocket");
-        
+
         // Subscribe to events
         ws.send(JSON.stringify({
             type: "subscribe",
@@ -422,11 +422,11 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
             id: "sub_001"
         }));
     };
-    
+
     ws.onmessage = function(event) {
         const message = JSON.parse(event.data);
         console.log("Received:", message);
-        
+
         switch(message.type) {
             case "upload.progress":
                 updateProgressBar(message.data.progress);
@@ -436,7 +436,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
                 break;
         }
     };
-    
+
     // Send heartbeat every 30 seconds
     setInterval(() => {
         ws.send(JSON.stringify({
@@ -447,17 +447,17 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
         }));
     }, 30000);
     ```
-    
+
     **Python Client:**
     ```python
     import asyncio
     import json
     import websockets
-    
+
     async def websocket_client():
         token = "your-jwt-token"
         uri = f"ws://localhost:8000/api/v1/websocket/ws/{token}"
-        
+
         async with websockets.connect(uri) as websocket:
             # Subscribe to events
             await websocket.send(json.dumps({
@@ -466,7 +466,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
                 "timestamp": "2025-01-08T10:30:00Z",
                 "id": "sub_001"
             }))
-            
+
             async for message in websocket:
                 data = json.loads(message)
                 print(f"Received: {data}")
@@ -572,22 +572,22 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
     summary="Get WebSocket connection statistics",
     description="""
     Retrieve real-time statistics about active WebSocket connections.
-    
+
     **Requirements:**
     - Valid JWT token in Authorization header
     - Admin privileges required
-    
+
     **Response Data:**
     - `total_users`: Number of unique users with active connections
     - `total_connections`: Total number of active WebSocket connections
     - `users_online`: List of user IDs currently connected
-    
+
     **Use Cases:**
     - Monitor system load and connection health
     - Debug connection issues
     - Analytics and usage tracking
     - System administration
-    
+
     **Example Response:**
     ```json
     {
@@ -610,15 +610,15 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
                         "data": {
                             "total_users": 15,
                             "total_connections": 23,
-                            "users_online": ["123", "456", "789"]
-                        }
+                            "users_online": ["123", "456", "789"],
+                        },
                     }
                 }
-            }
+            },
         },
         401: {"description": "Invalid or missing JWT token"},
         403: {"description": "Admin access required"},
-        500: {"description": "Internal server error"}
+        500: {"description": "Internal server error"},
     },
     tags=["WebSocket"],
 )

@@ -529,7 +529,7 @@ async def export_files_csv(
 
     **Process:**
     1. **File Validation**: Checks file type, size, and content
-    2. **Security Scan**: Virus scanning and malware detection  
+    2. **Security Scan**: Virus scanning and malware detection
     3. **Metadata Generation**: Extracts file information and generates checksums
     4. **Storage**: Secure storage with access controls
     5. **Response**: Returns file metadata and access URLs
@@ -579,10 +579,8 @@ async def export_files_csv(
     *Python:*
     ```python
     import requests
-    
     files = {"file": ("doc.pdf", open("doc.pdf", "rb"))}
     headers = {"Authorization": "Bearer YOUR_JWT_TOKEN"}
-    
     response = requests.post(
         "https://api.reviewpoint.org/api/v1/uploads",
         files=files,

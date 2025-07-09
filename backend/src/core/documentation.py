@@ -2,20 +2,21 @@
 OpenAPI Documentation Configuration Module
 
 This module provides comprehensive OpenAPI/Swagger documentation configuration
-for the ReViewPoint Core API, including enhanced metadata, examples, and 
+for the ReViewPoint Core API, including enhanced metadata, examples, and
 code samples for optimal developer experience.
 """
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from typing import Any, Final, Literal, TypedDict
 
 from loguru import logger
 
-
 # --- Documentation Metadata ---
+
 
 class APIInfo(TypedDict):
     """API information for OpenAPI metadata."""
+
     title: str
     description: str
     version: str
@@ -26,6 +27,7 @@ class APIInfo(TypedDict):
 
 class ContactInfo(TypedDict):
     """Contact information for API documentation."""
+
     name: str
     url: str
     email: str
@@ -33,12 +35,14 @@ class ContactInfo(TypedDict):
 
 class LicenseInfo(TypedDict):
     """License information for API documentation."""
+
     name: str
     url: str
 
 
 class ServerInfo(TypedDict):
     """Server information for different environments."""
+
     url: str
     description: str
     variables: dict[str, dict[str, str]]
@@ -46,6 +50,7 @@ class ServerInfo(TypedDict):
 
 class TagInfo(TypedDict):
     """Tag information for endpoint grouping."""
+
     name: str
     description: str
     externalDocs: dict[str, str]
@@ -53,6 +58,7 @@ class TagInfo(TypedDict):
 
 class SecurityScheme(TypedDict, total=False):
     """Security scheme configuration."""
+
     type: Literal["http", "apiKey", "oauth2", "openIdConnect"]
     scheme: str
     bearerFormat: str
@@ -64,6 +70,7 @@ class SecurityScheme(TypedDict, total=False):
 
 class ExampleValue(TypedDict):
     """Example value for request/response."""
+
     summary: str
     description: str
     value: dict[str, Any]
@@ -125,7 +132,7 @@ Most endpoints require authentication. Use one of these methods:
 
 API requests are rate-limited to ensure fair usage:
 - Authentication endpoints: 10 requests per minute
-- File uploads: 5 requests per minute  
+- File uploads: 5 requests per minute
 - General endpoints: 100 requests per minute
 
 ### Error Handling
@@ -178,32 +185,17 @@ SERVERS: Final[Sequence[ServerInfo]] = [
     {
         "url": "https://api.reviewpoint.org",
         "description": "Production server",
-        "variables": {
-            "version": {
-                "default": "v1",
-                "description": "API version"
-            }
-        }
+        "variables": {"version": {"default": "v1", "description": "API version"}},
     },
     {
-        "url": "https://staging-api.reviewpoint.org", 
+        "url": "https://staging-api.reviewpoint.org",
         "description": "Staging server for testing",
-        "variables": {
-            "version": {
-                "default": "v1",
-                "description": "API version"
-            }
-        }
+        "variables": {"version": {"default": "v1", "description": "API version"}},
     },
     {
         "url": "http://localhost:8000",
         "description": "Local development server",
-        "variables": {
-            "version": {
-                "default": "v1", 
-                "description": "API version"
-            }
-        }
+        "variables": {"version": {"default": "v1", "description": "API version"}},
     },
 ]
 
@@ -224,11 +216,11 @@ Key features:
 """,
         "externalDocs": {
             "description": "Authentication Guide",
-            "url": "https://docs.reviewpoint.org/auth"
-        }
+            "url": "https://docs.reviewpoint.org/auth",
+        },
     },
     {
-        "name": "User Management", 
+        "name": "User Management",
         "description": """
 **User profile and account management**
 
@@ -243,8 +235,8 @@ Key features:
 """,
         "externalDocs": {
             "description": "User Management Guide",
-            "url": "https://docs.reviewpoint.org/users"
-        }
+            "url": "https://docs.reviewpoint.org/users",
+        },
     },
     {
         "name": "File",
@@ -261,9 +253,9 @@ Key features:
 - Virus scanning and security checks
 """,
         "externalDocs": {
-            "description": "File Management Guide", 
-            "url": "https://docs.reviewpoint.org/files"
-        }
+            "description": "File Management Guide",
+            "url": "https://docs.reviewpoint.org/files",
+        },
     },
     {
         "name": "Health",
@@ -281,8 +273,8 @@ Key features:
 """,
         "externalDocs": {
             "description": "Monitoring Guide",
-            "url": "https://docs.reviewpoint.org/monitoring"
-        }
+            "url": "https://docs.reviewpoint.org/monitoring",
+        },
     },
     {
         "name": "WebSocket",
@@ -300,15 +292,15 @@ Key features:
 """,
         "externalDocs": {
             "description": "WebSocket Guide",
-            "url": "https://docs.reviewpoint.org/websocket"
-        }
+            "url": "https://docs.reviewpoint.org/websocket",
+        },
     },
 ]
 
 SECURITY_SCHEMES: Final[dict[str, SecurityScheme]] = {
     "BearerAuth": {
         "type": "http",
-        "scheme": "bearer", 
+        "scheme": "bearer",
         "bearerFormat": "JWT",
         "description": """
 **JWT Bearer Token Authentication**
@@ -353,7 +345,7 @@ Use this for service-to-service communication and automation.
                 "tokenUrl": "/api/v1/auth/login",
                 "scopes": {
                     "read": "Read access to user data",
-                    "write": "Write access to user data", 
+                    "write": "Write access to user data",
                     "admin": "Administrative access",
                 },
             }
@@ -426,7 +418,7 @@ EXAMPLE_AUTH_RESPONSE: Final[dict[str, Any]] = {
 
 EXAMPLE_ERROR: Final[dict[str, Any]] = {
     "detail": "The provided credentials are invalid",
-    "status": "error", 
+    "status": "error",
     "feedback": "Please check your email and password and try again",
 }
 
@@ -466,7 +458,7 @@ import requests
 response = requests.post(
     "https://api.reviewpoint.org/api/v1/auth/login",
     json={
-        "email": "user@example.com", 
+        "email": "user@example.com",
         "password": "your_password"
     }
 )
@@ -634,69 +626,164 @@ if (response.ok) {
 }
         """.strip(),
     },
+    "user_profile": {
+        "curl": """
+curl -X GET "https://api.reviewpoint.org/api/v1/auth/me" \\
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+        """.strip(),
+        "python": """
+import requests
+
+headers = {
+    "Authorization": "Bearer YOUR_JWT_TOKEN"
+}
+
+response = requests.get(
+    "https://api.reviewpoint.org/api/v1/auth/me",
+    headers=headers
+)
+
+if response.status_code == 200:
+    user_data = response.json()
+    print(f"Logged in as: {user_data['name']} ({user_data['email']})")
+else:
+    print(f"Failed to get profile: {response.json()}")
+        """.strip(),
+        "javascript": """
+const response = await fetch('https://api.reviewpoint.org/api/v1/auth/me', {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer YOUR_JWT_TOKEN'
+  }
+});
+
+if (response.ok) {
+  const userData = await response.json();
+  console.log(`Logged in as: ${userData.name} (${userData.email})`);
+} else {
+  const error = await response.json();
+  console.error('Failed to get profile:', error);
+}
+        """.strip(),
+    },
+    "websocket_connection": {
+        "python": """
+import asyncio
+import websockets
+import json
+
+async def connect_websocket():
+    uri = "ws://localhost:8000/api/v1/ws/YOUR_JWT_TOKEN"
+
+    async with websockets.connect(uri) as websocket:
+        print("Connected to WebSocket")
+
+        # Send a message
+        await websocket.send(json.dumps({
+            "type": "ping",
+            "data": "Hello Server"
+        }))
+
+        # Listen for messages
+        async for message in websocket:
+            data = json.loads(message)
+            print(f"Received: {data}")
+
+# Run the WebSocket client
+asyncio.run(connect_websocket())
+        """.strip(),
+        "javascript": """
+const ws = new WebSocket('ws://localhost:8000/api/v1/ws/YOUR_JWT_TOKEN');
+
+ws.onopen = function(event) {
+    console.log('Connected to WebSocket');
+
+    // Send a ping message
+    ws.send(JSON.stringify({
+        type: 'ping',
+        data: 'Hello Server'
+    }));
+};
+
+ws.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    console.log('Received:', data);
+};
+
+ws.onclose = function(event) {
+    console.log('WebSocket connection closed');
+};
+
+ws.onerror = function(error) {
+    console.error('WebSocket error:', error);
+};
+        """.strip(),
+    },
 }
 
 
 def get_enhanced_openapi_schema(base_schema: dict[str, Any]) -> dict[str, Any]:
     """
     Enhance the base OpenAPI schema with comprehensive documentation.
-    
+
     Args:
         base_schema: Base OpenAPI schema from FastAPI
-        
+
     Returns:
         Enhanced OpenAPI schema with better documentation
-        
+
     Raises:
         Exception: If schema enhancement fails
     """
     try:
         logger.info("Enhancing OpenAPI schema with comprehensive documentation")
-        
+
         # Update API info
         if "info" not in base_schema:
             base_schema["info"] = {}
-            
+
         base_schema["info"].update(API_INFO)
-        
+
         # Add servers
         base_schema["servers"] = list(SERVERS)
-        
+
         # Add security schemes
         if "components" not in base_schema:
             base_schema["components"] = {}
-            
+
         base_schema["components"]["securitySchemes"] = SECURITY_SCHEMES
-        
+
         # Add global security (most endpoints require auth)
         base_schema["security"] = [
             {"BearerAuth": []},
             {"ApiKeyAuth": []},
         ]
-        
+
         # Add tags
         base_schema["tags"] = list(TAGS)
-        
+
         # Enhance endpoint documentation
         paths = base_schema.get("paths", {})
         if isinstance(paths, dict):
             _enhance_endpoint_documentation(paths)
-            
+
         # Add examples to components
         if "examples" not in base_schema["components"]:
             base_schema["components"]["examples"] = {}
-            
-        base_schema["components"]["examples"].update({
-            "UserExample": {"value": EXAMPLE_USER},
-            "FileExample": {"value": EXAMPLE_FILE}, 
-            "AuthResponseExample": {"value": EXAMPLE_AUTH_RESPONSE},
-            "ErrorExample": {"value": EXAMPLE_ERROR},
-            "ValidationErrorExample": {"value": EXAMPLE_VALIDATION_ERROR},
-        })
-        
+
+        base_schema["components"]["examples"].update(
+            {
+                "UserExample": {"value": EXAMPLE_USER},
+                "FileExample": {"value": EXAMPLE_FILE},
+                "AuthResponseExample": {"value": EXAMPLE_AUTH_RESPONSE},
+                "ErrorExample": {"value": EXAMPLE_ERROR},
+                "ValidationErrorExample": {"value": EXAMPLE_VALIDATION_ERROR},
+            }
+        )
+
         logger.info("OpenAPI schema enhancement completed successfully")
         return base_schema
-        
+
     except Exception as e:
         logger.error(f"Failed to enhance OpenAPI schema: {e}")
         raise
@@ -705,20 +792,20 @@ def get_enhanced_openapi_schema(base_schema: dict[str, Any]) -> dict[str, Any]:
 def _enhance_endpoint_documentation(paths: dict[str, Any]) -> None:
     """
     Enhance individual endpoint documentation with better descriptions and examples.
-    
+
     Args:
         paths: OpenAPI paths object to enhance
     """
     for path, path_item in paths.items():
         if not isinstance(path_item, dict):
             continue
-            
+
         # Add tags based on path prefixes
         _add_tags_to_endpoints(path, path_item)
-        
+
         # Configure security for endpoints
         _configure_endpoint_security(path, path_item)
-        
+
         # Add enhanced examples and descriptions
         _add_endpoint_examples(path, path_item)
 
@@ -726,7 +813,7 @@ def _enhance_endpoint_documentation(paths: dict[str, Any]) -> None:
 def _add_tags_to_endpoints(path: str, path_item: dict[str, Any]) -> None:
     """Add appropriate tags to endpoints based on their paths."""
     tags = []
-    
+
     if "/auth" in path:
         tags = ["Auth"]
     elif "/users" in path:
@@ -737,8 +824,8 @@ def _add_tags_to_endpoints(path: str, path_item: dict[str, Any]) -> None:
         tags = ["Health"]
     elif "/ws" in path or "/websocket" in path:
         tags = ["WebSocket"]
-        
-    for method, operation in path_item.items():
+
+    for _method, operation in path_item.items():
         if isinstance(operation, dict) and "tags" not in operation:
             operation["tags"] = tags
 
@@ -748,7 +835,7 @@ def _configure_endpoint_security(path: str, path_item: dict[str, Any]) -> None:
     for method, operation in path_item.items():
         if not isinstance(operation, dict):
             continue
-            
+
         # Public endpoints don't require authentication
         if (path, method) in PUBLIC_ENDPOINTS:
             operation["security"] = []
@@ -772,21 +859,65 @@ def _add_endpoint_examples(path: str, path_item: dict[str, Any]) -> None:
     for method, operation in path_item.items():
         if not isinstance(operation, dict):
             continue
-            
+
         # Add code samples for key endpoints
         if path == "/api/v1/auth/login" and method == "post":
             operation["x-codeSamples"] = [
                 {"lang": "curl", "source": CODE_SAMPLES["auth_login"]["curl"]},
                 {"lang": "python", "source": CODE_SAMPLES["auth_login"]["python"]},
-                {"lang": "javascript", "source": CODE_SAMPLES["auth_login"]["javascript"]},
+                {
+                    "lang": "javascript",
+                    "source": CODE_SAMPLES["auth_login"]["javascript"],
+                },
+            ]
+        elif path == "/api/v1/auth/me" and method == "get":
+            operation["x-codeSamples"] = [
+                {"lang": "curl", "source": CODE_SAMPLES["user_profile"]["curl"]},
+                {"lang": "python", "source": CODE_SAMPLES["user_profile"]["python"]},
+                {
+                    "lang": "javascript",
+                    "source": CODE_SAMPLES["user_profile"]["javascript"],
+                },
             ]
         elif path == "/api/v1/uploads" and method == "post":
             operation["x-codeSamples"] = [
                 {"lang": "curl", "source": CODE_SAMPLES["file_upload"]["curl"]},
                 {"lang": "python", "source": CODE_SAMPLES["file_upload"]["python"]},
-                {"lang": "javascript", "source": CODE_SAMPLES["file_upload"]["javascript"]},
+                {
+                    "lang": "javascript",
+                    "source": CODE_SAMPLES["file_upload"]["javascript"],
+                },
             ]
-            
+        elif path == "/api/v1/users" and method == "get":
+            operation["x-codeSamples"] = [
+                {"lang": "curl", "source": CODE_SAMPLES["user_management"]["curl"]},
+                {"lang": "python", "source": CODE_SAMPLES["user_management"]["python"]},
+                {
+                    "lang": "javascript",
+                    "source": CODE_SAMPLES["user_management"]["javascript"],
+                },
+            ]
+        elif path == "/api/v1/health" and method == "get":
+            operation["x-codeSamples"] = [
+                {"lang": "curl", "source": CODE_SAMPLES["health_check"]["curl"]},
+                {"lang": "python", "source": CODE_SAMPLES["health_check"]["python"]},
+                {
+                    "lang": "javascript",
+                    "source": CODE_SAMPLES["health_check"]["javascript"],
+                },
+            ]
+        elif "/ws/" in path and method == "websocket":
+            operation["x-codeSamples"] = [
+                {
+                    "lang": "python",
+                    "source": CODE_SAMPLES["websocket_connection"]["python"],
+                },
+                {
+                    "lang": "javascript",
+                    "source": CODE_SAMPLES["websocket_connection"]["javascript"],
+                },
+            ]
+
         # Enhance response examples
         if "responses" in operation:
             _add_response_examples(operation["responses"])
@@ -794,28 +925,33 @@ def _add_endpoint_examples(path: str, path_item: dict[str, Any]) -> None:
 
 def _add_response_examples(responses: dict[str, Any]) -> None:
     """Add comprehensive examples to response schemas."""
-    for status_code, response in responses.items():
+    for _status_code, response in responses.items():
         if not isinstance(response, dict) or "content" not in response:
             continue
-            
+
         content = response["content"]
-        for media_type, media_info in content.items():
+        for _media_type, media_info in content.items():
             if not isinstance(media_info, dict):
                 continue
-                
+
             if "examples" not in media_info:
                 media_info["examples"] = {}
-                
+
             # Add appropriate examples based on status code
-            if status_code == "200" or status_code == "201":
+            if _status_code == "200" or _status_code == "201":
                 if "user" in str(media_info).lower():
                     media_info["examples"]["default"] = {"value": EXAMPLE_USER}
                 elif "file" in str(media_info).lower():
                     media_info["examples"]["default"] = {"value": EXAMPLE_FILE}
-                elif "auth" in str(media_info).lower() or "token" in str(media_info).lower():
+                elif (
+                    "auth" in str(media_info).lower()
+                    or "token" in str(media_info).lower()
+                ):
                     media_info["examples"]["default"] = {"value": EXAMPLE_AUTH_RESPONSE}
-            elif status_code in ["400", "401", "403", "404", "429", "500"]:
-                if status_code == "422":
-                    media_info["examples"]["default"] = {"value": EXAMPLE_VALIDATION_ERROR}
+            elif _status_code in ["400", "401", "403", "404", "429", "500"]:
+                if _status_code == "422":
+                    media_info["examples"]["default"] = {
+                        "value": EXAMPLE_VALIDATION_ERROR
+                    }
                 else:
                     media_info["examples"]["default"] = {"value": EXAMPLE_ERROR}

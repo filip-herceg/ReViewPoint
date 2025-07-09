@@ -10,6 +10,10 @@ import pathlib
 from typing import Final
 
 import pytest
+from pytest import StashKey
+
+# Unique stash key for mapping check result
+MAPPING_CHECK_RESULT_KEY: StashKey["MappingCheckResult"] = StashKey()
 
 SRC_ROOT: Final[pathlib.Path] = pathlib.Path(__file__).parents[2] / "src"
 TESTS_ROOT: Final[pathlib.Path] = pathlib.Path(__file__).parents[1]
@@ -124,16 +128,23 @@ def pytest_sessionstart(session: pytest.Session) -> None:
                 result.multiply_mapped.append(t)
 
     result.checked = True
-    # Attach result to config using setattr to avoid type errors
-    session.config._mapping_check_result = result
+    # Use pytest's config.stash to store the result in a type-safe way
+    # Requires pytest >=7.2
+    if hasattr(session.config, "stash"):
+        session.config.stash[MAPPING_CHECK_RESULT_KEY] = result
+    else:
+        # Fallback for older pytest: do nothing or raise
+        pass
     # Do not print or exit here; summary will be shown at the end.
 
 
 def pytest_terminal_summary(
-    terminalreporter: "pytest.TerminalReporter", exitstatus: int, config: object
+    terminalreporter: "pytest.TerminalReporter", exitstatus: int, config: pytest.Config
 ) -> None:
     """Pytest hook: print summary of 1:1 mapping check between source and test files."""
-    result: MappingCheckResult | None = getattr(config, "_mapping_check_result", None)
+    result: MappingCheckResult | None = None
+    if hasattr(config, "stash") and MAPPING_CHECK_RESULT_KEY in config.stash:
+        result = config.stash[MAPPING_CHECK_RESULT_KEY]
     if not result or not result.checked:
         return
     term = terminalreporter
