@@ -1,6 +1,7 @@
 import re
 from re import Pattern
-from typing import Final, Literal, TypedDict
+from typing import Final, Literal
+from typing_extensions import TypedDict
 
 # Strict constant for the email regex pattern
 EMAIL_REGEX_PATTERN: Final[str] = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"

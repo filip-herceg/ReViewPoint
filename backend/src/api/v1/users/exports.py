@@ -5,7 +5,8 @@ User export endpoints: CSV, health, and simple export endpoints.
 import csv
 from collections.abc import Mapping, Sequence
 from io import StringIO
-from typing import Final, Literal, TypedDict
+from typing import Final, Literal
+from typing_extensions import TypedDict
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession

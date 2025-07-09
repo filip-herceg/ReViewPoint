@@ -1,7 +1,8 @@
 from collections.abc import Callable
 
 # TypedDict for extra logging info; extend with known keys for stricter typing
-from typing import Final, Literal, TypedDict
+from typing import Final, Literal
+from typing_extensions import TypedDict
 
 from fastapi import HTTPException
 from loguru import logger

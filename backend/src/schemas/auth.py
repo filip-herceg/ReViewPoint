@@ -3,8 +3,8 @@ from typing import (
     ClassVar,
     Final,
     Literal,
-    TypedDict,
 )
+from typing_extensions import TypedDict
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 

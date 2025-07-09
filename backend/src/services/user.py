@@ -13,7 +13,8 @@ from collections.abc import (
 )
 from datetime import UTC, datetime, timedelta
 from enum import Enum
-from typing import Final, Literal, TypedDict, cast
+from typing import Final, Literal, cast
+from typing_extensions import TypedDict
 
 from fastapi import UploadFile
 from jose import JWTError, jwt

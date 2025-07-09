@@ -5,7 +5,8 @@ import threading
 import time
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import Final, TypedDict
+from typing import Final
+from typing_extensions import TypedDict
 
 from loguru import logger
 from sqlalchemy import text

@@ -6,7 +6,8 @@ File renamed from openapi_fix.py to openapi.py for clarity and 1:1 mapping with 
 """
 
 from collections.abc import Callable, Mapping, Sequence
-from typing import Final, Literal, TypedDict, cast
+from typing import Final, Literal, cast
+from typing_extensions import TypedDict
 
 from fastapi import FastAPI
 from loguru import logger

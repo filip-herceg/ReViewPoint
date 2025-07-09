@@ -50,7 +50,8 @@ dependencies = [
   "pytest-loguru>=0.2.0",
   "factory_boy>=3.3.0",
   "asyncpg>=0.29.0",
-  "pytest-xdist>=3.6.1"
+  "pytest-xdist>=3.6.1",
+  "typing_extensions>=4.0.0"
 ]
 
 [project.urls]

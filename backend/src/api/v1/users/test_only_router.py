@@ -2,7 +2,8 @@
 Test-only endpoints for user management (e.g., promote to admin).
 """
 
-from typing import Final, TypedDict
+from typing import Final
+from typing_extensions import TypedDict
 
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 from fastapi.routing import APIRouter as APIRouterType

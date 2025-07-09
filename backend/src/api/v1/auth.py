@@ -1,6 +1,7 @@
 from collections.abc import Awaitable, Callable, Mapping
 from datetime import UTC, datetime
-from typing import Final, TypedDict, cast
+from typing import Final, cast
+from typing_extensions import TypedDict
 
 from fastapi import APIRouter, Body, Depends, Request, status
 from jose import jwt

@@ -2,7 +2,8 @@ import platform
 import sys
 import time
 from collections.abc import Callable
-from typing import Final, Literal, TypedDict
+from typing import Final, Literal
+from typing_extensions import TypedDict
 
 from fastapi import APIRouter, Depends, Response, status
 

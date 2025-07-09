@@ -7,7 +7,8 @@ code samples for optimal developer experience.
 """
 
 from collections.abc import Sequence
-from typing import Any, Final, Literal, TypedDict
+from typing import Any, Final, Literal
+from typing_extensions import TypedDict
 
 from loguru import logger
 

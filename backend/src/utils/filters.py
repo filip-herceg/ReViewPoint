@@ -1,5 +1,6 @@
 from collections.abc import Callable, Mapping, Sequence
-from typing import Final, Literal, TypedDict, TypeVar
+from typing import Final, Literal, TypeVar
+from typing_extensions import TypedDict
 
 
 class UserDict(TypedDict, total=False):

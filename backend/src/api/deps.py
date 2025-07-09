@@ -9,10 +9,10 @@ from typing import (
     Final,
     Literal,
     Protocol,
-    TypedDict,
     TypeVar,
     cast,
 )
+from typing_extensions import TypedDict
 
 from fastapi import Depends, Header, HTTPException, Query, Request, Security, status
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer

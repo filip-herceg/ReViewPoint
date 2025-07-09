@@ -11,8 +11,8 @@ from typing import (
     Any,
     Final,
     Literal,
-    TypedDict,
 )
+from typing_extensions import TypedDict
 
 from sqlalchemy import (
     extract,
