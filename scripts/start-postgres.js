@@ -4,24 +4,13 @@ import { spawn, exec } from 'child_process';
 import { promisify } from 'util';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
+import logger from './logger.js';
 
 const execAsync = promisify(exec);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
-
-const colors = {
-    postgres: '\x1b[36m', // Cyan
-    info: '\x1b[32m',     // Green
-    warn: '\x1b[33m',     // Yellow
-    error: '\x1b[31m',    // Red
-    reset: '\x1b[0m'
-};
-
-function log(prefix, color, message) {
-    console.log(`${color}[${prefix}]${colors.reset} ${message}`);
-}
 
 async function checkDockerRunning() {
     try {
@@ -53,7 +42,7 @@ async function isPostgresHealthy() {
 
 async function startPostgresContainer() {
     return new Promise((resolve, reject) => {
-        log('POSTGRES', colors.postgres, 'Starting PostgreSQL container...');
+        logger.postgres('Starting PostgreSQL container...');
 
         const dockerCompose = spawn('docker', [
             'compose',
@@ -75,11 +64,11 @@ async function startPostgresContainer() {
 
         dockerCompose.on('close', (code) => {
             if (code === 0) {
-                log('POSTGRES', colors.postgres, 'Container started successfully');
+                logger.postgres('Container started successfully');
                 resolve();
             } else {
-                log('POSTGRES', colors.error, `Container failed to start (exit code: ${code})`);
-                log('POSTGRES', colors.error, output);
+                logger.error(`Container failed to start (exit code: ${code})`);
+                logger.error(output);
                 reject(new Error(`Docker compose failed with exit code ${code}`));
             }
         });
@@ -87,16 +76,16 @@ async function startPostgresContainer() {
 }
 
 async function waitForPostgresHealthy() {
-    log('POSTGRES', colors.postgres, 'Waiting for PostgreSQL to be healthy...');
+    logger.postgres('Waiting for PostgreSQL to be healthy...');
 
     for (let i = 0; i < 30; i++) {
         if (await isPostgresHealthy()) {
-            log('POSTGRES', colors.info, 'PostgreSQL is healthy and ready!');
+            logger.success('PostgreSQL is healthy and ready!');
             return true;
         }
 
         if (i % 5 === 0) {
-            log('POSTGRES', colors.postgres, `Still waiting for PostgreSQL... (${i}/30)`);
+            logger.postgres(`Still waiting for PostgreSQL... (${i}/30)`);
         }
 
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -107,7 +96,7 @@ async function waitForPostgresHealthy() {
 
 async function runMigrations() {
     return new Promise((resolve, reject) => {
-        log('POSTGRES', colors.postgres, 'Running database migrations...');
+        logger.postgres('Running database migrations...');
 
         const migration = spawn('python', ['-m', 'alembic', 'upgrade', 'head'], {
             cwd: join(rootDir, 'backend'),
@@ -130,17 +119,17 @@ async function runMigrations() {
 
         migration.on('close', (code) => {
             if (code === 0) {
-                log('POSTGRES', colors.info, 'Database migrations completed successfully');
+                logger.success('Database migrations completed successfully');
                 resolve();
             } else {
                 // Check if this is just a "no changes" or "already applied" scenario
                 if (output.includes('No new upgrade operations to perform') ||
                     output.includes('already exists')) {
-                    log('POSTGRES', colors.info, 'Database schema is already up to date');
+                    logger.info('Database schema is already up to date');
                     resolve();
                 } else {
-                    log('POSTGRES', colors.error, `Migration failed (exit code: ${code})`);
-                    log('POSTGRES', colors.error, output);
+                    logger.error(`Migration failed (exit code: ${code})`);
+                    logger.error(output);
                     reject(new Error(`Migration failed with exit code ${code}`));
                 }
             }
@@ -152,17 +141,17 @@ export async function ensurePostgresReady() {
     try {
         // Check if Docker is running
         if (!(await checkDockerRunning())) {
-            log('POSTGRES', colors.error, 'Docker is not running. Please start Docker Desktop.');
+            logger.error('Docker is not running. Please start Docker Desktop.');
             throw new Error('Docker is not running');
         }
 
         // Check if PostgreSQL container is already running
         if (await checkPostgresContainer()) {
-            log('POSTGRES', colors.info, 'PostgreSQL container already running');
+            logger.info('PostgreSQL container already running');
 
             // Check if it's healthy
             if (await isPostgresHealthy()) {
-                log('POSTGRES', colors.info, 'PostgreSQL is healthy');
+                logger.info('PostgreSQL is healthy');
             } else {
                 await waitForPostgresHealthy();
             }
@@ -175,12 +164,12 @@ export async function ensurePostgresReady() {
         // Run migrations with explicit environment
         await runMigrations();
 
-        log('POSTGRES', colors.info, 'PostgreSQL setup complete! 🐘');
+        logger.success('PostgreSQL setup complete! 🐘');
         return true;
 
     } catch (error) {
-        log('POSTGRES', colors.error, `PostgreSQL setup failed: ${error.message}`);
-        log('POSTGRES', colors.warn, 'Falling back to SQLite for development');
+        logger.error(`PostgreSQL setup failed: ${error.message}`);
+        logger.warn('Falling back to SQLite for development');
         return false;
     }
 }

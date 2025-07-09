@@ -1,17 +1,7 @@
 #!/usr/bin/env node
 
 import { execSync } from 'child_process';
-
-const colors = {
-    info: '\x1b[32m',     // Green
-    warn: '\x1b[33m',     // Yellow
-    error: '\x1b[31m',    // Red
-    reset: '\x1b[0m'
-};
-
-function log(level, message) {
-    console.log(`${colors[level]}[${level.toUpperCase()}]${colors.reset} ${message}`);
-}
+import logger from './logger.js';
 
 function checkRequirement(name, command, expectedText = '') {
     try {
@@ -19,15 +9,15 @@ function checkRequirement(name, command, expectedText = '') {
         if (expectedText && !output.includes(expectedText)) {
             throw new Error(`Unexpected output: ${output}`);
         }
-        log('info', `✅ ${name} is available`);
+        logger.success(`✅ ${name} is available`);
         return true;
     } catch (error) {
-        log('error', `❌ ${name} is not available: ${error.message}`);
+        logger.error(`❌ ${name} is not available: ${error.message}`);
         return false;
     }
 }
 
-console.log('🔍 Checking PostgreSQL Auto-Setup Prerequisites...\n');
+logger.info('🔍 Checking PostgreSQL Auto-Setup Prerequisites...\n');
 
 let allGood = true;
 
@@ -52,22 +42,20 @@ try {
     if (!fs.existsSync('./backend')) {
         throw new Error('Backend directory not found');
     }
-    log('info', '✅ Backend directory exists');
+    logger.success('✅ Backend directory exists');
 } catch (error) {
-    log('error', `❌ Backend directory check failed: ${error.message}`);
+    logger.error(`❌ Backend directory check failed: ${error.message}`);
     allGood = false;
 }
 
-console.log();
-
 if (allGood) {
-    log('info', '🎉 All prerequisites are met! You can use:');
-    console.log('   - pnpm dev:postgres  (Auto PostgreSQL + development)');
-    console.log('   - pnpm postgres:start  (PostgreSQL only)');
-    console.log('   - pnpm dev  (SQLite development)');
+    logger.success('🎉 All prerequisites are met! You can use:');
+    logger.info('   - pnpm dev:postgres  (Auto PostgreSQL + development)');
+    logger.info('   - pnpm postgres:start  (PostgreSQL only)');
+    logger.info('   - pnpm dev  (SQLite development)');
 } else {
-    log('warn', '⚠️  Some prerequisites are missing. PostgreSQL auto-setup may not work.');
-    log('info', 'You can still use SQLite development with: pnpm dev');
+    logger.warn('⚠️  Some prerequisites are missing. PostgreSQL auto-setup may not work.');
+    logger.info('You can still use SQLite development with: pnpm dev');
 }
 
-console.log('\nFor more info, see: docs/POSTGRES_SETUP.md');
+logger.info('\nFor more info, see: docs/POSTGRES_SETUP.md');
