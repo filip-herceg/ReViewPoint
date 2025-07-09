@@ -58,6 +58,7 @@ ReViewPoint provides a flexible backend for:
 - **Modules:** Dockerized microservices, JSON I/O, independent CI
 - **LLM Layer:** Pluggable adapters (OpenAI, vLLM), prompt templating
 - **Storage:** PostgreSQL (metadata), MinIO/S3 (file storage)
+- **Deployment:** [Docker configurations](backend/deployment/docker/DOCKER-GUIDE.md) for development and production
 
 See the [Architecture Diagram](https://filip-herceg.github.io/ReViewPoint/architecture/) for a visual overview.
 

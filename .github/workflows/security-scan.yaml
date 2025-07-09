@@ -125,10 +125,10 @@ jobs:
             chmod +x ./build_context/scripts/dummy.sh
           fi
           
-          # Copy docker-entrypoint.sh to the root level
+          # Copy entrypoint.sh to the root level
           echo "Copying entrypoint script..."
-          if [ -f "./backend/deployment/docker/docker-entrypoint.sh" ]; then
-            cp ./backend/deployment/docker/docker-entrypoint.sh ./build_context/
+          if [ -f "./backend/deployment/docker/entrypoint.sh" ]; then
+            cp ./backend/deployment/docker/entrypoint.sh ./build_context/docker-entrypoint.sh
             echo "Entrypoint script copied successfully"
             chmod +x ./build_context/docker-entrypoint.sh
           else
@@ -145,7 +145,17 @@ jobs:
           find ./build_context -type f | sort
           
           # Copy our updated Dockerfile to the build context
-          cp ./backend/deployment/docker/Dockerfile ./build_context/ || echo "WARNING: Dockerfile not found"
+          # Try production Dockerfile first, then fall back to development
+          if [ -f "./backend/deployment/docker/dockerfile.prod" ]; then
+            cp ./backend/deployment/docker/dockerfile.prod ./build_context/Dockerfile
+            echo "Using production Dockerfile (dockerfile.prod)"
+          elif [ -f "./backend/deployment/docker/dockerfile.dev" ]; then
+            cp ./backend/deployment/docker/dockerfile.dev ./build_context/Dockerfile
+            echo "Using development Dockerfile (dockerfile.dev)"
+          else
+            echo "WARNING: No Dockerfile found"
+            exit 1
+          fi
           
       # Debug: Show the Docker context and Dockerfile
       - name: Debug Docker build inputs
@@ -201,6 +211,14 @@ jobs:
           # Check if the container can start
           echo "Attempting to start container to verify configuration:"
           docker run --rm reviewpoint-backend:latest echo "Container started successfully" || echo "Container failed to start"
+          
+          # Check if the image is distroless or has shell access
+          echo "Determining image type (distroless or shell-based):"
+          if docker run --entrypoint "" --rm reviewpoint-backend:latest which bash 2>/dev/null; then
+            echo "Shell-based image detected"
+          else
+            echo "Distroless image detected (no shell access)"
+          fi
           
       - name: Run Trivy vulnerability scanner (Docker image)
         id: trivy-image-sarif

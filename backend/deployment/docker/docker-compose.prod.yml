@@ -1,0 +1,49 @@
+# Example docker-compose.yml for using the secure distroless image with database migrations
+# This shows how to handle database migrations when using the distroless runtime image
+
+version: '3.8'
+
+services:
+  # Database migration init container
+  migrate:
+    build: 
+      context: ../../  # Build from backend directory
+      dockerfile: deployment/docker/dockerfile.prod
+      target: builder  # Use builder stage which has shell access
+    environment:
+      - REVIEWPOINT_DB_URL=${REVIEWPOINT_DB_URL}
+    volumes:
+      - ../../:/app
+    working_dir: /app
+    command: ["./deployment/docker/db-migrate.sh"]
+    depends_on:
+      - postgres
+    restart: "no"
+
+  # Main application using distroless image
+  app:
+    build: 
+      context: ../../  # Build from backend directory
+      dockerfile: deployment/docker/dockerfile.prod
+    environment:
+      - REVIEWPOINT_DB_URL=${REVIEWPOINT_DB_URL}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - migrate
+      - postgres
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=reviewpoint
+      - POSTGRES_USER=reviewpoint
+      - POSTGRES_PASSWORD=reviewpoint_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:

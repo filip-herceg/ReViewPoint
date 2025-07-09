@@ -22,7 +22,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: docker/Dockerfile.dev
+      dockerfile: docker/dockerfile.dev
     container_name: ReViewPoint-Backend
     ports:
       - "8000:8000"

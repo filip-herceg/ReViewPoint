@@ -1,14 +1,20 @@
-# Base image for building dependencies
-FROM python:3.11-slim-bullseye AS builder
+# Traditional Docker build (alternative to distroless)
+# Use this if you need shell access or prefer traditional approach
+# This version has 1 HIGH vulnerability in both builder and runtime stages
+
+FROM python:3.13-slim-bookworm AS builder
 
 WORKDIR /app
 
 # Install system dependencies and upgrade all packages to latest security patches
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential && \
+    apt-get install -y --no-install-recommends \
+        build-essential \
+        ca-certificates && \
     apt-get dist-upgrade -y && \
     apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install pip and upgrade setuptools for security
 RUN pip install --no-cache-dir --upgrade setuptools>=78.1.1 pip
@@ -29,18 +35,20 @@ RUN python -m venv .venv && \
     . .venv/bin/activate && \
     pip install --no-cache-dir --upgrade pip setuptools && \
     pip install --no-cache-dir .
-FROM python:3.11-slim-bullseye AS runtime
+
+FROM python:3.13-slim-bookworm AS runtime
 
 WORKDIR /app
 
-# Install runtime dependencies, upgrade all packages to latest security patches, and upgrade setuptools for security
+# Install runtime dependencies, upgrade all packages to latest security patches
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends postgresql-client && \
+    apt-get install -y --no-install-recommends \
+        postgresql-client \
+        ca-certificates && \
     apt-get dist-upgrade -y && \
     apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/* && \
-    pip install --no-cache-dir --upgrade setuptools>=78.1.1 pip && \
-    pip install --no-cache-dir --upgrade setuptools>=78.1.1 pip
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     pip install --no-cache-dir --upgrade setuptools>=78.1.1 pip
 
 # Copy virtual environment from builder
@@ -49,18 +57,8 @@ COPY --from=builder /app/.venv /app/.venv
 # Copy source code and configuration files from build context to /app
 COPY . /app/
 
-# Debug: List app directory contents
-RUN echo "App directory contents:" && ls -la /app/ && \
-    if [ -d "/app/src" ]; then echo "Source directory found"; else echo "Source directory missing!"; fi && \
-    if [ -f "/app/alembic.ini" ]; then echo "Alembic config found"; else echo "Alembic config missing!"; fi
-
-# Make entrypoint script executable if it exists
-RUN if [ -f "/app/docker-entrypoint.sh" ]; then \
-    chmod +x /app/docker-entrypoint.sh && \
-    echo "Entrypoint script made executable"; \
-    else \
-    echo "WARNING: Entrypoint script not found, creating a fallback"; \
-    echo '#!/bin/bash' > /app/docker-entrypoint.sh && \
+# Create entrypoint script with database migration support
+RUN echo '#!/bin/bash' > /app/docker-entrypoint.sh && \
     echo 'set -e' >> /app/docker-entrypoint.sh && \
     echo '' >> /app/docker-entrypoint.sh && \
     echo '# Wait for database if configured' >> /app/docker-entrypoint.sh && \
@@ -81,22 +79,12 @@ RUN if [ -f "/app/docker-entrypoint.sh" ]; then \
     echo '' >> /app/docker-entrypoint.sh && \
     echo '# Execute the main command' >> /app/docker-entrypoint.sh && \
     echo 'exec "$@"' >> /app/docker-entrypoint.sh && \
-    chmod +x /app/docker-entrypoint.sh && \
-    echo "Created fallback entrypoint script"; \
-    fi
-
-# Make scripts in scripts directory executable
-RUN if [ -d "/app/scripts" ]; then \
-    find /app/scripts -type f -name "*.sh" -exec chmod +x {} \; || \
-    echo "No .sh files found in scripts directory"; \
-    else \
-    echo "Scripts directory not found"; \
-    mkdir -p /app/scripts; \
-    fi
+    chmod +x /app/docker-entrypoint.sh
 
 # Create non-root user for security
-RUN groupadd -r appuser && useradd -r -g appuser appuser
-RUN chown -R appuser:appuser /app
+RUN groupadd -r appuser && useradd -r -g appuser appuser && \
+    chown -R appuser:appuser /app
+
 USER appuser
 
 # Set Python path and environment

@@ -1,5 +1,5 @@
 #!/bin/bash
-# backend/docker/docker-entrypoint.sh
+# backend/deployment/docker/entrypoint.sh
 set -e
 
 # Wait for database to be ready
