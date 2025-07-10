@@ -83,11 +83,11 @@ const UploadsPage: React.FC = () => {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'pending': return 'bg-yellow-100 text-yellow-800';
-            case 'in-review': return 'bg-blue-100 text-blue-800';
-            case 'reviewed': return 'bg-green-100 text-green-800';
-            case 'rejected': return 'bg-red-100 text-red-800';
-            default: return 'bg-gray-100 text-gray-800';
+            case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300';
+            case 'in-review': return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground';
+            case 'reviewed': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
+            case 'rejected': return 'bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive-foreground';
+            default: return 'bg-muted text-muted-foreground';
         }
     };
 
@@ -110,44 +110,48 @@ const UploadsPage: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold">Uploads</h1>
-                    <p className="text-muted-foreground">
-                        Manage your document uploads and track their review status.
-                    </p>
+        <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-accent/10">
+            <div className="container mx-auto px-6 py-8 space-y-8">
+                {/* Header Section */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
+                            Uploads
+                        </h1>
+                        <p className="text-body-lg text-muted-foreground mt-2">
+                            Manage your document uploads and track their review status.
+                        </p>
+                    </div>
+                    <Button asChild size="lg" className="group hover-lift">
+                        <Link to="/uploads/new">
+                            <Upload className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
+                            Upload Document
+                        </Link>
+                    </Button>
                 </div>
-                <Button asChild>
-                    <Link to="/uploads/new">
-                        <Upload className="mr-2 h-4 w-4" />
-                        Upload Document
-                    </Link>
-                </Button>
-            </div>
 
-            {/* Search and Filter */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Search and Filter</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex gap-4">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search uploads..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10"
-                            />
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Filter className="h-4 w-4 text-muted-foreground" />
-                            <select
-                                value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value)}
-                                className="px-3 py-2 border rounded-md"
+                {/* Search and Filter */}
+                <Card className="glass-card">
+                    <CardHeader>
+                        <CardTitle className="text-xl font-semibold">Search and Filter</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search uploads..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-10"
+                                />
+                            </div>
+                            <div className="flex items-center gap-2 min-w-[200px]">
+                                <Filter className="h-4 w-4 text-muted-foreground" />
+                                <select
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                    className="px-3 py-2 border rounded-md bg-background w-full"
                             >
                                 <option value="all">All Status</option>
                                 <option value="pending">Pending</option>
@@ -160,40 +164,40 @@ const UploadsPage: React.FC = () => {
                 </CardContent>
             </Card>
 
-            {/* Upload Statistics */}
-            <div className="grid gap-4 md:grid-cols-4">
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">Total Uploads</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{uploads.length}</div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">Pending</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-yellow-600">
-                            {uploads.filter(u => u.status === 'pending').length}
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">In Review</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-blue-600">
-                            {uploads.filter(u => u.status === 'in-review').length}
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">Reviewed</CardTitle>
-                    </CardHeader>
+                {/* Upload Statistics */}
+                <div className="grid gap-6 md:grid-cols-4">
+                    <Card className="glass-card hover-lift">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Total Uploads</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold text-primary">{uploads.length}</div>
+                        </CardContent>
+                    </Card>
+                    <Card className="glass-card hover-lift">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold text-amber-600">
+                                {uploads.filter(u => u.status === 'pending').length}
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card className="glass-card hover-lift">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">In Review</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-3xl font-bold text-primary">
+                                {uploads.filter(u => u.status === 'in-review').length}
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card className="glass-card hover-lift">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium">Reviewed</CardTitle>
+                        </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold text-green-600">
                             {uploads.filter(u => u.status === 'reviewed').length}
@@ -286,6 +290,7 @@ const UploadsPage: React.FC = () => {
                 )}
             </div>
         </div>
+    </div>
     );
 };
 

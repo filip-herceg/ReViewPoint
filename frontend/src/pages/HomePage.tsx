@@ -4,96 +4,347 @@ import UploadForm from '@/components/UploadForm';
 import { WebSocketStatus } from '@/components/websocket/WebSocketStatus';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/lib/store/authStore';
-import { ArrowRight, Upload, FileText, BarChart3 } from 'lucide-react';
+import { ArrowRight, Upload, FileText, BarChart3, Sparkles, Zap, Shield, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 export default function HomePage() {
     const { isAuthenticated } = useAuthStore();
 
     return (
-        <div className="space-y-8">
+        <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-accent/10">
             {/* Hero Section */}
-            <div className="text-center">
-                <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                    Welcome to ReViewPoint
-                </h1>
-                <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                    Upload your PDF documents and get comprehensive analysis and reviews
-                    powered by advanced AI technology.
-                </p>
+            <div className="relative overflow-hidden py-24 sm:py-32">
+                {/* Background decoration */}
+                <div className="absolute inset-0 -z-10 opacity-20">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-gradient-conic from-primary/20 via-accent/10 to-primary/20 rounded-full blur-3xl"></div>
+                </div>
+                
+                <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                    <div className="mx-auto max-w-4xl text-center">
+                        <Badge variant="outline" className="mb-6 px-3 py-1 text-sm font-medium">
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            AI-Powered Document Analysis
+                        </Badge>
+                        
+                        <h1 className="text-display-xl bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent mb-8 animate-fade-in">
+                            Transform Your Documents with
+                            <span className="block text-primary">Intelligent Reviews</span>
+                        </h1>
+                        
+                        <p className="text-body-lg text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed animate-slide-up">
+                            Upload your PDF documents and get comprehensive analysis powered by advanced AI technology. 
+                            Get insights, feedback, and actionable recommendations in seconds.
+                        </p>
+
+                        {!isAuthenticated && (
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-slide-up">
+                                <Button asChild size="lg" className="group hover-lift">
+                                    <Link to="/auth/register">
+                                        Get Started Free
+                                        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                    </Link>
+                                </Button>
+                                <Button asChild variant="outline" size="lg" className="hover-lift">
+                                    <Link to="/auth/login">
+                                        Sign In
+                                    </Link>
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
 
-            {/* Features */}
-            <div className="grid md:grid-cols-3 gap-6">
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <Upload className="h-8 w-8 text-blue-600 mb-3" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Easy Upload</h3>
-                    <p className="text-gray-600">
-                        Drag and drop your PDF files or browse to upload. Support for multiple file formats.
-                    </p>
-                </div>
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <FileText className="h-8 w-8 text-green-600 mb-3" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">AI Analysis</h3>
-                    <p className="text-gray-600">
-                        Get detailed analysis of your documents with AI-powered insights and recommendations.
-                    </p>
-                </div>
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <BarChart3 className="h-8 w-8 text-purple-600 mb-3" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Detailed Reports</h3>
-                    <p className="text-gray-600">
-                        View comprehensive reports with scores, feedback, and actionable insights.
-                    </p>
+            {/* Features Section */}
+            <div className="py-24 sm:py-32 bg-gradient-mesh">
+                <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                    <div className="mx-auto max-w-2xl text-center mb-16">
+                        <h2 className="text-display-lg mb-4">
+                            Powerful Features for Modern Teams
+                        </h2>
+                        <p className="text-body-lg text-muted-foreground">
+                            Everything you need to analyze, review, and improve your documents
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {/* Feature Card 1 */}
+                        <Card className="group hover-lift border-0 shadow-elegant bg-card/80 backdrop-blur-sm">
+                            <CardHeader className="pb-4">
+                                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                                    <Upload className="h-6 w-6 text-primary" />
+                                </div>
+                                <CardTitle className="text-xl">Smart Upload</CardTitle>
+                                <CardDescription className="text-base">
+                                    Drag and drop your PDF files with intelligent file validation and processing
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ul className="space-y-2 text-sm text-muted-foreground">
+                                    <li className="flex items-center">
+                                        <div className="w-1.5 h-1.5 bg-primary rounded-full mr-3"></div>
+                                        Multiple file support
+                                    </li>
+                                    <li className="flex items-center">
+                                        <div className="w-1.5 h-1.5 bg-primary rounded-full mr-3"></div>
+                                        Real-time validation
+                                    </li>
+                                    <li className="flex items-center">
+                                        <div className="w-1.5 h-1.5 bg-primary rounded-full mr-3"></div>
+                                        Progress tracking
+                                    </li>
+                                </ul>
+                            </CardContent>
+                        </Card>
+
+                        {/* Feature Card 2 */}
+                        <Card className="group hover-lift border-0 shadow-elegant bg-card/80 backdrop-blur-sm">
+                            <CardHeader className="pb-4">
+                                <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-emerald-500/20 transition-colors">
+                                    <Zap className="h-6 w-6 text-emerald-600" />
+                                </div>
+                                <CardTitle className="text-xl">AI Analysis</CardTitle>
+                                <CardDescription className="text-base">
+                                    Advanced AI models analyze your documents for insights and recommendations
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ul className="space-y-2 text-sm text-muted-foreground">
+                                    <li className="flex items-center">
+                                        <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full mr-3"></div>
+                                        Content analysis
+                                    </li>
+                                    <li className="flex items-center">
+                                        <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full mr-3"></div>
+                                        Quality scoring
+                                    </li>
+                                    <li className="flex items-center">
+                                        <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full mr-3"></div>
+                                        Smart suggestions
+                                    </li>
+                                </ul>
+                            </CardContent>
+                        </Card>
+
+                        {/* Feature Card 3 */}
+                        <Card className="group hover-lift border-0 shadow-elegant bg-card/80 backdrop-blur-sm">
+                            <CardHeader className="pb-4">
+                                <div className="w-12 h-12 bg-violet-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-violet-500/20 transition-colors">
+                                    <BarChart3 className="h-6 w-6 text-violet-600" />
+                                </div>
+                                <CardTitle className="text-xl">Detailed Reports</CardTitle>
+                                <CardDescription className="text-base">
+                                    Comprehensive reports with scores, feedback, and actionable insights
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ul className="space-y-2 text-sm text-muted-foreground">
+                                    <li className="flex items-center">
+                                        <div className="w-1.5 h-1.5 bg-violet-600 rounded-full mr-3"></div>
+                                        Visual dashboards
+                                    </li>
+                                    <li className="flex items-center">
+                                        <div className="w-1.5 h-1.5 bg-violet-600 rounded-full mr-3"></div>
+                                        Export options
+                                    </li>
+                                    <li className="flex items-center">
+                                        <div className="w-1.5 h-1.5 bg-violet-600 rounded-full mr-3"></div>
+                                        Historical tracking
+                                    </li>
+                                </ul>
+                            </CardContent>
+                        </Card>
+
+                        {/* Feature Card 4 */}
+                        <Card className="group hover-lift border-0 shadow-elegant bg-card/80 backdrop-blur-sm">
+                            <CardHeader className="pb-4">
+                                <div className="w-12 h-12 bg-amber-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-amber-500/20 transition-colors">
+                                    <Shield className="h-6 w-6 text-amber-600" />
+                                </div>
+                                <CardTitle className="text-xl">Secure & Private</CardTitle>
+                                <CardDescription className="text-base">
+                                    Enterprise-grade security with encrypted storage and processing
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ul className="space-y-2 text-sm text-muted-foreground">
+                                    <li className="flex items-center">
+                                        <div className="w-1.5 h-1.5 bg-amber-600 rounded-full mr-3"></div>
+                                        End-to-end encryption
+                                    </li>
+                                    <li className="flex items-center">
+                                        <div className="w-1.5 h-1.5 bg-amber-600 rounded-full mr-3"></div>
+                                        GDPR compliant
+                                    </li>
+                                    <li className="flex items-center">
+                                        <div className="w-1.5 h-1.5 bg-amber-600 rounded-full mr-3"></div>
+                                        Audit trails
+                                    </li>
+                                </ul>
+                            </CardContent>
+                        </Card>
+
+                        {/* Feature Card 5 */}
+                        <Card className="group hover-lift border-0 shadow-elegant bg-card/80 backdrop-blur-sm">
+                            <CardHeader className="pb-4">
+                                <div className="w-12 h-12 bg-rose-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-rose-500/20 transition-colors">
+                                    <Users className="h-6 w-6 text-rose-600" />
+                                </div>
+                                <CardTitle className="text-xl">Team Collaboration</CardTitle>
+                                <CardDescription className="text-base">
+                                    Work together with your team on document reviews and analysis
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ul className="space-y-2 text-sm text-muted-foreground">
+                                    <li className="flex items-center">
+                                        <div className="w-1.5 h-1.5 bg-rose-600 rounded-full mr-3"></div>
+                                        Shared workspaces
+                                    </li>
+                                    <li className="flex items-center">
+                                        <div className="w-1.5 h-1.5 bg-rose-600 rounded-full mr-3"></div>
+                                        Role-based access
+                                    </li>
+                                    <li className="flex items-center">
+                                        <div className="w-1.5 h-1.5 bg-rose-600 rounded-full mr-3"></div>
+                                        Real-time updates
+                                    </li>
+                                </ul>
+                            </CardContent>
+                        </Card>
+
+                        {/* Feature Card 6 */}
+                        <Card className="group hover-lift border-0 shadow-elegant bg-card/80 backdrop-blur-sm">
+                            <CardHeader className="pb-4">
+                                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                                    <FileText className="h-6 w-6 text-primary" />
+                                </div>
+                                <CardTitle className="text-xl">Smart Templates</CardTitle>
+                                <CardDescription className="text-base">
+                                    Pre-built templates for different document types and industries
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ul className="space-y-2 text-sm text-muted-foreground">
+                                    <li className="flex items-center">
+                                        <div className="w-1.5 h-1.5 bg-primary rounded-full mr-3"></div>
+                                        Industry templates
+                                    </li>
+                                    <li className="flex items-center">
+                                        <div className="w-1.5 h-1.5 bg-primary rounded-full mr-3"></div>
+                                        Custom criteria
+                                    </li>
+                                    <li className="flex items-center">
+                                        <div className="w-1.5 h-1.5 bg-primary rounded-full mr-3"></div>
+                                        Template sharing
+                                    </li>
+                                </ul>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
             </div>
 
             {/* Main Content Based on Auth Status */}
             {isAuthenticated ? (
-                <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-bold text-gray-900">Your Files</h2>
-                        <Link
-                            to="/uploads/new"
-                            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-                        >
-                            <Upload className="h-4 w-4 mr-2" />
-                            Upload New File
-                        </Link>
-                    </div>
+                <div className="py-24 bg-background">
+                    <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                        <div className="flex items-center justify-between mb-12">
+                            <div>
+                                <h2 className="text-display-md mb-2">Your Dashboard</h2>
+                                <p className="text-body-lg text-muted-foreground">
+                                    Manage your documents and track analysis progress
+                                </p>
+                            </div>
+                            <Button asChild size="lg" className="hover-lift">
+                                <Link to="/uploads/new">
+                                    <Upload className="h-4 w-4 mr-2" />
+                                    Upload New File
+                                </Link>
+                            </Button>
+                        </div>
 
-                    {/* Upload Form */}
-                    <UploadForm />
+                        <div className="grid lg:grid-cols-2 gap-8">
+                            {/* Upload Form */}
+                            <Card className="shadow-elegant border-0">
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Upload className="h-5 w-5" />
+                                        Quick Upload
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Upload a document to get started with AI analysis
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <UploadForm />
+                                </CardContent>
+                            </Card>
 
-                    {/* Upload List */}
-                    <UploadList />
+                            {/* Recent Files */}
+                            <Card className="shadow-elegant border-0">
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <FileText className="h-5 w-5" />
+                                        Recent Files
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Your recently uploaded documents
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <UploadList />
+                                </CardContent>
+                            </Card>
+                        </div>
 
-                    {/* WebSocket Status Details */}
-                    <div className="mt-6">
-                        <WebSocketStatus showDetails />
+                        {/* WebSocket Status */}
+                        <div className="mt-12 p-6 bg-muted/50 rounded-lg border">
+                            <WebSocketStatus showDetails />
+                        </div>
                     </div>
                 </div>
             ) : (
-                <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 text-center">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                        Get Started Today
-                    </h2>
-                    <p className="text-gray-600 mb-6">
-                        Sign up for a free account to start uploading and analyzing your documents.
-                    </p>
-                    <div className="flex justify-center space-x-4">
-                        <Link
-                            to="/auth/register"
-                            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-                        >
-                            Get Started
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                        </Link>
-                        <Link
-                            to="/auth/login"
-                            className="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                        >
-                            Login
-                        </Link>
+                <div className="py-24 bg-gradient-to-t from-muted/30 to-background">
+                    <div className="mx-auto max-w-4xl px-6 lg:px-8 text-center">
+                        <Card className="shadow-elegant-lg border-0 bg-card/80 backdrop-blur-sm">
+                            <CardContent className="p-12">
+                                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-8">
+                                    <Sparkles className="h-8 w-8 text-primary" />
+                                </div>
+                                
+                                <h2 className="text-display-md mb-6">
+                                    Ready to Transform Your Documents?
+                                </h2>
+                                
+                                <p className="text-body-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+                                    Join thousands of teams already using ReViewPoint to analyze, review, 
+                                    and improve their documents with AI-powered insights.
+                                </p>
+                                
+                                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                    <Button asChild size="lg" className="hover-lift group">
+                                        <Link to="/auth/register">
+                                            Get Started Free
+                                            <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                                        </Link>
+                                    </Button>
+                                    <Button asChild variant="outline" size="lg" className="hover-lift">
+                                        <Link to="/auth/login">
+                                            Sign In to Your Account
+                                        </Link>
+                                    </Button>
+                                </div>
+                                
+                                <div className="mt-8 pt-8 border-t border-border/50">
+                                    <p className="text-sm text-muted-foreground">
+                                        No credit card required • Free tier available • Enterprise ready
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </div>
                 </div>
             )}

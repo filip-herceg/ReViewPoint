@@ -133,8 +133,8 @@ const SettingsPage: React.FC = () => {
                                             key={tab.id}
                                             onClick={() => setActiveTab(tab.id)}
                                             className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-md transition-colors ${activeTab === tab.id
-                                                    ? 'bg-blue-100 text-blue-700'
-                                                    : 'hover:bg-gray-100'
+                                                    ? 'bg-primary/10 text-primary'
+                                                    : 'hover:bg-muted'
                                                 }`}
                                         >
                                             <Icon className="w-4 h-4" />
@@ -173,7 +173,7 @@ const SettingsPage: React.FC = () => {
                                             type="checkbox"
                                             checked={settings.notifications.email}
                                             onChange={(e) => updateNotificationSetting('email', e.target.checked)}
-                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                            className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
                                         />
                                     </div>
 

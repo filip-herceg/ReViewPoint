@@ -124,30 +124,33 @@ const NewUploadPage: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center gap-4">
-                <Button variant="ghost" size="sm" asChild>
-                    <Link to="/uploads">
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        Back to Uploads
-                    </Link>
-                </Button>
-            </div>
+        <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-accent/10">
+            <div className="container mx-auto px-6 py-8 space-y-8">
+                {/* Header */}
+                <div className="flex items-center gap-4">
+                    <Button variant="ghost" size="sm" asChild className="hover-lift">
+                        <Link to="/uploads">
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            Back to Uploads
+                        </Link>
+                    </Button>
+                </div>
 
-            <div>
-                <h1 className="text-3xl font-bold">Upload Document</h1>
-                <p className="text-muted-foreground">
-                    Upload documents for review and collaboration with your team.
-                </p>
-            </div>
+                <div className="text-center space-y-4">
+                    <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
+                        Upload Document
+                    </h1>
+                    <p className="text-body-lg text-muted-foreground max-w-2xl mx-auto">
+                        Upload documents for review and collaboration with your team.
+                    </p>
+                </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                {/* File Upload */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Select Files</CardTitle>
-                        <CardDescription>
+                <form onSubmit={handleSubmit} className="max-w-4xl mx-auto space-y-8">
+                    {/* File Upload */}
+                    <Card className="glass-card">
+                        <CardHeader>
+                            <CardTitle className="text-xl font-semibold">Select Files</CardTitle>
+                            <CardDescription>
                             Drag and drop files here or click to browse. Supported formats: PDF, DOC, DOCX, TXT, MD, and more.
                         </CardDescription>
                     </CardHeader>
@@ -357,6 +360,7 @@ const NewUploadPage: React.FC = () => {
                 </div>
             </form>
         </div>
+    </div>
     );
 };
 

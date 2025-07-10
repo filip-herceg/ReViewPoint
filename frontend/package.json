@@ -23,7 +23,8 @@
         "generate:api-types": "tsx scripts/generate-api-types.ts",
         "generate:all": "pnpm run generate:openapi-schema && pnpm run generate:api-types",
         "validate:api-schema": "tsx scripts/validate-openapi.ts",
-        "dev:with-types": "pnpm run generate:all && pnpm run dev"
+        "dev:with-types": "pnpm run generate:all && pnpm run dev",
+        "fix:sourcemap": "node scripts/fix-sourcemap-issues.js"
     },
     "dependencies": {
         "@hookform/resolvers": "^5.1.1",
@@ -51,6 +52,7 @@
         "react-router-dom": "^7.6.3",
         "sonner": "^2.0.6",
         "tailwind-merge": "^3.3.1",
+        "tailwindcss-animate": "^1.0.7",
         "web-vitals": "^5.0.3",
         "zod": "^3.25.75",
         "zustand": "^5.0.6"

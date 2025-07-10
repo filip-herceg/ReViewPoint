@@ -79,14 +79,14 @@ export function AppShell({ children }: AppShellProps) {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-accent/10">
             {/* Skip Links for Accessibility */}
             <SkipLinks />
 
             {/* Header */}
             <header
                 id="header"
-                className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 fixed top-0 left-0 right-0 z-40"
+                className="bg-card/95 backdrop-blur-md shadow-sm border-b border-border/50 fixed top-0 left-0 right-0 z-40"
             >
                 <div className="px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
@@ -97,15 +97,18 @@ export function AppShell({ children }: AppShellProps) {
                                     variant="ghost"
                                     size="sm"
                                     onClick={toggleSidebar}
-                                    className="mr-3 md:hidden"
+                                    className="mr-3 md:hidden hover:bg-accent"
                                     aria-label="Toggle sidebar"
                                 >
                                     <Icons.Menu className="h-5 w-5" />
                                 </Button>
                             )}
 
-                            <Link to="/" className="flex items-center space-x-2">
-                                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                            <Link to="/" className="flex items-center space-x-2 group">
+                                <div className="p-2 bg-gradient-to-br from-primary to-accent rounded-xl shadow-lg group-hover:shadow-primary/25 transition-all duration-200">
+                                    <Icons.FileText className="h-6 w-6 text-primary-foreground" />
+                                </div>
+                                <h1 className="text-xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
                                     ReViewPoint
                                 </h1>
                             </Link>
@@ -126,7 +129,7 @@ export function AppShell({ children }: AppShellProps) {
                                 variant="ghost"
                                 size="sm"
                                 onClick={toggleMobileMenu}
-                                className="md:hidden"
+                                className="md:hidden hover:bg-accent"
                                 aria-label="Toggle mobile menu"
                             >
                                 <Icons.MoreVertical className="h-5 w-5" />
@@ -137,8 +140,8 @@ export function AppShell({ children }: AppShellProps) {
 
                 {/* Mobile Menu */}
                 {mobileMenuOpen && (
-                    <div className="md:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                        <div className="px-4 py-2 space-y-1">
+                    <div className="md:hidden border-t border-border/50 bg-card/95 backdrop-blur-md">
+                        <div className="px-4 py-3 space-y-1">
                             <Navigation />
                         </div>
                     </div>
@@ -154,29 +157,29 @@ export function AppShell({ children }: AppShellProps) {
                         <aside
                             id="sidebar"
                             className={cn(
-                                'hidden md:flex flex-col bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-all duration-200',
+                                'hidden md:flex flex-col bg-sidebar/95 backdrop-blur-md border-r border-sidebar-border shadow-xl',
                                 sidebarOpen ? 'w-64' : 'w-16'
                             )}
                         >
                             {/* Sidebar Header */}
-                            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                            <div className="p-4 border-b border-sidebar-border">
                                 <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={toggleSidebar}
-                                    className="w-full justify-start"
+                                    className="w-full justify-start hover:bg-sidebar-accent transition-all duration-200"
                                     aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
                                 >
                                     <Icons.PanelLeftClose className={cn(
-                                        'h-5 w-5 transition-transform',
+                                        'h-5 w-5 transition-transform duration-300 text-sidebar-foreground',
                                         !sidebarOpen && 'rotate-180'
                                     )} />
-                                    {sidebarOpen && <span className="ml-2">Collapse</span>}
+                                    {sidebarOpen && <span className="ml-2 text-sidebar-foreground">Collapse</span>}
                                 </Button>
                             </div>
 
                             {/* Sidebar Navigation */}
-                            <nav id="navigation" className="flex-1 p-4 space-y-2">
+                            <nav id="navigation" className="flex-1 p-4 space-y-3">
                                 {navigationRoutes.map((route) => {
                                     if (route.requiresAuth && !isAuthenticated) {
                                         return null;
@@ -191,17 +194,20 @@ export function AppShell({ children }: AppShellProps) {
                                             key={route.path}
                                             to={route.path}
                                             className={cn(
-                                                'flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                                                'group flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-105',
                                                 isActive
-                                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
-                                                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700'
+                                                    ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/25'
+                                                    : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent hover:shadow-md'
                                             )}
                                             title={sidebarOpen ? undefined : route.title}
                                         >
                                             {Icon && (
                                                 <Icon className={cn(
-                                                    'h-5 w-5 flex-shrink-0',
-                                                    sidebarOpen && 'mr-3'
+                                                    'h-5 w-5 flex-shrink-0 transition-all duration-200',
+                                                    sidebarOpen && 'mr-3',
+                                                    isActive 
+                                                        ? 'text-sidebar-primary-foreground' 
+                                                        : 'text-sidebar-foreground/70 group-hover:text-sidebar-foreground group-hover:scale-110'
                                                 )} />
                                             )}
                                             {sidebarOpen && (
@@ -214,13 +220,16 @@ export function AppShell({ children }: AppShellProps) {
 
                             {/* Sidebar Footer */}
                             {sidebarOpen && (
-                                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-                                    <div className="flex items-center space-x-3">
+                                <div className="p-4 border-t border-sidebar-border">
+                                    <div className="flex items-center space-x-3 p-3 rounded-xl bg-sidebar-accent hover:bg-sidebar-accent/80 transition-colors">
+                                        <div className="p-2 bg-gradient-to-br from-sidebar-primary to-sidebar-primary/80 rounded-lg">
+                                            <Icons.User className="h-4 w-4 text-sidebar-primary-foreground" />
+                                        </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                            <p className="text-sm font-medium text-sidebar-foreground truncate">
                                                 {user?.name || user?.email}
                                             </p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                            <p className="text-xs text-sidebar-foreground/70 truncate">
                                                 {user?.email}
                                             </p>
                                         </div>
@@ -229,6 +238,7 @@ export function AppShell({ children }: AppShellProps) {
                                             size="sm"
                                             onClick={logout}
                                             aria-label="Logout"
+                                            className="hover:bg-destructive hover:text-destructive-foreground transition-colors"
                                         >
                                             <Icons.LogOut className="h-4 w-4" />
                                         </Button>
@@ -239,9 +249,9 @@ export function AppShell({ children }: AppShellProps) {
 
                         {/* Mobile Sidebar Overlay */}
                         {sidebarOpen && (
-                            <div className="md:hidden fixed inset-0 z-30 bg-black bg-opacity-50" onClick={toggleSidebar}>
-                                <aside className="fixed left-0 top-16 bottom-0 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
-                                    <nav className="p-4 space-y-2">
+                            <div className="md:hidden fixed inset-0 z-30 bg-black/50 backdrop-blur-sm" onClick={toggleSidebar}>
+                                <aside className="fixed left-0 top-16 bottom-0 w-64 bg-sidebar/95 backdrop-blur-md border-r border-sidebar-border shadow-2xl">
+                                    <nav className="p-4 space-y-3">
                                         {navigationRoutes.map((route) => {
                                             if (route.requiresAuth && !isAuthenticated) {
                                                 return null;
@@ -257,13 +267,20 @@ export function AppShell({ children }: AppShellProps) {
                                                     to={route.path}
                                                     onClick={closeMobileMenu}
                                                     className={cn(
-                                                        'flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                                                        'flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-105',
                                                         isActive
-                                                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
-                                                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700'
+                                                            ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/25'
+                                                            : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent hover:shadow-md'
                                                     )}
                                                 >
-                                                    {Icon && <Icon className="h-5 w-5 mr-3" />}
+                                                    {Icon && (
+                                                        <Icon className={cn(
+                                                            'h-5 w-5 mr-3 transition-all duration-200',
+                                                            isActive 
+                                                                ? 'text-sidebar-primary-foreground' 
+                                                                : 'text-sidebar-foreground/70 group-hover:text-sidebar-foreground group-hover:scale-110'
+                                                        )} />
+                                                    )}
                                                     {route.title}
                                                 </Link>
                                             );
@@ -299,11 +316,11 @@ export function AppShell({ children }: AppShellProps) {
             {/* Footer */}
             <footer
                 id="footer"
-                className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12"
+                className="bg-card/95 backdrop-blur-md border-t border-border/50 mt-12"
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex items-center justify-between">
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <p className="text-sm text-muted-foreground">
                             © 2025 ReViewPoint. All rights reserved.
                         </p>
                         <WebSocketStatus showDetails />

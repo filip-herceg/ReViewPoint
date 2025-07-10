@@ -41,13 +41,18 @@ export function Navigation() {
                             key={route.path}
                             to={route.path}
                             className={cn(
-                                'flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                                'flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group hover:scale-105',
                                 isActive
-                                    ? 'bg-blue-100 text-blue-700'
-                                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50 hover:shadow-md'
                             )}
                         >
-                            {Icon && <Icon className="h-4 w-4 mr-2" />}
+                            {Icon && (
+                                <Icon className={cn(
+                                    "h-5 w-5 mr-3 transition-transform duration-200",
+                                    isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground group-hover:scale-110"
+                                )} />
+                            )}
                             {route.title}
                         </Link>
                     );
@@ -57,19 +62,19 @@ export function Navigation() {
             {/* User Menu */}
             {isAuthenticated ? (
                 <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-muted-foreground">
                         Welcome, {user?.name || user?.email}
                     </span>
                     <Link
                         to="/profile"
-                        className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                        className="flex items-center px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 transition-all duration-200 hover:scale-105"
                     >
                         <Icons.User className="h-4 w-4 mr-1" />
                         Profile
                     </Link>
                     <button
                         onClick={logout}
-                        className="px-3 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
+                        className="px-3 py-2 text-sm font-medium text-destructive hover:text-destructive-foreground hover:bg-destructive/10 rounded-xl transition-all duration-200 hover:scale-105"
                     >
                         Logout
                     </button>
@@ -78,13 +83,13 @@ export function Navigation() {
                 <div className="flex items-center space-x-2">
                     <Link
                         to="/auth/login"
-                        className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+                        className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 rounded-xl transition-all duration-200 hover:scale-105"
                     >
                         Login
                     </Link>
                     <Link
                         to="/auth/register"
-                        className="px-3 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+                        className="px-3 py-2 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-lg hover:shadow-primary/25"
                     >
                         Register
                     </Link>
