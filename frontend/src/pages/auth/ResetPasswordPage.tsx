@@ -23,10 +23,10 @@ const ResetPasswordPage: React.FC = () => {
     // If no token is present, show error
     if (!token) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
                 <Card className="w-full max-w-md">
                     <CardHeader className="text-center">
-                        <CardTitle className="text-2xl font-bold text-red-600">Invalid Reset Link</CardTitle>
+                        <CardTitle className="text-2xl font-bold text-destructive">Invalid Reset Link</CardTitle>
                         <CardDescription>
                             This password reset link is invalid or has expired
                         </CardDescription>
@@ -89,13 +89,13 @@ const ResetPasswordPage: React.FC = () => {
 
     if (isSuccess) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
                 <Card className="w-full max-w-md">
                     <CardHeader className="text-center">
-                        <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                            <CheckCircle className="w-6 h-6 text-green-600" />
+                        <div className="mx-auto w-12 h-12 bg-success/10 rounded-full flex items-center justify-center mb-4">
+                            <CheckCircle className="w-6 h-6 text-success-foreground" />
                         </div>
-                        <CardTitle className="text-2xl font-bold text-green-600">Password Reset Successful</CardTitle>
+                        <CardTitle className="text-2xl font-bold text-success-foreground">Password Reset Successful</CardTitle>
                         <CardDescription>
                             Your password has been successfully reset
                         </CardDescription>
@@ -114,10 +114,10 @@ const ResetPasswordPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
             <Card className="w-full max-w-md">
                 <CardHeader className="text-center">
-                    <CardTitle className="text-2xl font-bold">Reset your password</CardTitle>
+                    <CardTitle className="text-2xl font-bold text-foreground">Reset your password</CardTitle>
                     <CardDescription>
                         Enter your new password below
                     </CardDescription>
@@ -125,13 +125,13 @@ const ResetPasswordPage: React.FC = () => {
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {error && (
-                            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+                            <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded-md text-sm">
                                 {error}
                             </div>
                         )}
 
                         <div className="space-y-2">
-                            <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                            <label htmlFor="password" className="text-sm font-medium text-foreground">
                                 New password
                             </label>
                             <div className="relative">
@@ -147,11 +147,11 @@ const ResetPasswordPage: React.FC = () => {
                                     disabled={isLoading}
                                     className="pl-10 pr-10"
                                 />
-                                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                                     disabled={isLoading}
                                 >
                                     {showPassword ? (
@@ -161,13 +161,13 @@ const ResetPasswordPage: React.FC = () => {
                                     )}
                                 </button>
                             </div>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-muted-foreground">
                                 Password must be at least 8 characters long
                             </p>
                         </div>
 
                         <div className="space-y-2">
-                            <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                            <label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
                                 Confirm new password
                             </label>
                             <div className="relative">
@@ -183,11 +183,11 @@ const ResetPasswordPage: React.FC = () => {
                                     disabled={isLoading}
                                     className="pl-10 pr-10"
                                 />
-                                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                 <button
                                     type="button"
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                                     disabled={isLoading}
                                 >
                                     {showConfirmPassword ? (
@@ -206,7 +206,7 @@ const ResetPasswordPage: React.FC = () => {
                         >
                             {isLoading ? (
                                 <>
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
                                     Resetting password...
                                 </>
                             ) : (
@@ -218,7 +218,7 @@ const ResetPasswordPage: React.FC = () => {
                     <div className="mt-6 text-center">
                         <Link
                             to="/auth/login"
-                            className="text-sm text-blue-600 hover:text-blue-500"
+                            className="text-sm text-primary hover:text-primary/80"
                         >
                             Back to sign in
                         </Link>

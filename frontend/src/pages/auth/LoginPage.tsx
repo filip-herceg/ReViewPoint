@@ -85,7 +85,7 @@ const LoginPage: React.FC = () => {
                 <div className="absolute inset-0 -z-10 opacity-20">
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-conic from-primary/20 via-accent/10 to-primary/20 rounded-full blur-3xl"></div>
                 </div>
-                
+
                 <Card className="glass-card hover-lift animate-fade-in">
                     <CardHeader className="text-center space-y-4">
                         <CardTitle className="text-3xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
@@ -98,7 +98,7 @@ const LoginPage: React.FC = () => {
                     <CardContent>
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                             {error && (
-                                <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20 animate-slide-up">
+                                <div className="p-4 rounded-lg bg-destructive/10 border border-destructive animate-slide-up">
                                     <p className="text-sm text-destructive flex items-center gap-2">
                                         <XCircle className="h-4 w-4" />
                                         {error}
@@ -109,125 +109,125 @@ const LoginPage: React.FC = () => {
                             <div className="space-y-2">
                                 <label htmlFor="email" className="text-sm font-medium text-foreground">
                                     Email address
-                            </label>
-                            <div className="relative">
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    autoComplete="email"
-                                    placeholder="Enter your email"
-                                    disabled={isLoading || isSubmitting}
-                                    className="pl-10"
-                                    {...register('email', {
-                                        onChange: handleInputChange
-                                    })}
-                                />
-                                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                            </div>
-                            {errors.email && (
-                                <p className="text-sm text-red-600">{errors.email.message}</p>
-                            )}
-                        </div>
-
-                        <div className="space-y-2">
-                            <label htmlFor="password" className="text-sm font-medium text-foreground">
-                                Password
-                            </label>
-                            <div className="relative">
-                                <Input
-                                    id="password"
-                                    type={showPassword ? 'text' : 'password'}
-                                    autoComplete="current-password"
-                                    placeholder="Enter your password"
-                                    disabled={isLoading || isSubmitting}
-                                    className="pl-10 pr-10"
-                                    {...register('password', {
-                                        onChange: handleInputChange
-                                    })}
-                                />
-                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
-                                    disabled={isLoading || isSubmitting}
-                                >
-                                    {showPassword ? (
-                                        <EyeOff className="h-4 w-4" />
-                                    ) : (
-                                        <Eye className="h-4 w-4" />
-                                    )}
-                                </button>
-                            </div>
-                            {errors.password && (
-                                <p className="text-sm text-red-600">{errors.password.message}</p>
-                            )}
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                                <input
-                                    id="remember-me"
-                                    type="checkbox"
-                                    className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
-                                    {...register('rememberMe')}
-                                />
-                                <label htmlFor="remember-me" className="ml-2 block text-sm text-foreground">
-                                    Remember me
                                 </label>
+                                <div className="relative">
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        autoComplete="email"
+                                        placeholder="Enter your email"
+                                        disabled={isLoading || isSubmitting}
+                                        className="pl-10"
+                                        {...register('email', {
+                                            onChange: handleInputChange
+                                        })}
+                                    />
+                                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                </div>
+                                {errors.email && (
+                                    <p className="text-sm text-destructive">{errors.email.message}</p>
+                                )}
                             </div>
 
-                            <Link
-                                to="/auth/forgot-password"
-                                className="text-sm text-primary hover:text-primary/80"
+                            <div className="space-y-2">
+                                <label htmlFor="password" className="text-sm font-medium text-foreground">
+                                    Password
+                                </label>
+                                <div className="relative">
+                                    <Input
+                                        id="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        autoComplete="current-password"
+                                        placeholder="Enter your password"
+                                        disabled={isLoading || isSubmitting}
+                                        className="pl-10 pr-10"
+                                        {...register('password', {
+                                            onChange: handleInputChange
+                                        })}
+                                    />
+                                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                                        disabled={isLoading || isSubmitting}
+                                    >
+                                        {showPassword ? (
+                                            <EyeOff className="h-4 w-4" />
+                                        ) : (
+                                            <Eye className="h-4 w-4" />
+                                        )}
+                                    </button>
+                                </div>
+                                {errors.password && (
+                                    <p className="text-sm text-destructive">{errors.password.message}</p>
+                                )}
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                    <input
+                                        id="remember-me"
+                                        type="checkbox"
+                                        className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
+                                        {...register('rememberMe')}
+                                    />
+                                    <label htmlFor="remember-me" className="ml-2 block text-sm text-foreground">
+                                        Remember me
+                                    </label>
+                                </div>
+
+                                <Link
+                                    to="/auth/forgot-password"
+                                    className="text-sm text-primary hover:text-primary/80"
+                                >
+                                    Forgot your password?
+                                </Link>
+                            </div>
+
+                            <Button
+                                type="submit"
+                                disabled={isLoading || isSubmitting || !watchedValues.email || !watchedValues.password}
+                                className="w-full"
                             >
-                                Forgot your password?
-                            </Link>
+                                {(isLoading || isSubmitting) ? (
+                                    <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+                                        Signing in...
+                                    </>
+                                ) : (
+                                    'Sign in'
+                                )}
+                            </Button>
+                        </form>
+
+                        <div className="mt-6 text-center">
+                            <p className="text-sm text-muted-foreground">
+                                Don't have an account?{' '}
+                                <Link
+                                    to="/auth/register"
+                                    className="font-medium text-primary hover:text-primary/80"
+                                >
+                                    Sign up here
+                                </Link>
+                            </p>
                         </div>
 
-                        <Button
-                            type="submit"
-                            disabled={isLoading || isSubmitting || !watchedValues.email || !watchedValues.password}
-                            className="w-full"
-                        >
-                            {(isLoading || isSubmitting) ? (
-                                <>
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                    Signing in...
-                                </>
-                            ) : (
-                                'Sign in'
-                            )}
-                        </Button>
-                    </form>
-
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-muted-foreground">
-                            Don't have an account?{' '}
-                            <Link
-                                to="/auth/register"
-                                className="font-medium text-primary hover:text-primary/80"
-                            >
-                                Sign up here
-                            </Link>
-                        </p>
-                    </div>
-
-                    {/* Demo Account Info */}
-                    <div className="mt-6 p-4 bg-accent border border-border rounded-md">
-                        <h4 className="text-sm font-medium text-accent-foreground mb-2">Demo Account</h4>
-                        <p className="text-xs text-muted-foreground mb-2">
-                            For testing, you can use any email and password combination.
-                        </p>
-                        <div className="text-xs text-primary">
-                            <p>Email: demo@example.com</p>
-                            <p>Password: password123</p>
+                        {/* Demo Account Info */}
+                        <div className="mt-6 p-4 bg-accent border border-border rounded-md">
+                            <h4 className="text-sm font-medium text-accent-foreground mb-2">Demo Account</h4>
+                            <p className="text-xs text-muted-foreground mb-2">
+                                For testing, you can use any email and password combination.
+                            </p>
+                            <div className="text-xs text-primary">
+                                <p>Email: demo@example.com</p>
+                                <p>Password: password123</p>
+                            </div>
                         </div>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
-    </div>
     );
 };
 

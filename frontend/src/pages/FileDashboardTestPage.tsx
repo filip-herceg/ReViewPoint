@@ -26,7 +26,7 @@ export default function FileDashboardTestPage() {
             <h1 className="text-2xl font-bold mb-4">File Dashboard Test</h1>
 
             {message && (
-                <div className="mb-4 p-4 bg-blue-100 border border-blue-200 rounded-md">
+                <div className="mb-4 p-4 bg-primary/10 border border-primary rounded-md text-primary">
                     {message}
                 </div>
             )}

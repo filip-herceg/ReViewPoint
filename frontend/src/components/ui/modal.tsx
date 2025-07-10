@@ -86,15 +86,15 @@ const VARIANT_CONFIG: Record<ModalVariant, {
         confirmButtonVariant: 'destructive'
     },
     warning: {
-        headerClass: 'text-yellow-600 dark:text-yellow-400',
+        headerClass: 'text-warning-foreground', // semantic class
         confirmButtonVariant: 'outline'
     },
     success: {
-        headerClass: 'text-green-600 dark:text-green-400',
+        headerClass: 'text-success-foreground', // semantic class
         confirmButtonVariant: 'default'
     },
     info: {
-        headerClass: 'text-blue-600 dark:text-blue-400',
+        headerClass: 'text-info-foreground', // semantic class
         confirmButtonVariant: 'default'
     },
 };

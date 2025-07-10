@@ -59,11 +59,11 @@ const ReviewDetailPage: React.FC = () => {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'pending': return 'bg-yellow-100 text-yellow-800';
-            case 'in-progress': return 'bg-blue-100 text-blue-800';
-            case 'completed': return 'bg-green-100 text-green-800';
-            case 'rejected': return 'bg-red-100 text-red-800';
-            default: return 'bg-gray-100 text-gray-800';
+            case 'pending': return 'bg-warning/10 text-warning-foreground';
+            case 'in-progress': return 'bg-primary/10 text-primary';
+            case 'completed': return 'bg-success/10 text-success-foreground';
+            case 'rejected': return 'bg-destructive/10 text-destructive';
+            default: return 'bg-muted text-muted-foreground';
         }
     };
 
@@ -79,10 +79,10 @@ const ReviewDetailPage: React.FC = () => {
 
     const getPriorityColor = (priority: string) => {
         switch (priority) {
-            case 'high': return 'bg-red-100 text-red-800';
-            case 'medium': return 'bg-yellow-100 text-yellow-800';
-            case 'low': return 'bg-green-100 text-green-800';
-            default: return 'bg-gray-100 text-gray-800';
+            case 'high': return 'bg-destructive/10 text-destructive';
+            case 'medium': return 'bg-warning/10 text-warning-foreground';
+            case 'low': return 'bg-success/10 text-success-foreground';
+            default: return 'bg-muted text-muted-foreground';
         }
     };
 
@@ -171,8 +171,8 @@ const ReviewDetailPage: React.FC = () => {
                         >
                             <Star
                                 className={`h-6 w-6 cursor-pointer transition-colors ${i < reviewData.rating
-                                        ? 'text-yellow-400 fill-yellow-400'
-                                        : 'text-gray-300 hover:text-yellow-300'
+                                    ? 'text-yellow-400 fill-yellow-400'
+                                    : 'text-gray-300 hover:text-yellow-300'
                                     }`}
                             />
                         </button>
@@ -212,7 +212,7 @@ const ReviewDetailPage: React.FC = () => {
                                     {review.priority} priority
                                 </Badge>
                                 {review.dueDate && isOverdue(review.dueDate) && review.status !== 'completed' && (
-                                    <Badge className="bg-red-100 text-red-800">
+                                    <Badge className="bg-destructive/10 text-destructive">
                                         <AlertTriangle className="h-4 w-4 mr-1" />
                                         Overdue
                                     </Badge>
@@ -253,7 +253,7 @@ const ReviewDetailPage: React.FC = () => {
                                 <div className="flex items-center gap-2 text-sm">
                                     <Clock className="h-4 w-4 text-muted-foreground" />
                                     <span className="text-muted-foreground">Due date:</span>
-                                    <span className={`font-medium ${isOverdue(review.dueDate) ? 'text-red-600' : ''}`}>
+                                    <span className={`font-medium ${isOverdue(review.dueDate) ? 'text-destructive' : ''}`}>
                                         {formatDate(review.dueDate)}
                                     </span>
                                 </div>
@@ -299,7 +299,7 @@ const ReviewDetailPage: React.FC = () => {
                     <ul className="space-y-2">
                         {review.reviewGuidelines.map((guideline, index) => (
                             <li key={index} className="flex items-start gap-2">
-                                <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                                <CheckCircle className="h-4 w-4 text-success-foreground mt-0.5 flex-shrink-0" />
                                 <span className="text-sm">{guideline}</span>
                             </li>
                         ))}
@@ -334,7 +334,7 @@ const ReviewDetailPage: React.FC = () => {
                                 }
                                 disabled={isSubmitting}
                                 rows={6}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                                 required
                             />
                         </div>
@@ -356,7 +356,7 @@ const ReviewDetailPage: React.FC = () => {
                                             value={suggestion}
                                             onChange={(e) => updateSuggestion(index, e.target.value)}
                                             disabled={isSubmitting}
-                                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="flex-1 px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                                         />
                                         {reviewData.suggestions.length > 1 && (
                                             <Button
@@ -375,11 +375,11 @@ const ReviewDetailPage: React.FC = () => {
                         </div>
 
                         {/* Decision Buttons */}
-                        <div className="flex items-center gap-4 pt-4 border-t">
+                        <div className="flex items-center gap-4 pt-4 border-t border-border">
                             <Button
                                 onClick={() => handleSubmit('approve')}
                                 disabled={isSubmitting || !reviewData.comments.trim() || reviewData.rating === 0}
-                                className="bg-green-600 hover:bg-green-700"
+                                className="bg-success-foreground/90 hover:bg-success-foreground text-white"
                             >
                                 <ThumbsUp className="h-4 w-4 mr-2" />
                                 {isSubmitting ? 'Submitting...' : 'Approve'}
@@ -389,7 +389,7 @@ const ReviewDetailPage: React.FC = () => {
                                 onClick={() => handleSubmit('request-changes')}
                                 disabled={isSubmitting || !reviewData.comments.trim() || reviewData.rating === 0}
                                 variant="outline"
-                                className="border-yellow-500 text-yellow-700 hover:bg-yellow-50"
+                                className="border-warning-foreground text-warning-foreground hover:bg-warning/10"
                             >
                                 <AlertTriangle className="h-4 w-4 mr-2" />
                                 {isSubmitting ? 'Submitting...' : 'Request Changes'}
@@ -399,7 +399,7 @@ const ReviewDetailPage: React.FC = () => {
                                 onClick={() => handleSubmit('reject')}
                                 disabled={isSubmitting || !reviewData.comments.trim() || reviewData.rating === 0}
                                 variant="outline"
-                                className="border-red-500 text-red-700 hover:bg-red-50"
+                                className="border-destructive text-destructive hover:bg-destructive/10"
                             >
                                 <ThumbsDown className="h-4 w-4 mr-2" />
                                 {isSubmitting ? 'Submitting...' : 'Reject'}
@@ -420,7 +420,7 @@ const ReviewDetailPage: React.FC = () => {
                     </CardHeader>
                     <CardContent>
                         <div className="text-center py-8">
-                            <CheckCircle className="h-12 w-12 mx-auto text-green-600 mb-4" />
+                            <CheckCircle className="h-12 w-12 mx-auto text-success-foreground mb-4" />
                             <h3 className="text-lg font-semibold mb-2">Review Submitted Successfully</h3>
                             <p className="text-muted-foreground">
                                 Your review has been submitted and the document author has been notified.

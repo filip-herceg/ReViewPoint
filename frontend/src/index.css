@@ -1,45 +1,385 @@
 @import "tailwindcss";
 
+/* ================= SEMANTIC TAILWIND COLOR SYSTEM =================== */
+/*
+  This section provides a clear, maintainable mapping of all semantic Tailwind color classes
+  (backgrounds, text, borders, rings, and effects) to CSS variables, enabling full themeability.
+  
+  ── Structure ──
+  1. Backgrounds
+  2. Text/Foregrounds
+  3. Borders
+  4. Rings (focus, etc)
+  5. Effects & Shadows
+  6. Gradients
+  7. Utility/Other
+*/
+
+/* 1. Backgrounds */
+.bg-background {
+  background-color: var(--background) !important;
+}
+
+.bg-foreground {
+  background-color: var(--foreground) !important;
+}
+
+.bg-card {
+  background-color: var(--card) !important;
+}
+
+.bg-muted {
+  background-color: var(--muted) !important;
+}
+
+.bg-accent {
+  background-color: var(--accent) !important;
+}
+
+.bg-primary {
+  background-color: var(--primary) !important;
+}
+
+.bg-secondary {
+  background-color: var(--secondary) !important;
+}
+
+.bg-success {
+  background-color: var(--color-success) !important;
+}
+
+.bg-warning {
+  background-color: var(--color-warning) !important;
+}
+
+.bg-error,
+.bg-destructive {
+  background-color: var(--destructive) !important;
+}
+
+.bg-info {
+  background-color: var(--color-info) !important;
+}
+
+/* Opacity variants */
+.bg-success\/10 {
+  background-color: color-mix(in srgb, var(--color-success) 10%, transparent) !important;
+}
+
+.bg-success\/20 {
+  background-color: color-mix(in srgb, var(--color-success) 20%, transparent) !important;
+}
+
+.bg-warning\/10 {
+  background-color: color-mix(in srgb, var(--color-warning) 10%, transparent) !important;
+}
+
+.bg-warning\/20 {
+  background-color: color-mix(in srgb, var(--color-warning) 20%, transparent) !important;
+}
+
+.bg-destructive\/10 {
+  background-color: color-mix(in srgb, var(--destructive) 10%, transparent) !important;
+}
+
+.bg-destructive\/20 {
+  background-color: color-mix(in srgb, var(--destructive) 20%, transparent) !important;
+}
+
+.bg-info\/10 {
+  background-color: color-mix(in srgb, var(--color-info) 10%, transparent) !important;
+}
+
+.bg-info\/20 {
+  background-color: color-mix(in srgb, var(--color-info) 20%, transparent) !important;
+}
+
+.bg-primary\/10 {
+  background-color: color-mix(in srgb, var(--primary) 10%, transparent) !important;
+}
+
+.bg-primary\/20 {
+  background-color: color-mix(in srgb, var(--primary) 20%, transparent) !important;
+}
+
+.bg-muted\/30 {
+  background-color: color-mix(in srgb, var(--muted) 30%, transparent) !important;
+}
+
+.bg-accent\/10 {
+  background-color: color-mix(in srgb, var(--accent) 10%, transparent) !important;
+}
+
+.bg-card\/80 {
+  background-color: color-mix(in srgb, var(--card) 80%, transparent) !important;
+}
+
+/* 2. Text / Foregrounds */
+.text-foreground {
+  color: var(--foreground) !important;
+}
+
+.text-background {
+  color: var(--background) !important;
+}
+
+.text-primary {
+  color: var(--primary) !important;
+}
+
+.text-secondary {
+  color: var(--text-secondary) !important;
+}
+
+.text-muted-foreground,
+.text-muted {
+  color: var(--muted-foreground) !important;
+}
+
+.text-accent {
+  color: var(--text-accent) !important;
+}
+
+.text-success,
+.text-success-foreground {
+  color: var(--color-success) !important;
+}
+
+.text-warning,
+.text-warning-foreground {
+  color: var(--color-warning) !important;
+}
+
+.text-error,
+.text-destructive,
+.text-destructive-foreground {
+  color: var(--destructive) !important;
+}
+
+.text-info,
+.text-info-foreground {
+  color: var(--color-info) !important;
+}
+
+.text-inverse {
+  color: var(--text-inverse) !important;
+}
+
+.text-accent-foreground {
+  color: var(--accent-foreground) !important;
+}
+
+/* 3. Borders */
+.border-border,
+.border-default {
+  border-color: var(--border) !important;
+}
+
+.border-input {
+  border-color: var(--input) !important;
+}
+
+.border-primary {
+  border-color: var(--primary) !important;
+}
+
+.border-secondary {
+  border-color: var(--secondary) !important;
+}
+
+.border-accent {
+  border-color: var(--accent) !important;
+}
+
+.border-success {
+  border-color: var(--color-success) !important;
+}
+
+.border-warning {
+  border-color: var(--color-warning) !important;
+}
+
+.border-error,
+.border-destructive {
+  border-color: var(--destructive) !important;
+}
+
+.border-info {
+  border-color: var(--color-info) !important;
+}
+
+/* 4. Rings (focus, etc) */
+.ring-primary,
+.focus\:ring-primary:focus,
+.focus\:ring-primary:focus-visible {
+  --tw-ring-color: var(--primary) !important;
+}
+
+.ring-success {
+  --tw-ring-color: var(--color-success) !important;
+}
+
+.ring-warning {
+  --tw-ring-color: var(--color-warning) !important;
+}
+
+.ring-error,
+.ring-destructive {
+  --tw-ring-color: var(--destructive) !important;
+}
+
+.ring-info {
+  --tw-ring-color: var(--color-info) !important;
+}
+
+/* 5. Effects & Shadows */
+.glass-card {
+  background-color: color-mix(in srgb, var(--card) 80%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--border) 20%, transparent);
+}
+
+.shadow-elegant {
+  box-shadow: 0 8px 32px 0 color-mix(in srgb, var(--shadow-color) 10%, transparent);
+}
+
+.shadow-elegant-lg {
+  box-shadow: 0 16px 48px 0 color-mix(in srgb, var(--shadow-color) 15%, transparent);
+}
+
+/* 6. Gradients */
+.bg-gradient-mesh,
+.gradient-mesh {
+  background: linear-gradient(135deg,
+      color-mix(in srgb, var(--gradient-accent1) 10%, transparent) 0%,
+      color-mix(in srgb, var(--gradient-accent2) 10%, transparent) 50%,
+      color-mix(in srgb, var(--gradient-accent3) 10%, transparent) 100%);
+}
+
+.dark .bg-gradient-mesh,
+.dark .gradient-mesh {
+  background: linear-gradient(135deg,
+      color-mix(in srgb, var(--gradient-accent1) 15%, transparent) 0%,
+      color-mix(in srgb, var(--gradient-accent2) 15%, transparent) 50%,
+      color-mix(in srgb, var(--gradient-accent3) 15%, transparent) 100%);
+}
+
+.bg-gradient-to-br {
+  background-image: linear-gradient(to bottom right, var(--background), color-mix(in srgb, var(--muted) 30%, transparent), color-mix(in srgb, var(--accent) 10%, transparent));
+}
+
+.bg-gradient-to-r {
+  background-image: linear-gradient(to right, var(--foreground), var(--primary), var(--foreground));
+}
+
+/* 7. Utility / Misc */
+.text-transparent {
+  color: transparent !important;
+}
+
+.bg-clip-text {
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+
+
+
+
 :root {
   --radius: 0.75rem;
-  
-  /* Modern Light Theme - Vibrant Blues and High Contrast */
-  --background: 248 250 252; /* Very light blue-gray */
-  --foreground: 15 23 42; /* Dark slate */
-  --card: 255 255 255; /* Pure white */
-  --card-foreground: 15 23 42;
-  --popover: 255 255 255;
-  --popover-foreground: 15 23 42;
-  --primary: 37 99 235; /* Vibrant blue */
-  --primary-foreground: 255 255 255;
-  --secondary: 241 245 249; /* Light slate */
-  --secondary-foreground: 51 65 85;
-  --muted: 248 250 252; /* Very light gray */
-  --muted-foreground: 100 116 139;
-  --accent: 219 234 254; /* Light blue accent */
-  --accent-foreground: 30 64 175;
-  --destructive: 239 68 68; /* Modern red */
-  --destructive-foreground: 255 255 255;
-  --border: 226 232 240; /* Light gray border */
-  --input: 226 232 240;
-  --ring: 37 99 235; /* Primary blue ring */
-  
-  /* Chart colors - Vibrant modern palette */
-  --chart-1: 37 99 235; /* Blue */
-  --chart-2: 16 185 129; /* Emerald */
-  --chart-3: 245 158 11; /* Amber */
-  --chart-4: 239 68 68; /* Red */
-  --chart-5: 139 92 246; /* Violet */
-  
-  /* Sidebar colors - More distinct */
-  --sidebar: 255 255 255;
-  --sidebar-foreground: 15 23 42;
-  --sidebar-primary: 37 99 235;
-  --sidebar-primary-foreground: 255 255 255;
-  --sidebar-accent: 241 245 249;
-  --sidebar-accent-foreground: 51 65 85;
-  --sidebar-border: 226 232 240;
-  --sidebar-ring: 37 99 235;
+
+  /* Modern Light Theme - Slate Color Palette */
+  --background: #f8fafc;
+  /* Slate 50 */
+  --foreground: #334155;
+  /* Slate 700 */
+
+  /* Centralized text color tokens */
+  --text-main: #1e293b;
+  /* Slate 800 - Main readable text */
+  --text-secondary: #64748b;
+  /* Slate 500 - Secondary text */
+  --text-accent: #475569;
+  /* Slate 600 - Accent text */
+  --text-inverse: #ffffff;
+  /* White for text on dark backgrounds */
+  --text-success: #22c55e;
+  /* Green */
+  --text-warning: #f59e0b;
+  /* Amber */
+  --text-error: #ef4444;
+  /* Red */
+
+  /* Aliases for DRY usage */
+  --card-foreground: var(--text-main);
+  --popover-foreground: var(--text-main);
+  --secondary-foreground: var(--text-main);
+  --muted-foreground: var(--text-secondary);
+  --accent-foreground: var(--text-accent);
+  --destructive-foreground: var(--text-inverse);
+  --primary-foreground: var(--text-inverse);
+
+
+  --sidebar-foreground: var(--text-accent);
+  --sidebar-primary-foreground: var(--text-inverse);
+  --sidebar-accent-foreground: var(--text-accent);
+  --card: #ffffff;
+  /* White */
+  --popover: #ffffff;
+  --primary: #475569;
+  /* Slate 600 as primary */
+  --secondary: #f1f5f9;
+  /* Slate 100 */
+  --muted: #f8fafc;
+  /* Slate 50 */
+  --accent: #e2e8f0;
+  /* Slate 200 */
+  --destructive: #ef4444;
+  /* Red */
+  --border: #e2e8f0;
+  /* Slate 200 */
+  --input: #e2e8f0;
+  --ring: #475569;
+  /* Slate 600 */
+
+  /* Chart colors - Slate palette variants */
+  --chart-1: #475569;
+  /* Slate 600 */
+  --chart-2: #64748b;
+  /* Slate 500 */
+  --chart-3: #94a3b8;
+  /* Slate 400 */
+  --chart-4: #ef4444;
+  /* Red */
+  --chart-5: #22c55e;
+  /* Green */
+
+  /* Sidebar colors - Slate themed */
+  --sidebar: #f1f5f9;
+  /* Slate 100 */
+  --sidebar-foreground: var(--text-accent);
+  /* Slate 600 */
+  --sidebar-primary: #475569;
+  /* Slate 600 */
+  --sidebar-primary-foreground: var(--text-inverse);
+  --sidebar-accent: #e2e8f0;
+  /* Slate 200 */
+  --sidebar-accent-foreground: var(--text-accent);
+
+  /* Effect colors for overlays and interactions */
+  --shadow-color: #000000;
+  --glass-bg: #ffffff;
+  --glass-border: #ffffff;
+  --overlay-light: #ffffff;
+  --nav-shimmer: #ffffff;
+  --gradient-accent1: #6366f1;
+  --gradient-accent2: #3b82f6;
+  --gradient-accent3: #10b981;
+  --sidebar-border: #e2e8f0;
+  /* Slate 200 */
+  --sidebar-ring: #475569;
+  /* Slate 600 */
 
   /* Design System - Spacing Tokens */
   --space-0: 0rem;
@@ -66,73 +406,275 @@
   --font-size-4xl: 2.25rem;
 
   /* Design System - Semantic Colors */
-  --color-success: 34 197 94;
-  --color-success-foreground: 255 255 255;
-  --color-warning: 245 158 11;
-  --color-warning-foreground: 255 255 255;
-  --color-error: 239 68 68;
-  --color-error-foreground: 255 255 255;
-  --color-info: 59 130 246;
-  --color-info-foreground: 255 255 255;
+  --color-success: #22c55e;
+  --color-success-foreground: #ffffff;
+  --color-warning: #f59e0b;
+  --color-warning-foreground: #ffffff;
+  --color-error: #ef4444;
+  --color-error-foreground: #ffffff;
+  --color-info: #3b82f6;
+  --color-info-foreground: #ffffff;
 }
 
 .dark {
-  /* Modern Dark Theme - Rich Darks with Vibrant Accent Colors */
-  --background: 2 6 23; /* Very dark blue */
-  --foreground: 248 250 252; /* Light slate */
-  --card: 15 23 42; /* Dark slate */
-  --card-foreground: 248 250 252;
-  --popover: 15 23 42;
-  --popover-foreground: 248 250 252;
-  --primary: 96 165 250; /* Brighter indigo */
-  --primary-foreground: 15 23 42;
-  --secondary: 30 41 59; /* Darker slate */
-  --secondary-foreground: 203 213 225;
-  --muted: 30 41 59;
-  --muted-foreground: 148 163 184;
-  --accent: 30 41 59;
-  --accent-foreground: 203 213 225;
-  --destructive: 248 113 113;
-  --destructive-foreground: 255 255 255;
-  --border: 51 65 85; /* Slate border */
-  --input: 51 65 85;
-  --ring: 96 165 250;
-  
-  /* Chart colors - Dark theme variants */
-  --chart-1: 96 165 250;
-  --chart-2: 52 211 153;
-  --chart-3: 251 191 36;
-  --chart-4: 248 113 113;
-  --chart-5: 167 139 250;
-  
-  /* Sidebar dark colors - More vibrant */
-  --sidebar: 15 23 42;
-  --sidebar-foreground: 248 250 252;
-  --sidebar-primary: 96 165 250;
-  --sidebar-primary-foreground: 15 23 42;
-  --sidebar-accent: 30 41 59;
-  --sidebar-accent-foreground: 203 213 225;
-  --sidebar-border: 51 65 85;
-  --sidebar-ring: 96 165 250;
+  /* Modern Dark Theme - Slate Color Palette */
+  --background: #020617;
+  /* Slate 950 */
+  --foreground: #cbd5e1;
+  /* Slate 300 */
+
+  /* Dark mode text tokens */
+  --text-main: #f1f5f9;
+  /* Slate 100 - Main readable text */
+  --text-secondary: #cbd5e1;
+  /* Slate 300 - Secondary text */
+  --text-accent: #94a3b8;
+  /* Slate 400 - Accent text */
+  --text-inverse: #1e293b;
+  /* Slate 800 for text on light backgrounds */
+
+  --card: #0f172a;
+  /* Slate 900 */
+  --card-foreground: #f1f5f9;
+  /* Slate 100 */
+  --popover: #0f172a;
+  /* Slate 900 */
+  --popover-foreground: #f1f5f9;
+  /* Slate 100 */
+  --primary: #94a3b8;
+  /* Slate 400 */
+  --primary-foreground: #0f172a;
+  /* Slate 900 */
+  --secondary: #1e293b;
+  /* Slate 800 */
+  --secondary-foreground: #cbd5e1;
+  /* Slate 300 */
+  --muted: #1e293b;
+  /* Slate 800 */
+  --muted-foreground: #94a3b8;
+  /* Slate 400 */
+  --accent: #1e293b;
+  /* Slate 800 */
+  --accent-foreground: #cbd5e1;
+  /* Slate 300 */
+  --destructive: #f87171;
+  --destructive-foreground: #ffffff;
+  --border: #334155;
+  /* Slate 700 */
+  --input: #334155;
+  /* Slate 700 */
+  --ring: #94a3b8;
+  /* Slate 400 */
+
+  /* Chart colors - Dark slate variants */
+  --chart-1: #94a3b8;
+  /* Slate 400 */
+  --chart-2: #64748b;
+  /* Slate 500 */
+  --chart-3: #cbd5e1;
+  /* Slate 300 */
+  --chart-4: #f87171;
+  /* Red */
+  --chart-5: #34d399;
+  /* Green */
+
+  /* Sidebar dark colors - Slate themed */
+  --sidebar: #0f172a;
+  /* Slate 900 */
+  --sidebar-foreground: #cbd5e1;
+  /* Slate 300 */
+  --sidebar-primary: #94a3b8;
+  /* Slate 400 */
+  --sidebar-primary-foreground: #0f172a;
+  /* Slate 900 */
+  --sidebar-accent: #1e293b;
+  /* Slate 800 */
+  --sidebar-accent-foreground: #cbd5e1;
+  /* Slate 300 */
+  --sidebar-border: #334155;
+  /* Slate 700 */
+  --sidebar-ring: #94a3b8;
+  /* Slate 400 */
+
+  /* Dark mode effect colors for overlays and interactions */
+  --shadow-color: #000000;
+  --glass-bg: #0f172a;
+  --glass-border: #ffffff;
+  --overlay-light: #ffffff;
+  --nav-shimmer: #ffffff;
+  --gradient-accent1: #6366f1;
+  --gradient-accent2: #3b82f6;
+  --gradient-accent3: #34d399;
 
   /* Design System - Dark Mode Semantic Colors */
-  --color-success: 52 211 153;
-  --color-success-foreground: 255 255 255;
-  --color-warning: 251 191 36;
-  --color-warning-foreground: 15 23 42;
-  --color-error: 248 113 113;
-  --color-error-foreground: 255 255 255;
-  --color-info: 99 102 241;
-  --color-info-foreground: 255 255 255;
+  --color-success: #34d399;
+  --color-success-foreground: #ffffff;
+  --color-warning: #fbbf24;
+  --color-warning-foreground: #0f172a;
+  --color-error: #f87171;
+  --color-error-foreground: #ffffff;
+  --color-info: #60a5fa;
+  --color-info-foreground: #ffffff;
 }
+
+/* Centralized Utility Classes for Consistent Color Usage */
+.text-main {
+  color: var(--text-main);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-accent {
+  color: var(--text-accent);
+}
+
+.text-inverse {
+  color: var(--text-inverse);
+}
+
+.text-success {
+  color: var(--text-success);
+}
+
+.text-warning {
+  color: var(--text-warning);
+}
+
+.text-error {
+  color: var(--text-error);
+}
+
+/* Additional utility classes for semantic states */
+.border-error {
+  border-color: var(--destructive);
+}
+
+.border-success {
+  border-color: var(--color-success);
+}
+
+.border-warning {
+  border-color: var(--color-warning);
+}
+
+/* More comprehensive utility classes */
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.bg-background {
+  background-color: var(--background);
+}
+
+.bg-foreground {
+  background-color: var(--foreground);
+}
+
+/* Specific utility classes for common patterns */
+.border-default {
+  border-color: var(--border);
+}
+
+.ring-primary {
+  --tw-ring-color: var(--primary);
+}
+
+.focus\:ring-primary:focus {
+  --tw-ring-color: var(--primary);
+}
+
+.bg-primary {
+  background-color: var(--primary);
+}
+
+.bg-secondary {
+  background-color: var(--secondary);
+}
+
+.bg-muted {
+  background-color: var(--muted);
+}
+
+.bg-accent {
+  background-color: var(--accent);
+}
+
+.bg-card {
+  background-color: var(--card);
+}
+
+.bg-success {
+  background-color: var(--color-success);
+}
+
+.bg-warning {
+  background-color: var(--color-warning);
+}
+
+.bg-error {
+  background-color: var(--color-error);
+}
+
+.bg-destructive {
+  background-color: var(--destructive);
+}
+
+.border-default {
+  border-color: var(--border);
+}
+
+.border-primary {
+  border-color: var(--primary);
+}
+
+.border-secondary {
+  border-color: var(--secondary);
+}
+
+.border-accent {
+  border-color: var(--accent);
+}
+
+/* Interactive button styles using centralized colors */
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid var(--primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary);
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+  border: 1px solid var(--border);
+}
+
+.btn-destructive {
+  background-color: var(--destructive);
+  color: var(--destructive-foreground);
+  border: 1px solid var(--destructive);
+}
+
+.btn-success {
+  background-color: var(--color-success);
+  color: var(--color-success-foreground);
+  border: 1px solid var(--color-success);
+}
+
 /* Base Styles */
 * {
-  border-color: hsl(var(--border));
+  border-color: var(--border);
 }
 
 body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
+  background-color: var(--background);
+  color: var(--text-main);
   font-feature-settings: "rlig" 1, "calt" 1;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -204,7 +746,7 @@ body {
 }
 
 .interactive-lift:hover {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px -5px color-mix(in srgb, var(--shadow-color) 10%, transparent), 0 8px 10px -6px color-mix(in srgb, var(--shadow-color) 10%, transparent);
   transform: translateY(-4px);
 }
 
@@ -219,13 +761,13 @@ body {
 /* Glass morphism effects */
 .glass {
   backdrop-filter: blur(12px);
-  background-color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background-color: color-mix(in srgb, var(--glass-bg) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--glass-border) 20%, transparent);
 }
 
 .dark .glass {
-  background-color: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: color-mix(in srgb, var(--glass-bg) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--glass-border) 10%, transparent);
 }
 
 /* Navigation specific styles */
@@ -250,12 +792,10 @@ body {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
+  background: linear-gradient(90deg,
+      transparent,
+      color-mix(in srgb, var(--nav-shimmer) 20%, transparent),
+      transparent);
   transition: left 0.5s;
 }
 
@@ -280,7 +820,7 @@ body {
   transform: translateY(-50%);
   width: 3px;
   height: 60%;
-  background: hsl(var(--sidebar-primary));
+  background: var(--sidebar-primary);
   border-radius: 2px;
 }
 
@@ -289,6 +829,7 @@ body {
     opacity: 0;
     transform: translateX(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -297,51 +838,51 @@ body {
 
 /* Modern gradient backgrounds */
 .gradient-bg {
-  background: linear-gradient(
-    135deg,
-    hsl(var(--background)) 0%,
-    hsl(var(--muted)) 25%,
-    hsl(var(--accent) / 0.1) 50%,
-    hsl(var(--background)) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--background) 0%,
+      var(--muted) 25%,
+      color-mix(in srgb, var(--accent) 10%, transparent) 50%,
+      var(--background) 100%);
 }
 
 .gradient-primary {
-  background: linear-gradient(
-    135deg,
-    hsl(var(--primary)) 0%,
-    hsl(var(--primary) / 0.8) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--primary) 0%,
+      color-mix(in srgb, var(--primary) 80%, transparent) 100%);
 }
 
 .gradient-sidebar {
-  background: linear-gradient(
-    135deg,
-    hsl(var(--sidebar)) 0%,
-    hsl(var(--sidebar-accent)) 50%,
-    hsl(var(--sidebar)) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--sidebar) 0%,
+      var(--sidebar-accent) 50%,
+      var(--sidebar) 100%);
 }
 
 /* Modern Glass Effect */
 .glass-modern {
-  background: rgba(255, 255, 255, 0.1);
+  background: color-mix(in srgb, var(--glass-bg) 10%, transparent);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid color-mix(in srgb, var(--glass-border) 20%, transparent);
 }
 
 .dark .glass-modern {
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: color-mix(in srgb, var(--shadow-color) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--glass-border) 10%, transparent);
 }
 
 /* Modern Gradient Backgrounds */
 .gradient-mesh {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(59, 130, 246, 0.1) 50%, rgba(16, 185, 129, 0.1) 100%);
+  background: linear-gradient(135deg,
+      color-mix(in srgb, var(--gradient-accent1) 10%, transparent) 0%,
+      color-mix(in srgb, var(--gradient-accent2) 10%, transparent) 50%,
+      color-mix(in srgb, var(--gradient-accent3) 10%, transparent) 100%);
 }
 
 .dark .gradient-mesh {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(59, 130, 246, 0.15) 50%, rgba(52, 211, 153, 0.15) 100%);
+  background: linear-gradient(135deg,
+      color-mix(in srgb, var(--gradient-accent1) 15%, transparent) 0%,
+      color-mix(in srgb, var(--gradient-accent2) 15%, transparent) 50%,
+      color-mix(in srgb, var(--gradient-accent3) 15%, transparent) 100%);
 }
 
 /* Smooth hover effects */
@@ -351,24 +892,36 @@ body {
 
 .hover-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 25px -8px color-mix(in srgb, var(--shadow-color) 15%, transparent);
 }
 
 /* Modern focus states */
 .focus-ring:focus {
   outline: none;
-  box-shadow: 0 0 0 2px hsl(var(--primary)), 0 0 0 4px hsl(var(--background));
+  box-shadow: 0 0 0 2px var(--primary), 0 0 0 4px var(--background);
 }
 
-/* Animated background patterns */
+/* Animated background patterns using centralized colors */
 .animated-bg {
-  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background: linear-gradient(-45deg,
+      var(--gradient-accent1),
+      var(--gradient-accent2),
+      var(--gradient-accent3),
+      var(--primary));
   background-size: 400% 400%;
   animation: gradient 15s ease infinite;
 }
 
 @keyframes gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }

@@ -59,67 +59,67 @@ const statusConfig: Record<StatusType, {
         label: 'Success',
         icon: CheckCircle,
         variant: 'default',
-        className: 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200',
+        className: 'bg-success text-success-foreground hover:bg-success/80',
     },
     pending: {
         label: 'Pending',
         icon: Clock,
         variant: 'outline',
-        className: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900 dark:text-yellow-200',
+        className: 'bg-warning/10 text-warning hover:bg-warning/20',
     },
     warning: {
         label: 'Warning',
         icon: AlertCircle,
         variant: 'outline',
-        className: 'bg-orange-100 text-orange-800 hover:bg-orange-200 dark:bg-orange-900 dark:text-orange-200',
+        className: 'bg-warning text-warning-foreground hover:bg-warning/80',
     },
     error: {
         label: 'Error',
         icon: XCircle,
         variant: 'destructive',
-        className: 'bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900 dark:text-red-200',
+        className: 'bg-destructive text-destructive-foreground hover:bg-destructive/80',
     },
     info: {
         label: 'Info',
         icon: AlertCircle,
         variant: 'secondary',
-        className: 'bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200',
+        className: 'bg-info text-info-foreground hover:bg-info/80',
     },
     uploading: {
         label: 'Uploading',
         icon: Upload,
         variant: 'outline',
-        className: 'bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-200',
+        className: 'bg-info/10 text-info hover:bg-info/20',
     },
     processing: {
         label: 'Processing',
         icon: RefreshCw,
         variant: 'outline',
-        className: 'bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-900 dark:text-purple-200',
+        className: 'bg-info/10 text-info hover:bg-info/20',
     },
     paused: {
         label: 'Paused',
         icon: Pause,
         variant: 'secondary',
-        className: 'bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200',
+        className: 'bg-muted text-muted-foreground hover:bg-muted/70',
     },
     reviewing: {
         label: 'Reviewing',
         icon: Eye,
         variant: 'outline',
-        className: 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200 dark:bg-indigo-900 dark:text-indigo-200',
+        className: 'bg-accent/10 text-accent hover:bg-accent/20',
     },
     completed: {
         label: 'Completed',
         icon: CheckCircle,
         variant: 'default',
-        className: 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200',
+        className: 'bg-success text-success-foreground hover:bg-success/80',
     },
     failed: {
         label: 'Failed',
         icon: XCircle,
         variant: 'destructive',
-        className: 'bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900 dark:text-red-200',
+        className: 'bg-destructive text-destructive-foreground hover:bg-destructive/80',
     },
 };
 
@@ -198,8 +198,8 @@ export function UploadStatusBadge({
     progress,
     ...props
 }: UploadStatusBadgeProps) {
-    // Map upload status to general status
-    const mappedStatus: StatusType = status === 'in-review' ? 'reviewing' : status;
+    // Map upload status to general status (no 'in-review' in UploadStatus)
+    const mappedStatus: StatusType = status;
 
     // For uploading status with progress, show custom text
     const customText = status === 'uploading' && progress !== undefined

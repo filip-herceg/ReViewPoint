@@ -65,13 +65,14 @@ const UploadDetailPage: React.FC = () => {
         }
     ];
 
+    // Use semantic Tailwind classes for status badge
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'pending': return 'bg-yellow-100 text-yellow-800';
-            case 'in-review': return 'bg-blue-100 text-blue-800';
-            case 'reviewed': return 'bg-green-100 text-green-800';
-            case 'rejected': return 'bg-red-100 text-red-800';
-            default: return 'bg-gray-100 text-gray-800';
+            case 'pending': return 'bg-warning/10 text-warning-foreground';
+            case 'in-review': return 'bg-primary/10 text-primary';
+            case 'reviewed': return 'bg-success/10 text-success-foreground';
+            case 'rejected': return 'bg-destructive/10 text-destructive';
+            default: return 'bg-muted text-muted-foreground';
         }
     };
 
@@ -206,13 +207,13 @@ const UploadDetailPage: React.FC = () => {
                     ) : (
                         <div className="space-y-6">
                             {reviews.map((review) => (
-                                <div key={review.id} className="border rounded-lg p-4">
+                                <div key={review.id} className="border border-border rounded-lg p-4 bg-background">
                                     <div className="flex items-start justify-between mb-3">
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
                                                 <span className="font-medium">{review.reviewer}</span>
                                                 {review.rating && (
-                                                    <span className="text-sm text-yellow-600">
+                                                    <span className="text-sm text-warning">
                                                         {getRatingStars(review.rating)}
                                                     </span>
                                                 )}
@@ -222,7 +223,7 @@ const UploadDetailPage: React.FC = () => {
                                                 {formatDate(review.reviewedAt)}
                                             </div>
                                         </div>
-                                        <Badge variant={review.status === 'completed' ? 'default' : 'secondary'}>
+                                        <Badge variant={review.status === 'completed' ? 'default' : 'secondary'} className={review.status === 'completed' ? 'bg-success/10 text-success-foreground' : 'bg-muted text-muted-foreground'}>
                                             {review.status}
                                         </Badge>
                                     </div>

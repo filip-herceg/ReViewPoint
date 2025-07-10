@@ -108,26 +108,26 @@ const FileItem: React.FC<FileItemProps> = ({
     const getStatusIcon = useCallback(() => {
         switch (status) {
             case 'uploading':
-                return <Loader2 className="h-4 w-4 animate-spin" />;
+                return <Loader2 className="h-4 w-4 animate-spin text-primary" />;
             case 'completed':
-                return <CheckCircle className="h-4 w-4 text-green-500" />;
+                return <CheckCircle className="h-4 w-4 text-success" />;
             case 'error':
-                return <AlertCircle className="h-4 w-4 text-red-500" />;
+                return <AlertCircle className="h-4 w-4 text-destructive" />;
             default:
-                return <Clock className="h-4 w-4 text-gray-400" />;
+                return <Clock className="h-4 w-4 text-muted-foreground" />;
         }
     }, [status]);
 
     const getStatusColor = useCallback(() => {
         switch (status) {
             case 'uploading':
-                return 'bg-blue-50 border-blue-200';
+                return 'bg-primary/10 border-primary';
             case 'completed':
-                return 'bg-green-50 border-green-200';
+                return 'bg-success/10 border-success';
             case 'error':
-                return 'bg-red-50 border-red-200';
+                return 'bg-destructive/10 border-destructive';
             default:
-                return 'bg-gray-50 border-gray-200';
+                return 'bg-muted border-border';
         }
     }, [status]);
 
@@ -138,19 +138,19 @@ const FileItem: React.FC<FileItemProps> = ({
         )}>
             {/* File Icon */}
             <div className="flex-shrink-0">
-                <FileText className="h-8 w-8 text-gray-400" />
+                <FileText className="h-8 w-8 text-muted-foreground" />
             </div>
 
             {/* File Info */}
             <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-foreground truncate">
                         {file.name}
                     </p>
                     {getStatusIcon()}
                 </div>
 
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                     {formatFileSize(file.size)}
                 </p>
 
@@ -159,14 +159,14 @@ const FileItem: React.FC<FileItemProps> = ({
                     <div className="mt-1 space-y-1">
                         {validation.errors.map((error, index) => (
                             <div key={index} className="flex items-center gap-1">
-                                <AlertCircle className="h-3 w-3 text-red-500" />
-                                <span className="text-xs text-red-600">{error.message}</span>
+                                <AlertCircle className="h-3 w-3 text-destructive" />
+                                <span className="text-xs text-destructive-foreground">{error.message}</span>
                             </div>
                         ))}
                         {validation.warnings.map((warning, index) => (
                             <div key={index} className="flex items-center gap-1">
-                                <AlertCircle className="h-3 w-3 text-yellow-500" />
-                                <span className="text-xs text-yellow-600">{warning.message}</span>
+                                <AlertCircle className="h-3 w-3 text-warning" />
+                                <span className="text-xs text-warning-foreground">{warning.message}</span>
                             </div>
                         ))}
                     </div>
@@ -176,7 +176,7 @@ const FileItem: React.FC<FileItemProps> = ({
                 {showProgress && status === 'uploading' && (
                     <div className="mt-2">
                         <Progress value={progress} className="h-2" />
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                             {progress.toFixed(1)}% uploaded
                         </p>
                     </div>
@@ -537,20 +537,20 @@ export const AdvancedFileUpload: React.FC<AdvancedFileUploadProps> = ({
         const baseClasses = "relative border-2 border-dashed rounded-lg transition-all duration-200";
 
         if (disabled || loading) {
-            return cn(baseClasses, "border-gray-200 bg-gray-50 cursor-not-allowed");
+            return cn(baseClasses, "border-border bg-muted cursor-not-allowed");
         }
 
         if (isDragOver) {
-            return cn(baseClasses, "border-blue-400 bg-blue-50");
+            return cn(baseClasses, "border-primary bg-primary/10");
         }
 
         switch (variant) {
             case 'compact':
-                return cn(baseClasses, "border-gray-300 hover:border-gray-400 cursor-pointer p-4");
+                return cn(baseClasses, "border-border hover:border-primary cursor-pointer p-4");
             case 'minimal':
-                return cn(baseClasses, "border-gray-200 hover:border-gray-300 cursor-pointer p-2");
+                return cn(baseClasses, "border-border hover:border-primary cursor-pointer p-2");
             default:
-                return cn(baseClasses, "border-gray-300 hover:border-gray-400 cursor-pointer p-8");
+                return cn(baseClasses, "border-border hover:border-primary cursor-pointer p-8");
         }
     }, [disabled, loading, isDragOver, variant]);
 
@@ -586,26 +586,26 @@ export const AdvancedFileUpload: React.FC<AdvancedFileUploadProps> = ({
                 <div className="text-center">
                     <Upload className={cn(
                         "mx-auto h-12 w-12 mb-4",
-                        disabled || loading ? "text-gray-300" : "text-gray-400"
+                        disabled || loading ? "text-muted-foreground" : "text-primary"
                     )} />
 
                     <div className="space-y-2">
                         <p className={cn(
                             "text-sm font-medium",
-                            disabled || loading ? "text-gray-400" : "text-gray-700"
+                            disabled || loading ? "text-muted-foreground" : "text-foreground"
                         )}>
                             {dragAndDrop ? 'Drag and drop files here, or click to browse' : 'Click to browse files'}
                         </p>
 
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-muted-foreground">
                             Supports {accept.join(', ')} • Max {maxFiles} files • {(maxSize / 1024 / 1024).toFixed(0)}MB per file
                         </p>
                     </div>
                 </div>
 
                 {loading && (
-                    <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg">
-                        <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+                    <div className="absolute inset-0 bg-background bg-opacity-75 flex items-center justify-center rounded-lg">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
                     </div>
                 )}
             </div>
@@ -614,7 +614,7 @@ export const AdvancedFileUpload: React.FC<AdvancedFileUploadProps> = ({
             {selectedFiles.length > 0 && (
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-medium text-gray-900">
+                        <h3 className="text-sm font-medium text-foreground">
                             Selected Files ({selectedFiles.length})
                         </h3>
 
@@ -655,16 +655,16 @@ export const AdvancedFileUpload: React.FC<AdvancedFileUploadProps> = ({
 
             {/* Upload controls */}
             {selectedFiles.length > 0 && !autoUpload && (
-                <div className="flex items-center justify-between pt-4 border-t">
-                    <div className="text-sm text-gray-600">
+                <div className="flex items-center justify-between pt-4 border-t border-border">
+                    <div className="text-sm text-muted-foreground">
                         {hasValidFiles && (
-                            <span className="text-green-600">
+                            <span className="text-success-foreground">
                                 {selectedFiles.filter(f => fileValidations.get(getFileKey(f))?.isValid).length} valid files
                             </span>
                         )}
                         {hasValidFiles && hasInvalidFiles && <span className="mx-2">•</span>}
                         {hasInvalidFiles && (
-                            <span className="text-red-600">
+                            <span className="text-destructive-foreground">
                                 {selectedFiles.filter(f => !fileValidations.get(getFileKey(f))?.isValid).length} invalid files
                             </span>
                         )}
@@ -677,12 +677,12 @@ export const AdvancedFileUpload: React.FC<AdvancedFileUploadProps> = ({
                     >
                         {isUploading ? (
                             <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin text-primary" />
                                 Uploading...
                             </>
                         ) : (
                             <>
-                                <Plus className="h-4 w-4 mr-2" />
+                                <Plus className="h-4 w-4 mr-2 text-primary" />
                                 Upload Files
                             </>
                         )}
@@ -692,17 +692,17 @@ export const AdvancedFileUpload: React.FC<AdvancedFileUploadProps> = ({
 
             {/* Overall progress */}
             {showProgress && progressState.isTracking && (
-                <div className="space-y-2 pt-4 border-t">
+                <div className="space-y-2 pt-4 border-t border-border">
                     <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Overall Progress</span>
-                        <span className="text-gray-900 font-medium">
+                        <span className="text-muted-foreground">Overall Progress</span>
+                        <span className="text-foreground font-medium">
                             {progressState.overallProgress.percentage.toFixed(1)}%
                         </span>
                     </div>
 
                     <Progress value={progressState.overallProgress.percentage} className="h-2" />
 
-                    <div className="flex items-center justify-between text-xs text-gray-500">
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span>
                             Speed: {progressState.uploadSpeed > 0 ?
                                 `${(progressState.uploadSpeed / 1024 / 1024).toFixed(1)} MB/s` :

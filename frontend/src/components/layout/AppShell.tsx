@@ -34,12 +34,12 @@ const iconMap: Record<string, React.ComponentType<any>> = {
 
 function ErrorFallback({ error }: { error: unknown }) {
     return (
-        <div className="p-4 bg-red-100 border border-red-200 rounded-lg">
-            <h2 className="text-lg font-semibold text-red-800 mb-2">Something went wrong</h2>
-            <p className="text-red-600 mb-4">{getErrorMessage(error)}</p>
+        <div className="p-4 bg-destructive/10 border border-destructive rounded-lg">
+            <h2 className="text-lg font-semibold text-destructive mb-2">Something went wrong</h2>
+            <p className="text-destructive mb-4">{getErrorMessage(error)}</p>
             <button
                 onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/80 px-4 py-2 rounded transition-colors"
             >
                 Reload page
             </button>
@@ -86,7 +86,7 @@ export function AppShell({ children }: AppShellProps) {
             {/* Header */}
             <header
                 id="header"
-                className="bg-card/95 backdrop-blur-md shadow-sm border-b border-border/50 fixed top-0 left-0 right-0 z-40"
+                className="bg-background/95 backdrop-blur-md shadow-sm border-b border-border/50 fixed top-0 left-0 right-0 z-40"
             >
                 <div className="px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
@@ -140,7 +140,7 @@ export function AppShell({ children }: AppShellProps) {
 
                 {/* Mobile Menu */}
                 {mobileMenuOpen && (
-                    <div className="md:hidden border-t border-border/50 bg-card/95 backdrop-blur-md">
+                    <div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-md">
                         <div className="px-4 py-3 space-y-1">
                             <Navigation />
                         </div>
@@ -157,24 +157,24 @@ export function AppShell({ children }: AppShellProps) {
                         <aside
                             id="sidebar"
                             className={cn(
-                                'hidden md:flex flex-col bg-sidebar/95 backdrop-blur-md border-r border-sidebar-border shadow-xl',
+                                'hidden md:flex flex-col bg-background/95 backdrop-blur-md border-r border-border shadow-xl',
                                 sidebarOpen ? 'w-64' : 'w-16'
                             )}
                         >
                             {/* Sidebar Header */}
-                            <div className="p-4 border-b border-sidebar-border">
+                            <div className="p-4 border-b border-border">
                                 <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={toggleSidebar}
-                                    className="w-full justify-start hover:bg-sidebar-accent transition-all duration-200"
+                                    className="w-full justify-start hover:bg-accent transition-all duration-200"
                                     aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
                                 >
                                     <Icons.PanelLeftClose className={cn(
-                                        'h-5 w-5 transition-transform duration-300 text-sidebar-foreground',
+                                        'h-5 w-5 transition-transform duration-300 text-foreground',
                                         !sidebarOpen && 'rotate-180'
                                     )} />
-                                    {sidebarOpen && <span className="ml-2 text-sidebar-foreground">Collapse</span>}
+                                    {sidebarOpen && <span className="ml-2 text-foreground">Collapse</span>}
                                 </Button>
                             </div>
 
@@ -196,8 +196,8 @@ export function AppShell({ children }: AppShellProps) {
                                             className={cn(
                                                 'group flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-105',
                                                 isActive
-                                                    ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/25'
-                                                    : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent hover:shadow-md'
+                                                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
+                                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent hover:shadow-md'
                                             )}
                                             title={sidebarOpen ? undefined : route.title}
                                         >
@@ -205,9 +205,9 @@ export function AppShell({ children }: AppShellProps) {
                                                 <Icon className={cn(
                                                     'h-5 w-5 flex-shrink-0 transition-all duration-200',
                                                     sidebarOpen && 'mr-3',
-                                                    isActive 
-                                                        ? 'text-sidebar-primary-foreground' 
-                                                        : 'text-sidebar-foreground/70 group-hover:text-sidebar-foreground group-hover:scale-110'
+                                                    isActive
+                                                        ? 'text-primary-foreground'
+                                                        : 'text-muted-foreground group-hover:text-foreground group-hover:scale-110'
                                                 )} />
                                             )}
                                             {sidebarOpen && (
@@ -220,16 +220,16 @@ export function AppShell({ children }: AppShellProps) {
 
                             {/* Sidebar Footer */}
                             {sidebarOpen && (
-                                <div className="p-4 border-t border-sidebar-border">
-                                    <div className="flex items-center space-x-3 p-3 rounded-xl bg-sidebar-accent hover:bg-sidebar-accent/80 transition-colors">
-                                        <div className="p-2 bg-gradient-to-br from-sidebar-primary to-sidebar-primary/80 rounded-lg">
-                                            <Icons.User className="h-4 w-4 text-sidebar-primary-foreground" />
+                                <div className="p-4 border-t border-border">
+                                    <div className="flex items-center space-x-3 p-3 rounded-xl bg-accent hover:bg-accent/80 transition-colors">
+                                        <div className="p-2 bg-gradient-to-br from-primary to-primary/80 rounded-lg">
+                                            <Icons.User className="h-4 w-4 text-primary-foreground" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-sidebar-foreground truncate">
+                                            <p className="text-sm font-medium text-foreground truncate">
                                                 {user?.name || user?.email}
                                             </p>
-                                            <p className="text-xs text-sidebar-foreground/70 truncate">
+                                            <p className="text-xs text-muted-foreground truncate">
                                                 {user?.email}
                                             </p>
                                         </div>
@@ -250,7 +250,7 @@ export function AppShell({ children }: AppShellProps) {
                         {/* Mobile Sidebar Overlay */}
                         {sidebarOpen && (
                             <div className="md:hidden fixed inset-0 z-30 bg-black/50 backdrop-blur-sm" onClick={toggleSidebar}>
-                                <aside className="fixed left-0 top-16 bottom-0 w-64 bg-sidebar/95 backdrop-blur-md border-r border-sidebar-border shadow-2xl">
+                                <aside className="fixed left-0 top-16 bottom-0 w-64 bg-background/95 backdrop-blur-md border-r border-border shadow-2xl">
                                     <nav className="p-4 space-y-3">
                                         {navigationRoutes.map((route) => {
                                             if (route.requiresAuth && !isAuthenticated) {
@@ -269,16 +269,16 @@ export function AppShell({ children }: AppShellProps) {
                                                     className={cn(
                                                         'flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-105',
                                                         isActive
-                                                            ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-lg shadow-sidebar-primary/25'
-                                                            : 'text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent hover:shadow-md'
+                                                            ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
+                                                            : 'text-muted-foreground hover:text-foreground hover:bg-accent hover:shadow-md'
                                                     )}
                                                 >
                                                     {Icon && (
                                                         <Icon className={cn(
                                                             'h-5 w-5 mr-3 transition-all duration-200',
-                                                            isActive 
-                                                                ? 'text-sidebar-primary-foreground' 
-                                                                : 'text-sidebar-foreground/70 group-hover:text-sidebar-foreground group-hover:scale-110'
+                                                            isActive
+                                                                ? 'text-primary-foreground'
+                                                                : 'text-muted-foreground group-hover:text-foreground group-hover:scale-110'
                                                         )} />
                                                     )}
                                                     {route.title}
@@ -316,7 +316,7 @@ export function AppShell({ children }: AppShellProps) {
             {/* Footer */}
             <footer
                 id="footer"
-                className="bg-card/95 backdrop-blur-md border-t border-border/50 mt-12"
+                className="bg-background/95 backdrop-blur-md border-t border-border/50 mt-12"
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex items-center justify-between">

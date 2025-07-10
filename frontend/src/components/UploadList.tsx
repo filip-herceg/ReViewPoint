@@ -34,21 +34,21 @@ const UploadList: React.FC<UploadListProps> = ({ disableAutoFetch }) => {
 
     if (loading) {
         return (
-            <Card className="glass-card">
+            <Card className="bg-background border border-border">
                 <CardContent className="flex items-center justify-center py-8">
                     <div className="flex items-center gap-2 text-muted-foreground">
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-transparent border-t-current" />
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-transparent border-t-primary" />
                         Loading uploads...
                     </div>
                 </CardContent>
             </Card>
         )
     }
-    
+
     if (error) {
         return (
-            <Card className="glass-card border-destructive/20">
-                <CardContent className="flex items-center gap-2 py-4 text-destructive">
+            <Card className="bg-background border border-destructive/20">
+                <CardContent className="flex items-center gap-2 py-4 text-destructive-foreground">
                     <AlertCircle className="h-4 w-4" />
                     Error: {getErrorMessage(error)}
                 </CardContent>
@@ -89,26 +89,26 @@ const UploadList: React.FC<UploadListProps> = ({ disableAutoFetch }) => {
     }
 
     return (
-        <Card className="glass-card">
+        <Card className="bg-background border border-border">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-foreground">
+                    <FileText className="h-5 w-5 text-primary" />
                     Uploads
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-muted-foreground">
                     Manage your uploaded documents
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 {localError && (
                     <div className="mb-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                        <p className="text-sm text-destructive flex items-center gap-2">
+                        <p className="text-sm text-destructive-foreground flex items-center gap-2">
                             <AlertCircle className="h-4 w-4" />
                             Error: {localError}
                         </p>
                     </div>
                 )}
-                
+
                 {uploads.length === 0 ? (
                     <div className="text-center py-8 text-muted-foreground">
                         <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -129,16 +129,16 @@ const UploadList: React.FC<UploadListProps> = ({ disableAutoFetch }) => {
                                                     disabled={loading}
                                                     className="flex-1"
                                                 />
-                                                <Button 
-                                                    size="sm" 
+                                                <Button
+                                                    size="sm"
                                                     onClick={() => saveEdit(u.id)}
                                                     disabled={loading}
                                                     className="hover-lift"
                                                 >
                                                     <Check className="h-4 w-4" />
                                                 </Button>
-                                                <Button 
-                                                    size="sm" 
+                                                <Button
+                                                    size="sm"
                                                     variant="outline"
                                                     onClick={cancelEdit}
                                                     disabled={loading}
@@ -149,7 +149,7 @@ const UploadList: React.FC<UploadListProps> = ({ disableAutoFetch }) => {
                                         ) : (
                                             <h4 className="font-medium text-foreground">{u.name}</h4>
                                         )}
-                                        
+
                                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                             <div className="flex items-center gap-1">
                                                 <Badge variant={u.status === 'pending' ? 'secondary' : 'default'}>
@@ -157,7 +157,7 @@ const UploadList: React.FC<UploadListProps> = ({ disableAutoFetch }) => {
                                                 </Badge>
                                             </div>
                                             <div className="flex items-center gap-1">
-                                                <Clock className="h-3 w-3" />
+                                                <Clock className="h-3 w-3 text-muted-foreground" />
                                                 Progress: {u.progress}%
                                             </div>
                                         </div>
@@ -179,7 +179,7 @@ const UploadList: React.FC<UploadListProps> = ({ disableAutoFetch }) => {
                                                 variant="outline"
                                                 onClick={() => handleDelete(u.id)}
                                                 disabled={loading}
-                                                className="hover-lift text-destructive hover:text-destructive"
+                                                className="hover-lift text-destructive-foreground hover:text-destructive"
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>

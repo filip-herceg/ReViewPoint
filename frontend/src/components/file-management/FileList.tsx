@@ -43,14 +43,14 @@ const getStatusBadgeClass = (status: string) => {
     switch (status) {
         case 'completed':
         case 'uploaded':
-            return 'bg-green-100 text-green-800 border-green-200';
+            return 'bg-success/10 text-success-foreground border-success';
         case 'processing':
-            return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+            return 'bg-warning/10 text-warning-foreground border-warning';
         case 'failed':
         case 'error':
-            return 'bg-red-100 text-red-800 border-red-200';
+            return 'bg-destructive/10 text-destructive-foreground border-destructive';
         default:
-            return 'bg-gray-100 text-gray-800 border-gray-200';
+            return 'bg-muted text-muted-foreground border-border';
     }
 };
 
@@ -68,15 +68,15 @@ export const FileList: React.FC<FileListProps> = ({
         return (
             <div className="space-y-2 p-4">
                 {Array.from({ length: 8 }).map((_, index) => (
-                    <div key={index} className="flex items-center space-x-4 p-3 bg-white border rounded-lg animate-pulse">
-                        <div className="h-4 w-4 bg-gray-200 rounded" />
-                        <div className="h-5 w-5 bg-gray-200 rounded" />
+                    <div key={index} className="flex items-center space-x-4 p-3 bg-background border border-border rounded-lg animate-pulse">
+                        <div className="h-4 w-4 bg-muted rounded" />
+                        <div className="h-5 w-5 bg-muted rounded" />
                         <div className="flex-1 space-y-2">
-                            <div className="h-4 bg-gray-200 rounded w-1/3" />
-                            <div className="h-3 bg-gray-200 rounded w-1/2" />
+                            <div className="h-4 bg-muted rounded w-1/3" />
+                            <div className="h-3 bg-muted rounded w-1/2" />
                         </div>
-                        <div className="h-6 w-16 bg-gray-200 rounded-full" />
-                        <div className="h-8 w-8 bg-gray-200 rounded" />
+                        <div className="h-6 w-16 bg-muted rounded-full" />
+                        <div className="h-8 w-8 bg-muted rounded" />
                     </div>
                 ))}
             </div>
@@ -85,8 +85,8 @@ export const FileList: React.FC<FileListProps> = ({
 
     if (files.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-                <FileText className="h-12 w-12 mb-4 text-gray-300" />
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                <FileText className="h-12 w-12 mb-4 text-muted" />
                 <p className="text-lg font-medium mb-2">No files found</p>
                 <p className="text-sm">Try adjusting your search or filters</p>
             </div>
@@ -102,8 +102,8 @@ export const FileList: React.FC<FileListProps> = ({
                     <div
                         key={file.filename}
                         className={cn(
-                            'flex items-center space-x-4 p-3 bg-white border rounded-lg hover:shadow-sm transition-shadow cursor-pointer group',
-                            isSelected && 'ring-2 ring-blue-500 border-blue-300'
+                            'flex items-center space-x-4 p-3 bg-background border border-border rounded-lg hover:shadow-sm transition-shadow cursor-pointer group',
+                            isSelected && 'ring-2 ring-info border-info'
                         )}
                         onClick={() => onPreview(file)}
                     >
@@ -115,27 +115,27 @@ export const FileList: React.FC<FileListProps> = ({
                                 e.stopPropagation();
                                 onSelectionChange(file.filename, e.target.checked);
                             }}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            className="rounded border-border text-info focus:ring-info"
                             aria-label={`Select ${file.filename}`}
                         />
 
                         {/* File icon */}
                         <div className="flex-shrink-0">
-                            <FileText className="h-5 w-5 text-gray-400" />
+                            <FileText className="h-5 w-5 text-muted" />
                         </div>
 
                         {/* File details */}
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-sm font-medium text-gray-900 truncate" title={file.filename}>
+                                <h3 className="text-sm font-medium text-foreground truncate" title={file.filename}>
                                     {file.filename}
                                 </h3>
-                                <div className="ml-4 text-xs text-gray-500">
+                                <div className="ml-4 text-xs text-muted-foreground">
                                     {formatFileSizeUtil(getFileSize(file))}
                                 </div>
                             </div>
                             <div className="flex items-center justify-between mt-1">
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs text-muted-foreground">
                                     {getFileTypeGroup(file.filename).toUpperCase()} • {formatDate(file.createdAt || 'Unknown')}
                                 </p>
                             </div>
@@ -168,10 +168,10 @@ export const FileList: React.FC<FileListProps> = ({
                                 <MoreVertical className="h-4 w-4" />
                                 <span className="sr-only">Open menu</span>
                             </Button>
-                            <div className="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+                            <div className="hidden absolute right-0 mt-2 w-48 bg-background rounded-md shadow-lg border border-border z-10">
                                 <div className="py-1">
                                     <button
-                                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onPreview(file);
@@ -181,7 +181,7 @@ export const FileList: React.FC<FileListProps> = ({
                                         Preview
                                     </button>
                                     <button
-                                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onDownload(file);
@@ -191,7 +191,7 @@ export const FileList: React.FC<FileListProps> = ({
                                         Download
                                     </button>
                                     <button
-                                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onShare(file);
@@ -201,7 +201,7 @@ export const FileList: React.FC<FileListProps> = ({
                                         Share
                                     </button>
                                     <button
-                                        className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                        className="flex items-center w-full px-4 py-2 text-sm text-destructive hover:bg-muted"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onDelete(file);

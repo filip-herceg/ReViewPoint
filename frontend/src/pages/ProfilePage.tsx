@@ -90,7 +90,7 @@ const ProfilePage: React.FC = () => {
                     <div className="flex items-start gap-6">
                         {/* Avatar */}
                         <div className="relative">
-                            <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">
+                            <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center">
                                 {user.avatar_url ? (
                                     <img
                                         src={user.avatar_url}
@@ -98,10 +98,10 @@ const ProfilePage: React.FC = () => {
                                         className="w-24 h-24 rounded-full object-cover"
                                     />
                                 ) : (
-                                    <User className="w-12 h-12 text-gray-400" />
+                                    <User className="w-12 h-12 text-secondary" />
                                 )}
                             </div>
-                            <button className="absolute -bottom-2 -right-2 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors">
+                            <button className="absolute -bottom-2 -right-2 bg-primary text-inverse p-2 rounded-full hover:opacity-90 transition-all">
                                 <Camera className="w-4 h-4" />
                             </button>
                         </div>
@@ -127,7 +127,7 @@ const ProfilePage: React.FC = () => {
                                 <div className="flex items-center gap-2 text-sm">
                                     <Calendar className="w-4 h-4 text-muted-foreground" />
                                     <span className="text-muted-foreground">Joined:</span>
-                                    <span>{formatDate(user.created_at)}</span>
+                                    <span>{formatDate(user.created_at ?? null)}</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-sm">
                                     <User className="w-4 h-4 text-muted-foreground" />
@@ -196,7 +196,7 @@ const ProfilePage: React.FC = () => {
                                 onChange={handleChange}
                                 placeholder="Tell us about yourself..."
                                 rows={4}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary/50 transition-colors"
                                 disabled={isLoading}
                                 maxLength={512}
                             />
@@ -238,16 +238,16 @@ const ProfilePage: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                     <div className="grid gap-4 md:grid-cols-3">
-                        <div className="text-center p-4 border rounded-lg">
-                            <div className="text-2xl font-bold text-blue-600">24</div>
+                        <div className="text-center p-4 border border-border rounded-lg bg-background">
+                            <div className="text-2xl font-bold text-primary">24</div>
                             <p className="text-sm text-muted-foreground">Documents Uploaded</p>
                         </div>
-                        <div className="text-center p-4 border rounded-lg">
-                            <div className="text-2xl font-bold text-green-600">156</div>
+                        <div className="text-center p-4 border border-border rounded-lg bg-background">
+                            <div className="text-2xl font-bold text-success">156</div>
                             <p className="text-sm text-muted-foreground">Reviews Completed</p>
                         </div>
-                        <div className="text-center p-4 border rounded-lg">
-                            <div className="text-2xl font-bold text-purple-600">4.8</div>
+                        <div className="text-center p-4 border border-border rounded-lg bg-background">
+                            <div className="text-2xl font-bold text-accent">4.8</div>
                             <p className="text-sm text-muted-foreground">Average Rating</p>
                         </div>
                     </div>
@@ -263,7 +263,7 @@ const ProfilePage: React.FC = () => {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center justify-between p-4 border border-border rounded-lg bg-background">
                         <div>
                             <h4 className="font-medium">Email Notifications</h4>
                             <p className="text-sm text-muted-foreground">
@@ -273,11 +273,11 @@ const ProfilePage: React.FC = () => {
                         <input
                             type="checkbox"
                             defaultChecked
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            className="h-4 w-4 text-primary focus:ring-primary border-default rounded"
                         />
                     </div>
 
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center justify-between p-4 border border-border rounded-lg bg-background">
                         <div>
                             <h4 className="font-medium">Two-Factor Authentication</h4>
                             <p className="text-sm text-muted-foreground">
@@ -289,7 +289,7 @@ const ProfilePage: React.FC = () => {
                         </Button>
                     </div>
 
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center justify-between p-4 border border-border rounded-lg bg-background">
                         <div>
                             <h4 className="font-medium">Download My Data</h4>
                             <p className="text-sm text-muted-foreground">

@@ -4,13 +4,8 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 // Define FileItem type to match the store
-interface FileItem {
-    filename: string;
-    url: string;
-    status?: string;
-    progress?: number;
-    createdAt?: string;
-}
+import type { FileItem as StoreFileItem } from '@/lib/store/fileManagementStore';
+type FileItem = StoreFileItem;
 
 interface FileTableProps {
     files: FileItem[];
@@ -27,13 +22,13 @@ interface FileTableProps {
 const getStatusBadgeClass = (status: string) => {
     switch (status) {
         case 'completed':
-            return 'bg-green-100 text-green-800 border-green-200';
+            return 'bg-success/10 text-success-foreground border-success';
         case 'processing':
-            return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+            return 'bg-warning/10 text-warning-foreground border-warning';
         case 'failed':
-            return 'bg-red-100 text-red-800 border-red-200';
+            return 'bg-destructive/10 text-destructive-foreground border-destructive';
         default:
-            return 'bg-gray-100 text-gray-800 border-gray-200';
+            return 'bg-muted text-muted-foreground border-border';
     }
 };
 
@@ -82,10 +77,10 @@ export const FileTable: React.FC<FileTableProps> = ({
     const someSelected = selectedFiles.length > 0 && !allSelected;
 
     return (
-        <div className="rounded-md border overflow-hidden">
+        <div className="rounded-md border border-border overflow-hidden">
             <div className="overflow-x-auto">
                 <table className="w-full">
-                    <thead className="bg-gray-50 border-b">
+                    <thead className="bg-muted border-b border-border">
                         <tr>
                             <th className="w-12 px-4 py-3 text-left">
                                 <input
@@ -95,67 +90,67 @@ export const FileTable: React.FC<FileTableProps> = ({
                                         if (el) el.indeterminate = someSelected;
                                     }}
                                     onChange={(e) => onSelectAll(e.target.checked)}
-                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    className="rounded border-border text-info focus:ring-info"
                                     aria-label="Select all files"
                                 />
                             </th>
-                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Name</th>
-                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Type</th>
-                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Size</th>
-                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Status</th>
-                            <th className="px-4 py-3 text-left text-sm font-medium text-gray-900">Uploaded</th>
-                            <th className="w-16 px-4 py-3 text-left text-sm font-medium text-gray-900">Actions</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Name</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Type</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Size</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Status</th>
+                            <th className="px-4 py-3 text-left text-sm font-medium text-foreground">Uploaded</th>
+                            <th className="w-16 px-4 py-3 text-left text-sm font-medium text-foreground">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-background divide-y divide-border">
                         {loading ? (
                             Array.from({ length: 5 }).map((_, index) => (
                                 <tr key={index}>
                                     <td colSpan={7} className="px-4 py-4">
                                         <div className="flex items-center space-x-4">
-                                            <div className="h-4 w-4 bg-gray-200 rounded animate-pulse" />
-                                            <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
-                                            <div className="h-4 w-16 bg-gray-200 rounded animate-pulse" />
-                                            <div className="h-4 w-20 bg-gray-200 rounded animate-pulse" />
-                                            <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
-                                            <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
+                                            <div className="h-4 w-4 bg-muted rounded animate-pulse" />
+                                            <div className="h-4 w-32 bg-muted rounded animate-pulse" />
+                                            <div className="h-4 w-16 bg-muted rounded animate-pulse" />
+                                            <div className="h-4 w-20 bg-muted rounded animate-pulse" />
+                                            <div className="h-4 w-24 bg-muted rounded animate-pulse" />
+                                            <div className="h-4 w-32 bg-muted rounded animate-pulse" />
                                         </div>
                                     </td>
                                 </tr>
                             ))
                         ) : files.length === 0 ? (
                             <tr>
-                                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                                <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                                     No files found
                                 </td>
                             </tr>
                         ) : (
                             files.map((file) => (
-                                <tr key={file.filename} className="hover:bg-gray-50">
+                                <tr key={file.filename} className="hover:bg-muted">
                                     <td className="px-4 py-4">
                                         <input
                                             type="checkbox"
                                             checked={selectedFiles.includes(file.filename)}
                                             onChange={(e) => onSelectionChange(file.filename, e.target.checked)}
-                                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                            className="rounded border-border text-info focus:ring-info"
                                             aria-label={`Select ${file.filename}`}
                                         />
                                     </td>
                                     <td className="px-4 py-4">
                                         <div className="flex items-center space-x-2">
-                                            <FileText className="h-4 w-4 text-gray-400" />
-                                            <span className="font-medium text-gray-900 truncate max-w-xs" title={file.filename}>
+                                            <FileText className="h-4 w-4 text-muted" />
+                                            <span className="font-medium text-foreground truncate max-w-xs" title={file.filename}>
                                                 {file.filename}
                                             </span>
                                         </div>
                                     </td>
                                     <td className="px-4 py-4">
-                                        <span className="text-sm text-gray-500 uppercase">
+                                        <span className="text-sm text-muted-foreground uppercase">
                                             {getFileType(file.filename)}
                                         </span>
                                     </td>
                                     <td className="px-4 py-4">
-                                        <span className="text-sm text-gray-900">
+                                        <span className="text-sm text-foreground">
                                             {/* Size not available in current FileItem interface */}
                                             N/A
                                         </span>
@@ -169,7 +164,7 @@ export const FileTable: React.FC<FileTableProps> = ({
                                         </span>
                                     </td>
                                     <td className="px-4 py-4">
-                                        <span className="text-sm text-gray-500">
+                                        <span className="text-sm text-muted-foreground">
                                             {formatDate(file.createdAt)}
                                         </span>
                                     </td>
@@ -191,31 +186,31 @@ export const FileTable: React.FC<FileTableProps> = ({
                                                 <MoreVertical className="h-4 w-4" />
                                                 <span className="sr-only">Open menu</span>
                                             </Button>
-                                            <div className="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+                                            <div className="hidden absolute right-0 mt-2 w-48 bg-background rounded-md shadow-lg border border-border z-10">
                                                 <div className="py-1">
                                                     <button
-                                                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
                                                         onClick={() => onPreview(file)}
                                                     >
                                                         <Eye className="mr-2 h-4 w-4" />
                                                         Preview
                                                     </button>
                                                     <button
-                                                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
                                                         onClick={() => onDownload(file)}
                                                     >
                                                         <Download className="mr-2 h-4 w-4" />
                                                         Download
                                                     </button>
                                                     <button
-                                                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
                                                         onClick={() => onShare(file)}
                                                     >
                                                         <Share2 className="mr-2 h-4 w-4" />
                                                         Share
                                                     </button>
                                                     <button
-                                                        className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                                        className="flex items-center w-full px-4 py-2 text-sm text-destructive hover:bg-muted"
                                                         onClick={() => onDelete(file)}
                                                     >
                                                         <Trash2 className="mr-2 h-4 w-4" />

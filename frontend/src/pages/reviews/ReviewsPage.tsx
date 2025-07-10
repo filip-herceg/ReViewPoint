@@ -93,10 +93,10 @@ const ReviewsPage: React.FC = () => {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300';
-            case 'in-progress': return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground';
-            case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
-            case 'rejected': return 'bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive-foreground';
+            case 'pending': return 'bg-warning/10 text-warning-foreground';
+            case 'in-progress': return 'bg-primary/10 text-primary';
+            case 'completed': return 'bg-success/10 text-success-foreground';
+            case 'rejected': return 'bg-destructive/10 text-destructive';
             default: return 'bg-muted text-muted-foreground';
         }
     };
@@ -113,10 +113,10 @@ const ReviewsPage: React.FC = () => {
 
     const getPriorityColor = (priority: string) => {
         switch (priority) {
-            case 'high': return 'bg-red-100 text-red-800';
-            case 'medium': return 'bg-yellow-100 text-yellow-800';
-            case 'low': return 'bg-green-100 text-green-800';
-            default: return 'bg-gray-100 text-gray-800';
+            case 'high': return 'bg-destructive/10 text-destructive';
+            case 'medium': return 'bg-warning/10 text-warning-foreground';
+            case 'low': return 'bg-success/10 text-success-foreground';
+            default: return 'bg-muted text-muted-foreground';
         }
     };
 
@@ -202,7 +202,7 @@ const ReviewsPage: React.FC = () => {
                         <CardTitle className="text-sm font-medium">Assigned to Me</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-blue-600">{stats.assigned}</div>
+                        <div className="text-2xl font-bold text-primary">{stats.assigned}</div>
                     </CardContent>
                 </Card>
                 <Card>
@@ -210,7 +210,7 @@ const ReviewsPage: React.FC = () => {
                         <CardTitle className="text-sm font-medium">Completed</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
+                        <div className="text-2xl font-bold text-success-foreground">{stats.completed}</div>
                     </CardContent>
                 </Card>
                 <Card>
@@ -218,7 +218,7 @@ const ReviewsPage: React.FC = () => {
                         <CardTitle className="text-sm font-medium">Overdue</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
+                        <div className="text-2xl font-bold text-destructive">{stats.overdue}</div>
                     </CardContent>
                 </Card>
             </div>
@@ -279,7 +279,7 @@ const ReviewsPage: React.FC = () => {
                                             {review.priority} priority
                                         </Badge>
                                         {review.dueDate && isOverdue(review.dueDate) && review.status !== 'completed' && (
-                                            <Badge className="bg-red-100 text-red-800">
+                                            <Badge className="bg-destructive/10 text-destructive">
                                                 Overdue
                                             </Badge>
                                         )}

@@ -133,8 +133,8 @@ const SettingsPage: React.FC = () => {
                                             key={tab.id}
                                             onClick={() => setActiveTab(tab.id)}
                                             className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-md transition-colors ${activeTab === tab.id
-                                                    ? 'bg-primary/10 text-primary'
-                                                    : 'hover:bg-muted'
+                                                ? 'bg-primary/10 text-primary'
+                                                : 'hover:bg-muted'
                                                 }`}
                                         >
                                             <Icon className="w-4 h-4" />
@@ -188,7 +188,7 @@ const SettingsPage: React.FC = () => {
                                             type="checkbox"
                                             checked={settings.notifications.push}
                                             onChange={(e) => updateNotificationSetting('push', e.target.checked)}
-                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                            className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
                                         />
                                     </div>
 
@@ -203,7 +203,7 @@ const SettingsPage: React.FC = () => {
                                             type="checkbox"
                                             checked={settings.notifications.reviewRequests}
                                             onChange={(e) => updateNotificationSetting('reviewRequests', e.target.checked)}
-                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                            className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
                                         />
                                     </div>
 
@@ -218,7 +218,7 @@ const SettingsPage: React.FC = () => {
                                             type="checkbox"
                                             checked={settings.notifications.documentUploads}
                                             onChange={(e) => updateNotificationSetting('documentUploads', e.target.checked)}
-                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                            className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
                                         />
                                     </div>
 
@@ -233,7 +233,7 @@ const SettingsPage: React.FC = () => {
                                             type="checkbox"
                                             checked={settings.notifications.systemUpdates}
                                             onChange={(e) => updateNotificationSetting('systemUpdates', e.target.checked)}
-                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                            className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
                                         />
                                     </div>
                                 </div>
@@ -264,7 +264,7 @@ const SettingsPage: React.FC = () => {
                                                     value="public"
                                                     checked={settings.privacy.profileVisibility === 'public'}
                                                     onChange={(e) => updatePrivacySetting('profileVisibility', e.target.value)}
-                                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                                    className="h-4 w-4 text-primary focus:ring-primary border-border"
                                                 />
                                                 <span className="text-sm">Public - Anyone can see your profile</span>
                                             </label>
@@ -275,7 +275,7 @@ const SettingsPage: React.FC = () => {
                                                     value="private"
                                                     checked={settings.privacy.profileVisibility === 'private'}
                                                     onChange={(e) => updatePrivacySetting('profileVisibility', e.target.value)}
-                                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                                    className="h-4 w-4 text-primary focus:ring-primary border-border"
                                                 />
                                                 <span className="text-sm">Private - Only you can see your profile</span>
                                             </label>
@@ -293,7 +293,7 @@ const SettingsPage: React.FC = () => {
                                             type="checkbox"
                                             checked={settings.privacy.showEmail}
                                             onChange={(e) => updatePrivacySetting('showEmail', e.target.checked)}
-                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                            className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
                                         />
                                     </div>
 
@@ -308,7 +308,7 @@ const SettingsPage: React.FC = () => {
                                             type="checkbox"
                                             checked={settings.privacy.showActivity}
                                             onChange={(e) => updatePrivacySetting('showActivity', e.target.checked)}
-                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                            className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
                                         />
                                     </div>
                                 </div>
@@ -334,8 +334,8 @@ const SettingsPage: React.FC = () => {
                                         <button
                                             onClick={() => updateAppearanceSetting('theme', 'light')}
                                             className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition-colors ${settings.appearance.theme === 'light'
-                                                    ? 'border-blue-500 bg-blue-50'
-                                                    : 'border-gray-300 hover:bg-gray-50'
+                                                ? 'border-primary bg-primary/10'
+                                                : 'border-border hover:bg-muted'
                                                 }`}
                                         >
                                             <Sun className="w-6 h-6" />
@@ -344,8 +344,8 @@ const SettingsPage: React.FC = () => {
                                         <button
                                             onClick={() => updateAppearanceSetting('theme', 'dark')}
                                             className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition-colors ${settings.appearance.theme === 'dark'
-                                                    ? 'border-blue-500 bg-blue-50'
-                                                    : 'border-gray-300 hover:bg-gray-50'
+                                                ? 'border-primary bg-primary/10'
+                                                : 'border-border hover:bg-muted'
                                                 }`}
                                         >
                                             <Moon className="w-6 h-6" />
@@ -354,8 +354,8 @@ const SettingsPage: React.FC = () => {
                                         <button
                                             onClick={() => updateAppearanceSetting('theme', 'system')}
                                             className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition-colors ${settings.appearance.theme === 'system'
-                                                    ? 'border-blue-500 bg-blue-50'
-                                                    : 'border-gray-300 hover:bg-gray-50'
+                                                ? 'border-primary bg-primary/10'
+                                                : 'border-border hover:bg-muted'
                                                 }`}
                                         >
                                             <Monitor className="w-6 h-6" />
@@ -369,7 +369,7 @@ const SettingsPage: React.FC = () => {
                                     <select
                                         value={settings.appearance.language}
                                         onChange={(e) => updateAppearanceSetting('language', e.target.value)}
-                                        className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary/50 transition-colors"
                                     >
                                         <option value="en">English</option>
                                         <option value="es">Español</option>
@@ -416,7 +416,7 @@ const SettingsPage: React.FC = () => {
                                             <select
                                                 value={settings.security.sessionTimeout}
                                                 onChange={(e) => updateSecuritySetting('sessionTimeout', e.target.value)}
-                                                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                className="px-3 py-2 border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary/50 transition-colors"
                                             >
                                                 <option value="15">15 minutes</option>
                                                 <option value="30">30 minutes</option>
@@ -443,10 +443,10 @@ const SettingsPage: React.FC = () => {
                                     <div className="border-t pt-4">
                                         <h4 className="font-medium mb-2 text-red-600">Danger Zone</h4>
                                         <div className="space-y-3">
-                                            <Button variant="outline" size="sm" className="border-red-300 text-red-600 hover:bg-red-50">
+                                            <Button variant="outline" size="sm" className="border-destructive text-destructive hover:bg-destructive/10">
                                                 Export Account Data
                                             </Button>
-                                            <Button variant="outline" size="sm" className="border-red-300 text-red-600 hover:bg-red-50">
+                                            <Button variant="outline" size="sm" className="border-destructive text-destructive hover:bg-destructive/10">
                                                 Delete Account
                                             </Button>
                                         </div>

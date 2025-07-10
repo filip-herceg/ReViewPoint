@@ -27,13 +27,8 @@ import {
 } from 'lucide-react';
 
 // Define FileItem type locally to match what's in the store
-interface FileItem {
-    filename: string;
-    url: string;
-    status?: string;
-    progress?: number;
-    createdAt?: string;
-}
+import type { FileItem as StoreFileItem } from '@/lib/store/fileManagementStore';
+type FileItem = StoreFileItem;
 
 interface FileManagementDashboardProps {
     className?: string;
@@ -78,6 +73,12 @@ export const FileManagementDashboard: React.FC<FileManagementDashboardProps> = (
         setItemsPerPage,
     } = useFileManagementStore();
 
+    // Ensure all FileItem.status values are valid for downstream components
+    const normalizedFiles = files.map(f => ({
+        ...f,
+        status: f.status === 'uploaded' || f.status === 'processing' || f.status === 'error' ? f.status : 'uploaded',
+    }));
+
     // Local state
     const [searchQuery, setSearchQuery] = useState('');
     const [sortField, setSortField] = useState<SortField>('created_at');
@@ -103,7 +104,7 @@ export const FileManagementDashboard: React.FC<FileManagementDashboardProps> = (
 
     // Filter and sort files
     const filteredAndSortedFiles = React.useMemo(() => {
-        let result = [...files];
+        let result = [...normalizedFiles];
 
         // Apply search filter
         if (searchQuery) {
@@ -346,12 +347,12 @@ export const FileManagementDashboard: React.FC<FileManagementDashboardProps> = (
                     </div>
                     {Array.from({ length: 5 }).map((_, i) => (
                         <div key={i} className="flex items-center space-x-4 animate-pulse">
-                            <div className="h-10 w-10 bg-gray-200 rounded" />
+                            <div className="h-10 w-10 bg-muted rounded" />
                             <div className="flex-1 space-y-2">
-                                <div className="h-4 bg-gray-200 rounded w-full" />
-                                <div className="h-3 bg-gray-200 rounded w-1/2" />
+                                <div className="h-4 bg-muted rounded w-full" />
+                                <div className="h-3 bg-muted rounded w-1/2" />
                             </div>
-                            <div className="h-8 w-20 bg-gray-200 rounded" />
+                            <div className="h-8 w-20 bg-muted rounded" />
                         </div>
                     ))}
                 </div>
@@ -363,9 +364,9 @@ export const FileManagementDashboard: React.FC<FileManagementDashboardProps> = (
     const renderErrorState = () => (
         <Card className="w-full">
             <CardContent className="flex flex-col items-center justify-center py-16">
-                <AlertCircle className="h-16 w-16 text-red-500 mb-4" />
+                <AlertCircle className="h-16 w-16 text-destructive mb-4" />
                 <CardTitle className="mb-2">Failed to load files</CardTitle>
-                <p className="text-gray-600 text-center mb-6">
+                <p className="text-muted-foreground text-center mb-6">
                     {error?.message || 'An error occurred while loading your files. Please try again.'}
                 </p>
                 <Button onClick={handleRefresh}>
@@ -380,14 +381,14 @@ export const FileManagementDashboard: React.FC<FileManagementDashboardProps> = (
     const renderEmptyState = () => (
         <Card className="w-full">
             <CardContent className="flex flex-col items-center justify-center py-16">
-                <FileX className="h-16 w-16 text-gray-300 mb-4" />
+                <FileX className="h-16 w-16 text-muted mb-4" />
                 <CardTitle className="mb-2">
                     {searchQuery || Object.values(filters).some(f => f && (Array.isArray(f) ? f.length > 0 : true))
                         ? 'No matching files found'
                         : 'No files uploaded yet'
                     }
                 </CardTitle>
-                <p className="text-gray-600 text-center mb-6">
+                <p className="text-muted-foreground text-center mb-6">
                     {searchQuery || Object.values(filters).some(f => f && (Array.isArray(f) ? f.length > 0 : true))
                         ? 'Try adjusting your search terms or filters.'
                         : 'Upload your first file to get started.'
@@ -461,15 +462,15 @@ export const FileManagementDashboard: React.FC<FileManagementDashboardProps> = (
                 </div>
 
                 {/* Quick Stats */}
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
                     <div className="flex items-center space-x-2">
-                        <FileText className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm text-gray-600">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
                             {totalFiles} total files
                         </span>
                     </div>
                     {hasSelection && (
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                        <span className="px-2 py-1 bg-info/10 text-info-foreground rounded-full text-xs border border-info">
                             {selectedCount} selected
                         </span>
                     )}
@@ -534,10 +535,10 @@ export const FileManagementDashboard: React.FC<FileManagementDashboardProps> = (
             )}
 
             {/* Pagination Controls */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-white border-t">
-                <div className="flex items-center gap-4 text-sm text-gray-600">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-background border-t border-border">
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span>
-                        Page {currentPage} of {Math.ceil(totalFiles / config.pageSize)}
+                        Page {currentPage} of {Math.ceil(totalFiles / (config.pageSize ?? config.itemsPerPage ?? 25))}
                     </span>
                     <div className="flex items-center gap-2">
                         <span>Items per page:</span>
@@ -550,22 +551,22 @@ export const FileManagementDashboard: React.FC<FileManagementDashboardProps> = (
                                         menu.classList.toggle('hidden');
                                     }
                                 }}
-                                className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[60px] text-left"
+                                className="border border-border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-info bg-background min-w-[60px] text-left"
                                 role="combobox"
                                 aria-label="Items per page"
                                 aria-expanded="false"
                                 aria-haspopup="listbox"
                             >
-                                {config.pageSize}
+                                {config.pageSize ?? config.itemsPerPage ?? 25}
                             </button>
-                            <div className="hidden absolute left-0 mt-1 w-20 bg-white rounded-md shadow-lg border border-gray-200 z-10" role="listbox">
+                            <div className="hidden absolute left-0 mt-1 w-20 bg-background rounded-md shadow-lg border border-border z-10" role="listbox">
                                 <div className="py-1">
                                     {[10, 20, 50, 100].map((size) => (
                                         <button
                                             key={size}
                                             className={cn(
-                                                'flex items-center w-full px-3 py-2 text-sm hover:bg-gray-100',
-                                                config.pageSize === size ? 'text-blue-600 bg-blue-50' : 'text-gray-700'
+                                                'flex items-center w-full px-3 py-2 text-sm hover:bg-muted',
+                                                (config.pageSize ?? config.itemsPerPage ?? 25) === size ? 'text-info-foreground bg-info/10' : 'text-foreground'
                                             )}
                                             onClick={() => {
                                                 setItemsPerPage(size);
@@ -574,7 +575,7 @@ export const FileManagementDashboard: React.FC<FileManagementDashboardProps> = (
                                                 if (menu) menu.classList.add('hidden');
                                             }}
                                             role="option"
-                                            aria-selected={config.pageSize === size}
+                                            aria-selected={(config.pageSize ?? config.itemsPerPage ?? 25) === size}
                                         >
                                             {size}
                                         </button>
@@ -590,20 +591,20 @@ export const FileManagementDashboard: React.FC<FileManagementDashboardProps> = (
                         onClick={() => setCurrentPage(currentPage - 1)}
                         disabled={currentPage === 1}
                         aria-label="Previous page"
-                        className="inline-flex items-center justify-center h-9 w-9 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="inline-flex items-center justify-center h-9 w-9 rounded-md border border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <ChevronLeft className="h-4 w-4" />
                     </button>
 
-                    <span className="px-3 py-1 text-sm text-gray-600">
+                    <span className="px-3 py-1 text-sm text-muted-foreground">
                         Page {currentPage}
                     </span>
 
                     <button
                         onClick={() => setCurrentPage(currentPage + 1)}
-                        disabled={currentPage >= Math.ceil(totalFiles / config.pageSize)}
+                        disabled={currentPage >= Math.ceil(totalFiles / (config.pageSize ?? config.itemsPerPage ?? 25))}
                         aria-label="Next page"
-                        className="inline-flex items-center justify-center h-9 w-9 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="inline-flex items-center justify-center h-9 w-9 rounded-md border border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <ChevronRight className="h-4 w-4" />
                     </button>
@@ -630,23 +631,23 @@ export const FileManagementDashboard: React.FC<FileManagementDashboardProps> = (
                     aria-labelledby="delete-confirm-title"
                     aria-modal="true"
                 >
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full m-4 p-6">
-                        <h2 id="delete-confirm-title" className="text-lg font-semibold text-gray-900 mb-2">
+                    <div className="bg-background rounded-lg shadow-xl max-w-md w-full m-4 p-6 border border-border">
+                        <h2 id="delete-confirm-title" className="text-lg font-semibold text-foreground mb-2">
                             Confirm Delete
                         </h2>
-                        <p className="text-gray-600 mb-6">
+                        <p className="text-muted-foreground mb-6">
                             Are you sure you want to delete "{deleteConfirmFile.filename}"? This action cannot be undone.
                         </p>
                         <div className="flex gap-3 justify-end">
                             <button
                                 onClick={handleCancelDelete}
-                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                                className="px-4 py-2 text-sm font-medium text-foreground bg-muted hover:bg-muted/70 rounded-md transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleConfirmDelete}
-                                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors"
+                                className="px-4 py-2 text-sm font-medium rounded-md transition-colors bg-destructive text-destructive-foreground hover:bg-destructive/80"
                             >
                                 Confirm
                             </button>

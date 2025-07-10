@@ -39,7 +39,7 @@ export function Breadcrumbs() {
     }
 
     return (
-        <nav className="flex items-center space-x-1 text-sm text-gray-600 mb-4" aria-label="Breadcrumb">
+        <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-4" aria-label="Breadcrumb">
             <ol className="flex items-center space-x-1">
                 {breadcrumbItems.map((item, index) => {
                     const isLast = index === breadcrumbItems.length - 1;
@@ -47,17 +47,17 @@ export function Breadcrumbs() {
                     return (
                         <li key={item.path} className="flex items-center">
                             {index > 0 && (
-                                <ChevronRight className="h-4 w-4 text-gray-400 mx-1" />
+                                <ChevronRight className="h-4 w-4 text-border mx-1" />
                             )}
                             {isLast ? (
-                                <span className="text-gray-900 font-medium flex items-center">
+                                <span className="text-foreground font-medium flex items-center">
                                     {item.isHome && <Home className="h-4 w-4 mr-1" />}
                                     {item.title}
                                 </span>
                             ) : (
                                 <Link
                                     to={item.path}
-                                    className="text-gray-600 hover:text-gray-900 transition-colors flex items-center"
+                                    className="text-info-foreground hover:text-info transition-colors flex items-center underline-offset-2 hover:underline"
                                 >
                                     {item.isHome && <Home className="h-4 w-4 mr-1" />}
                                     {item.title}

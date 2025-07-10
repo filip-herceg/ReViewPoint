@@ -80,10 +80,10 @@ const RegisterPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
             <Card className="w-full max-w-md">
                 <CardHeader className="text-center">
-                    <CardTitle className="text-2xl font-bold">Create account</CardTitle>
+                    <CardTitle className="text-2xl font-bold text-foreground">Create account</CardTitle>
                     <CardDescription>
                         Join ReViewPoint to start reviewing documents
                     </CardDescription>
@@ -91,13 +91,13 @@ const RegisterPage: React.FC = () => {
                 <CardContent>
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         {error && (
-                            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+                            <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded-md text-sm">
                                 {error}
                             </div>
                         )}
 
                         <div className="space-y-2">
-                            <label htmlFor="name" className="text-sm font-medium text-gray-700">
+                            <label htmlFor="name" className="text-sm font-medium text-foreground">
                                 Full name
                             </label>
                             <div className="relative">
@@ -112,15 +112,15 @@ const RegisterPage: React.FC = () => {
                                         onChange: handleInputChange
                                     })}
                                 />
-                                <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                             </div>
                             {errors.name && (
-                                <p className="text-sm text-red-600">{errors.name.message}</p>
+                                <p className="text-sm text-destructive">{errors.name.message}</p>
                             )}
                         </div>
 
                         <div className="space-y-2">
-                            <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                            <label htmlFor="email" className="text-sm font-medium text-foreground">
                                 Email address
                             </label>
                             <div className="relative">
@@ -135,15 +135,15 @@ const RegisterPage: React.FC = () => {
                                         onChange: handleInputChange
                                     })}
                                 />
-                                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                             </div>
                             {errors.email && (
-                                <p className="text-sm text-red-600">{errors.email.message}</p>
+                                <p className="text-sm text-destructive">{errors.email.message}</p>
                             )}
                         </div>
 
                         <div className="space-y-2">
-                            <label htmlFor="password" className="text-sm font-medium text-gray-700">
+                            <label htmlFor="password" className="text-sm font-medium text-foreground">
                                 Password
                             </label>
                             <div className="relative">
@@ -158,11 +158,11 @@ const RegisterPage: React.FC = () => {
                                         onChange: handleInputChange
                                     })}
                                 />
-                                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                                     disabled={isLoading || isSubmitting}
                                 >
                                     {showPassword ? (
@@ -173,12 +173,12 @@ const RegisterPage: React.FC = () => {
                                 </button>
                             </div>
                             {errors.password && (
-                                <p className="text-sm text-red-600">{errors.password.message}</p>
+                                <p className="text-sm text-destructive">{errors.password.message}</p>
                             )}
                         </div>
 
                         <div className="space-y-2">
-                            <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
+                            <label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
                                 Confirm password
                             </label>
                             <div className="relative">
@@ -193,11 +193,11 @@ const RegisterPage: React.FC = () => {
                                         onChange: handleInputChange
                                     })}
                                 />
-                                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                 <button
                                     type="button"
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                                     disabled={isLoading || isSubmitting}
                                 >
                                     {showConfirmPassword ? (
@@ -208,7 +208,7 @@ const RegisterPage: React.FC = () => {
                                 </button>
                             </div>
                             {errors.confirmPassword && (
-                                <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>
+                                <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
                             )}
                         </div>
 
@@ -219,17 +219,17 @@ const RegisterPage: React.FC = () => {
                                     name="terms"
                                     type="checkbox"
                                     required
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                    className="h-4 w-4 text-primary focus:ring-primary border-border rounded"
                                 />
                             </div>
                             <div className="ml-3 text-sm">
-                                <label htmlFor="terms" className="text-gray-700">
+                                <label htmlFor="terms" className="text-foreground">
                                     I agree to the{' '}
-                                    <Link to="/terms" className="text-blue-600 hover:text-blue-500">
+                                    <Link to="/terms" className="text-primary hover:text-primary/80">
                                         Terms of Service
                                     </Link>{' '}
                                     and{' '}
-                                    <Link to="/privacy" className="text-blue-600 hover:text-blue-500">
+                                    <Link to="/privacy" className="text-primary hover:text-primary/80">
                                         Privacy Policy
                                     </Link>
                                 </label>
@@ -243,7 +243,7 @@ const RegisterPage: React.FC = () => {
                         >
                             {(isLoading || isSubmitting) ? (
                                 <>
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
                                     Creating account...
                                 </>
                             ) : (
@@ -253,11 +253,11 @@ const RegisterPage: React.FC = () => {
                     </form>
 
                     <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-muted-foreground">
                             Already have an account?{' '}
                             <Link
                                 to="/auth/login"
-                                className="font-medium text-blue-600 hover:text-blue-500"
+                                className="font-medium text-primary hover:text-primary/80"
                             >
                                 Sign in here
                             </Link>

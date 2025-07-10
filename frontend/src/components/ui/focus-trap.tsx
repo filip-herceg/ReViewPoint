@@ -159,7 +159,11 @@ export function FocusTrap({
     return (
         <div
             ref={containerRef}
-            className={cn('focus-trap', className)}
+            className={cn(
+                // Use only Tailwind semantic focus ring and outline classes, no custom color utilities
+                'outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                className
+            )}
             tabIndex={-1}
         >
             {children}

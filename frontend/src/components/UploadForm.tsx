@@ -30,20 +30,20 @@ const UploadForm: React.FC = () => {
     }
 
     return (
-        <Card className="glass-card hover-lift">
+        <Card className="bg-background border border-border hover-lift">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <Upload className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-foreground">
+                    <Upload className="h-5 w-5 text-primary" />
                     Upload Document
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-muted-foreground">
                     Add a new document to the review system
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="upload-name">File Name</Label>
+                        <Label htmlFor="upload-name" className="text-foreground">File Name</Label>
                         <Input
                             id="upload-name"
                             name="name"
@@ -53,7 +53,7 @@ const UploadForm: React.FC = () => {
                             required
                         />
                     </div>
-                    
+
                     <div className="flex gap-2">
                         <Button
                             type="submit"
@@ -62,21 +62,21 @@ const UploadForm: React.FC = () => {
                         >
                             {loading ? (
                                 <>
-                                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-transparent border-t-current" />
+                                    <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-transparent border-t-primary" />
                                     Uploading...
                                 </>
                             ) : (
                                 <>
-                                    <Upload className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
+                                    <Upload className="mr-2 h-4 w-4 text-primary transition-transform group-hover:scale-110" />
                                     Add Upload
                                 </>
                             )}
                         </Button>
                     </div>
-                    
+
                     {(error || localError) && (
                         <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                            <p className="text-sm text-destructive">
+                            <p className="text-sm text-destructive-foreground">
                                 Error: {getErrorMessage(error || localError)}
                             </p>
                         </div>

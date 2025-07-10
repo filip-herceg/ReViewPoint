@@ -28,13 +28,8 @@ const getContentType = (filename: string): string => {
 };
 
 // Define FileItem type to match the store
-interface FileItem {
-    filename: string;
-    url: string;
-    status?: string;
-    progress?: number;
-    createdAt?: string;
-}
+import type { FileItem as StoreFileItem } from '@/lib/store/fileManagementStore';
+type FileItem = StoreFileItem;
 
 interface FileGridProps {
     files: FileItem[];
@@ -79,14 +74,14 @@ const getStatusBadgeClass = (status: string) => {
     switch (status) {
         case 'completed':
         case 'uploaded':
-            return 'bg-green-100 text-green-800 border-green-200';
+            return 'bg-success/10 text-success-foreground border-success';
         case 'processing':
-            return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+            return 'bg-warning/10 text-warning-foreground border-warning';
         case 'failed':
         case 'error':
-            return 'bg-red-100 text-red-800 border-red-200';
+            return 'bg-destructive/10 text-destructive-foreground border-destructive';
         default:
-            return 'bg-gray-100 text-gray-800 border-gray-200';
+            return 'bg-muted text-muted-foreground border-border';
     }
 };
 
@@ -104,10 +99,10 @@ export const FileGrid: React.FC<FileGridProps> = ({
         return (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 p-4">
                 {Array.from({ length: 12 }).map((_, index) => (
-                    <div key={index} className="bg-white border rounded-lg p-4 animate-pulse">
-                        <div className="w-12 h-12 bg-gray-200 rounded-lg mb-3 mx-auto" />
-                        <div className="h-4 bg-gray-200 rounded mb-2" />
-                        <div className="h-3 bg-gray-200 rounded w-16 mx-auto" />
+                    <div key={index} className="bg-background border border-border rounded-lg p-4 animate-pulse">
+                        <div className="w-12 h-12 bg-muted rounded-lg mb-3 mx-auto" />
+                        <div className="h-4 bg-muted rounded mb-2" />
+                        <div className="h-3 bg-muted rounded w-16 mx-auto" />
                     </div>
                 ))}
             </div>
@@ -116,8 +111,8 @@ export const FileGrid: React.FC<FileGridProps> = ({
 
     if (files.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-                <FileText className="h-12 w-12 mb-4 text-gray-300" />
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                <FileText className="h-12 w-12 mb-4 text-muted" />
                 <p className="text-lg font-medium mb-2">No files found</p>
                 <p className="text-sm">Try adjusting your search or filters</p>
             </div>
@@ -133,8 +128,8 @@ export const FileGrid: React.FC<FileGridProps> = ({
                     <div
                         key={file.filename}
                         className={cn(
-                            'relative bg-white border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer group',
-                            isSelected && 'ring-2 ring-blue-500 border-blue-300'
+                            'relative bg-background border border-border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer group',
+                            isSelected && 'ring-2 ring-info border-info'
                         )}
                         onClick={() => onPreview(file)}
                     >
@@ -147,7 +142,7 @@ export const FileGrid: React.FC<FileGridProps> = ({
                                     e.stopPropagation();
                                     onSelectionChange(file.filename, e.target.checked);
                                 }}
-                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                className="rounded border-border text-info focus:ring-info"
                                 aria-label={`Select ${file.filename}`}
                             />
                         </div>
@@ -157,7 +152,7 @@ export const FileGrid: React.FC<FileGridProps> = ({
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-8 w-8 p-0 bg-white shadow-sm border"
+                                className="h-8 w-8 p-0 bg-background shadow-sm border border-border"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     const menu = e.currentTarget.nextElementSibling as HTMLElement;
@@ -169,10 +164,10 @@ export const FileGrid: React.FC<FileGridProps> = ({
                                 <MoreVertical className="h-4 w-4" />
                                 <span className="sr-only">Open menu</span>
                             </Button>
-                            <div className="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-20">
+                            <div className="hidden absolute right-0 mt-2 w-48 bg-background rounded-md shadow-lg border border-border z-20">
                                 <div className="py-1">
                                     <button
-                                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onPreview(file);
@@ -182,7 +177,7 @@ export const FileGrid: React.FC<FileGridProps> = ({
                                         Preview
                                     </button>
                                     <button
-                                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onDownload(file);
@@ -192,7 +187,7 @@ export const FileGrid: React.FC<FileGridProps> = ({
                                         Download
                                     </button>
                                     <button
-                                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onShare(file);
@@ -202,7 +197,7 @@ export const FileGrid: React.FC<FileGridProps> = ({
                                         Share
                                     </button>
                                     <button
-                                        className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                        className="flex items-center w-full px-4 py-2 text-sm text-destructive hover:bg-muted"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onDelete(file);
@@ -223,12 +218,12 @@ export const FileGrid: React.FC<FileGridProps> = ({
                         </div>
 
                         {/* File name */}
-                        <h3 className="text-sm font-medium text-gray-900 text-center mb-2 truncate" title={file.filename}>
+                        <h3 className="text-sm font-medium text-foreground text-center mb-2 truncate" title={file.filename}>
                             {file.filename}
                         </h3>
 
                         {/* File details */}
-                        <div className="space-y-1 text-xs text-gray-500 text-center">
+                        <div className="space-y-1 text-xs text-muted-foreground text-center">
                             <div>{formatFileSize(getFileSize(file))}</div>
                             <div>{formatDate(file.createdAt)}</div>
                             <div>

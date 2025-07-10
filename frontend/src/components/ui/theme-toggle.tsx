@@ -158,8 +158,10 @@ export function ThemeToggleCompact({ className }: { className?: string }) {
         <button
             onClick={toggleMode}
             className={cn(
+                // Use only Tailwind semantic color classes for all states
                 'inline-flex items-center justify-center rounded-md p-2',
                 'text-sm font-medium transition-colors',
+                'bg-background text-foreground',
                 'hover:bg-accent hover:text-accent-foreground',
                 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 'disabled:pointer-events-none disabled:opacity-50',

@@ -32,7 +32,7 @@ export const FileBulkActions: React.FC<FileBulkActionsProps> = ({
 
     return (
         <div className={cn(
-            'fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50 transition-transform duration-300',
+            'fixed bottom-0 left-0 right-0 bg-background border-t border-border shadow-lg z-50 transition-transform duration-300',
             isVisible ? 'translate-y-0' : 'translate-y-full'
         )}>
             <div className="max-w-7xl mx-auto px-4 py-4">
@@ -40,7 +40,7 @@ export const FileBulkActions: React.FC<FileBulkActionsProps> = ({
                     {/* Left section - Selection info and clear */}
                     <div className="flex items-center space-x-4">
                         <div className="flex items-center space-x-2">
-                            <span className="text-sm font-medium text-gray-900">
+                            <span className="text-sm font-medium text-foreground">
                                 {selectedCount} file{selectedCount !== 1 ? 's' : ''} selected
                             </span>
                             <Button
@@ -107,7 +107,7 @@ export const FileBulkActions: React.FC<FileBulkActionsProps> = ({
                             size="sm"
                             onClick={onDeleteSelected}
                             disabled={isLoading}
-                            className="whitespace-nowrap text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                            className="whitespace-nowrap text-destructive hover:text-destructive-foreground hover:bg-destructive/10 border-destructive"
                         >
                             <Trash2 className="h-4 w-4 mr-2" />
                             Delete
@@ -130,10 +130,10 @@ export const FileBulkActions: React.FC<FileBulkActionsProps> = ({
                         >
                             More actions
                         </Button>
-                        <div className="hidden absolute bottom-full right-0 mb-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+                        <div className="hidden absolute bottom-full right-0 mb-2 w-48 bg-background rounded-md shadow-lg border border-border z-10">
                             <div className="py-1">
                                 <button
-                                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
                                     onClick={() => {
                                         // Add to favorites functionality
                                         console.log('Add to favorites');
@@ -143,7 +143,7 @@ export const FileBulkActions: React.FC<FileBulkActionsProps> = ({
                                     Add to Favorites
                                 </button>
                                 <button
-                                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
                                     onClick={() => {
                                         // Copy links functionality
                                         console.log('Copy links');
@@ -153,7 +153,7 @@ export const FileBulkActions: React.FC<FileBulkActionsProps> = ({
                                     Copy Links
                                 </button>
                                 <button
-                                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
                                     onClick={() => {
                                         // Export metadata functionality
                                         console.log('Export metadata');
@@ -162,9 +162,9 @@ export const FileBulkActions: React.FC<FileBulkActionsProps> = ({
                                     <span className="mr-2">📋</span>
                                     Export Metadata
                                 </button>
-                                <div className="border-t border-gray-100 my-1" />
+                                <div className="border-t border-border my-1" />
                                 <button
-                                    className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
                                     onClick={() => {
                                         // Change permissions functionality
                                         console.log('Change permissions');
@@ -181,8 +181,8 @@ export const FileBulkActions: React.FC<FileBulkActionsProps> = ({
                 {/* Loading indicator */}
                 {isLoading && (
                     <div className="mt-3 flex items-center justify-center">
-                        <div className="flex items-center space-x-2 text-sm text-gray-600">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600" />
+                        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-info" />
                             <span>Processing selected files...</span>
                         </div>
                     </div>

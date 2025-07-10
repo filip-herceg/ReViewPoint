@@ -117,6 +117,12 @@ function FormControl({ ...props }: React.ComponentProps<typeof Slot>) {
           : `${formDescriptionId} ${formMessageId}`
       }
       aria-invalid={!!error}
+      className={cn(
+        // Use only Tailwind semantic color classes for error and normal states
+        error && 'border-destructive focus-visible:ring-destructive bg-background text-foreground placeholder:text-muted-foreground',
+        !error && 'bg-background text-foreground placeholder:text-muted-foreground',
+        props.className
+      )}
       {...props}
     />
   )

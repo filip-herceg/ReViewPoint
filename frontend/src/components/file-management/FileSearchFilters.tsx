@@ -23,10 +23,10 @@ interface FileSearchFiltersProps {
 }
 
 const STATUS_OPTIONS = [
-    { value: 'completed', label: 'Completed', color: 'text-green-600' },
-    { value: 'processing', label: 'Processing', color: 'text-yellow-600' },
-    { value: 'failed', label: 'Failed', color: 'text-red-600' },
-    { value: 'pending', label: 'Pending', color: 'text-gray-600' },
+    { value: 'completed', label: 'Completed', color: 'text-success-foreground' },
+    { value: 'processing', label: 'Processing', color: 'text-warning-foreground' },
+    { value: 'failed', label: 'Failed', color: 'text-destructive-foreground' },
+    { value: 'pending', label: 'Pending', color: 'text-muted-foreground' },
 ];
 
 const CONTENT_TYPE_OPTIONS = [
@@ -115,19 +115,19 @@ export const FileSearchFilters: React.FC<FileSearchFiltersProps> = ({
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
             <div
-                className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+                className="bg-background rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-border"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="filter-modal-title"
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b">
+                <div className="flex items-center justify-between p-6 border-b border-border">
                     <div className="flex items-center space-x-3">
-                        <Filter className="h-5 w-5 text-gray-600" />
-                        <h2 id="filter-modal-title" className="text-lg font-semibold text-gray-900">Filter Files</h2>
+                        <Filter className="h-5 w-5 text-muted-foreground" />
+                        <h2 id="filter-modal-title" className="text-lg font-semibold text-foreground">Filter Files</h2>
                     </div>
                     <div className="flex items-center space-x-4">
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-muted-foreground">
                             {filteredFiles} of {totalFiles} files
                         </span>
                         <Button variant="ghost" size="sm" onClick={onClose}>
@@ -142,7 +142,7 @@ export const FileSearchFilters: React.FC<FileSearchFiltersProps> = ({
 
                         {/* Status Filter */}
                         <div className="space-y-3">
-                            <h3 className="text-sm font-medium text-gray-900 flex items-center">
+                            <h3 className="text-sm font-medium text-foreground flex items-center">
                                 <Tag className="h-4 w-4 mr-2" />
                                 Status
                             </h3>
@@ -153,7 +153,7 @@ export const FileSearchFilters: React.FC<FileSearchFiltersProps> = ({
                                             type="checkbox"
                                             checked={tempFilters.status.includes(option.value)}
                                             onChange={() => handleStatusToggle(option.value)}
-                                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                            className="rounded border-border text-info focus:ring-info"
                                         />
                                         <span className={cn('text-sm', option.color)}>{option.label}</span>
                                     </label>
@@ -163,7 +163,7 @@ export const FileSearchFilters: React.FC<FileSearchFiltersProps> = ({
 
                         {/* File Type Filter */}
                         <div className="space-y-3">
-                            <h3 className="text-sm font-medium text-gray-900 flex items-center">
+                            <h3 className="text-sm font-medium text-foreground flex items-center">
                                 <FileType className="h-4 w-4 mr-2" />
                                 File Type
                             </h3>
@@ -174,9 +174,9 @@ export const FileSearchFilters: React.FC<FileSearchFiltersProps> = ({
                                             type="checkbox"
                                             checked={tempFilters.contentType.includes(option.value)}
                                             onChange={() => handleContentTypeToggle(option.value)}
-                                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                            className="rounded border-border text-info focus:ring-info"
                                         />
-                                        <span className="text-sm text-gray-700">{option.label}</span>
+                                        <span className="text-sm text-foreground">{option.label}</span>
                                     </label>
                                 ))}
                             </div>
@@ -184,7 +184,7 @@ export const FileSearchFilters: React.FC<FileSearchFiltersProps> = ({
 
                         {/* Size Filter */}
                         <div className="space-y-3">
-                            <h3 className="text-sm font-medium text-gray-900">File Size</h3>
+                            <h3 className="text-sm font-medium text-foreground">File Size</h3>
                             <div className="space-y-2">
                                 {SIZE_PRESETS.map((preset, index) => (
                                     <label key={index} className="flex items-center space-x-2 cursor-pointer">
@@ -196,9 +196,9 @@ export const FileSearchFilters: React.FC<FileSearchFiltersProps> = ({
                                                     tempFilters.sizeRange?.max === Number.MAX_SAFE_INTEGER :
                                                     tempFilters.sizeRange?.max === preset.max)}
                                             onChange={() => handleSizePresetSelect(preset.min, preset.max)}
-                                            className="text-blue-600 focus:ring-blue-500"
+                                            className="text-info focus:ring-info"
                                         />
-                                        <span className="text-sm text-gray-700">{preset.label}</span>
+                                        <span className="text-sm text-foreground">{preset.label}</span>
                                     </label>
                                 ))}
                                 <label className="flex items-center space-x-2 cursor-pointer">
@@ -207,22 +207,22 @@ export const FileSearchFilters: React.FC<FileSearchFiltersProps> = ({
                                         name="sizePreset"
                                         checked={tempFilters.sizeRange === null}
                                         onChange={() => setTempFilters({ ...tempFilters, sizeRange: null })}
-                                        className="text-blue-600 focus:ring-blue-500"
+                                        className="text-info focus:ring-info"
                                     />
-                                    <span className="text-sm text-gray-700">Any size</span>
+                                    <span className="text-sm text-foreground">Any size</span>
                                 </label>
                             </div>
                         </div>
 
                         {/* Date Range Filter */}
                         <div className="space-y-3">
-                            <h3 className="text-sm font-medium text-gray-900 flex items-center">
+                            <h3 className="text-sm font-medium text-foreground flex items-center">
                                 <Calendar className="h-4 w-4 mr-2" />
                                 Upload Date
                             </h3>
                             <div className="space-y-2">
                                 <div>
-                                    <label className="text-xs text-gray-600">From</label>
+                                    <label className="text-xs text-muted-foreground">From</label>
                                     <Input
                                         type="date"
                                         value={tempFilters.dateRange?.start || ''}
@@ -231,7 +231,7 @@ export const FileSearchFilters: React.FC<FileSearchFiltersProps> = ({
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-xs text-gray-600">To</label>
+                                    <label className="text-xs text-muted-foreground">To</label>
                                     <Input
                                         type="date"
                                         value={tempFilters.dateRange?.end || ''}
@@ -244,7 +244,7 @@ export const FileSearchFilters: React.FC<FileSearchFiltersProps> = ({
 
                         {/* User Filter */}
                         <div className="space-y-3 md:col-span-2">
-                            <h3 className="text-sm font-medium text-gray-900 flex items-center">
+                            <h3 className="text-sm font-medium text-foreground flex items-center">
                                 <User className="h-4 w-4 mr-2" />
                                 Uploaded By
                             </h3>
@@ -262,7 +262,7 @@ export const FileSearchFilters: React.FC<FileSearchFiltersProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between p-6 border-t bg-gray-50">
+                <div className="flex items-center justify-between p-6 border-t border-border bg-muted">
                     <Button
                         variant="outline"
                         onClick={clearFilters}

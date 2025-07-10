@@ -105,7 +105,7 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
 
         if (!canPreview(contentType)) {
             return (
-                <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                     <div className="text-6xl mb-4">📄</div>
                     <h3 className="text-lg font-medium mb-2">Preview not available</h3>
                     <p className="text-sm text-center mb-4">
@@ -179,20 +179,20 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center">
             {/* Modal container */}
-            <div 
+            <div
                 role="dialog"
                 aria-labelledby="preview-title"
                 aria-modal="true"
-                className="relative w-full h-full max-w-6xl max-h-screen m-4 bg-white rounded-lg shadow-xl overflow-hidden flex flex-col"
+                className="relative w-full h-full max-w-6xl max-h-screen m-4 bg-background rounded-lg shadow-xl overflow-hidden flex flex-col"
             >
 
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b bg-gray-50">
+                <div className="flex items-center justify-between p-4 border-b border-border bg-muted">
                     <div className="flex items-center space-x-4 min-w-0 flex-1">
-                        <h2 id="preview-title" className="text-lg font-semibold text-gray-900 truncate" title={file.filename}>
+                        <h2 id="preview-title" className="text-lg font-semibold text-foreground truncate" title={file.filename}>
                             {file.filename}
                         </h2>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-muted-foreground">
                             {formatFileSizeUtil(getFileSize(file))} • {formatDate(file.createdAt)}
                         </div>
                     </div>
@@ -227,7 +227,7 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
                                 <Button variant="ghost" size="sm" onClick={handleZoomOut} disabled={zoom <= 25}>
                                     <ZoomOut className="h-4 w-4" />
                                 </Button>
-                                <span className="text-xs text-gray-600 w-12 text-center">{zoom}%</span>
+                                <span className="text-xs text-muted-foreground w-12 text-center">{zoom}%</span>
                                 <Button variant="ghost" size="sm" onClick={handleZoomIn} disabled={zoom >= 200}>
                                     <ZoomIn className="h-4 w-4" />
                                 </Button>
@@ -244,7 +244,7 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
                         <Button variant="ghost" size="sm" onClick={() => onShare(file)}>
                             <Share2 className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => onDelete(file)} className="text-red-600 hover:text-red-700">
+                        <Button variant="ghost" size="sm" onClick={() => onDelete(file)} className="text-destructive hover:text-destructive-foreground">
                             <Trash2 className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="sm" onClick={onClose}>
@@ -254,19 +254,19 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
                 </div>
 
                 {/* Content area */}
-                <div className="flex-1 relative overflow-hidden bg-gray-100">
+                <div className="flex-1 relative overflow-hidden bg-muted">
                     {isLoading && (
                         <div className="absolute inset-0 flex items-center justify-center">
                             <div className="flex flex-col items-center space-y-2">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-                                <span className="text-sm text-gray-600">Loading preview...</span>
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-info" />
+                                <span className="text-sm text-muted-foreground">Loading preview...</span>
                             </div>
                         </div>
                     )}
 
                     {error && (
                         <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="flex flex-col items-center space-y-2 text-red-600">
+                            <div className="flex flex-col items-center space-y-2 text-destructive">
                                 <span className="text-lg">⚠️</span>
                                 <span className="text-sm">{error}</span>
                                 <Button variant="outline" onClick={() => onDownload(file)}>
@@ -281,30 +281,30 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
                 </div>
 
                 {/* Footer with file details */}
-                <div className="p-4 border-t bg-gray-50">
+                <div className="p-4 border-t border-border bg-muted">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
-                            <span className="font-medium text-gray-600">Type:</span>
-                            <span className="ml-2 text-gray-900">{getContentType(file.filename)}</span>
+                            <span className="font-medium text-muted-foreground">Type:</span>
+                            <span className="ml-2 text-foreground">{getContentType(file.filename)}</span>
                         </div>
                         <div>
-                            <span className="font-medium text-gray-600">Size:</span>
-                            <span className="ml-2 text-gray-900">{formatFileSizeUtil(getFileSize(file))}</span>
+                            <span className="font-medium text-muted-foreground">Size:</span>
+                            <span className="ml-2 text-foreground">{formatFileSizeUtil(getFileSize(file))}</span>
                         </div>
                         <div>
-                            <span className="font-medium text-gray-600">Status:</span>
+                            <span className="font-medium text-muted-foreground">Status:</span>
                             <span className={cn(
                                 'ml-2 px-2 py-0.5 rounded-full text-xs font-medium',
-                                file.status === 'completed' && 'bg-green-100 text-green-800',
-                                file.status === 'processing' && 'bg-yellow-100 text-yellow-800',
-                                file.status === 'failed' && 'bg-red-100 text-red-800'
+                                file.status === 'uploaded' && 'bg-success/10 text-success-foreground',
+                                file.status === 'processing' && 'bg-warning/10 text-warning-foreground',
+                                file.status === 'error' && 'bg-destructive/10 text-destructive-foreground'
                             )}>
                                 {file.status}
                             </span>
                         </div>
                         <div>
-                            <span className="font-medium text-gray-600">Uploaded:</span>
-                            <span className="ml-2 text-gray-900">{formatDate(file.createdAt)}</span>
+                            <span className="font-medium text-muted-foreground">Uploaded:</span>
+                            <span className="ml-2 text-foreground">{formatDate(file.createdAt)}</span>
                         </div>
                     </div>
                 </div>

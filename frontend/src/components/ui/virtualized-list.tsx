@@ -124,7 +124,7 @@ export function VirtualizedList<T>({
                 style={{ height: containerHeight }}
             >
                 {loadingComponent || (
-                    <div className="text-gray-500">Loading...</div>
+                    <div className="text-muted-foreground">Loading...</div>
                 )}
             </div>
         );
@@ -141,7 +141,7 @@ export function VirtualizedList<T>({
                 style={{ height: containerHeight }}
             >
                 {errorComponent || (
-                    <div className="text-red-500">Error loading data</div>
+                    <div className="text-destructive">Error loading data</div>
                 )}
             </div>
         );
@@ -158,7 +158,7 @@ export function VirtualizedList<T>({
                 style={{ height: containerHeight }}
             >
                 {emptyComponent || (
-                    <div className="text-gray-500">No items to display</div>
+                    <div className="text-muted-foreground">No items to display</div>
                 )}
             </div>
         );

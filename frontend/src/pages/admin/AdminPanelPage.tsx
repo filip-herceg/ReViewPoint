@@ -28,9 +28,9 @@ export default function AdminPanelPage() {
         >
             <div className="space-y-6">
                 {/* Page Header */}
-                <div className="border-b border-gray-200 pb-4">
-                    <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
-                    <p className="text-gray-600 mt-2">
+                <div className="border-b border-border pb-4">
+                    <h1 className="text-3xl font-bold text-foreground">Admin Panel</h1>
+                    <p className="text-muted-foreground mt-2">
                         System administration and management tools
                     </p>
                 </div>
@@ -50,13 +50,13 @@ export default function AdminPanelPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-3">
-                                <div className="text-sm text-gray-600">
+                                <div className="text-sm text-muted-foreground">
                                     • View and edit user profiles
                                 </div>
-                                <div className="text-sm text-gray-600">
+                                <div className="text-sm text-muted-foreground">
                                     • Assign roles and permissions
                                 </div>
-                                <div className="text-sm text-gray-600">
+                                <div className="text-sm text-muted-foreground">
                                     • Deactivate accounts
                                 </div>
                                 <Button asChild className="w-full mt-4">
@@ -79,13 +79,13 @@ export default function AdminPanelPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-3">
-                                <div className="text-sm text-gray-600">
+                                <div className="text-sm text-muted-foreground">
                                     • Upload limits and restrictions
                                 </div>
-                                <div className="text-sm text-gray-600">
+                                <div className="text-sm text-muted-foreground">
                                     • Email and notification settings
                                 </div>
-                                <div className="text-sm text-gray-600">
+                                <div className="text-sm text-muted-foreground">
                                     • Security configuration
                                 </div>
                                 <Button asChild className="w-full mt-4">
@@ -108,7 +108,7 @@ export default function AdminPanelPage() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-3">
-                                <div className="text-sm text-gray-600">
+                                <div className="text-sm text-muted-foreground">
                                     • User activity reports
                                 </div>
                                 <div className="text-sm text-gray-600">
@@ -129,26 +129,26 @@ export default function AdminPanelPage() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <Card>
                         <CardContent className="p-4">
-                            <div className="text-2xl font-bold text-blue-600">1,234</div>
-                            <div className="text-sm text-gray-600">Total Users</div>
+                            <div className="text-2xl font-bold text-info-foreground">1,234</div>
+                            <div className="text-sm text-muted-foreground">Total Users</div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardContent className="p-4">
-                            <div className="text-2xl font-bold text-green-600">456</div>
-                            <div className="text-sm text-gray-600">Active Sessions</div>
+                            <div className="text-2xl font-bold text-success-foreground">456</div>
+                            <div className="text-sm text-muted-foreground">Active Sessions</div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardContent className="p-4">
-                            <div className="text-2xl font-bold text-purple-600">789</div>
-                            <div className="text-sm text-gray-600">Total Uploads</div>
+                            <div className="text-2xl font-bold text-accent-foreground">789</div>
+                            <div className="text-sm text-muted-foreground">Total Uploads</div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardContent className="p-4">
-                            <div className="text-2xl font-bold text-orange-600">12</div>
-                            <div className="text-sm text-gray-600">Pending Reviews</div>
+                            <div className="text-2xl font-bold text-warning-foreground">12</div>
+                            <div className="text-sm text-muted-foreground">Pending Reviews</div>
                         </CardContent>
                     </Card>
                 </div>

@@ -83,10 +83,10 @@ export function WebSocketStatus({
                 <Icon
                     className={cn(
                         'h-4 w-4',
-                        config.color === 'success' && 'text-green-500',
-                        config.color === 'warning' && 'text-yellow-500 animate-spin',
-                        config.color === 'destructive' && 'text-red-500',
-                        config.color === 'secondary' && 'text-gray-400'
+                        config.color === 'success' && 'text-success',
+                        config.color === 'warning' && 'text-warning animate-spin',
+                        config.color === 'destructive' && 'text-destructive',
+                        config.color === 'secondary' && 'text-muted-foreground'
                     )}
                 />
                 <Badge variant={config.color} className="text-xs">
@@ -115,14 +115,14 @@ export function WebSocketStatus({
                     <Icon
                         className={cn(
                             'h-5 w-5',
-                            config.color === 'success' && 'text-green-500',
-                            config.color === 'warning' && 'text-yellow-500 animate-spin',
-                            config.color === 'destructive' && 'text-red-500',
-                            config.color === 'secondary' && 'text-gray-400'
+                            config.color === 'success' && 'text-success',
+                            config.color === 'warning' && 'text-warning animate-spin',
+                            config.color === 'destructive' && 'text-destructive',
+                            config.color === 'secondary' && 'text-muted-foreground'
                         )}
                     />
                     <div>
-                        <h3 className="font-medium text-sm">Real-time Connection</h3>
+                        <h3 className="font-medium text-sm text-foreground">Real-time Connection</h3>
                         <p className="text-xs text-muted-foreground">
                             {config.description}
                         </p>
@@ -151,7 +151,7 @@ export function WebSocketStatus({
             {/* Error Alert */}
             {error && (
                 <Alert variant="destructive">
-                    <AlertTriangleIcon className="h-4 w-4" />
+                    <AlertTriangleIcon className="h-4 w-4 text-destructive" />
                     <AlertDescription>
                         Connection error: {error}
                     </AlertDescription>
@@ -207,7 +207,7 @@ export function WebSocketIndicator({ className }: { className?: string }) {
             <div
                 className={cn(
                     'h-2 w-2 rounded-full',
-                    isConnected ? 'bg-green-500 animate-pulse' : 'bg-gray-400'
+                    isConnected ? 'bg-success animate-pulse' : 'bg-muted-foreground'
                 )}
             />
             <span className="hidden sm:inline">

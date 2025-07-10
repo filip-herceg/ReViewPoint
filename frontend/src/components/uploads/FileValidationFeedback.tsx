@@ -99,16 +99,14 @@ const ValidationIssue: React.FC<ValidationIssueProps> = ({
 
     const getSeverityBadge = () => {
         if (!issue.severity) return null;
-
-        const severityColors = {
-            error: 'bg-red-100 text-red-800',
-            warning: 'bg-yellow-100 text-yellow-800'
+        const severityClasses = {
+            error: 'bg-destructive/10 text-destructive-foreground',
+            warning: 'bg-warning/10 text-warning-foreground'
         };
-
         return (
             <Badge
                 variant="outline"
-                className={cn("text-xs", severityColors[issue.severity])}
+                className={cn("text-xs", severityClasses[issue.severity])}
             >
                 {issue.severity}
             </Badge>
@@ -197,7 +195,7 @@ const FileMetadata: React.FC<FileMetadataProps> = ({
 
     if (compact) {
         return (
-            <div className="flex items-center gap-4 text-xs text-gray-600">
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 <span>{formatFileSize(file.size)}</span>
                 <span>{file.type || 'Unknown type'}</span>
                 <span>{formatDate(file.lastModified)}</span>
@@ -210,12 +208,12 @@ const FileMetadata: React.FC<FileMetadataProps> = ({
             <div className="grid grid-cols-2 gap-3">
                 {basicInfo.map((info, index) => (
                     <div key={index} className="flex items-center gap-2">
-                        <div className="text-gray-400">
+                        <div className="text-muted-foreground">
                             {info.icon}
                         </div>
                         <div className="min-w-0 flex-1">
-                            <p className="text-xs text-gray-500">{info.label}</p>
-                            <p className="text-sm text-gray-900 truncate">{info.value}</p>
+                            <p className="text-xs text-muted-foreground">{info.label}</p>
+                            <p className="text-sm text-foreground truncate">{info.value}</p>
                         </div>
                     </div>
                 ))}
@@ -223,12 +221,12 @@ const FileMetadata: React.FC<FileMetadataProps> = ({
 
             {metadata && Object.keys(metadata).length > 0 && (
                 <div className="pt-2 border-t">
-                    <p className="text-xs font-medium text-gray-700 mb-2">Additional Metadata</p>
+                    <p className="text-xs font-medium text-foreground mb-2">Additional Metadata</p>
                     <div className="space-y-1">
                         {Object.entries(metadata).map(([key, value]) => (
                             <div key={key} className="flex justify-between text-xs">
-                                <span className="text-gray-600">{key}:</span>
-                                <span className="text-gray-900 truncate ml-2">{String(value)}</span>
+                                <span className="text-muted-foreground">{key}:</span>
+                                <span className="text-foreground truncate ml-2">{String(value)}</span>
                             </div>
                         ))}
                     </div>
@@ -253,9 +251,9 @@ const ValidationSummary: React.FC<ValidationSummaryProps> = ({
     const { isValid, errors, warnings } = validation;
 
     const getStatusIcon = () => {
-        if (!isValid) return <FileX className="h-5 w-5 text-red-500" />;
-        if (warnings.length > 0) return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
-        return <FileCheck className="h-5 w-5 text-green-500" />;
+        if (!isValid) return <FileX className="h-5 w-5 text-destructive" />;
+        if (warnings.length > 0) return <AlertTriangle className="h-5 w-5 text-warning" />;
+        return <FileCheck className="h-5 w-5 text-success" />;
     };
 
     const getStatusText = () => {
@@ -265,9 +263,9 @@ const ValidationSummary: React.FC<ValidationSummaryProps> = ({
     };
 
     const getStatusColor = () => {
-        if (!isValid) return 'text-red-700';
-        if (warnings.length > 0) return 'text-yellow-700';
-        return 'text-green-700';
+        if (!isValid) return 'text-destructive-foreground';
+        if (warnings.length > 0) return 'text-warning-foreground';
+        return 'text-success-foreground';
     };
 
     if (compact) {
@@ -283,7 +281,7 @@ const ValidationSummary: React.FC<ValidationSummaryProps> = ({
                     </Badge>
                 )}
                 {warnings.length > 0 && (
-                    <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700">
+                    <Badge variant="outline" className="text-xs bg-warning/10 text-warning-foreground">
                         {warnings.length} warning{warnings.length !== 1 ? 's' : ''}
                     </Badge>
                 )}
@@ -299,7 +297,7 @@ const ValidationSummary: React.FC<ValidationSummaryProps> = ({
                     <h4 className={cn("text-lg font-semibold", getStatusColor())}>
                         {getStatusText()}
                     </h4>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                         {errors.length} error{errors.length !== 1 ? 's' : ''}, {warnings.length} warning{warnings.length !== 1 ? 's' : ''}
                     </p>
                 </div>
@@ -313,13 +311,13 @@ const ValidationSummary: React.FC<ValidationSummaryProps> = ({
                     </Badge>
                 )}
                 {isValid && warnings.length > 0 && (
-                    <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
+                    <Badge variant="outline" className="bg-warning/10 text-warning-foreground">
                         <AlertTriangle className="h-3 w-3 mr-1" />
                         Review Required
                     </Badge>
                 )}
                 {isValid && warnings.length === 0 && (
-                    <Badge variant="default" className="bg-green-100 text-green-800">
+                    <Badge variant="default" className="bg-success/10 text-success-foreground">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         Approved
                     </Badge>
@@ -390,12 +388,12 @@ export const FileValidationFeedback: React.FC<FileValidationFeedbackProps> = ({
 
     return (
         <div className={cn(
-            "space-y-4 p-4 border rounded-lg bg-white",
+            "space-y-4 p-4 border rounded-lg bg-background",
             className
         )}>
             {/* Header */}
             <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-foreground">
                     {title || 'File Validation'}
                 </h3>
 
@@ -417,7 +415,7 @@ export const FileValidationFeedback: React.FC<FileValidationFeedbackProps> = ({
             {/* File Metadata */}
             {file && showMetadata && (
                 <div className="space-y-2">
-                    <h4 className="text-sm font-medium text-gray-700">File Information</h4>
+                    <h4 className="text-sm font-medium text-foreground">File Information</h4>
                     <FileMetadata
                         file={file}
                         metadata={validation.metadata}
@@ -430,8 +428,8 @@ export const FileValidationFeedback: React.FC<FileValidationFeedbackProps> = ({
             {showProgress && (
                 <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Validation Progress</span>
-                        <span className="text-gray-900 font-medium">
+                        <span className="text-muted-foreground">Validation Progress</span>
+                        <span className="text-foreground font-medium">
                             {validation.isValid ? '100%' : 'In Progress...'}
                         </span>
                     </div>
@@ -445,7 +443,7 @@ export const FileValidationFeedback: React.FC<FileValidationFeedbackProps> = ({
             {/* Validation Errors */}
             {displayErrors.length > 0 && (
                 <div className="space-y-2">
-                    <h4 className="text-sm font-medium text-red-700 flex items-center gap-2">
+                    <h4 className="text-sm font-medium text-destructive-foreground flex items-center gap-2">
                         <AlertCircle className="h-4 w-4" />
                         Errors ({validation.errors.length})
                     </h4>
@@ -463,7 +461,7 @@ export const FileValidationFeedback: React.FC<FileValidationFeedbackProps> = ({
                         ))}
 
                         {hiddenErrorsCount > 0 && (
-                            <p className="text-xs text-gray-500 text-center py-2">
+                            <p className="text-xs text-muted-foreground text-center py-2">
                                 ... and {hiddenErrorsCount} more error{hiddenErrorsCount !== 1 ? 's' : ''}
                             </p>
                         )}
@@ -474,7 +472,7 @@ export const FileValidationFeedback: React.FC<FileValidationFeedbackProps> = ({
             {/* Validation Warnings */}
             {displayWarnings.length > 0 && (
                 <div className="space-y-2">
-                    <h4 className="text-sm font-medium text-yellow-700 flex items-center gap-2">
+                    <h4 className="text-sm font-medium text-warning-foreground flex items-center gap-2">
                         <AlertTriangle className="h-4 w-4" />
                         Warnings ({validation.warnings.length})
                     </h4>
@@ -492,7 +490,7 @@ export const FileValidationFeedback: React.FC<FileValidationFeedbackProps> = ({
                         ))}
 
                         {hiddenWarningsCount > 0 && (
-                            <p className="text-xs text-gray-500 text-center py-2">
+                            <p className="text-xs text-muted-foreground text-center py-2">
                                 ... and {hiddenWarningsCount} more warning{hiddenWarningsCount !== 1 ? 's' : ''}
                             </p>
                         )}
@@ -503,11 +501,11 @@ export const FileValidationFeedback: React.FC<FileValidationFeedbackProps> = ({
             {/* No Issues Message */}
             {validation.isValid && displayErrors.length === 0 && displayWarnings.length === 0 && (
                 <div className="text-center py-6">
-                    <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
-                    <h4 className="text-lg font-medium text-green-700 mb-1">
+                    <CheckCircle className="h-12 w-12 text-success mx-auto mb-3" />
+                    <h4 className="text-lg font-medium text-success-foreground mb-1">
                         Validation Passed
                     </h4>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                         {file ? `${file.name} passed all validation checks` : 'File passed all validation checks'}
                     </p>
                 </div>

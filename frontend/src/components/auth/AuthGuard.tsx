@@ -286,9 +286,9 @@ export function ShowForGuest({ children }: ShowForGuestProps) {
 
 function DefaultAuthFallback() {
     return (
-        <Alert className="border-blue-200 bg-blue-50">
-            <LogIn className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-blue-800">
+        <Alert className="border-info bg-info/10">
+            <LogIn className="h-4 w-4 text-info" />
+            <AlertDescription className="text-info-foreground">
                 <div className="flex items-center justify-between">
                     <span>Please sign in to access this content.</span>
                     <Button asChild size="sm" variant="outline" className="ml-4">
@@ -310,9 +310,9 @@ function DefaultRoleFallback({ requiredRoles }: DefaultRoleFallbackProps) {
         : `one of these roles: ${requiredRoles.map(r => `"${r}"`).join(', ')}`;
 
     return (
-        <Alert variant="destructive" className="border-red-200 bg-red-50">
-            <ShieldX className="h-4 w-4" />
-            <AlertDescription>
+        <Alert variant="destructive" className="border-destructive bg-destructive/10">
+            <ShieldX className="h-4 w-4 text-destructive" />
+            <AlertDescription className="text-destructive-foreground">
                 <strong>Access Denied:</strong> You need {roleText} to access this content.
             </AlertDescription>
         </Alert>
@@ -321,8 +321,8 @@ function DefaultRoleFallback({ requiredRoles }: DefaultRoleFallbackProps) {
 
 function DefaultAlreadyAuthenticatedFallback() {
     return (
-        <Alert className="border-yellow-200 bg-yellow-50">
-            <AlertDescription className="text-yellow-800">
+        <Alert className="border-warning bg-warning/10">
+            <AlertDescription className="text-warning">
                 <div className="flex items-center justify-between">
                     <span>You are already signed in.</span>
                     <Button asChild size="sm" variant="outline" className="ml-4">

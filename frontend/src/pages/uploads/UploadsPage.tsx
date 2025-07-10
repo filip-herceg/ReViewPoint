@@ -81,12 +81,13 @@ const UploadsPage: React.FC = () => {
         return matchesSearch && matchesStatus;
     });
 
+    // Use semantic Tailwind classes for status badge
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300';
-            case 'in-review': return 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground';
-            case 'reviewed': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
-            case 'rejected': return 'bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive-foreground';
+            case 'pending': return 'bg-warning/10 text-warning-foreground';
+            case 'in-review': return 'bg-primary/10 text-primary';
+            case 'reviewed': return 'bg-success/10 text-success-foreground';
+            case 'rejected': return 'bg-destructive/10 text-destructive';
             default: return 'bg-muted text-muted-foreground';
         }
     };
@@ -152,17 +153,17 @@ const UploadsPage: React.FC = () => {
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value)}
                                     className="px-3 py-2 border rounded-md bg-background w-full"
-                            >
-                                <option value="all">All Status</option>
-                                <option value="pending">Pending</option>
-                                <option value="in-review">In Review</option>
-                                <option value="reviewed">Reviewed</option>
-                                <option value="rejected">Rejected</option>
-                            </select>
+                                >
+                                    <option value="all">All Status</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="in-review">In Review</option>
+                                    <option value="reviewed">Reviewed</option>
+                                    <option value="rejected">Rejected</option>
+                                </select>
+                            </div>
                         </div>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
 
                 {/* Upload Statistics */}
                 <div className="grid gap-6 md:grid-cols-4">
@@ -179,7 +180,7 @@ const UploadsPage: React.FC = () => {
                             <CardTitle className="text-sm font-medium">Pending</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold text-amber-600">
+                            <div className="text-3xl font-bold text-warning">
                                 {uploads.filter(u => u.status === 'pending').length}
                             </div>
                         </CardContent>
@@ -198,99 +199,99 @@ const UploadsPage: React.FC = () => {
                         <CardHeader className="pb-2">
                             <CardTitle className="text-sm font-medium">Reviewed</CardTitle>
                         </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold text-green-600">
-                            {uploads.filter(u => u.status === 'reviewed').length}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Uploads List */}
-            <div className="space-y-4">
-                {filteredUploads.map((upload) => (
-                    <Card key={upload.id}>
-                        <CardContent className="pt-6">
-                            <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <Link
-                                            to={`/uploads/${upload.id}`}
-                                            className="text-lg font-semibold hover:underline"
-                                        >
-                                            {upload.name}
-                                        </Link>
-                                        <Badge className={getStatusColor(upload.status)}>
-                                            {getStatusIcon(upload.status)}
-                                            <span className="ml-1 capitalize">{upload.status}</span>
-                                        </Badge>
-                                    </div>
-
-                                    <p className="text-muted-foreground mb-3">{upload.description}</p>
-
-                                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                        <div className="flex items-center gap-1">
-                                            <User className="h-4 w-4" />
-                                            {upload.uploadedBy}
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <Calendar className="h-4 w-4" />
-                                            {formatDate(upload.uploadedAt)}
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <FileText className="h-4 w-4" />
-                                            {upload.fileSize}
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <Eye className="h-4 w-4" />
-                                            {upload.reviewCount} reviews
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-2 mt-3">
-                                        {upload.tags.map((tag) => (
-                                            <Badge key={tag} variant="secondary" className="text-xs">
-                                                {tag}
-                                            </Badge>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                    <Button variant="outline" size="sm" asChild>
-                                        <Link to={`/uploads/${upload.id}`}>View Details</Link>
-                                    </Button>
-                                </div>
+                        <CardContent>
+                            <div className="text-2xl font-bold text-success">
+                                {uploads.filter(u => u.status === 'reviewed').length}
                             </div>
                         </CardContent>
                     </Card>
-                ))}
+                </div>
 
-                {filteredUploads.length === 0 && (
-                    <Card>
-                        <CardContent className="pt-6 text-center">
-                            <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                            <h3 className="text-lg font-semibold mb-2">No uploads found</h3>
-                            <p className="text-muted-foreground mb-4">
-                                {searchTerm || statusFilter !== 'all'
-                                    ? 'Try adjusting your search or filter criteria.'
-                                    : 'Get started by uploading your first document.'
-                                }
-                            </p>
-                            {!searchTerm && statusFilter === 'all' && (
-                                <Button asChild>
-                                    <Link to="/uploads/new">
-                                        <Upload className="mr-2 h-4 w-4" />
-                                        Upload Document
-                                    </Link>
-                                </Button>
-                            )}
-                        </CardContent>
-                    </Card>
-                )}
+                {/* Uploads List */}
+                <div className="space-y-4">
+                    {filteredUploads.map((upload) => (
+                        <Card key={upload.id}>
+                            <CardContent className="pt-6">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-3 mb-2">
+                                            <Link
+                                                to={`/uploads/${upload.id}`}
+                                                className="text-lg font-semibold hover:underline"
+                                            >
+                                                {upload.name}
+                                            </Link>
+                                            <Badge className={getStatusColor(upload.status)}>
+                                                {getStatusIcon(upload.status)}
+                                                <span className="ml-1 capitalize">{upload.status}</span>
+                                            </Badge>
+                                        </div>
+
+                                        <p className="text-muted-foreground mb-3">{upload.description}</p>
+
+                                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                            <div className="flex items-center gap-1">
+                                                <User className="h-4 w-4" />
+                                                {upload.uploadedBy}
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <Calendar className="h-4 w-4" />
+                                                {formatDate(upload.uploadedAt)}
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <FileText className="h-4 w-4" />
+                                                {upload.fileSize}
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <Eye className="h-4 w-4" />
+                                                {upload.reviewCount} reviews
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 mt-3">
+                                            {upload.tags.map((tag) => (
+                                                <Badge key={tag} variant="secondary" className="text-xs">
+                                                    {tag}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <Button variant="outline" size="sm" asChild>
+                                            <Link to={`/uploads/${upload.id}`}>View Details</Link>
+                                        </Button>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+
+                    {filteredUploads.length === 0 && (
+                        <Card>
+                            <CardContent className="pt-6 text-center">
+                                <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                                <h3 className="text-lg font-semibold mb-2">No uploads found</h3>
+                                <p className="text-muted-foreground mb-4">
+                                    {searchTerm || statusFilter !== 'all'
+                                        ? 'Try adjusting your search or filter criteria.'
+                                        : 'Get started by uploading your first document.'
+                                    }
+                                </p>
+                                {!searchTerm && statusFilter === 'all' && (
+                                    <Button asChild>
+                                        <Link to="/uploads/new">
+                                            <Upload className="mr-2 h-4 w-4" />
+                                            Upload Document
+                                        </Link>
+                                    </Button>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+                </div>
             </div>
         </div>
-    </div>
     );
 };
 

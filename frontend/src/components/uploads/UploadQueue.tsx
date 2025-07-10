@@ -95,30 +95,30 @@ const QueueItem: React.FC<QueueItemProps> = ({
     const getStatusIcon = useCallback(() => {
         switch (item.status) {
             case 'uploading':
-                return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
+                return <Loader2 className="h-4 w-4 animate-spin text-primary" />;
             case 'completed':
-                return <CheckCircle className="h-4 w-4 text-green-500" />;
+                return <CheckCircle className="h-4 w-4 text-success" />;
             case 'error':
-                return <AlertCircle className="h-4 w-4 text-red-500" />;
+                return <AlertCircle className="h-4 w-4 text-destructive" />;
             case 'cancelled':
-                return <X className="h-4 w-4 text-gray-500" />;
+                return <X className="h-4 w-4 text-muted-foreground" />;
             default:
-                return <Clock className="h-4 w-4 text-gray-400" />;
+                return <Clock className="h-4 w-4 text-muted-foreground" />;
         }
     }, [item.status]);
 
     const getStatusColor = useCallback(() => {
         switch (item.status) {
             case 'uploading':
-                return 'border-blue-200 bg-blue-50';
+                return 'border-primary/20 bg-primary/10';
             case 'completed':
-                return 'border-green-200 bg-green-50';
+                return 'border-success/20 bg-success/10';
             case 'error':
-                return 'border-red-200 bg-red-50';
+                return 'border-destructive/20 bg-destructive/10';
             case 'cancelled':
-                return 'border-gray-200 bg-gray-50';
+                return 'border-border bg-muted';
             default:
-                return 'border-gray-200 bg-gray-50';
+                return 'border-border bg-muted';
         }
     }, [item.status]);
 
@@ -148,14 +148,14 @@ const QueueItem: React.FC<QueueItemProps> = ({
             <div className="flex items-center gap-3">
                 {/* File Icon */}
                 <div className="flex-shrink-0">
-                    <FileText className="h-6 w-6 text-gray-400" />
+                    <FileText className="h-6 w-6 text-muted-foreground" />
                 </div>
 
                 {/* File Info */}
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                         <p className={cn(
-                            "font-medium text-gray-900 truncate",
+                            "font-medium text-foreground truncate",
                             compact ? "text-sm" : "text-base"
                         )}>
                             {item.file.name}
@@ -166,7 +166,7 @@ const QueueItem: React.FC<QueueItemProps> = ({
                     {/* File Details */}
                     {showDetails && !compact && (
                         <div className="mt-1 space-y-1">
-                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                 <span>{formatFileSize(item.file.size)}</span>
                                 <span>{item.file.type}</span>
                                 {item.priority !== 5 && (
@@ -179,7 +179,7 @@ const QueueItem: React.FC<QueueItemProps> = ({
 
                             {/* Error Message */}
                             {item.error && (
-                                <div className="flex items-center gap-1 text-red-600">
+                                <div className="flex items-center gap-1 text-destructive-foreground">
                                     <AlertCircle className="h-3 w-3" />
                                     <span className="text-xs">{item.error.message}</span>
                                 </div>
@@ -187,7 +187,7 @@ const QueueItem: React.FC<QueueItemProps> = ({
 
                             {/* Retry Information */}
                             {item.retryCount > 0 && (
-                                <div className="text-xs text-gray-500">
+                                <div className="text-xs text-muted-foreground">
                                     Retry {item.retryCount}/{item.maxRetries}
                                 </div>
                             )}
@@ -198,7 +198,7 @@ const QueueItem: React.FC<QueueItemProps> = ({
                     {showProgress && item.status === 'uploading' && (
                         <div className="mt-2 space-y-1">
                             <Progress value={item.progress.percentage} className="h-2" />
-                            <div className="flex justify-between text-xs text-gray-500">
+                            <div className="flex justify-between text-xs text-muted-foreground">
                                 <span>{item.progress.percentage.toFixed(1)}%</span>
                                 <span>
                                     {formatFileSize(item.progress.bytesTransferred)} / {formatFileSize(item.progress.totalBytes)}
@@ -371,10 +371,10 @@ export const UploadQueue: React.FC<UploadQueueProps> = ({
     if (queue.length === 0) {
         return (
             <div className={cn(
-                "text-center py-8 text-gray-500",
+                "text-center py-8 text-muted-foreground",
                 className
             )}>
-                <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <FileText className="h-12 w-12 mx-auto mb-4 text-muted" />
                 <p className="text-sm">No files in upload queue</p>
             </div>
         );
@@ -385,16 +385,16 @@ export const UploadQueue: React.FC<UploadQueueProps> = ({
             {/* Queue Header */}
             <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-lg font-semibold text-foreground">
                         Upload Queue
                     </h3>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span>{stats.total} total</span>
                         <span>{stats.pending} pending</span>
                         <span>{stats.uploading} uploading</span>
                         <span>{stats.completed} completed</span>
                         {stats.error > 0 && (
-                            <span className="text-red-600">{stats.error} failed</span>
+                            <span className="text-destructive-foreground">{stats.error} failed</span>
                         )}
                     </div>
                 </div>
@@ -451,7 +451,7 @@ export const UploadQueue: React.FC<UploadQueueProps> = ({
 
                 {/* Show More Indicator */}
                 {queue.length > maxDisplayItems && (
-                    <div className="text-center py-2 text-sm text-gray-500">
+                    <div className="text-center py-2 text-sm text-muted-foreground">
                         ... and {queue.length - maxDisplayItems} more items
                     </div>
                 )}

@@ -76,7 +76,9 @@ export function FormField({
             'aria-invalid': !!error,
             'data-testid': testId ? `${testId}-input` : `${fieldId}-input`,
             className: cn(
-                error && 'border-destructive focus-visible:ring-destructive'
+                // Use only Tailwind semantic color classes for error state
+                error && 'border-destructive focus-visible:ring-destructive bg-background text-foreground placeholder:text-muted-foreground',
+                !error && 'bg-background text-foreground placeholder:text-muted-foreground'
             ),
         };
 
@@ -102,7 +104,8 @@ export function FormField({
                             aria-invalid={!!error}
                             data-testid={testId ? `${testId}-select` : `${fieldId}-select`}
                             className={cn(
-                                error && 'border-destructive focus-visible:ring-destructive'
+                                error && 'border-destructive focus-visible:ring-destructive bg-background text-foreground',
+                                !error && 'bg-background text-foreground'
                             )}
                         >
                             <SelectValue placeholder={placeholder} />

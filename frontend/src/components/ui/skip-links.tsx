@@ -41,9 +41,10 @@ function SkipLink({ href, children, className }: SkipLinkProps) {
             className={cn(
                 // Hidden by default, visible on focus
                 'absolute -top-40 left-6 z-50',
-                'bg-blue-600 text-white px-4 py-2 rounded-md',
+                // Use only Tailwind semantic color classes for background, text, and focus
+                'bg-primary text-primary-foreground px-4 py-2 rounded-md',
                 'text-sm font-medium',
-                'focus:top-6 focus:outline-none focus:ring-2 focus:ring-blue-500',
+                'focus:top-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 'transition-all duration-200',
                 className
             )}

@@ -20,21 +20,21 @@ export default function HomePage() {
                 <div className="absolute inset-0 -z-10 opacity-20">
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-gradient-conic from-primary/20 via-accent/10 to-primary/20 rounded-full blur-3xl"></div>
                 </div>
-                
+
                 <div className="mx-auto max-w-7xl px-6 lg:px-8">
                     <div className="mx-auto max-w-4xl text-center">
                         <Badge variant="outline" className="mb-6 px-3 py-1 text-sm font-medium">
                             <Sparkles className="mr-2 h-4 w-4" />
                             AI-Powered Document Analysis
                         </Badge>
-                        
+
                         <h1 className="text-display-xl bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent mb-8 animate-fade-in">
                             Transform Your Documents with
                             <span className="block text-primary">Intelligent Reviews</span>
                         </h1>
-                        
+
                         <p className="text-body-lg text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed animate-slide-up">
-                            Upload your PDF documents and get comprehensive analysis powered by advanced AI technology. 
+                            Upload your PDF documents and get comprehensive analysis powered by advanced AI technology.
                             Get insights, feedback, and actionable recommendations in seconds.
                         </p>
 
@@ -102,8 +102,8 @@ export default function HomePage() {
                         {/* Feature Card 2 */}
                         <Card className="group hover-lift border-0 shadow-elegant bg-card/80 backdrop-blur-sm">
                             <CardHeader className="pb-4">
-                                <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-emerald-500/20 transition-colors">
-                                    <Zap className="h-6 w-6 text-emerald-600" />
+                                <div className="w-12 h-12 bg-success/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-success/20 transition-colors">
+                                    <Zap className="h-6 w-6 text-success" />
                                 </div>
                                 <CardTitle className="text-xl">AI Analysis</CardTitle>
                                 <CardDescription className="text-base">
@@ -113,15 +113,15 @@ export default function HomePage() {
                             <CardContent>
                                 <ul className="space-y-2 text-sm text-muted-foreground">
                                     <li className="flex items-center">
-                                        <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full mr-3"></div>
+                                        <div className="w-1.5 h-1.5 bg-success rounded-full mr-3"></div>
                                         Content analysis
                                     </li>
                                     <li className="flex items-center">
-                                        <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full mr-3"></div>
+                                        <div className="w-1.5 h-1.5 bg-success rounded-full mr-3"></div>
                                         Quality scoring
                                     </li>
                                     <li className="flex items-center">
-                                        <div className="w-1.5 h-1.5 bg-emerald-600 rounded-full mr-3"></div>
+                                        <div className="w-1.5 h-1.5 bg-success rounded-full mr-3"></div>
                                         Smart suggestions
                                     </li>
                                 </ul>
@@ -131,8 +131,8 @@ export default function HomePage() {
                         {/* Feature Card 3 */}
                         <Card className="group hover-lift border-0 shadow-elegant bg-card/80 backdrop-blur-sm">
                             <CardHeader className="pb-4">
-                                <div className="w-12 h-12 bg-violet-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-violet-500/20 transition-colors">
-                                    <BarChart3 className="h-6 w-6 text-violet-600" />
+                                <div className="w-12 h-12 bg-info/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-info/20 transition-colors">
+                                    <BarChart3 className="h-6 w-6 text-info" />
                                 </div>
                                 <CardTitle className="text-xl">Detailed Reports</CardTitle>
                                 <CardDescription className="text-base">
@@ -142,15 +142,15 @@ export default function HomePage() {
                             <CardContent>
                                 <ul className="space-y-2 text-sm text-muted-foreground">
                                     <li className="flex items-center">
-                                        <div className="w-1.5 h-1.5 bg-violet-600 rounded-full mr-3"></div>
+                                        <div className="w-1.5 h-1.5 bg-info rounded-full mr-3"></div>
                                         Visual dashboards
                                     </li>
                                     <li className="flex items-center">
-                                        <div className="w-1.5 h-1.5 bg-violet-600 rounded-full mr-3"></div>
+                                        <div className="w-1.5 h-1.5 bg-info rounded-full mr-3"></div>
                                         Export options
                                     </li>
                                     <li className="flex items-center">
-                                        <div className="w-1.5 h-1.5 bg-violet-600 rounded-full mr-3"></div>
+                                        <div className="w-1.5 h-1.5 bg-info rounded-full mr-3"></div>
                                         Historical tracking
                                     </li>
                                 </ul>
@@ -160,8 +160,8 @@ export default function HomePage() {
                         {/* Feature Card 4 */}
                         <Card className="group hover-lift border-0 shadow-elegant bg-card/80 backdrop-blur-sm">
                             <CardHeader className="pb-4">
-                                <div className="w-12 h-12 bg-amber-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-amber-500/20 transition-colors">
-                                    <Shield className="h-6 w-6 text-amber-600" />
+                                <div className="w-12 h-12 bg-warning/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-warning/20 transition-colors">
+                                    <Shield className="h-6 w-6 text-warning" />
                                 </div>
                                 <CardTitle className="text-xl">Secure & Private</CardTitle>
                                 <CardDescription className="text-base">
@@ -171,15 +171,15 @@ export default function HomePage() {
                             <CardContent>
                                 <ul className="space-y-2 text-sm text-muted-foreground">
                                     <li className="flex items-center">
-                                        <div className="w-1.5 h-1.5 bg-amber-600 rounded-full mr-3"></div>
+                                        <div className="w-1.5 h-1.5 bg-warning rounded-full mr-3"></div>
                                         End-to-end encryption
                                     </li>
                                     <li className="flex items-center">
-                                        <div className="w-1.5 h-1.5 bg-amber-600 rounded-full mr-3"></div>
+                                        <div className="w-1.5 h-1.5 bg-warning rounded-full mr-3"></div>
                                         GDPR compliant
                                     </li>
                                     <li className="flex items-center">
-                                        <div className="w-1.5 h-1.5 bg-amber-600 rounded-full mr-3"></div>
+                                        <div className="w-1.5 h-1.5 bg-warning rounded-full mr-3"></div>
                                         Audit trails
                                     </li>
                                 </ul>
@@ -189,8 +189,8 @@ export default function HomePage() {
                         {/* Feature Card 5 */}
                         <Card className="group hover-lift border-0 shadow-elegant bg-card/80 backdrop-blur-sm">
                             <CardHeader className="pb-4">
-                                <div className="w-12 h-12 bg-rose-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-rose-500/20 transition-colors">
-                                    <Users className="h-6 w-6 text-rose-600" />
+                                <div className="w-12 h-12 bg-destructive/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-destructive/20 transition-colors">
+                                    <Users className="h-6 w-6 text-destructive" />
                                 </div>
                                 <CardTitle className="text-xl">Team Collaboration</CardTitle>
                                 <CardDescription className="text-base">
@@ -200,15 +200,15 @@ export default function HomePage() {
                             <CardContent>
                                 <ul className="space-y-2 text-sm text-muted-foreground">
                                     <li className="flex items-center">
-                                        <div className="w-1.5 h-1.5 bg-rose-600 rounded-full mr-3"></div>
+                                        <div className="w-1.5 h-1.5 bg-destructive rounded-full mr-3"></div>
                                         Shared workspaces
                                     </li>
                                     <li className="flex items-center">
-                                        <div className="w-1.5 h-1.5 bg-rose-600 rounded-full mr-3"></div>
+                                        <div className="w-1.5 h-1.5 bg-destructive rounded-full mr-3"></div>
                                         Role-based access
                                     </li>
                                     <li className="flex items-center">
-                                        <div className="w-1.5 h-1.5 bg-rose-600 rounded-full mr-3"></div>
+                                        <div className="w-1.5 h-1.5 bg-destructive rounded-full mr-3"></div>
                                         Real-time updates
                                     </li>
                                 </ul>
@@ -314,16 +314,16 @@ export default function HomePage() {
                                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-8">
                                     <Sparkles className="h-8 w-8 text-primary" />
                                 </div>
-                                
+
                                 <h2 className="text-display-md mb-6">
                                     Ready to Transform Your Documents?
                                 </h2>
-                                
+
                                 <p className="text-body-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-                                    Join thousands of teams already using ReViewPoint to analyze, review, 
+                                    Join thousands of teams already using ReViewPoint to analyze, review,
                                     and improve their documents with AI-powered insights.
                                 </p>
-                                
+
                                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                     <Button asChild size="lg" className="hover-lift group">
                                         <Link to="/auth/register">
@@ -337,7 +337,7 @@ export default function HomePage() {
                                         </Link>
                                     </Button>
                                 </div>
-                                
+
                                 <div className="mt-8 pt-8 border-t border-border/50">
                                     <p className="text-sm text-muted-foreground">
                                         No credit card required • Free tier available • Enterprise ready

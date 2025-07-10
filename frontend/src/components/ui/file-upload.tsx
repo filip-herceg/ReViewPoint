@@ -283,9 +283,11 @@ export function FileUpload({
             {/* Dropzone */}
             <div
                 className={cn(
+                    // Use only semantic Tailwind color classes
                     'border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer',
                     isDragging ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50',
-                    disabled && 'opacity-50 cursor-not-allowed'
+                    disabled && 'opacity-50 cursor-not-allowed',
+                    // Remove any hardcoded color values
                 )}
                 onDragEnter={handleDragEnter}
                 onDragLeave={handleDragLeave}
@@ -335,7 +337,7 @@ export function FileUpload({
             {showPreview && files.length > 0 && (
                 <div className="space-y-2" data-testid={`${testId}-preview`}>
                     <div className="flex items-center justify-between">
-                        <h4 className="font-medium">Selected Files ({files.length})</h4>
+                        <h4 className="font-medium text-foreground">Selected Files ({files.length})</h4>
                         {!autoUpload && onUpload && pendingFiles.length > 0 && (
                             <Button
                                 onClick={() => handleUpload(pendingFiles)}
@@ -350,7 +352,7 @@ export function FileUpload({
                     {/* Overall progress */}
                     {(uploadingFiles.length > 0 || successFiles.length > 0) && (
                         <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
+                            <div className="flex justify-between text-sm text-muted-foreground">
                                 <span>Overall Progress</span>
                                 <span>{Math.round(totalProgress)}%</span>
                             </div>
@@ -360,12 +362,12 @@ export function FileUpload({
 
                     <div className="space-y-2">
                         {files.map((uploadFile) => (
-                            <Card key={uploadFile.id} className="p-3" data-testid={`${testId}-file-${uploadFile.id}`}>
+                            <Card key={uploadFile.id} className="p-3 bg-card border border-card" data-testid={`${testId}-file-${uploadFile.id}`}>
                                 <CardContent className="p-0">
                                     <div className="flex items-center justify-between">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center space-x-2">
-                                                <span className="font-medium truncate">{uploadFile.file.name}</span>
+                                                <span className="font-medium truncate text-foreground">{uploadFile.file.name}</span>
                                                 <Badge
                                                     variant={
                                                         uploadFile.status === 'success' ? 'default' :
@@ -380,7 +382,7 @@ export function FileUpload({
                                                 {formatFileSize(uploadFile.file.size)}
                                             </div>
                                             {uploadFile.error && (
-                                                <div className="text-sm text-destructive mt-1">{uploadFile.error}</div>
+                                                <div className="text-sm text-destructive-foreground mt-1">{uploadFile.error}</div>
                                             )}
                                         </div>
 

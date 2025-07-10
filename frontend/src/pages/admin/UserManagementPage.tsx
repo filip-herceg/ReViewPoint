@@ -64,13 +64,13 @@ export default function UserManagementPage() {
         >
             <div className="space-y-6">
                 {/* Page Header */}
-                <div className="flex items-center justify-between border-b border-gray-200 pb-4">
+                <div className="flex items-center justify-between border-b border-border pb-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+                        <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
                             <Users className="h-8 w-8" />
                             User Management
                         </h1>
-                        <p className="text-gray-600 mt-2">
+                        <p className="text-muted-foreground mt-2">
                             Manage user accounts, roles, and permissions
                         </p>
                     </div>
@@ -84,34 +84,34 @@ export default function UserManagementPage() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <Card>
                         <CardContent className="p-4">
-                            <div className="text-2xl font-bold text-blue-600">
+                            <div className="text-2xl font-bold text-info-foreground">
                                 {mockUsers.length}
                             </div>
-                            <div className="text-sm text-gray-600">Total Users</div>
+                            <div className="text-sm text-muted-foreground">Total Users</div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardContent className="p-4">
-                            <div className="text-2xl font-bold text-green-600">
+                            <div className="text-2xl font-bold text-success-foreground">
                                 {mockUsers.filter(u => u.status === 'active').length}
                             </div>
-                            <div className="text-sm text-gray-600">Active Users</div>
+                            <div className="text-sm text-muted-foreground">Active Users</div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardContent className="p-4">
-                            <div className="text-2xl font-bold text-purple-600">
+                            <div className="text-2xl font-bold text-accent-foreground">
                                 {mockUsers.filter(u => u.roles.includes('admin')).length}
                             </div>
-                            <div className="text-sm text-gray-600">Administrators</div>
+                            <div className="text-sm text-muted-foreground">Administrators</div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardContent className="p-4">
-                            <div className="text-2xl font-bold text-orange-600">
+                            <div className="text-2xl font-bold text-warning-foreground">
                                 {mockUsers.filter(u => u.roles.includes('moderator')).length}
                             </div>
-                            <div className="text-sm text-gray-600">Moderators</div>
+                            <div className="text-sm text-muted-foreground">Moderators</div>
                         </CardContent>
                     </Card>
                 </div>
@@ -126,36 +126,36 @@ export default function UserManagementPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
+                            <table className="min-w-full divide-y divide-border">
+                                <thead className="bg-muted">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                                             User
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                                             Email
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                                             Roles
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                                             Status
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                                             Last Active
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                                             Actions
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
+                                <tbody className="bg-background divide-y divide-border">
                                     {mockUsers.map((user) => (
-                                        <tr key={user.id} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        <tr key={user.id} className="hover:bg-muted/50">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
                                                 {user.name}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                                                 {user.email}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
@@ -187,7 +187,7 @@ export default function UserManagementPage() {
                                                     {user.status}
                                                 </Badge>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                                                 {user.lastActive}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
@@ -202,7 +202,7 @@ export default function UserManagementPage() {
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
-                                                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                                                        className="h-8 w-8 p-0 text-destructive hover:text-destructive-foreground"
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>

@@ -99,11 +99,11 @@ export default function DesignSystemPage() {
     };
 
     return (
-        <div className="space-y-8 p-6">
+        <div className="space-y-8 p-6 bg-background text-foreground">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-4xl font-bold text-foreground">
+                    <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
                         Design System Demo
                     </h1>
                     <p className="text-lg text-muted-foreground mt-2">
@@ -161,10 +161,10 @@ export default function DesignSystemPage() {
                             {Object.entries(spacing).slice(0, 8).map(([key, value]) => (
                                 <div key={key} className="flex flex-col items-center">
                                     <div
-                                        className="bg-primary"
+                                        className="bg-primary/20 border border-primary rounded"
                                         style={{ width: value, height: value, minWidth: '8px', minHeight: '8px' }}
                                     />
-                                    <span className="text-xs mt-1">{key}</span>
+                                    <span className="text-xs mt-1 text-muted-foreground">{key}</span>
                                 </div>
                             ))}
                         </div>
@@ -397,7 +397,7 @@ export default function DesignSystemPage() {
             </Modal>
 
             {/* Footer */}
-            <div className="text-center py-8 border-t">
+            <div className="text-center py-8 border-t border-border bg-background">
                 <p className="text-sm text-muted-foreground">
                     Design System Demo - ReViewPoint Phase 2.4
                 </p>

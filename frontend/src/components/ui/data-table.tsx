@@ -150,7 +150,7 @@ export function DataTable<T extends Record<string, any>>({
                 {filtering && (
                     <Skeleton className="h-10 w-64" />
                 )}
-                <div className="border rounded-lg">
+                <div className="border border-border rounded-lg">
                     <div className="p-4 space-y-3">
                         {Array.from({ length: pagination?.pageSize || 10 }).map((_, i) => (
                             <Skeleton key={i} className="h-12 w-full" />
@@ -171,7 +171,7 @@ export function DataTable<T extends Record<string, any>>({
     if (error) {
         return (
             <div className={cn('text-center py-8', className)} data-testid={`${testId}-error`}>
-                <div className="text-destructive mb-2">Error loading data</div>
+                <div className="text-destructive-foreground mb-2">Error loading data</div>
                 <div className="text-sm text-muted-foreground">{error}</div>
             </div>
         );
@@ -211,7 +211,7 @@ export function DataTable<T extends Record<string, any>>({
             )}
 
             {/* Table */}
-            <div className="border rounded-lg overflow-hidden">
+            <div className="border border-border rounded-lg overflow-hidden">
                 <table className="w-full" data-testid={`${testId}-table`}>
                     <thead className="bg-muted/50">
                         <tr>
@@ -236,7 +236,7 @@ export function DataTable<T extends Record<string, any>>({
                                 <th
                                     key={String(column.key)}
                                     className={cn(
-                                        'text-left p-4 font-medium',
+                                        'text-left p-4 font-medium text-foreground',
                                         column.sortable && 'cursor-pointer hover:bg-muted',
                                         column.className
                                     )}
@@ -279,7 +279,7 @@ export function DataTable<T extends Record<string, any>>({
                                     <tr
                                         key={index}
                                         className={cn(
-                                            'border-t hover:bg-muted/30 transition-colors',
+                                            'border-t border-border hover:bg-muted/30 transition-colors',
                                             isSelected && 'bg-muted/50'
                                         )}
                                         data-testid={`${testId}-row-${index}`}
@@ -308,7 +308,7 @@ export function DataTable<T extends Record<string, any>>({
                                             return (
                                                 <td
                                                     key={String(column.key)}
-                                                    className={cn('p-4', column.className)}
+                                                    className={cn('p-4 text-foreground', column.className)}
                                                     data-testid={`${testId}-cell-${index}-${String(column.key)}`}
                                                 >
                                                     {cellContent}
@@ -331,7 +331,7 @@ export function DataTable<T extends Record<string, any>>({
                         <select
                             value={pagination.pageSize}
                             onChange={(e) => pagination.onPageSizeChange(Number(e.target.value))}
-                            className="border border-border rounded px-2 py-1 bg-background"
+                            className="border border-border rounded px-2 py-1 bg-background text-foreground"
                             data-testid={`${testId}-page-size`}
                         >
                             {PAGE_SIZE_OPTIONS.map((size) => (

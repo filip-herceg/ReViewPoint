@@ -42,13 +42,14 @@ export function SkeletonLoader({
         const key = `skeleton-${index}`;
         const itemTestId = count > 1 ? `${testId}-item-${index}` : testId;
 
+        // All skeletons use only Tailwind semantic color classes for background and border
         switch (variant) {
             case 'circular':
                 return (
                     <Skeleton
                         key={key}
                         className={cn(
-                            'rounded-full',
+                            'rounded-full bg-muted',
                             animationClasses[animation],
                             className
                         )}
@@ -65,7 +66,7 @@ export function SkeletonLoader({
                     <Skeleton
                         key={key}
                         className={cn(
-                            'rounded-md',
+                            'rounded-md bg-muted',
                             animationClasses[animation],
                             className
                         )}
@@ -81,19 +82,19 @@ export function SkeletonLoader({
                 return (
                     <div
                         key={key}
-                        className={cn('space-y-3 p-4 border rounded-lg', className)}
+                        className={cn('space-y-3 p-4 border border-border rounded-lg bg-card', className)}
                         data-testid={itemTestId}
                     >
                         <div className="flex items-center space-x-3">
-                            <Skeleton className={cn('rounded-full', animationClasses[animation])} style={{ height: '40px', width: '40px' }} />
+                            <Skeleton className={cn('rounded-full bg-muted', animationClasses[animation])} style={{ height: '40px', width: '40px' }} />
                             <div className="space-y-2 flex-1">
-                                <Skeleton className={cn('h-4', animationClasses[animation])} style={{ width: '60%' }} />
-                                <Skeleton className={cn('h-3', animationClasses[animation])} style={{ width: '40%' }} />
+                                <Skeleton className={cn('h-4 bg-muted', animationClasses[animation])} style={{ width: '60%' }} />
+                                <Skeleton className={cn('h-3 bg-muted', animationClasses[animation])} style={{ width: '40%' }} />
                             </div>
                         </div>
-                        <Skeleton className={cn('h-4', animationClasses[animation])} style={{ width: '100%' }} />
-                        <Skeleton className={cn('h-4', animationClasses[animation])} style={{ width: '80%' }} />
-                        <Skeleton className={cn('h-20', animationClasses[animation])} style={{ width: '100%' }} />
+                        <Skeleton className={cn('h-4 bg-muted', animationClasses[animation])} style={{ width: '100%' }} />
+                        <Skeleton className={cn('h-4 bg-muted', animationClasses[animation])} style={{ width: '80%' }} />
+                        <Skeleton className={cn('h-20 bg-muted', animationClasses[animation])} style={{ width: '100%' }} />
                     </div>
                 );
 
@@ -106,18 +107,18 @@ export function SkeletonLoader({
                     >
                         {/* Table header */}
                         <div className="flex space-x-4">
-                            <Skeleton className={cn('h-4', animationClasses[animation])} style={{ width: '20%' }} />
-                            <Skeleton className={cn('h-4', animationClasses[animation])} style={{ width: '30%' }} />
-                            <Skeleton className={cn('h-4', animationClasses[animation])} style={{ width: '25%' }} />
-                            <Skeleton className={cn('h-4', animationClasses[animation])} style={{ width: '25%' }} />
+                            <Skeleton className={cn('h-4 bg-muted', animationClasses[animation])} style={{ width: '20%' }} />
+                            <Skeleton className={cn('h-4 bg-muted', animationClasses[animation])} style={{ width: '30%' }} />
+                            <Skeleton className={cn('h-4 bg-muted', animationClasses[animation])} style={{ width: '25%' }} />
+                            <Skeleton className={cn('h-4 bg-muted', animationClasses[animation])} style={{ width: '25%' }} />
                         </div>
                         {/* Table rows */}
                         {Array.from({ length: 5 }).map((_, rowIndex) => (
                             <div key={`row-${rowIndex}`} className="flex space-x-4">
-                                <Skeleton className={cn('h-3', animationClasses[animation])} style={{ width: '20%' }} />
-                                <Skeleton className={cn('h-3', animationClasses[animation])} style={{ width: '30%' }} />
-                                <Skeleton className={cn('h-3', animationClasses[animation])} style={{ width: '25%' }} />
-                                <Skeleton className={cn('h-3', animationClasses[animation])} style={{ width: '25%' }} />
+                                <Skeleton className={cn('h-3 bg-muted', animationClasses[animation])} style={{ width: '20%' }} />
+                                <Skeleton className={cn('h-3 bg-muted', animationClasses[animation])} style={{ width: '30%' }} />
+                                <Skeleton className={cn('h-3 bg-muted', animationClasses[animation])} style={{ width: '25%' }} />
+                                <Skeleton className={cn('h-3 bg-muted', animationClasses[animation])} style={{ width: '25%' }} />
                             </div>
                         ))}
                     </div>
@@ -132,10 +133,10 @@ export function SkeletonLoader({
                     >
                         {Array.from({ length: 3 }).map((_, itemIndex) => (
                             <div key={`list-item-${itemIndex}`} className="flex items-center space-x-3">
-                                <Skeleton className={cn('rounded-full', animationClasses[animation])} style={{ height: '32px', width: '32px' }} />
+                                <Skeleton className={cn('rounded-full bg-muted', animationClasses[animation])} style={{ height: '32px', width: '32px' }} />
                                 <div className="space-y-2 flex-1">
-                                    <Skeleton className={cn('h-3', animationClasses[animation])} style={{ width: '70%' }} />
-                                    <Skeleton className={cn('h-2', animationClasses[animation])} style={{ width: '50%' }} />
+                                    <Skeleton className={cn('h-3 bg-muted', animationClasses[animation])} style={{ width: '70%' }} />
+                                    <Skeleton className={cn('h-2 bg-muted', animationClasses[animation])} style={{ width: '50%' }} />
                                 </div>
                             </div>
                         ))}
@@ -148,7 +149,7 @@ export function SkeletonLoader({
                     <Skeleton
                         key={key}
                         className={cn(
-                            'h-4',
+                            'h-4 bg-muted',
                             animationClasses[animation],
                             className
                         )}

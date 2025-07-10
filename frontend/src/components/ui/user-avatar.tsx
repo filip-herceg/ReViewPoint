@@ -58,15 +58,18 @@ function getInitials(name?: string, email?: string): string {
  * Generate a consistent background color based on user identifier
  */
 function getAvatarColor(identifier: string): string {
+    // Use only Tailwind semantic color classes for avatar backgrounds
     const colors = [
-        'bg-red-500',
-        'bg-blue-500',
-        'bg-green-500',
-        'bg-yellow-500',
-        'bg-purple-500',
-        'bg-pink-500',
-        'bg-indigo-500',
-        'bg-teal-500'
+        'bg-primary',
+        'bg-secondary',
+        'bg-accent',
+        'bg-muted',
+        'bg-card',
+        'bg-popover',
+        'bg-success',
+        'bg-warning',
+        'bg-info',
+        'bg-destructive',
     ];
 
     const hash = identifier.split('').reduce((acc, char) => {
@@ -131,7 +134,7 @@ export function UserAvatar({
         <div className={cn('relative inline-flex', className)}>
             <div
                 className={cn(
-                    'rounded-full flex items-center justify-center font-medium text-white relative overflow-hidden',
+                    'rounded-full flex items-center justify-center font-medium text-primary-foreground relative overflow-hidden',
                     sizeClasses[size],
                     avatarColor,
                     onClick && 'cursor-pointer hover:opacity-80 transition-opacity',
@@ -172,9 +175,9 @@ export function UserAvatar({
                 <div
                     data-testid="online-status"
                     className={cn(
-                        'absolute -bottom-0.5 -right-0.5 rounded-full border-2 border-white dark:border-gray-800',
+                        'absolute -bottom-0.5 -right-0.5 rounded-full border-2 border-background',
                         statusSizeClasses[size],
-                        isOnline ? 'bg-green-500' : 'bg-gray-400'
+                        isOnline ? 'bg-success' : 'bg-muted'
                     )}
                     aria-label={isOnline ? 'Online' : 'Offline'}
                 />
@@ -224,16 +227,16 @@ export function AvatarGroup({
                     key={user.email || index}
                     user={user}
                     size={size}
-                    className="ring-2 ring-white dark:ring-gray-800"
+                    className="ring-2 ring-background"
                 />
             ))}
 
             {overflowCount > 0 && (
                 <div
                     className={cn(
-                        'rounded-full flex items-center justify-center font-medium text-gray-600 bg-gray-100 dark:bg-gray-700 dark:text-gray-300 ring-2 ring-white dark:ring-gray-800',
+                        'rounded-full flex items-center justify-center font-medium text-muted-foreground bg-muted ring-2 ring-background',
                         sizeClasses[size],
-                        onOverflowClick && 'cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors'
+                        onOverflowClick && 'cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors'
                     )}
                     onClick={onOverflowClick}
                     role={onOverflowClick ? 'button' : undefined}
@@ -297,15 +300,18 @@ export function useUserAvatar(user?: { name?: string; email?: string; avatar?: s
     }, []);
 
     const getAvatarColor = React.useCallback((identifier: string): string => {
+        // Use only Tailwind semantic color classes for avatar backgrounds
         const colors = [
-            'bg-red-500',
-            'bg-blue-500',
-            'bg-green-500',
-            'bg-yellow-500',
-            'bg-purple-500',
-            'bg-pink-500',
-            'bg-indigo-500',
-            'bg-teal-500'
+            'bg-primary',
+            'bg-secondary',
+            'bg-accent',
+            'bg-muted',
+            'bg-card',
+            'bg-popover',
+            'bg-success',
+            'bg-warning',
+            'bg-info',
+            'bg-destructive',
         ];
 
         const hash = identifier.split('').reduce((acc, char) => {

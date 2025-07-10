@@ -49,8 +49,10 @@ export function Navigation() {
                         >
                             {Icon && (
                                 <Icon className={cn(
-                                    "h-5 w-5 mr-3 transition-transform duration-200",
-                                    isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground group-hover:scale-110"
+                                    'h-5 w-5 mr-3 transition-transform duration-200',
+                                    isActive
+                                        ? 'text-primary-foreground'
+                                        : 'text-muted-foreground group-hover:text-foreground group-hover:scale-110'
                                 )} />
                             )}
                             {route.title}
@@ -67,7 +69,7 @@ export function Navigation() {
                     </span>
                     <Link
                         to="/profile"
-                        className="flex items-center px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 transition-all duration-200 hover:scale-105"
+                        className="flex items-center px-3 py-2 rounded-xl text-sm font-medium text-info-foreground hover:text-info hover:bg-accent/70 transition-all duration-200 hover:scale-105 underline-offset-2 hover:underline"
                     >
                         <Icons.User className="h-4 w-4 mr-1" />
                         Profile
@@ -83,7 +85,7 @@ export function Navigation() {
                 <div className="flex items-center space-x-2">
                     <Link
                         to="/auth/login"
-                        className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/70 rounded-xl transition-all duration-200 hover:scale-105"
+                        className="px-3 py-2 text-sm font-medium text-info-foreground hover:text-info hover:bg-accent/70 rounded-xl transition-all duration-200 hover:scale-105 underline-offset-2 hover:underline"
                     >
                         Login
                     </Link>

@@ -5,7 +5,6 @@
  */
 
 import React, { useRef, useEffect, useState } from 'react';
-import { cn } from '@/lib/utils';
 import logger from '@/logger';
 
 type LiveRegionPoliteness = 'polite' | 'assertive' | 'off';
@@ -78,11 +77,8 @@ export function AriaLiveRegion({
             id={id}
             aria-live={politeness}
             aria-atomic="true"
-            className={cn(
-                // Visually hidden but accessible to screen readers
-                'sr-only',
-                className
-            )}
+            // Visually hidden but accessible to screen readers
+            className={`sr-only text-[color:var(--foreground-muted,inherit)] ${className ? className : ''}`.trim()}
         >
             {currentMessage}
         </div>
@@ -162,11 +158,20 @@ export function StatusAnnouncer({
         ? STATUS_CONFIG[status].politeness
         : 'polite';
 
+    // Use Tailwind semantic color classes for status visually if needed
+
+    // Use only semantic color variables for status
+    let statusClass = '';
+    if (status === 'success') statusClass = 'text-success-foreground';
+    if (status === 'error') statusClass = 'text-destructive-foreground';
+    if (status === 'loading') statusClass = 'text-primary-foreground';
+    if (status === 'info') statusClass = 'text-muted-foreground';
+
     return (
         <AriaLiveRegion
             message={formattedMessage}
             politeness={politeness}
-            className={className}
+            className={`sr-only ${statusClass} ${className ? className : ''}`.trim()}
             id="status-announcer"
         />
     );
@@ -198,11 +203,12 @@ export function FormValidationAnnouncer({
         return `${prefix} ${errorText}`;
     }, [errors, fieldName]);
 
+    // Use only semantic color variable for errors
     return (
         <AriaLiveRegion
             message={message}
             politeness="assertive"
-            className={className}
+            className={`sr-only text-destructive-foreground ${className ? className : ''}`.trim()}
             id={fieldName ? `${fieldName}-validation-announcer` : 'validation-announcer'}
         />
     );
@@ -232,7 +238,8 @@ export function LiveRegionProvider({ children }: { children: React.ReactNode }) 
     return (
         <LiveRegionContext.Provider value={contextValue}>
             {children}
-            <AriaLiveRegion id="global-live-region" />
+            {/* Global live region, visually hidden, Tailwind only */}
+            <AriaLiveRegion id="global-live-region" className="sr-only text-muted-foreground" />
         </LiveRegionContext.Provider>
     );
 }

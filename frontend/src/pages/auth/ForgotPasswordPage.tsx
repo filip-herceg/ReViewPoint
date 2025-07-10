@@ -30,24 +30,22 @@ const ForgotPasswordPage: React.FC = () => {
 
     if (isSubmitted) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
                 <Card className="w-full max-w-md">
                     <CardHeader className="text-center">
-                        <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
+                        <CardTitle className="text-2xl font-bold text-foreground">Check your email</CardTitle>
                         <CardDescription>
-                            We've sent a password reset link to {email}
+                            We've sent a password reset link to <span className="text-primary font-medium">{email}</span>
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="text-center space-y-4">
                         <p className="text-sm text-muted-foreground">
                             If you don't see the email, check your spam folder or try again with a different email address.
                         </p>
-
                         <div className="space-y-2">
                             <Button asChild className="w-full">
                                 <Link to="/auth/login">Back to sign in</Link>
                             </Button>
-
                             <Button
                                 variant="outline"
                                 className="w-full"
@@ -66,10 +64,10 @@ const ForgotPasswordPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen flex items-center justify-center bg-background py-12 px-4 sm:px-6 lg:px-8">
             <Card className="w-full max-w-md">
                 <CardHeader className="text-center">
-                    <CardTitle className="text-2xl font-bold">Forgot your password?</CardTitle>
+                    <CardTitle className="text-2xl font-bold text-foreground">Forgot your password?</CardTitle>
                     <CardDescription>
                         Enter your email address and we'll send you a link to reset your password
                     </CardDescription>
@@ -77,13 +75,12 @@ const ForgotPasswordPage: React.FC = () => {
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {error && (
-                            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+                            <div className="bg-destructive/10 border border-destructive text-destructive px-4 py-3 rounded-md text-sm">
                                 {error}
                             </div>
                         )}
-
                         <div className="space-y-2">
-                            <label htmlFor="email" className="text-sm font-medium text-gray-700">
+                            <label htmlFor="email" className="text-sm font-medium text-foreground">
                                 Email address
                             </label>
                             <div className="relative">
@@ -98,10 +95,9 @@ const ForgotPasswordPage: React.FC = () => {
                                     disabled={isLoading}
                                     className="pl-10"
                                 />
-                                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                             </div>
                         </div>
-
                         <Button
                             type="submit"
                             disabled={isLoading || !email}
@@ -109,7 +105,7 @@ const ForgotPasswordPage: React.FC = () => {
                         >
                             {isLoading ? (
                                 <>
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
                                     Sending...
                                 </>
                             ) : (
@@ -117,11 +113,10 @@ const ForgotPasswordPage: React.FC = () => {
                             )}
                         </Button>
                     </form>
-
                     <div className="mt-6 text-center">
                         <Link
                             to="/auth/login"
-                            className="flex items-center justify-center gap-2 text-sm text-blue-600 hover:text-blue-500"
+                            className="flex items-center justify-center gap-2 text-sm text-primary hover:text-primary/80"
                         >
                             <ArrowLeft className="h-4 w-4" />
                             Back to sign in

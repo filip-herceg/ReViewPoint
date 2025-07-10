@@ -79,9 +79,9 @@ const FileProgress: React.FC<FileProgressProps> = ({
     const hasError = progress.percentage === 0 && progress.endTime !== null;
 
     const getStatusIcon = () => {
-        if (hasError) return <AlertCircle className="h-4 w-4 text-red-500" />;
-        if (isComplete) return <CheckCircle className="h-4 w-4 text-green-500" />;
-        return <Upload className="h-4 w-4 text-blue-500" />;
+        if (hasError) return <AlertCircle className="h-4 w-4 text-destructive" />;
+        if (isComplete) return <CheckCircle className="h-4 w-4 text-success" />;
+        return <Upload className="h-4 w-4 text-primary" />;
     };
 
     const getProgressVariant = () => {
@@ -101,7 +101,7 @@ const FileProgress: React.FC<FileProgressProps> = ({
                     <span className={cn(
                         "truncate",
                         compact ? "text-sm" : "text-base",
-                        hasError ? "text-red-700" : "text-gray-900"
+                        hasError ? "text-destructive-foreground" : "text-foreground"
                     )}>
                         {fileName}
                     </span>
@@ -154,24 +154,24 @@ const ProgressMetrics: React.FC<ProgressMetricsProps> = ({
 }) => {
     const metrics = [
         {
-            icon: <Zap className="h-4 w-4" />,
+            icon: <Zap className="h-4 w-4 text-primary" />,
             label: "Speed",
             value: uploadSpeed > 0 ? formatSpeed(uploadSpeed) : "Calculating...",
-            color: "text-blue-600"
+            color: "text-primary"
         },
         {
-            icon: <Clock className="h-4 w-4" />,
+            icon: <Clock className="h-4 w-4 text-success" />,
             label: "ETA",
             value: estimatedTimeRemaining !== null ?
                 formatDuration(estimatedTimeRemaining * 1000) :
                 "Calculating...",
-            color: "text-green-600"
+            color: "text-success"
         }
     ];
 
     if (compact) {
         return (
-            <div className="flex items-center gap-4 text-xs text-gray-600">
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
                 {metrics.map((metric, index) => (
                     <div key={index} className="flex items-center gap-1">
                         {metric.icon}
@@ -186,12 +186,12 @@ const ProgressMetrics: React.FC<ProgressMetricsProps> = ({
         <div className="grid grid-cols-2 gap-4">
             {metrics.map((metric, index) => (
                 <div key={index} className="flex items-center gap-2">
-                    <div className={cn("p-2 rounded-full bg-gray-100", metric.color)}>
+                    <div className={cn("p-2 rounded-full bg-muted", metric.color)}>
                         {metric.icon}
                     </div>
                     <div>
-                        <p className="text-xs text-gray-500">{metric.label}</p>
-                        <p className="text-sm font-medium text-gray-900">{metric.value}</p>
+                        <p className="text-xs text-muted-foreground">{metric.label}</p>
+                        <p className="text-sm font-medium text-foreground">{metric.value}</p>
                     </div>
                 </div>
             ))}
@@ -255,13 +255,13 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
     const getVariantClasses = () => {
         switch (variant) {
             case 'success':
-                return 'border-green-200 bg-green-50';
+                return 'border-success/20 bg-success/10';
             case 'warning':
-                return 'border-yellow-200 bg-yellow-50';
+                return 'border-warning/20 bg-warning/10';
             case 'error':
-                return 'border-red-200 bg-red-50';
+                return 'border-destructive/20 bg-destructive/10';
             default:
-                return 'border-gray-200 bg-white';
+                return 'border-border bg-background';
         }
     };
 
@@ -279,14 +279,14 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
                 className
             )}>
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <Upload className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                    <Upload className="h-4 w-4 text-primary flex-shrink-0" />
                     <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between mb-1">
-                            <span className="text-sm font-medium text-gray-900 truncate">
+                            <span className="text-sm font-medium text-foreground truncate">
                                 {title}
                             </span>
                             {showPercentage && (
-                                <span className="text-sm text-gray-600 ml-2">
+                                <span className="text-sm text-muted-foreground ml-2">
                                     {displayProgress.percentage.toFixed(1)}%
                                 </span>
                             )}
@@ -321,14 +321,14 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <Upload className="h-5 w-5 text-blue-500" />
-                        <h3 className="text-lg font-semibold text-gray-900">
+                        <Upload className="h-5 w-5 text-primary" />
+                        <h3 className="text-lg font-semibold text-foreground">
                             {title}
                         </h3>
                     </div>
 
                     {displayProgress.isComplete && (
-                        <Badge variant="default" className="bg-green-100 text-green-800">
+                        <Badge variant="default" className="bg-success/10 text-success-foreground">
                             <CheckCircle className="h-3 w-3 mr-1" />
                             Complete
                         </Badge>
@@ -339,13 +339,13 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
                         {showPercentage && (
-                            <span className="text-2xl font-bold text-gray-900">
+                            <span className="text-2xl font-bold text-foreground">
                                 {displayProgress.percentage.toFixed(1)}%
                             </span>
                         )}
 
                         {showBytes && (
-                            <span className="text-sm text-gray-600">
+                            <span className="text-sm text-muted-foreground">
                                 {formatBytes(displayProgress.bytesTransferred)} / {formatBytes(displayProgress.totalBytes)}
                             </span>
                         )}
@@ -372,8 +372,8 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
                 {showFileProgress && showDetails && allFileProgress.length > 1 && (
                     <div className="space-y-3">
                         <div className="flex items-center gap-2 pt-2 border-t">
-                            <FileText className="h-4 w-4 text-gray-400" />
-                            <span className="text-sm font-medium text-gray-700">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm font-medium text-foreground">
                                 File Progress ({allFileProgress.length} files)
                             </span>
                         </div>
@@ -395,7 +395,7 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
 
                 {/* Completion Stats */}
                 {displayProgress.isComplete && showDetails && (
-                    <div className="flex items-center justify-between pt-2 border-t text-sm text-gray-600">
+                    <div className="flex items-center justify-between pt-2 border-t text-sm text-muted-foreground">
                         <div className="flex items-center gap-4">
                             <span>
                                 <TrendingUp className="h-4 w-4 inline mr-1" />

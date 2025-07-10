@@ -217,7 +217,7 @@ export function ToastProvider({
             gap={gap}
             offset={offset}
             className={cn(
-                // Custom styling for our design system
+                // Use only Tailwind semantic color classes for all toast backgrounds, borders, and text
                 '[&_[data-sonner-toaster]]:bg-background',
                 '[&_[data-sonner-toast]]:bg-background',
                 '[&_[data-sonner-toast]]:border-border',
@@ -235,10 +235,10 @@ export function ToastProvider({
                     actionButton: 'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
                     cancelButton: 'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
                     closeButton: 'group-[.toast]:border-border group-[.toast]:bg-background group-[.toast]:text-foreground',
-                    success: 'group-[.toast]:bg-background group-[.toast]:text-foreground group-[.toast]:border-green-200 dark:group-[.toast]:border-green-800',
-                    error: 'group-[.toast]:bg-background group-[.toast]:text-foreground group-[.toast]:border-red-200 dark:group-[.toast]:border-red-800',
-                    warning: 'group-[.toast]:bg-background group-[.toast]:text-foreground group-[.toast]:border-yellow-200 dark:group-[.toast]:border-yellow-800',
-                    info: 'group-[.toast]:bg-background group-[.toast]:text-foreground group-[.toast]:border-blue-200 dark:group-[.toast]:border-blue-800',
+                    success: 'group-[.toast]:bg-background group-[.toast]:text-foreground group-[.toast]:border-success',
+                    error: 'group-[.toast]:bg-background group-[.toast]:text-foreground group-[.toast]:border-destructive',
+                    warning: 'group-[.toast]:bg-background group-[.toast]:text-foreground group-[.toast]:border-warning',
+                    info: 'group-[.toast]:bg-background group-[.toast]:text-foreground group-[.toast]:border-info',
                 },
                 ...toastOptions,
             }}

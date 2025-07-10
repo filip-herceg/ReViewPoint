@@ -89,12 +89,12 @@ export default function ModerationPanelPage() {
         >
             <div className="space-y-6">
                 {/* Page Header */}
-                <div className="border-b border-gray-200 pb-4">
-                    <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+                <div className="border-b border-border pb-4">
+                    <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
                         <UserCheck className="h-8 w-8" />
                         Moderation Panel
                     </h1>
-                    <p className="text-gray-600 mt-2">
+                    <p className="text-muted-foreground mt-2">
                         Review flagged content and manage community standards
                     </p>
                 </div>
@@ -103,34 +103,34 @@ export default function ModerationPanelPage() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <Card>
                         <CardContent className="p-4">
-                            <div className="text-2xl font-bold text-red-600">
+                            <div className="text-2xl font-bold text-destructive">
                                 {mockFlaggedContent.filter(item => item.status === 'pending').length}
                             </div>
-                            <div className="text-sm text-gray-600">Pending Review</div>
+                            <div className="text-sm text-muted-foreground">Pending Review</div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardContent className="p-4">
-                            <div className="text-2xl font-bold text-orange-600">
+                            <div className="text-2xl font-bold text-warning-foreground">
                                 {mockFlaggedContent.filter(item => item.status === 'under_review').length}
                             </div>
-                            <div className="text-sm text-gray-600">Under Review</div>
+                            <div className="text-sm text-muted-foreground">Under Review</div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardContent className="p-4">
-                            <div className="text-2xl font-bold text-red-600">
+                            <div className="text-2xl font-bold text-destructive">
                                 {mockFlaggedContent.filter(item => item.priority === 'high').length}
                             </div>
-                            <div className="text-sm text-gray-600">High Priority</div>
+                            <div className="text-sm text-muted-foreground">High Priority</div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardContent className="p-4">
-                            <div className="text-2xl font-bold text-blue-600">
+                            <div className="text-2xl font-bold text-primary">
                                 {mockFlaggedContent.length}
                             </div>
-                            <div className="text-sm text-gray-600">Total Reports</div>
+                            <div className="text-sm text-muted-foreground">Total Reports</div>
                         </CardContent>
                     </Card>
                 </div>
@@ -162,18 +162,18 @@ export default function ModerationPanelPage() {
                             {mockFlaggedContent.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50"
+                                    className="border border-border rounded-lg p-4 hover:bg-muted/50"
                                 >
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <h3 className="font-medium text-gray-900">
+                                                <h3 className="font-medium text-foreground">
                                                     {item.title}
                                                 </h3>
                                                 {getPriorityBadge(item.priority)}
                                                 {getStatusBadge(item.status)}
                                             </div>
-                                            <div className="text-sm text-gray-600 space-y-1">
+                                            <div className="text-sm text-muted-foreground space-y-1">
                                                 <div>
                                                     <strong>Type:</strong> {item.type}
                                                 </div>
@@ -193,11 +193,11 @@ export default function ModerationPanelPage() {
                                                 <Eye className="h-4 w-4 mr-1" />
                                                 Review
                                             </Button>
-                                            <Button variant="outline" size="sm" className="text-green-600 hover:text-green-700">
+                                            <Button variant="outline" size="sm" className="text-success-foreground hover:text-success-foreground/80">
                                                 <CheckCircle className="h-4 w-4 mr-1" />
                                                 Approve
                                             </Button>
-                                            <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                            <Button variant="outline" size="sm" className="text-destructive hover:text-destructive/80">
                                                 <XCircle className="h-4 w-4 mr-1" />
                                                 Remove
                                             </Button>
@@ -242,7 +242,7 @@ export default function ModerationPanelPage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <div className="space-y-2 text-sm text-gray-600">
+                            <div className="space-y-2 text-sm text-muted-foreground">
                                 <div>• Review content within 24 hours of reporting</div>
                                 <div>• Document all actions taken</div>
                                 <div>• Escalate sensitive cases to administrators</div>

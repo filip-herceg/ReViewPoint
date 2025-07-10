@@ -85,7 +85,7 @@ export function EmptyState({
     const defaultIcon = (
         <div
             className={cn(
-                'rounded-full bg-muted flex items-center justify-center text-muted-foreground mx-auto',
+                'rounded-full bg-muted text-muted-foreground flex items-center justify-center mx-auto',
                 iconSizeClasses[size]
             )}
         >
@@ -109,7 +109,7 @@ export function EmptyState({
     return (
         <Card
             className={cn(
-                'border-dashed border-2 border-muted',
+                'border-dashed border-2 border-border bg-background text-foreground',
                 sizeClasses[size],
                 className
             )}

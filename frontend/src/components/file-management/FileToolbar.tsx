@@ -48,11 +48,11 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({
     };
 
     return (
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between p-4 bg-white border-b">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between p-4 bg-background border-b border-border">
             {/* Left section - Search and filters */}
             <div className="flex flex-1 items-center gap-2 min-w-0">
                 <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted" />
                     <Input
                         type="text"
                         placeholder="Search files..."
@@ -78,11 +78,11 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({
             </div>
 
             {/* Center section - File count and selection info */}
-            <div className="flex items-center gap-4 text-sm text-gray-600">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <span>
                     {totalFiles} file{totalFiles !== 1 ? 's' : ''}
                     {selectedCount > 0 && (
-                        <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                        <span className="ml-2 px-2 py-1 bg-info/10 text-info-foreground rounded-full text-xs border border-info">
                             {selectedCount} selected
                         </span>
                     )}
@@ -112,7 +112,7 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({
                         {sortOrder === 'asc' ? <SortAsc className="h-4 w-4 mr-2" /> : <SortDesc className="h-4 w-4 mr-2" />}
                         Sort
                     </Button>
-                    <div className="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10" role="listbox">
+                    <div className="hidden absolute right-0 mt-2 w-48 bg-background rounded-md shadow-lg border border-border z-10" role="listbox">
                         <div className="py-1">
                             {[
                                 { field: 'filename' as SortField, label: 'Name' },
@@ -123,8 +123,8 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({
                                 <button
                                     key={field}
                                     className={cn(
-                                        'flex items-center w-full px-4 py-2 text-sm hover:bg-gray-100',
-                                        sortField === field ? 'text-blue-600 bg-blue-50' : 'text-gray-700'
+                                        'flex items-center w-full px-4 py-2 text-sm hover:bg-muted',
+                                        sortField === field ? 'text-info bg-info/10' : 'text-foreground'
                                     )}
                                     onClick={() => handleSortClick(field)}
                                     role="option"
@@ -141,12 +141,12 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({
                 </div>
 
                 {/* View mode toggle */}
-                <div className="flex items-center border rounded-md">
+                <div className="flex items-center border border-border rounded-md">
                     <Button
                         variant={viewMode === 'table' ? 'default' : 'ghost'}
                         size="sm"
                         onClick={() => onViewModeChange('table')}
-                        className="rounded-r-none border-r"
+                        className="rounded-r-none border-r border-border"
                     >
                         <Table className="h-4 w-4" />
                         <span className="sr-only">Table view</span>
@@ -155,7 +155,7 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({
                         variant={viewMode === 'grid' ? 'default' : 'ghost'}
                         size="sm"
                         onClick={() => onViewModeChange('grid')}
-                        className="rounded-none border-r"
+                        className="rounded-none border-r border-border"
                     >
                         <Grid className="h-4 w-4" />
                         <span className="sr-only">Grid view</span>

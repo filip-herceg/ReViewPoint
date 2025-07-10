@@ -76,11 +76,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         const { testId = 'error-boundary', retryText = 'Try Again', showDetails = false } = this.props;
 
         return (
-            <div className="min-h-[200px] flex items-center justify-center p-4" data-testid={testId}>
-                <Card className="max-w-lg w-full p-6">
+            <div className="min-h-[200px] flex items-center justify-center p-4 bg-background text-foreground" data-testid={testId}>
+                <Card className="max-w-lg w-full p-6 bg-background text-foreground border border-border">
                     <Alert variant="destructive">
                         <svg
-                            className="h-4 w-4"
+                            className="h-4 w-4 text-destructive-foreground"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -102,7 +102,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                     </Alert>
 
                     {showDetails && error && (
-                        <div className="mt-4 p-4 bg-muted rounded-md">
+                        <div className="mt-4 p-4 bg-muted text-muted-foreground rounded-md">
                             <details>
                                 <summary className="text-sm font-medium cursor-pointer mb-2">
                                     Error Details
