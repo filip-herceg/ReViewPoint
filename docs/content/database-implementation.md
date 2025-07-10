@@ -1,10 +1,28 @@
 # Database Layer Implementation
 
-This document provides a comprehensive overview of the database layer implementation in ReViewPoint.
+This document provides a comprehensive overview of the database layer implementation in ReViewPoint, covering architecture, design patterns, testing strategies, and operational considerations.
 
-## Overview
+## Architecture Overview
 
-ReViewPoint uses SQLAlchemy's async ORM for database operations, supporting both PostgreSQL for production and SQLite for development/testing. The implementation follows the repository pattern with a clear separation of concerns:
+ReViewPoint implements a robust, scalable database layer using SQLAlchemy's async ORM with support for multiple database backends. The architecture follows industry best practices with clear separation of concerns and comprehensive testing coverage.
+
+### Technology Stack
+
+- **ORM**: SQLAlchemy 2.0+ with async support
+- **Primary Database**: PostgreSQL (production)
+- **Development/Testing**: SQLite with async support
+- **Migration Tool**: Alembic for schema version control
+- **Connection Pool**: Configurable async connection pooling
+- **Type Safety**: Full type annotations and Pydantic integration
+
+### Core Design Principles
+
+1. **Async-First Architecture**: All database operations are non-blocking
+2. **Repository Pattern**: Clean separation between data access and business logic
+3. **Environment Awareness**: Different configurations for development, testing, and production
+4. **Comprehensive Testing**: Over 86% test coverage with isolated test environments
+5. **Type Safety**: Strong typing throughout the data layer
+6. **Observability**: Built-in health checks and monitoring capabilities
 
 1. **Core Database Module**: Connection management, session factories, and health checks
 2. **Base Model**: Common fields and methods for all models

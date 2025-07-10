@@ -40,4 +40,4 @@ def test_validate_email_rejects_invalid():
 
 ---
 
-*This file is auto-generated as a placeholder. Please update with actual test details as implemented.*
+*This documentation describes the test suite for email and password validation utilities. The tests verify correct validation behavior for various valid and invalid inputs, including edge cases for email formats and password strength requirements.*

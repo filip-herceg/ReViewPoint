@@ -38,4 +38,4 @@ def test_custom_error_message():
 
 ---
 
-*This file is auto-generated as a placeholder. Please update with actual test details as implemented.*
+*This documentation describes the test suite for error handling utilities. The tests verify custom exception classes including ValidationError, UserNotFoundError, UserAlreadyExistsError, and RateLimitExceededError work correctly with proper error messages and HTTP status codes.*

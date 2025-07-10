@@ -22,4 +22,4 @@ This page documents the tests for the backend utility `rate_limit.py`.
 
 ---
 
-*This file is auto-generated as a placeholder. Please update with actual test details as implemented.*
+*This documentation describes the test suite for async rate limiting utilities. The tests verify rate limiter functionality including call allowance within limits, blocking behavior when limits are exceeded, automatic reset after time periods, and manual reset operations.*

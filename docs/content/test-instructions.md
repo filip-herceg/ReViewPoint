@@ -1,33 +1,106 @@
-# Backend Test Running Instructions
+# Comprehensive Testing Guide
 
-This guide explains how to run all backend tests, including unit, async, API, and integration tests, and how to generate coverage reports.
+This guide provides complete instructions for running, debugging, and maintaining the test suite across the entire ReViewPoint platform, including backend unit tests, frontend tests, integration tests, and end-to-end testing.
 
-## Prerequisites
+## Testing Architecture Overview
 
-- All dependencies installed (see `pyproject.toml`)
-- Required pytest plugins:
-  - `pytest-asyncio`
-  - `pytest-httpx`
-  - `pytest-mock`
-- Activate your Hatch environment: `hatch shell`
+ReViewPoint implements a comprehensive testing strategy with multiple layers:
 
-## Running All Tests
+- **Backend Unit Tests**: Fast, isolated tests for individual components
+- **Backend Integration Tests**: Database and API integration testing
+- **Frontend Unit Tests**: Component and utility function testing with Vitest
+- **End-to-End Tests**: Complete user workflow testing with Playwright
+- **Cross-Project Integration**: Full-stack integration testing
 
-```powershell
+## Prerequisites & Setup
+
+### Backend Testing Prerequisites
+- Python 3.11.9+ with Hatch environment management
+- All dependencies installed via `hatch env create`
+- Required pytest plugins (automatically installed):
+  - `pytest-asyncio` - Async test support
+  - `pytest-httpx` - HTTP client testing
+  - `pytest-mock` - Mocking and fixtures
+  - `pytest-cov` - Coverage reporting
+- Database: SQLite (auto-configured for tests) or PostgreSQL
+
+### Frontend Testing Prerequisites  
+- Node.js 18+ with PNPM package manager
+- Dependencies installed via `pnpm install`
+- Testing frameworks:
+  - **Vitest** - Unit and integration testing
+  - **Playwright** - End-to-end testing
+  - **Testing Library** - Component testing utilities
+
+### Environment Setup
+```bash
+# Backend environment setup
+cd backend
+hatch env create
+hatch shell
+
+# Frontend environment setup  
+cd frontend
+pnpm install
+
+# Full project setup
+pnpm run install:all
+```
+
+## Running Backend Tests
+
+### Quick Test Commands
+
+```bash
+# Run all backend tests
 hatch run pytest
-```
 
-## Running Tests with Coverage Report
+# Run with verbose output
+hatch run pytest -v
 
-```powershell
-hatch run pytest --cov=backend --cov-report=term --cov-report=xml
-```
+# Run fast tests only (excludes slow integration tests)
+python run-fast-tests.py
 
-## Running Specific Tests (Async/API)
-
-```powershell
+# Run specific test file
 hatch run pytest backend/tests/core/test_database.py
-hatch run pytest backend/tests/middlewares/test_logging.py
+
+# Run specific test function
+hatch run pytest backend/tests/core/test_database.py::test_async_session_creation
+
+# Run tests matching pattern
+hatch run pytest -k "test_user"
+```
+
+### Coverage Reporting
+
+```bash
+# Generate coverage report (terminal + HTML)
+hatch run pytest --cov=src --cov-report=html --cov-report=term
+
+# Coverage with XML output (for CI/CD)
+hatch run pytest --cov=src --cov-report=xml --cov-report=term
+
+# Coverage excluding slow tests
+python run-fast-tests.py --cov=src --cov-report=html
+```
+
+### Test Categories & Filtering
+
+```bash
+# Run only database tests
+hatch run pytest backend/tests/core/
+
+# Run only API tests  
+hatch run pytest backend/tests/api/
+
+# Run only unit tests (fast)
+hatch run pytest -m "not slow"
+
+# Run integration tests
+hatch run pytest -m "integration"
+
+# Run async tests specifically
+hatch run pytest -m "asyncio"
 ```
 
 ## Controlling Log Levels During Testing

@@ -171,4 +171,4 @@ The log level control works through:
 
 - [Test Instructions](test-instructions.md) - General testing guide
 - [Development Guidelines](dev-guidelines.md) - Development workflow
-- [Backend Testing Guide](backend/testing/docs/TESTING.md) - Comprehensive testing documentation
+- [Backend Testing Guide](backend/TESTING.md) - Comprehensive testing documentation

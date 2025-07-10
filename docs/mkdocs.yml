@@ -83,8 +83,22 @@ plugins:
   - mermaid2
   - minify:
       minify_html: true
-  - git-revision-date-localized:
-      fallback_to_build_date: true
+  # - git-revision-date-localized:  # Disabled due to issues with generated content
+  #     fallback_to_build_date: true
+  #     exclude:
+  #       - backend/src/**
+  #       - backend/TEST_LOGGING.md
+  #       - backend/TESTING.md
+  #       - backend/core/**
+  #       - backend/tests/**
+  #       - frontend/src/**
+  #       - frontend/tests/**
+  #       - src/**
+  #       - scripts/**
+  #       - tests/**
+  #       - main.py.md
+  #       - "**/*.py.md"
+  #     enable_creation_date: false
   - glightbox
   - macros
   - mkdocstrings:
@@ -99,9 +113,6 @@ plugins:
             show_if_no_docstring: true
             heading_level: 2
             members_order: source
-          import:
-            - url: https://docs.python-requests.org/en/master/objects.inv
-              domains: [py]
 
 markdown_extensions:
   - admonition

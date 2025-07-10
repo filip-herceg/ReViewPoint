@@ -159,7 +159,7 @@ export REVIEWPOINT_LOG_LEVEL=DEBUG
 hatch run pytest
 ```
 
-📖 **See [backend/TESTING.md](../backend/TESTING.md) and [backend/TEST_LOGGING.md](../backend/TEST_LOGGING.md) for complete testing documentation.**
+📖 **See [backend/TESTING.md](backend/TESTING.md) and [backend/TEST_LOGGING.md](backend/TEST_LOGGING.md) for complete testing documentation.**
 
 ---
 

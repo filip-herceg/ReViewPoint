@@ -5,12 +5,12 @@
 | Item               | Value                                                                          |
 | ------------------ | ------------------------------------------------------------------------------ |
 | **Layer**          | Repositories                                                                   |
-| **Responsibility** | (Stub) Intended for CRUD operations for uploaded file metadata in the database |
-| **Status**         | 🔴 TODO                                                                        |
+| **Responsibility** | CRUD operations for uploaded file metadata in the database |
+| **Status**         | � Done                                                                        |
 
 ## 1. Purpose
 
-This file is a placeholder for file repository logic. It will provide functions to create, read, update, and delete file records, encapsulating all file-related database access.
+This module provides repository layer functions for file-related database operations in the ReViewPoint application. It encapsulates all file metadata CRUD operations including creating file records, retrieving files by filename, deleting files, bulk deletion operations, listing files with pagination and filtering, and managing file access permissions. The repository provides a clean abstraction over database operations for file management.
 
 ## 2. Public API
 

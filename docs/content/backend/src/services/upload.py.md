@@ -5,12 +5,12 @@
 | Item               | Value                                                                              |
 | ------------------ | ---------------------------------------------------------------------------------- |
 | **Layer**          | Services                                                                           |
-| **Responsibility** | (Stub) Intended for business logic for handling file uploads and related workflows |
-| **Status**         | 🔴 TODO                                                                            |
+| **Responsibility** | Business logic for handling file uploads and related workflows |
+| **Status**         | � Done                                                                            |
 
 ## 1. Purpose
 
-This file is a placeholder for file upload service logic. It will manage the file upload process, validation, and coordination with repositories and storage backends.
+This module provides upload service logic for handling file uploads and management in the ReViewPoint application. It manages the file upload process, filename sanitization and validation, file size checks, secure file storage, database record creation, and file deletion operations. The service coordinates with repositories and storage backends to provide robust file management capabilities.
 
 ## 2. Public API
 

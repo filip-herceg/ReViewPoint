@@ -5,12 +5,12 @@
 | Item               | Value                                                          |
 | ------------------ | -------------------------------------------------------------- |
 | **Layer**          | Utils                                                          |
-| **Responsibility** | (Stub) Intended for file path and file system helper functions |
-| **Status**         | 🔴 TODO                                                        |
+| **Responsibility** | File path and file system helper functions |
+| **Status**         | � Done                                                        |
 
 ## 1. Purpose
 
-This file is a placeholder for file path and file system utilities. It will provide helpers for file uploads, downloads, and storage management.
+This module provides file path and file system utility functions for the ReViewPoint application. It includes helpers for filename sanitization, path traversal attack prevention, file safety validation, and storage management operations. The utilities ensure secure file handling by validating and sanitizing user-provided filenames and paths.
 
 ## 2. Public API
 

@@ -5,12 +5,12 @@
 | Item               | Value                                                                                            |
 | ------------------ | ------------------------------------------------------------------------------------------------ |
 | **Layer**          | Services                                                                                         |
-| **Responsibility** | (Stub) Intended for business logic for user registration, authentication, and profile management |
-| **Status**         | 🔴 TODO                                                                                          |
+| **Responsibility** | Business logic for user registration, authentication, and profile management |
+| **Status**         | � Done                                                                                          |
 
 ## 1. Purpose
 
-This file is a placeholder for user service logic. It will handle user signup, login, and profile updates, coordinating with repositories and security utilities.
+This module provides comprehensive user service logic for the ReViewPoint application. It handles user registration, authentication, logout, password management, profile management, avatar uploads, user preferences, account management (deactivation/reactivation), role-based access control, and token refresh functionality. The service coordinates with repositories and security utilities to provide secure and robust user management features.
 
 ## 2. Public API
 

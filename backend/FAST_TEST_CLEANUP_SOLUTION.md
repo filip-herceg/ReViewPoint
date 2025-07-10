@@ -153,12 +153,19 @@ hatch run test
 - ✅ `backend/testing/scripts/validate-setup.py` - removed old file references
 - ✅ `backend/testing/docs/TESTING.md` - updated migration documentation  
 - ✅ `FAST_TEST_CLEANUP_SOLUTION.md` - marked as completed
+- ✅ `docs/content/architecture.md` - added missing files to documentation:
+  - `backend/src/core/typings/jose.pyi` - Type definitions for JWT library
+  - `backend/config/.env.template` - Environment configuration template
+  - `backend/tests/conftest.py.backup` - Test configuration backup
+  - `backend/tests/test_uploads.md` - Upload tests optimization documentation
+  - All missing core files (`documentation.py`, `feature_flags.py`, `openapi.py`, `sync_database.py`)
 
 **Final Test Status:**
 - 555 tests pass ✅
 - 30 tests fail (unrelated to auth/config issues) 
 - All export tests pass (30/30) ✅
 - Fast tests run successfully with unified conftest ✅
+- **All files now properly documented** ✅
 
 ## Summary
 
