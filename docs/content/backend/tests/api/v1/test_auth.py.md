@@ -40,5 +40,5 @@ This file documents the tests for backend authentication API endpoints, ensuring
 
 ## Related Docs
 
-- [User API Source](../../../src/api/v1/users.py.md)
+- [User Service](../../../services/user.py.md)
 - [Backend Source Guide](../../../../backend-source-guide.md)

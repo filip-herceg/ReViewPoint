@@ -8,36 +8,40 @@
 
 ---
 
-## Quick Links
+## Quick Links - Complete Documentation Index
+
+*This homepage contains links to **ALL .md files** in the root docs/content/ directory (without subdirectories). For comprehensive backend and frontend file documentation, see the [System Architecture](architecture.md) page.*
 
 ### 🏗️ Core Documentation
 - [System Architecture](architecture.md) - Complete system design with visual diagrams, file structure, and component interactions for both backend and frontend
-- [Setup Guide](setup.md) - Complete installation and configuration instructions for development and production environments
-- [Developer Guidelines](dev-guidelines.md) - Coding standards, formatting rules, best practices, and contribution workflows
 - [API Reference](api-reference.md) - Complete REST API documentation with endpoint specifications and examples
-
-### 🛠️ Development & Testing
 - [Backend Source Guide](backend-source-guide.md) - Comprehensive overview of backend codebase structure, conventions, and file organization
+- [Changelog](changelog.md) - Comprehensive version history, release notes, and change tracking
+- [CI/CD](ci-cd.md) - Continuous integration and deployment pipeline documentation and workflows
+
+### �️ Development & Setup
+- [Contributing to Docs](contributing-docs.md) - Guidelines for contributing to and improving project documentation
+- [Database Implementation](database-implementation.md) - Database schema design, migration strategies, and data modeling with PostgreSQL/SQLite
+- [Developer Guidelines](dev-guidelines.md) - Coding standards, formatting rules, best practices, and contribution workflows
+- [Documentation Enhancements](documentation-enhancements.md) - History of documentation improvements and enhancement tracking
+- [FAQ](faq.md) - Frequently asked questions, troubleshooting, and common issues resolution
+- [How to Use Docs](how-to-use-docs.md) - Complete guide to navigating and effectively using this documentation
+
+### 🗄️ Integration & Extensions
+- [LLM Integration](llm-integration.md) - Large Language Model integration patterns, adapters, and multi-provider support
+- [Main Application Entry Point](main.py.md) - FastAPI application entry point, configuration, and startup logic
+- [Module Guide](module-guide.md) - Creating, integrating, and deploying new analysis modules for paper review
+- [Setup Guide](setup.md) - Complete installation and configuration instructions for development and production environments
+
+### 📚 Testing & Quality
 - [Test Instructions](test-instructions.md) - Complete guide to running tests, test structure, and testing methodologies across the project
 - [Test Log Levels](test-log-levels.md) - Configuration and control of logging levels during testing and development
 - [Test Log Levels Implementation](test-log-levels-implementation.md) - Technical implementation details of the test logging system
-- [CI/CD](ci-cd.md) - Continuous integration and deployment pipeline documentation and workflows
-
-### 🗄️ Database & Integration
-- [Database Implementation](database-implementation.md) - Database schema design, migration strategies, and data modeling with PostgreSQL/SQLite
-- [LLM Integration](llm-integration.md) - Large Language Model integration patterns, adapters, and multi-provider support
-- [Module Guide](module-guide.md) - Creating, integrating, and deploying new analysis modules for paper review
-
-### 📚 Documentation & Contributing
-- [How to Use Docs](how-to-use-docs.md) - Complete guide to navigating and effectively using this documentation
-- [Contributing to Docs](contributing-docs.md) - Guidelines for contributing to and improving project documentation
-- [Documentation Enhancements](documentation-enhancements.md) - History of documentation improvements and enhancement tracking
-- [Changelog](changelog.md) - Comprehensive version history, release notes, and change tracking
-- [Main Application Entry Point](main.py.md) - FastAPI application entry point, configuration, and startup logic
 
 ### ❓ Help & Support
-- [FAQ](faq.md) - Frequently asked questions, troubleshooting, and common issues resolution
 - [404 Page](404.md) - Custom error page documentation and navigation assistance
+- [FAQ](faq.md) - Frequently asked questions, troubleshooting, and common issues resolution
+- [How to Use Docs](how-to-use-docs.md) - Complete guide to navigating and effectively using this documentation
 
 ---
 

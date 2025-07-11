@@ -87,6 +87,6 @@ backend/tests/conftest.py.backup
 
 ## Related Documentation
 
-- **[Fast Test Cleanup Solution](../FAST_TEST_CLEANUP_SOLUTION.md)** - Complete migration documentation
+- **Fast Test Cleanup Solution** - Complete migration documentation (see backend testing documentation)
 - **[Test Configuration (conftest.py)](conftest.py.md)** - Current unified test configuration
 - **[Testing Guide](../TESTING.md)** - Updated testing documentation

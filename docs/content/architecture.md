@@ -246,6 +246,26 @@ flowchart TD
 
 ---
 
+## Complete Documentation Index
+
+This architecture document contains **comprehensive links to ALL documentation files** in both the backend and frontend sections:
+
+### 📁 Backend Documentation (135+ files)
+Complete coverage of every Python file in `backend/src/` and `backend/tests/` with detailed documentation for:
+- **Source Files**: API endpoints, core configuration, models, repositories, services, schemas, utilities, middleware, and migrations
+- **Test Files**: Unit tests, integration tests, API tests, performance tests, and test utilities
+- **Configuration**: Database migrations, environment setup, and deployment configuration
+
+### 📁 Frontend Documentation (129+ files)  
+Complete coverage of every TypeScript/JavaScript file in `frontend/src/` and `frontend/tests/` with detailed documentation for:
+- **Source Files**: Components, pages, hooks, services, utilities, stores, and application setup
+- **Test Files**: Component tests, hook tests, integration tests, and test utilities
+- **Configuration**: Build configuration, type definitions, and development tools
+
+*All links are organized below by logical sections and component categories for easy navigation.*
+
+---
+
 ### Backend Documentation
 - [Backend Overview](backend/README.md) - Overview of backend source code organization and structure
 - [Backend API Reference](backend/api-reference.md) - Complete REST API documentation with endpoint specifications
@@ -358,7 +378,7 @@ flowchart TD
 - [Test Auth API](backend/tests/api/v1/test_auth.py.md) - Authentication API tests
 - [Test Health API](backend/tests/api/v1/test_health.py.md) - Health check API tests
 - [Test Uploads API](backend/tests/api/v1/test_uploads.py.md) - Upload API tests
-- [Test Users API](backend/tests/api/v1/test_users.py.md) - Users API tests
+- [Test Users API](tests/api/v1/test_users.py.md) - Users API tests
 - [Users API Tests Init](backend/tests/api/v1/users/__init__.py.md) - Users API tests initialization
 - [Users API Test Config](backend/tests/api/v1/users/conftest.py.md) - Users API test configuration
 - [Test Users Core API](backend/tests/api/v1/users/test_core.py.md) - Core users API tests
@@ -385,7 +405,7 @@ flowchart TD
 - [Test Blacklisted Token Model](backend/tests/models/test_blacklisted_token.py.md) - Blacklisted token model tests
 - [Test File Model](backend/tests/models/test_file.py.md) - File model tests
 - [Test User Model](backend/tests/models/test_user.py.md) - User model tests
-- [Test User Repository](tests/models/test_user_repository.py.md) - User repository tests
+- [Test User Repository](backend/tests/repositories/test_user.py.md) - User repository tests
 - [Test Used Password Reset Token Model](backend/tests/models/test_used_password_reset_token.py.md) - Used password reset token model tests
 
 ### Performance Tests
