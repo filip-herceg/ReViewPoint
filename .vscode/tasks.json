@@ -667,16 +667,10 @@
         {
             "label": "ReViewPoint: Install Dependencies",
             "type": "shell",
-            "command": "npx",
+            "command": "pwsh",
             "args": [
-                "concurrently",
-                "--names",
-                "ROOT,BACKEND,FRONTEND",
-                "--prefix-colors",
-                "yellow,blue,green",
-                "\"pnpm install\"",
-                "\"cd backend && pip install -e .\"",
-                "\"cd frontend && pnpm install\""
+                "-Command",
+                "npx concurrently --names ROOT,BACKEND,FRONTEND --prefix-colors yellow,blue,green 'pnpm install' 'cd backend; pip install -e .' 'cd frontend; pnpm install'"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
