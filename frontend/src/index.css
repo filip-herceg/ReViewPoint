@@ -1,21 +1,201 @@
 @import "tailwindcss";
 
-/* ================= SEMANTIC TAILWIND COLOR SYSTEM =================== */
-/*
-  This section provides a clear, maintainable mapping of all semantic Tailwind color classes
-  (backgrounds, text, borders, rings, and effects) to CSS variables, enabling full themeability.
-  
-  ── Structure ──
-  1. Backgrounds
-  2. Text/Foregrounds
-  3. Borders
-  4. Rings (focus, etc)
-  5. Effects & Shadows
-  6. Gradients
-  7. Utility/Other
-*/
+/* =========================
+   THEME VARIABLES (CSS VARS)
+   ========================= */
+:root {
+  --radius: 0.75rem;
+  /* Modern Light Theme - Slate Color Palette */
+  --background: #f8fafc;
+  /* Slate 50 */
+  --foreground: #334155;
+  /* Slate 700 */
+  --text-main: #1e293b;
+  /* Slate 800 */
+  --text-secondary: #64748b;
+  /* Slate 500 */
+  --text-accent: #475569;
+  /* Slate 600 */
+  --text-inverse: #ffffff;
+  --text-success: #22c55e;
+  --text-warning: #f59e0b;
+  --text-error: #ef4444;
+  --card-foreground: var(--text-main);
+  --popover-foreground: var(--text-main);
+  --secondary-foreground: var(--text-main);
+  --muted-foreground: var(--text-secondary);
+  --accent-foreground: var(--text-accent);
+  --destructive-foreground: var(--text-inverse);
+  --primary-foreground: #f1f5f9;
+  /* Slate 100 */
+  --sidebar-foreground: var(--text-accent);
+  --sidebar-primary-foreground: var(--text-inverse);
+  --sidebar-accent-foreground: var(--text-accent);
+  --card: #ffffff;
+  --popover: #ffffff;
+  --primary: #475569;
+  /* Slate 600 */
+  --secondary: #f1f5f9;
+  /* Slate 100 */
+  --muted: #f8fafc;
+  /* Slate 50 */
+  --accent: #e2e8f0;
+  /* Slate 200 */
+  --destructive: #ef4444;
+  --border: #e2e8f0;
+  /* Slate 200 */
+  --input: #e2e8f0;
+  --ring: #475569;
+  /* Slate 600 */
+  --chart-1: #475569;
+  /* Slate 600 */
+  --chart-2: #64748b;
+  /* Slate 500 */
+  --chart-3: #94a3b8;
+  /* Slate 400 */
+  --chart-4: #ef4444;
+  /* Red */
+  --chart-5: #22c55e;
+  /* Green */
+  --sidebar: #f1f5f9;
+  /* Slate 100 */
+  --sidebar-primary: #475569;
+  /* Slate 600 */
+  --sidebar-accent: #e2e8f0;
+  /* Slate 200 */
+  --shadow-color: #000000;
+  --glass-bg: #ffffff;
+  --glass-border: #ffffff;
+  --overlay-light: #ffffff;
+  --nav-shimmer: #ffffff;
+  --gradient-accent1: #6366f1;
+  --gradient-accent2: #3b82f6;
+  --gradient-accent3: #10b981;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #475569;
+  --space-0: 0rem;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --color-success: #22c55e;
+  --color-success-foreground: #ffffff;
+  --color-warning: #f59e0b;
+  --color-warning-foreground: #ffffff;
+  --color-error: #ef4444;
+  --color-error-foreground: #ffffff;
+  --color-info: #3b82f6;
+  --color-info-foreground: #ffffff;
+}
 
-/* 1. Backgrounds */
+.dark {
+  --background: #020617;
+  /* Slate 950 */
+  --foreground: #cbd5e1;
+  /* Slate 300 */
+  --text-main: #f1f5f9;
+  /* Slate 100 */
+  --text-secondary: #cbd5e1;
+  /* Slate 300 */
+  --text-accent: #94a3b8;
+  /* Slate 400 */
+  --text-inverse: #1e293b;
+  /* Slate 800 */
+  --card: #0f172a;
+  /* Slate 900 */
+  --card-foreground: #f1f5f9;
+  /* Slate 100 */
+  --popover: #0f172a;
+  /* Slate 900 */
+  --popover-foreground: #f1f5f9;
+  /* Slate 100 */
+  --primary: #94a3b8;
+  /* Slate 400 */
+  --primary-foreground: #f1f5f9;
+  /* Slate 100 */
+  --secondary: #1e293b;
+  /* Slate 800 */
+  --secondary-foreground: #cbd5e1;
+  /* Slate 300 */
+  --muted: #1e293b;
+  /* Slate 800 */
+  --muted-foreground: #94a3b8;
+  /* Slate 400 */
+  --accent: #1e293b;
+  /* Slate 800 */
+  --accent-foreground: #cbd5e1;
+  /* Slate 300 */
+  --destructive: #f87171;
+  --destructive-foreground: #ffffff;
+  --border: #334155;
+  /* Slate 700 */
+  --input: #334155;
+  /* Slate 700 */
+  --ring: #94a3b8;
+  /* Slate 400 */
+  --chart-1: #94a3b8;
+  /* Slate 400 */
+  --chart-2: #64748b;
+  /* Slate 500 */
+  --chart-3: #cbd5e1;
+  /* Slate 300 */
+  --chart-4: #f87171;
+  /* Red */
+  --chart-5: #34d399;
+  /* Green */
+  --sidebar: #0f172a;
+  /* Slate 900 */
+  --sidebar-foreground: #cbd5e1;
+  /* Slate 300 */
+  --sidebar-primary: #94a3b8;
+  /* Slate 400 */
+  --sidebar-primary-foreground: #0f172a;
+  /* Slate 900 */
+  --sidebar-accent: #1e293b;
+  /* Slate 800 */
+  --sidebar-accent-foreground: #cbd5e1;
+  /* Slate 300 */
+  --sidebar-border: #334155;
+  /* Slate 700 */
+  --sidebar-ring: #94a3b8;
+  /* Slate 400 */
+  --shadow-color: #000000;
+  --glass-bg: #0f172a;
+  --glass-border: #ffffff;
+  --overlay-light: #ffffff;
+  --nav-shimmer: #ffffff;
+  --gradient-accent1: #6366f1;
+  --gradient-accent2: #3b82f6;
+  --gradient-accent3: #34d399;
+  --color-success: #34d399;
+  --color-success-foreground: #ffffff;
+  --color-warning: #fbbf24;
+  --color-warning-foreground: #0f172a;
+  --color-error: #f87171;
+  --color-error-foreground: #ffffff;
+  --color-info: #60a5fa;
+  --color-info-foreground: #ffffff;
+}
+
+/* =========================
+   SEMANTIC UTILITY CLASSES
+   ========================= */
+/* Backgrounds */
 .bg-background {
   background-color: var(--background) !important;
 }
@@ -52,7 +232,10 @@
   background-color: var(--color-warning) !important;
 }
 
-.bg-error,
+.bg-error {
+  background-color: var(--color-error) !important;
+}
+
 .bg-destructive {
   background-color: var(--destructive) !important;
 }
@@ -61,7 +244,7 @@
   background-color: var(--color-info) !important;
 }
 
-/* Opacity variants */
+/* Background Opacity Variants */
 .bg-success\/10 {
   background-color: color-mix(in srgb, var(--color-success) 10%, transparent) !important;
 }
@@ -114,7 +297,7 @@
   background-color: color-mix(in srgb, var(--card) 80%, transparent) !important;
 }
 
-/* 2. Text / Foregrounds */
+/* Text / Foregrounds */
 .text-foreground {
   color: var(--foreground) !important;
 }
@@ -145,9 +328,12 @@
   color: var(--color-success) !important;
 }
 
-.text-warning,
-.text-warning-foreground {
+.text-warning {
   color: var(--color-warning) !important;
+}
+
+.text-warning-foreground {
+  color: #fff !important;
 }
 
 .text-error,
@@ -169,7 +355,11 @@
   color: var(--accent-foreground) !important;
 }
 
-/* 3. Borders */
+.text-primary-foreground {
+  color: var(--primary-foreground, #f1f5f9) !important;
+}
+
+/* Borders */
 .border-border,
 .border-default {
   border-color: var(--border) !important;
@@ -208,7 +398,7 @@
   border-color: var(--color-info) !important;
 }
 
-/* 4. Rings (focus, etc) */
+/* Rings (focus, etc) */
 .ring-primary,
 .focus\:ring-primary:focus,
 .focus\:ring-primary:focus-visible {
@@ -232,7 +422,10 @@
   --tw-ring-color: var(--color-info) !important;
 }
 
-/* 5. Effects & Shadows */
+/* =========================
+   COMPONENT & EFFECT CLASSES
+   ========================= */
+/* Shadows, Glass, Gradients, Typography, Buttons, Interactive, etc. */
 .glass-card {
   background-color: color-mix(in srgb, var(--card) 80%, transparent);
   backdrop-filter: blur(12px);
@@ -282,391 +475,9 @@
   background-clip: text;
 }
 
-
-
-
-
-:root {
-  --radius: 0.75rem;
-
-  /* Modern Light Theme - Slate Color Palette */
-  --background: #f8fafc;
-  /* Slate 50 */
-  --foreground: #334155;
-  /* Slate 700 */
-
-  /* Centralized text color tokens */
-  --text-main: #1e293b;
-  /* Slate 800 - Main readable text */
-  --text-secondary: #64748b;
-  /* Slate 500 - Secondary text */
-  --text-accent: #475569;
-  /* Slate 600 - Accent text */
-  --text-inverse: #ffffff;
-  /* White for text on dark backgrounds */
-  --text-success: #22c55e;
-  /* Green */
-  --text-warning: #f59e0b;
-  /* Amber */
-  --text-error: #ef4444;
-  /* Red */
-
-  /* Aliases for DRY usage */
-  --card-foreground: var(--text-main);
-  --popover-foreground: var(--text-main);
-  --secondary-foreground: var(--text-main);
-  --muted-foreground: var(--text-secondary);
-  --accent-foreground: var(--text-accent);
-  --destructive-foreground: var(--text-inverse);
-  --primary-foreground: var(--text-inverse);
-
-
-  --sidebar-foreground: var(--text-accent);
-  --sidebar-primary-foreground: var(--text-inverse);
-  --sidebar-accent-foreground: var(--text-accent);
-  --card: #ffffff;
-  /* White */
-  --popover: #ffffff;
-  --primary: #475569;
-  /* Slate 600 as primary */
-  --secondary: #f1f5f9;
-  /* Slate 100 */
-  --muted: #f8fafc;
-  /* Slate 50 */
-  --accent: #e2e8f0;
-  /* Slate 200 */
-  --destructive: #ef4444;
-  /* Red */
-  --border: #e2e8f0;
-  /* Slate 200 */
-  --input: #e2e8f0;
-  --ring: #475569;
-  /* Slate 600 */
-
-  /* Chart colors - Slate palette variants */
-  --chart-1: #475569;
-  /* Slate 600 */
-  --chart-2: #64748b;
-  /* Slate 500 */
-  --chart-3: #94a3b8;
-  /* Slate 400 */
-  --chart-4: #ef4444;
-  /* Red */
-  --chart-5: #22c55e;
-  /* Green */
-
-  /* Sidebar colors - Slate themed */
-  --sidebar: #f1f5f9;
-  /* Slate 100 */
-  --sidebar-foreground: var(--text-accent);
-  /* Slate 600 */
-  --sidebar-primary: #475569;
-  /* Slate 600 */
-  --sidebar-primary-foreground: var(--text-inverse);
-  --sidebar-accent: #e2e8f0;
-  /* Slate 200 */
-  --sidebar-accent-foreground: var(--text-accent);
-
-  /* Effect colors for overlays and interactions */
-  --shadow-color: #000000;
-  --glass-bg: #ffffff;
-  --glass-border: #ffffff;
-  --overlay-light: #ffffff;
-  --nav-shimmer: #ffffff;
-  --gradient-accent1: #6366f1;
-  --gradient-accent2: #3b82f6;
-  --gradient-accent3: #10b981;
-  --sidebar-border: #e2e8f0;
-  /* Slate 200 */
-  --sidebar-ring: #475569;
-  /* Slate 600 */
-
-  /* Design System - Spacing Tokens */
-  --space-0: 0rem;
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-12: 3rem;
-  --space-16: 4rem;
-  --space-20: 5rem;
-  --space-24: 6rem;
-  --space-32: 8rem;
-
-  /* Design System - Typography Tokens */
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-base: 1rem;
-  --font-size-lg: 1.125rem;
-  --font-size-xl: 1.25rem;
-  --font-size-2xl: 1.5rem;
-  --font-size-3xl: 1.875rem;
-  --font-size-4xl: 2.25rem;
-
-  /* Design System - Semantic Colors */
-  --color-success: #22c55e;
-  --color-success-foreground: #ffffff;
-  --color-warning: #f59e0b;
-  --color-warning-foreground: #ffffff;
-  --color-error: #ef4444;
-  --color-error-foreground: #ffffff;
-  --color-info: #3b82f6;
-  --color-info-foreground: #ffffff;
-}
-
-.dark {
-  /* Modern Dark Theme - Slate Color Palette */
-  --background: #020617;
-  /* Slate 950 */
-  --foreground: #cbd5e1;
-  /* Slate 300 */
-
-  /* Dark mode text tokens */
-  --text-main: #f1f5f9;
-  /* Slate 100 - Main readable text */
-  --text-secondary: #cbd5e1;
-  /* Slate 300 - Secondary text */
-  --text-accent: #94a3b8;
-  /* Slate 400 - Accent text */
-  --text-inverse: #1e293b;
-  /* Slate 800 for text on light backgrounds */
-
-  --card: #0f172a;
-  /* Slate 900 */
-  --card-foreground: #f1f5f9;
-  /* Slate 100 */
-  --popover: #0f172a;
-  /* Slate 900 */
-  --popover-foreground: #f1f5f9;
-  /* Slate 100 */
-  --primary: #94a3b8;
-  /* Slate 400 */
-  --primary-foreground: #0f172a;
-  /* Slate 900 */
-  --secondary: #1e293b;
-  /* Slate 800 */
-  --secondary-foreground: #cbd5e1;
-  /* Slate 300 */
-  --muted: #1e293b;
-  /* Slate 800 */
-  --muted-foreground: #94a3b8;
-  /* Slate 400 */
-  --accent: #1e293b;
-  /* Slate 800 */
-  --accent-foreground: #cbd5e1;
-  /* Slate 300 */
-  --destructive: #f87171;
-  --destructive-foreground: #ffffff;
-  --border: #334155;
-  /* Slate 700 */
-  --input: #334155;
-  /* Slate 700 */
-  --ring: #94a3b8;
-  /* Slate 400 */
-
-  /* Chart colors - Dark slate variants */
-  --chart-1: #94a3b8;
-  /* Slate 400 */
-  --chart-2: #64748b;
-  /* Slate 500 */
-  --chart-3: #cbd5e1;
-  /* Slate 300 */
-  --chart-4: #f87171;
-  /* Red */
-  --chart-5: #34d399;
-  /* Green */
-
-  /* Sidebar dark colors - Slate themed */
-  --sidebar: #0f172a;
-  /* Slate 900 */
-  --sidebar-foreground: #cbd5e1;
-  /* Slate 300 */
-  --sidebar-primary: #94a3b8;
-  /* Slate 400 */
-  --sidebar-primary-foreground: #0f172a;
-  /* Slate 900 */
-  --sidebar-accent: #1e293b;
-  /* Slate 800 */
-  --sidebar-accent-foreground: #cbd5e1;
-  /* Slate 300 */
-  --sidebar-border: #334155;
-  /* Slate 700 */
-  --sidebar-ring: #94a3b8;
-  /* Slate 400 */
-
-  /* Dark mode effect colors for overlays and interactions */
-  --shadow-color: #000000;
-  --glass-bg: #0f172a;
-  --glass-border: #ffffff;
-  --overlay-light: #ffffff;
-  --nav-shimmer: #ffffff;
-  --gradient-accent1: #6366f1;
-  --gradient-accent2: #3b82f6;
-  --gradient-accent3: #34d399;
-
-  /* Design System - Dark Mode Semantic Colors */
-  --color-success: #34d399;
-  --color-success-foreground: #ffffff;
-  --color-warning: #fbbf24;
-  --color-warning-foreground: #0f172a;
-  --color-error: #f87171;
-  --color-error-foreground: #ffffff;
-  --color-info: #60a5fa;
-  --color-info-foreground: #ffffff;
-}
-
-/* Centralized Utility Classes for Consistent Color Usage */
-.text-main {
-  color: var(--text-main);
-}
-
-.text-secondary {
-  color: var(--text-secondary);
-}
-
-.text-accent {
-  color: var(--text-accent);
-}
-
-.text-inverse {
-  color: var(--text-inverse);
-}
-
-.text-success {
-  color: var(--text-success);
-}
-
-.text-warning {
-  color: var(--text-warning);
-}
-
-.text-error {
-  color: var(--text-error);
-}
-
-/* Additional utility classes for semantic states */
-.border-error {
-  border-color: var(--destructive);
-}
-
-.border-success {
-  border-color: var(--color-success);
-}
-
-.border-warning {
-  border-color: var(--color-warning);
-}
-
-/* More comprehensive utility classes */
-.text-muted {
-  color: var(--muted-foreground);
-}
-
-.bg-background {
-  background-color: var(--background);
-}
-
-.bg-foreground {
-  background-color: var(--foreground);
-}
-
-/* Specific utility classes for common patterns */
-.border-default {
-  border-color: var(--border);
-}
-
-.ring-primary {
-  --tw-ring-color: var(--primary);
-}
-
-.focus\:ring-primary:focus {
-  --tw-ring-color: var(--primary);
-}
-
-.bg-primary {
-  background-color: var(--primary);
-}
-
-.bg-secondary {
-  background-color: var(--secondary);
-}
-
-.bg-muted {
-  background-color: var(--muted);
-}
-
-.bg-accent {
-  background-color: var(--accent);
-}
-
-.bg-card {
-  background-color: var(--card);
-}
-
-.bg-success {
-  background-color: var(--color-success);
-}
-
-.bg-warning {
-  background-color: var(--color-warning);
-}
-
-.bg-error {
-  background-color: var(--color-error);
-}
-
-.bg-destructive {
-  background-color: var(--destructive);
-}
-
-.border-default {
-  border-color: var(--border);
-}
-
-.border-primary {
-  border-color: var(--primary);
-}
-
-.border-secondary {
-  border-color: var(--secondary);
-}
-
-.border-accent {
-  border-color: var(--accent);
-}
-
-/* Interactive button styles using centralized colors */
-.btn-primary {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  border: 1px solid var(--primary);
-}
-
-.btn-primary:hover {
-  background-color: var(--primary);
-  opacity: 0.9;
-}
-
-.btn-secondary {
-  background-color: var(--secondary);
-  color: var(--secondary-foreground);
-  border: 1px solid var(--border);
-}
-
-.btn-destructive {
-  background-color: var(--destructive);
-  color: var(--destructive-foreground);
-  border: 1px solid var(--destructive);
-}
-
-.btn-success {
-  background-color: var(--color-success);
-  color: var(--color-success-foreground);
-  border: 1px solid var(--color-success);
-}
-
+/* =========================
+   COMPONENT STYLES
+   ========================= */
 /* Base Styles */
 * {
   border-color: var(--border);
@@ -726,6 +537,30 @@ body {
   line-height: 1.25;
   letter-spacing: 0.025em;
   font-weight: 500;
+}
+
+/* Interactive button styles using centralized colors */
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border: 1px solid var(--primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary);
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+  border: 1px solid var(--border);
+}
+
+.btn-destructive {
+  background-color: var(--destructive);
+  color: var(--destructive-foreground);
+  border: 1px solid var(--destructive);
 }
 
 /* Modern Interactive Elements */

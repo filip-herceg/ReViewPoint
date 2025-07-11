@@ -50,14 +50,15 @@ REQUEST_ID_HEADER: Final[str] = "X-Request-ID"
 
 # Context variable to store request ID per request
 request_id_ctx_var: Final[contextvars.ContextVar[str | None]] = contextvars.ContextVar(
-    "request_id", default=None
+    "request_id",
+    default=None,
 )
 current_user_id_ctx_var: Final[contextvars.ContextVar[int | None]] = (
     contextvars.ContextVar("user_id", default=None)
 )
 
 oauth2_scheme: Final[OAuth2PasswordBearer] = OAuth2PasswordBearer(
-    tokenUrl="/api/v1/auth/login"
+    tokenUrl="/api/v1/auth/login",
 )
 api_key_header: Final[APIKeyHeader] = APIKeyHeader(name="X-API-Key", auto_error=False)
 
@@ -65,9 +66,7 @@ MAX_LIMIT: Final[int] = 100
 
 
 def _get_dev_admin_user() -> User:
-    """
-    Return a development admin user when auth is disabled.
-    """
+    """Return a development admin user when auth is disabled."""
     return User(
         id=0,
         email="dev@example.com",
@@ -153,7 +152,7 @@ registry.register("user_repository", lambda: user_repository)
 registry.register(
     "blacklist_token",
     lambda: importlib.import_module(
-        "src.repositories.blacklisted_token"
+        "src.repositories.blacklisted_token",
     ).blacklist_token,
 )
 registry.register(
@@ -167,7 +166,7 @@ registry.register(
 registry.register(
     "password_validation_error",
     lambda: importlib.import_module(
-        "src.utils.validation"
+        "src.utils.validation",
     ).get_password_validation_error,
 )
 registry.register(
@@ -185,26 +184,28 @@ def get_user_repository_func() -> object:
 
 
 def get_blacklist_token() -> Callable[..., Awaitable[None]]:
-    return cast(Callable[..., Awaitable[None]], registry.get("blacklist_token"))
+    return cast("Callable[..., Awaitable[None]]", registry.get("blacklist_token"))
 
 
 def get_user_action_limiter() -> Callable[..., Awaitable[None]]:
-    return cast(Callable[..., Awaitable[None]], registry.get("user_action_limiter"))
+    return cast("Callable[..., Awaitable[None]]", registry.get("user_action_limiter"))
 
 
 def get_validate_email() -> Callable[[str], bool]:
-    return cast(Callable[[str], bool], registry.get("validate_email"))
+    return cast("Callable[[str], bool]", registry.get("validate_email"))
 
 
 def get_password_validation_error() -> Callable[[str], str | None]:
-    return cast(Callable[[str], str | None], registry.get("password_validation_error"))
+    return cast(
+        "Callable[[str], str | None]", registry.get("password_validation_error")
+    )
 
 
-def get_async_refresh_access_token() -> (
-    Callable[[AsyncSession, str], Awaitable[object]]
-):
+def get_async_refresh_access_token() -> Callable[
+    [AsyncSession, str], Awaitable[object]
+]:
     async_refresh_access_token = cast(
-        Callable[[AsyncSession, str, str, str], Awaitable[object]],
+        "Callable[[AsyncSession, str, str, str], Awaitable[object]]",
         registry.get("async_refresh_access_token"),
     )
 
@@ -269,7 +270,9 @@ class HealthCheck:
 
     @classmethod
     def register(
-        cls, name: str, check_func: Callable[[], bool | Awaitable[bool]]
+        cls,
+        name: str,
+        check_func: Callable[[], bool | Awaitable[bool]],
     ) -> None:
         cls._checks[name] = check_func
 
@@ -376,8 +379,7 @@ def get_refreshable_settings() -> object:
 
 
 class PaginationParams:
-    """
-    Standardized pagination parameters for API endpoints.
+    """Standardized pagination parameters for API endpoints.
 
     Args:
         offset (int): Number of items to skip (default 0, must be >= 0).
@@ -386,6 +388,7 @@ class PaginationParams:
     Usage:
         params = Depends(pagination_params)
         items = repo.list(offset=params.offset, limit=params.limit)
+
     """
 
     offset: int
@@ -409,19 +412,24 @@ def pagination_params(
         description=f"Max number of items to return (max {MAX_LIMIT})",
     ),
 ) -> PaginationParams:
-    """
-    Dependency to standardize and validate pagination query parameters.
+    """Dependency to standardize and validate pagination query parameters.
 
-    Parameters:
+    Parameters
+    ----------
         offset (int): Number of items to skip (>=0, default 0)
         limit (int): Number of items to return (1 to MAX_LIMIT, default 20)
-    Returns:
+
+    Returns
+    -------
         PaginationParams: Validated pagination parameters.
-    Raises:
+
+    Raises
+    ------
         HTTPException(400): If offset or limit is out of bounds.
     Usage:
         params = Depends(pagination_params)
         items = repo.list(offset=params.offset, limit=params.limit)
+
     """
     if offset < 0:
         logger.error(f"Invalid offset: {offset}")
@@ -461,18 +469,23 @@ async def get_current_user(
     token: str = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_async_session),
 ) -> User | None:
-    """
-    Dependency to extract and validate a JWT token from the request and fetch the current user from the database.
+    """Dependency to extract and validate a JWT token from the request and fetch the current user from the database.
 
-    Parameters:
+    Parameters
+    ----------
         token (str): JWT access token from the Authorization header.
         session (AsyncSession): SQLAlchemy async session.
-    Returns:
+
+    Returns
+    -------
         User: The authenticated and active user instance.
-    Raises:
+
+    Raises
+    ------
         HTTPException(401): If token is invalid/expired, or user is not found/inactive/deleted.
     Usage:
         user = Depends(get_current_user)
+
     """
     settings = get_settings()
     if not settings.auth_enabled:
@@ -524,23 +537,26 @@ async def optional_get_current_user(
     token: str = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_async_session),
 ) -> User | None:
-    """
-    Like get_current_user, but returns None instead of raising if token is invalid/missing.
+    """Like get_current_user, but returns None instead of raising if token is invalid/missing.
 
-    Parameters:
+    Parameters
+    ----------
         token (str): JWT access token from the Authorization header.
         session (AsyncSession): SQLAlchemy async session.
-    Returns:
+
+    Returns
+    -------
         User | None: The authenticated user, or None if not authenticated.
     Usage:
         user = Depends(optional_get_current_user)
+
     """
     settings = get_settings()
     if not settings.auth_enabled:
         return _get_dev_admin_user()
     try:
         payload = verify_access_token(
-            token
+            token,
         )  # Only pass token, matches function signature
         user_id_raw = payload.get("sub")
         if user_id_raw is None:
@@ -555,16 +571,17 @@ async def optional_get_current_user(
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """
-    Dependency that provides a SQLAlchemy AsyncSession for database operations.
+    """Dependency that provides a SQLAlchemy AsyncSession for database operations.
 
     Yields:
         AsyncSession: SQLAlchemy async session for DB operations.
+
     Raises:
         HTTPException(500): If database session cannot be established or used.
     Usage:
         async def endpoint(db: AsyncSession = Depends(get_db)):
             ...
+
     """
     from src.core.database import AsyncSessionLocal, ensure_engine_initialized
 
@@ -581,13 +598,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     except Exception as exc:
         logger.error(f"Database session error: {exc}")
         await session.rollback()
-        http_error(
-            status.HTTP_500_INTERNAL_SERVER_ERROR,
-            "Database error. Please try again later.",
-            logger.error,
-            None,
-            exc,
-        )
+        raise  # Let FastAPI handle the exception properly
     finally:
         await session.close()
         logger.info("Database session closed.")
@@ -596,21 +607,26 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 async def get_current_active_user(
     user: User | None = Depends(get_current_user),
 ) -> User | None:
-    """
-    Dependency to ensure the current user is active.
+    """Dependency to ensure the current user is active.
 
-    Parameters:
+    Parameters
+    ----------
         user (User): The user instance from get_current_user.
-    Returns:
+
+    Returns
+    -------
         User: The active user instance.
-    Raises:
+
+    Raises
+    ------
         HTTPException(403): If the user is inactive or deleted.
     Usage:
         user = Depends(get_current_active_user)
+
     """
     if not user or not user.is_active or user.is_deleted:
         logger.error(
-            f"Inactive or deleted user tried to access: user_id={getattr(user, 'id', None)}"
+            f"Inactive or deleted user tried to access: user_id={getattr(user, 'id', None)}",
         )
         http_error(
             status.HTTP_403_FORBIDDEN,
@@ -623,15 +639,18 @@ async def get_current_active_user(
 
 
 def get_request_id(request: Request) -> str:
-    """
-    Dependency to extract or generate a request ID for tracing.
+    """Dependency to extract or generate a request ID for tracing.
 
-    Parameters:
+    Parameters
+    ----------
         request (Request): FastAPI request object.
-    Returns:
+
+    Returns
+    -------
         str: The request ID (from header or generated UUID).
     Usage:
         request_id = Depends(get_request_id)
+
     """
     req_id = request.headers.get(REQUEST_ID_HEADER)
     # Basic validation: must be a valid UUID or a string of reasonable length
@@ -647,13 +666,13 @@ def get_request_id(request: Request) -> str:
 
 
 def get_current_request_id() -> str | None:
-    """
-    Helper to get the current request ID from contextvar.
+    """Helper to get the current request ID from contextvar.
 
     Returns:
         str | None: The current request ID, or None if not set.
     Usage:
         req_id = get_current_request_id()
+
     """
     return request_id_ctx_var.get()
 
@@ -662,13 +681,16 @@ def get_current_request_id() -> str | None:
 async def validate_api_key(
     api_key: str | None = Security(api_key_header),
 ) -> bool:
-    """
-    Validate the API key from the X-API-Key header.
+    """Validate the API key from the X-API-Key header.
 
-    Parameters:
+    Parameters
+    ----------
         api_key (str | None): API key from the X-API-Key header.
-    Returns:
+
+    Returns
+    -------
         bool: True if the API key is valid, False otherwise.
+
     """
     settings = get_settings()
 
@@ -679,7 +701,7 @@ async def validate_api_key(
     # If API key validation is enabled but no key provided
     if not api_key:
         logger.warning(
-            "API key validation is enabled but no API key provided in request"
+            "API key validation is enabled but no API key provided in request",
         )
         return False
 
@@ -694,15 +716,18 @@ async def validate_api_key(
 
 
 def require_api_key(api_key: str | None = Header(None, alias="X-API-Key")) -> None:
-    """
-    Dependency to require a valid API key.
+    """Dependency to require a valid API key.
 
-    Parameters:
+    Parameters
+    ----------
         api_key (str | None): API key from the X-API-Key header.
-    Raises:
+
+    Raises
+    ------
         HTTPException(401): If the API key is missing or invalid.
     Usage:
         _ = Depends(require_api_key)
+
     """
     settings = get_settings()
 
@@ -743,8 +768,7 @@ async def get_current_user_with_api_key(
     session: AsyncSession = Depends(get_async_session),
     _: None = Depends(require_api_key),
 ) -> User:
-    """
-    Like get_current_user, but also requires a valid API key.
+    """Like get_current_user, but also requires a valid API key.
     This function should be used for endpoints that require both
     JWT authentication and API key validation.
     """
@@ -756,19 +780,19 @@ async def get_current_user_with_api_key(
             logger.error,
         )
         raise RuntimeError(
-            "Invalid or missing user."
+            "Invalid or missing user.",
         )  # Defensive, should never reach here
     return user
 
 
 def require_admin(current_user: User = Depends(get_current_active_user)) -> User:
-    """
-    Dependency that ensures the current user is an admin.
+    """Dependency that ensures the current user is an admin.
     Raises 403 if not.
     """
     if not current_user or not getattr(current_user, "is_admin", False):
         raise HTTPException(
-            status.HTTP_403_FORBIDDEN, detail="Admin privileges required."
+            status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required.",
         )
     return current_user
 
@@ -776,20 +800,23 @@ def require_admin(current_user: User = Depends(get_current_active_user)) -> User
 def require_api_key_for_exports(
     api_key: str | None = Header(None, alias="X-API-Key"),
 ) -> None:
-    """
-    Dependency to validate API key for export endpoints based on global settings.
+    """Dependency to validate API key for export endpoints based on global settings.
     If REVIEWPOINT_API_KEY_ENABLED is true, this requires a valid API key.
     If REVIEWPOINT_API_KEY_ENABLED is false, this function does nothing and allows access.
 
     NOTE: This function is deprecated. Use get_current_user_with_export_api_key instead
     which handles both JWT and API key validation in one dependency.
 
-    Parameters:
+    Parameters
+    ----------
         api_key (str): API key from the X-API-Key header.
-    Raises:
+
+    Raises
+    ------
         HTTPException(401): If API keys are enabled and the API key is missing or invalid.
     Usage:
         _ = Depends(require_api_key_for_exports)
+
     """
     settings = get_settings()
 
@@ -800,7 +827,7 @@ def require_api_key_for_exports(
     # API key validation is enabled, so require it
     if not api_key:
         logger.warning(
-            "Export endpoint accessed without API key when API key validation is enabled"
+            "Export endpoint accessed without API key when API key validation is enabled",
         )
         http_error(
             status.HTTP_401_UNAUTHORIZED,
@@ -832,8 +859,7 @@ async def get_current_user_with_export_api_key(
     request: Request,
     session: AsyncSession = Depends(get_async_session),
 ) -> User | None:
-    """
-    Authentication dependency for export endpoints that respects global API key settings.
+    """Authentication dependency for export endpoints that respects global API key settings.
 
     When REVIEWPOINT_AUTH_ENABLED is false:
         - Returns development admin user regardless of token validity
@@ -885,7 +911,7 @@ async def get_current_user_with_export_api_key(
             api_key = request.headers.get("X-API-Key")
             if not api_key:
                 logger.warning(
-                    "Export endpoint accessed without API key when API key validation is enabled"
+                    "Export endpoint accessed without API key when API key validation is enabled",
                 )
                 http_error(
                     status.HTTP_401_UNAUTHORIZED,
@@ -897,7 +923,7 @@ async def get_current_user_with_export_api_key(
             configured_api_key = settings.api_key
             if not configured_api_key:
                 logger.warning(
-                    "API key validation required but no API key is configured"
+                    "API key validation required but no API key is configured",
                 )
                 http_error(
                     status.HTTP_401_UNAUTHORIZED,
@@ -915,19 +941,17 @@ async def get_current_user_with_export_api_key(
                 )
 
         return current_user
-    else:
-        # No Authorization header provided
-        if settings.api_key_enabled:
-            # API key validation is enabled, so authentication is required
-            http_error(
-                status.HTTP_401_UNAUTHORIZED,
-                "Authentication required",
-                logger.warning,
-            )
-            return None
-        else:
-            # API key validation is disabled, allow unauthenticated access
-            return None
+    # No Authorization header provided
+    if settings.api_key_enabled:
+        # API key validation is enabled, so authentication is required
+        http_error(
+            status.HTTP_401_UNAUTHORIZED,
+            "Authentication required",
+            logger.warning,
+        )
+        return None
+    # API key validation is disabled, allow unauthenticated access
+    return None
 
 
 get_user_repository: Callable[[], object] = lru_cache()(get_user_repository_func)

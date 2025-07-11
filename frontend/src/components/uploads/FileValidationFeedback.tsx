@@ -121,7 +121,7 @@ const ValidationIssue: React.FC<ValidationIssueProps> = ({
     return (
         <Alert variant={getAlertVariant()} className={cn(compact ? "py-2" : "py-3")}>
             <div className="flex items-start justify-between gap-2">
-                <div className="flex items-start gap-2 min-w-0 flex-1">
+                <div className="flex items-start min-w-0 flex-1 gap-3">
                     {getIcon()}
                     <div className="min-w-0 flex-1">
                         <AlertDescription className="text-sm">
@@ -440,6 +440,7 @@ export const FileValidationFeedback: React.FC<FileValidationFeedbackProps> = ({
                 </div>
             )}
 
+
             {/* Validation Errors */}
             {displayErrors.length > 0 && (
                 <div className="space-y-2">
@@ -478,7 +479,7 @@ export const FileValidationFeedback: React.FC<FileValidationFeedbackProps> = ({
                     </h4>
                     <div className="space-y-2">
                         {displayWarnings.map((warning, index) => (
-                            <ValidationIssue
+                            <div className="py-1"><ValidationIssue
                                 key={index}
                                 issue={warning}
                                 type="warning"
@@ -486,7 +487,7 @@ export const FileValidationFeedback: React.FC<FileValidationFeedbackProps> = ({
                                 compact={compact}
                                 dismissible={dismissible}
                                 onDismiss={onDismissIssue}
-                            />
+                            /></div>
                         ))}
 
                         {hiddenWarningsCount > 0 && (

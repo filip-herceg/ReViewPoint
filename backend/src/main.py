@@ -1,8 +1,10 @@
 import os
 import sys
-from typing import Any, Final, Literal
+import time
+from typing import Any, Final
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -13,25 +15,27 @@ from src.api.v1.health import router as health_router
 from src.api.v1.uploads import router as uploads_router
 from src.api.v1.users import all_routers
 from src.api.v1.websocket import router as websocket_router
+from src.core.app_logging import init_logging
 from src.core.config import get_settings
 from src.core.documentation import get_enhanced_openapi_schema
 from src.core.events import on_shutdown, on_startup
-from src.core.logging import init_logging
 from src.middlewares.logging import RequestLoggingMiddleware
 
-PYTEST_ENV_VAR: Final[Literal["PYTEST_CURRENT_TEST"]] = "PYTEST_CURRENT_TEST"
+PYTEST_ENV_VAR: Final = "PYTEST_CURRENT_TEST"
 if PYTEST_ENV_VAR not in os.environ:
     logger.remove()
     logger.add(sys.stdout, level="INFO")
 
 
 def create_app() -> FastAPI:
-    """
-    Create and configure the FastAPI application.
+    """Create and configure the FastAPI application.
+
     Returns:
         FastAPI: The configured FastAPI app instance.
+
     Raises:
         Exception: If any error occurs during app creation.
+
     """
     swagger_ui_parameters: dict[str, str | bool | int] = {
         "persistAuthorization": True,
@@ -70,10 +74,46 @@ def create_app() -> FastAPI:
     # Initialize logging system
     settings = get_settings()
     init_logging(level=settings.log_level)
+
+    # Add CORS middleware
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.allowed_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    # DEBUG: Add comprehensive request tracing middleware
+    @app.middleware("http")
+    async def trace_all_requests(request: Request, call_next):
+        logger.critical(
+            f"🔍 TRACE: {request.method} {request.url.path} | "
+            f"query: {request.url.query}",
+        )
+        response = await call_next(request)
+        logger.critical(
+            f"🔍 RESPONSE: {response.status_code} for "
+            f"{request.method} {request.url.path}",
+        )
+        return response
+
     # Add request logging middleware
     app.add_middleware(RequestLoggingMiddleware)
+
+    # DEBUG: Add a simple test endpoint to verify the server is working
+    @app.get("/debug/test")
+    async def debug_test() -> dict[str, Any]:
+        logger.info("DEBUG: Test endpoint hit successfully")
+        return {"message": "Server is working", "timestamp": time.time()}
+
+    @app.post("/debug/test-post")
+    async def debug_test_post() -> dict[str, Any]:
+        logger.info("DEBUG: Test POST endpoint hit successfully")
+        return {"message": "POST is working", "timestamp": time.time()}
+
     # Register authentication router
-    app.include_router(auth_router, prefix="/api/v1")
+    app.include_router(auth_router, prefix="/api/v1/auth")
     # Register health check endpoint
     app.include_router(health_router, prefix="/api/v1")
     # Mount static files directory
@@ -91,6 +131,22 @@ def create_app() -> FastAPI:
     app.include_router(uploads_router, prefix="/api/v1")
     # Register WebSocket router
     app.include_router(websocket_router, prefix="/api/v1")
+
+    # DEBUG: Catch-all route to log unmatched paths (MUST BE LAST!)
+    @app.api_route(
+        "/{full_path:path}",
+        methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    )
+    async def catch_all(request: Request, full_path: str) -> dict[str, Any]:
+        logger.critical(
+            f"🚨 CATCH-ALL: {request.method} /{full_path} - NO ROUTE MATCHED!",
+        )
+        return {
+            "error": "Route not found",
+            "method": request.method,
+            "path": f"/{full_path}",
+            "message": "This request was caught by the catch-all handler",
+        }
 
     import logging
 
@@ -154,22 +210,26 @@ def create_app() -> FastAPI:
 
     @app.exception_handler(Exception)
     async def global_exception_handler(
-        request: Request, exc: Exception
+        request: Request,
+        exc: Exception,
     ) -> JSONResponse:
-        """
-        Handles all uncaught exceptions.
+        """Handles all uncaught exceptions.
+
         Args:
             request (Request): The incoming request.
             exc (Exception): The exception raised.
+
         Returns:
             JSONResponse: 500 error response.
+
         Raises:
             HTTPException: If the exception is an HTTPException.
+
         """
         if isinstance(exc, HTTPException):
             raise exc
         logger.exception(
-            f"Unhandled exception for {request.method} {request.url.path}: {exc}"
+            f"Unhandled exception for {request.method} {request.url.path}: {exc}",
         )
         return JSONResponse(
             status_code=500,
@@ -181,15 +241,18 @@ def create_app() -> FastAPI:
 
     @app.exception_handler(ValidationError)
     async def validation_exception_handler(
-        request: Request, exc: ValidationError
+        request: Request,
+        exc: ValidationError,
     ) -> JSONResponse:
-        """
-        Handles custom validation errors.
+        """Handles custom validation errors.
+
         Args:
             request (Request): The incoming request.
             exc (ValidationError): The validation error.
+
         Returns:
             JSONResponse: 400 error response.
+
         """
         return JSONResponse(
             status_code=400,
@@ -200,8 +263,7 @@ def create_app() -> FastAPI:
 
 
 def custom_openapi() -> dict[str, Any]:
-    """
-    Generate custom OpenAPI schema with comprehensive documentation.
+    """Generate custom OpenAPI schema with comprehensive documentation.
 
     Features:
     - Enhanced API metadata with contact and license info
@@ -216,6 +278,7 @@ def custom_openapi() -> dict[str, Any]:
 
     Raises:
         Exception: If schema generation fails
+
     """
     try:
         logger.info("Generating custom OpenAPI schema with enhanced documentation")
@@ -251,7 +314,7 @@ def custom_openapi() -> dict[str, Any]:
         enhanced_schema = get_enhanced_openapi_schema(base_schema)
 
         logger.info(
-            "Custom OpenAPI schema generated successfully with enhanced documentation"
+            "Custom OpenAPI schema generated successfully with enhanced documentation",
         )
         return enhanced_schema
 
@@ -278,12 +341,14 @@ app.add_event_handler("shutdown", on_shutdown)
 
 
 def print_routes(app: FastAPI) -> None:
-    """
-    Print all registered routes for the FastAPI app.
+    """Print all registered routes for the FastAPI app.
+
     Args:
         app (FastAPI): The FastAPI app instance.
+
     Returns:
         None
+
     """
     import logging
 
@@ -302,12 +367,14 @@ if ENVIRONMENT == "development":
 
 
 def print_all_routes(app: FastAPI) -> None:
-    """
-    Print all registered routes for the FastAPI app (detailed).
+    """Print all registered routes for the FastAPI app (detailed).
+
     Args:
         app (FastAPI): The FastAPI app instance.
+
     Returns:
         None
+
     """
     import logging
 

@@ -132,8 +132,9 @@ const UploadList: React.FC<UploadListProps> = ({ disableAutoFetch }) => {
                                                 <Button
                                                     size="sm"
                                                     onClick={() => saveEdit(u.id)}
-                                                    disabled={loading}
+                                                    disabled={loading || !editName.trim()}
                                                     className="hover-lift"
+                                                    aria-label={`Save changes to ${u.name}`}
                                                 >
                                                     <Check className="h-4 w-4" />
                                                 </Button>
@@ -142,6 +143,7 @@ const UploadList: React.FC<UploadListProps> = ({ disableAutoFetch }) => {
                                                     variant="outline"
                                                     onClick={cancelEdit}
                                                     disabled={loading}
+                                                    aria-label={`Cancel editing ${u.name}`}
                                                 >
                                                     <X className="h-4 w-4" />
                                                 </Button>
@@ -171,6 +173,7 @@ const UploadList: React.FC<UploadListProps> = ({ disableAutoFetch }) => {
                                                 onClick={() => startEdit(u)}
                                                 disabled={loading}
                                                 className="hover-lift"
+                                                aria-label={`Edit ${u.name}`}
                                             >
                                                 <Edit className="h-4 w-4" />
                                             </Button>
@@ -180,6 +183,7 @@ const UploadList: React.FC<UploadListProps> = ({ disableAutoFetch }) => {
                                                 onClick={() => handleDelete(u.id)}
                                                 disabled={loading}
                                                 className="hover-lift text-destructive-foreground hover:text-destructive"
+                                                aria-label={`Delete ${u.name}`}
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>

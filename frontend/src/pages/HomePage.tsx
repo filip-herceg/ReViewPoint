@@ -2,6 +2,7 @@ import React from 'react';
 import UploadList from '@/components/UploadList';
 import UploadForm from '@/components/UploadForm';
 import { WebSocketStatus } from '@/components/websocket/WebSocketStatus';
+import { WebSocketDebug } from '@/components/debug/WebSocketDebug';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/lib/store/authStore';
 import { ArrowRight, Upload, FileText, BarChart3, Sparkles, Zap, Shield, Users } from 'lucide-react';
@@ -304,6 +305,13 @@ export default function HomePage() {
                         <div className="mt-12 p-6 bg-muted/50 rounded-lg border">
                             <WebSocketStatus showDetails />
                         </div>
+
+                        {/* WebSocket Debug - Only for development */}
+                        {import.meta.env.MODE === 'development' && (
+                            <div className="mt-4 p-6 bg-muted/50 rounded-lg border">
+                                <WebSocketDebug />
+                            </div>
+                        )}
                     </div>
                 </div>
             ) : (

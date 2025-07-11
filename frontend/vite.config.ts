@@ -21,6 +21,26 @@ export default defineConfig(({ mode }) => ({
     server: {
         port: 5173,
         host: true,
+        proxy: {
+            '^/api/.*': {
+                target: 'http://localhost:8000',
+                changeOrigin: true,
+                secure: false,
+                ws: true,
+                logLevel: 'debug',
+                configure: (proxy, _options) => {
+                    proxy.on('error', (err, _req, _res) => {
+                        console.error('Proxy Error:', err);
+                    });
+                    proxy.on('proxyReq', (proxyReq, req, _res) => {
+                        console.log(`[PROXY] → ${req.method} ${req.url} → ${proxyReq.getHeader('host')}${proxyReq.path}`);
+                    });
+                    proxy.on('proxyRes', (proxyRes, req, _res) => {
+                        console.log(`[PROXY] ← ${proxyRes.statusCode} ${req.url}`);
+                    });
+                },
+            },
+        },
     },
     build: {
         sourcemap: mode === 'development' ? 'inline' : true,

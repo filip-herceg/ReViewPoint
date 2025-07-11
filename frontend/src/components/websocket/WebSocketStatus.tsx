@@ -71,9 +71,21 @@ export function WebSocketStatus({
             color: 'destructive' as const,
             description: 'Connection failed',
         },
+        rate_limited: {
+            icon: AlertTriangleIcon,
+            label: 'Rate Limited',
+            color: 'destructive' as const,
+            description: 'Too many requests',
+        },
+        authentication_failed: {
+            icon: AlertTriangleIcon,
+            label: 'Auth Failed',
+            color: 'destructive' as const,
+            description: 'Authentication failed',
+        },
     };
 
-    const config = statusConfig[state];
+    const config = statusConfig[state] || statusConfig.disconnected;
     const Icon = config.icon;
 
     // Inline compact version

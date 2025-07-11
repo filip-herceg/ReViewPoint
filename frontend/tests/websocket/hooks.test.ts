@@ -106,6 +106,14 @@ describe('WebSocket Hooks', () => {
                     userId: 'test-user-id',
                     connectedAt: new Date(),
                     lastHeartbeat: new Date(),
+                    totalMessagesSent: 0,
+                    totalMessagesReceived: 0,
+                    totalReconnects: 0,
+                },
+                rateLimiting: {
+                    isLimited: false,
+                    messagesInWindow: 0,
+                    windowStart: new Date(),
                 },
             });
 
@@ -118,6 +126,11 @@ describe('WebSocket Hooks', () => {
                 activeListeners: [],
                 subscriptions: [],
                 metadata: expect.any(Object),
+                rateLimiting: {
+                    isLimited: false,
+                    messagesInWindow: 0,
+                    windowStart: expect.any(Date),
+                },
             });
         });
     });

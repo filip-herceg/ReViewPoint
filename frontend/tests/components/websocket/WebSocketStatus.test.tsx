@@ -233,7 +233,7 @@ describe('WebSocketStatus', () => {
         it('should apply appropriate color classes for different states', () => {
             // Test connected state - use cleanup to avoid DOM conflicts
             const { unmount: unmount1 } = render(<WebSocketStatus />);
-            expect(screen.getByTestId('wifi-icon')).toHaveClass('text-green-500');
+            expect(screen.getByTestId('wifi-icon')).toHaveClass('text-success');
             unmount1();
 
             // Test error state
@@ -246,7 +246,7 @@ describe('WebSocketStatus', () => {
 
             const { unmount: unmount2 } = render(<WebSocketStatus />);
             const alertIcons = screen.getAllByTestId('alert-triangle-icon');
-            expect(alertIcons[0]).toHaveClass('text-red-500'); // Status icon
+            expect(alertIcons[0]).toHaveClass('text-destructive'); // Status icon
             unmount2();
         });
     });

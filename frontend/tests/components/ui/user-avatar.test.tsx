@@ -128,7 +128,7 @@ describe('UserAvatar Component', () => {
 
         const statusElement = screen.getByLabelText('Online');
         expect(statusElement).toBeInTheDocument();
-        expect(statusElement).toHaveClass('bg-green-500');
+        expect(statusElement).toHaveClass('bg-success');
     });
 
     it('shows offline status when enabled', () => {
@@ -147,7 +147,7 @@ describe('UserAvatar Component', () => {
 
         const statusElement = screen.getByLabelText('Offline');
         expect(statusElement).toBeInTheDocument();
-        expect(statusElement).toHaveClass('bg-gray-400');
+        expect(statusElement).toHaveClass('bg-muted');
     });
 
     it('handles click events', () => {

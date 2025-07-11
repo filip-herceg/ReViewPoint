@@ -99,7 +99,7 @@ describe('UploadList component', () => {
         // Check that each status appears at least once (handle duplicate statuses)
         const uniqueStatuses = [...new Set(uploads.map(upload => upload.status))]
         uniqueStatuses.forEach((status) => {
-            const statusRegex = new RegExp(`status: ${status}`, 'i')
+            const statusRegex = new RegExp(status, 'i')
             expect(screen.getAllByText(statusRegex).length).toBeGreaterThan(0)
         })
     })

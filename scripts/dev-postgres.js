@@ -22,7 +22,21 @@ async function main() {
             ...process.env,
             REVIEWPOINT_DB_URL: 'postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint',
             REVIEWPOINT_ENVIRONMENT: 'dev',
-            ENV_FILE: 'config/.env'
+            ENV_FILE: 'config/.env',
+            // Feature flags - manually set to ensure they're loaded
+            REVIEWPOINT_FEATURES: 'auth:register,auth:login,auth:logout,auth:refresh_token,auth:request_password_reset,auth:reset_password,auth:me,health:read',
+            REVIEWPOINT_FEATURE_AUTH: 'true',
+            REVIEWPOINT_FEATURE_AUTH_LOGIN: 'true',
+            REVIEWPOINT_FEATURE_AUTH_REGISTER: 'true',
+            REVIEWPOINT_FEATURE_HEALTH: 'true',
+            REVIEWPOINT_FEATURE_HEALTH_READ: 'true',
+            REVIEWPOINT_FEATURE_AUTH_REFRESH: 'true',
+            REVIEWPOINT_FEATURE_AUTH_LOGOUT: 'true',
+            REVIEWPOINT_FEATURE_AUTH_PASSWORD_RESET: 'true',
+            REVIEWPOINT_FEATURE_AUTH_PASSWORD_RESET_CONFIRM: 'true',
+            REVIEWPOINT_FEATURE_AUTH_PROFILE: 'true',
+            REVIEWPOINT_FEATURE_HEALTH: 'true',
+            REVIEWPOINT_FEATURE_HEALTH_READ: 'true'
         };
 
         // Start backend with PostgreSQL environment

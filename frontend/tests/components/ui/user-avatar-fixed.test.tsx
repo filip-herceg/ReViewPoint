@@ -130,7 +130,7 @@ describe('UserAvatar Component', () => {
         );
 
         expect(screen.getByTestId('online-status')).toBeInTheDocument();
-        expect(screen.getByTestId('online-status')).toHaveClass('bg-green-500');
+        expect(screen.getByTestId('online-status')).toHaveClass('bg-success');
     });
 
     it('shows offline status when enabled', () => {
@@ -148,7 +148,7 @@ describe('UserAvatar Component', () => {
         );
 
         expect(screen.getByTestId('online-status')).toBeInTheDocument();
-        expect(screen.getByTestId('online-status')).toHaveClass('bg-gray-400');
+        expect(screen.getByTestId('online-status')).toHaveClass('bg-muted');
     });
 
     it('handles click events', () => {

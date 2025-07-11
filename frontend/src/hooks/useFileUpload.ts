@@ -11,7 +11,25 @@ import { validateFile } from '@/lib/utils/validationUtils';
 import { chunkFile, calculateProgress } from '@/lib/utils/chunkUtils';
 import { generateUploadId } from '@/lib/utils/fileUtils';
 import logger from '@/logger';
-import type { FileValidation, UploadOptions, UploadResult } from '@/lib/types/upload';
+import type { FileValidation } from '@/lib/utils/validationUtils';
+
+// Upload types
+export interface UploadOptions {
+    chunkSize?: number;
+    maxRetries?: number;
+    timeout?: number;
+    validateBeforeUpload?: boolean;
+}
+
+export interface UploadResult {
+    uploadId: string;
+    filename: string;
+    size?: number;
+    url?: string;
+    metadata?: Record<string, any>;
+    method?: 'simple' | 'chunked';
+    chunks?: number;
+}
 
 export interface UseFileUploadOptions {
     /** Validation rules for uploaded files */
