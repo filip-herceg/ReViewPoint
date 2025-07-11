@@ -6,9 +6,9 @@ import sys
 
 # Add backend source to path
 sys.path.insert(0, "../../src")
-
-# Load the environment file first
 from dotenv import load_dotenv
+
+from src.api.deps import get_feature_flags
 
 load_dotenv("../../config/.env")
 
@@ -16,9 +16,6 @@ print("Loaded environment variables:")
 for key, value in os.environ.items():
     if "REVIEWPOINT_FEATURE" in key:
         print(f"  {key} = {value}")
-
-# Now test the backend dependency system
-from src.api.deps import get_feature_flags
 
 feature_flags = get_feature_flags()
 

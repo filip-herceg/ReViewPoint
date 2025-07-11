@@ -1,14 +1,24 @@
-# WebSocket API endpoints for real-time communication
-# Provides authenticated WebSocket connections for real-time updates with comprehensive
-# error handling, rate limiting, connection management, and security features
+"""
+WebSocket API endpoints for real-time communication.
+Provides authenticated WebSocket connections for real-time updates with comprehensive
+error handling, rate limiting, connection management, and security features.
+"""
+
+from __future__ import annotations
 
 import asyncio
 import contextlib
 import json
 import time
 from collections import defaultdict, deque
-from datetime import datetime
-from typing import Any
+from datetime import UTC, datetime
+from typing import (
+    Any,
+    Final,
+    NotRequired,
+    TypedDict,
+    cast,
+)
 from uuid import uuid4
 
 from fastapi import (
@@ -25,20 +35,20 @@ from src.api.deps import get_current_user
 from src.core.security import decode_access_token
 from src.models.user import User
 
-router = APIRouter(tags=["websocket"])
+router: APIRouter = APIRouter(tags=["websocket"])
 
 # Configuration constants
-MAX_CONNECTIONS_PER_USER = 3
-MAX_MESSAGE_SIZE = 64 * 1024  # 64KB
-HEARTBEAT_INTERVAL = 30  # seconds
-CONNECTION_TIMEOUT = 60  # seconds
-RATE_LIMIT_WINDOW = 60  # seconds
-RATE_LIMIT_MAX_MESSAGES = 100  # per window
-MAX_TOTAL_CONNECTIONS = 1000
-MESSAGE_QUEUE_SIZE = 100
+MAX_CONNECTIONS_PER_USER: Final[int] = 3
+MAX_MESSAGE_SIZE: Final[int] = 64 * 1024  # 64KB
+HEARTBEAT_INTERVAL: Final[int] = 30  # seconds
+CONNECTION_TIMEOUT: Final[int] = 60  # seconds
+RATE_LIMIT_WINDOW: Final[int] = 60  # seconds
+RATE_LIMIT_MAX_MESSAGES: Final[int] = 100  # per window
+MAX_TOTAL_CONNECTIONS: Final[int] = 1000
+MESSAGE_QUEUE_SIZE: Final[int] = 100
 
 # Message validation schema
-VALID_CLIENT_MESSAGE_TYPES = {
+VALID_CLIENT_MESSAGE_TYPES: Final[set[str]] = {
     "ping",
     "subscribe",
     "unsubscribe",
@@ -46,7 +56,7 @@ VALID_CLIENT_MESSAGE_TYPES = {
     "upload.cancel",
 }
 
-VALID_SUBSCRIPTION_EVENTS = {
+VALID_SUBSCRIPTION_EVENTS: Final[set[str]] = {
     "upload.progress",
     "upload.completed",
     "upload.error",
@@ -65,15 +75,16 @@ VALID_SUBSCRIPTION_EVENTS = {
 class RateLimiter:
     """Rate limiting for WebSocket connections."""
 
-    def __init__(self, max_messages: int, window_seconds: int):
-        self.max_messages = max_messages
-        self.window_seconds = window_seconds
-        self.user_windows: dict[str, deque] = defaultdict(deque)
+    def __init__(self, max_messages: int, window_seconds: int) -> None:
+        """Initialize RateLimiter with max messages and window size."""
+        self.max_messages: Final[int] = max_messages
+        self.window_seconds: Final[int] = window_seconds
+        self.user_windows: dict[str, deque[float]] = defaultdict(deque)
 
     def is_allowed(self, user_id: str) -> bool:
         """Check if user is within rate limits."""
-        now = time.time()
-        window = self.user_windows[user_id]
+        now: float = time.time()
+        window: deque[float] = self.user_windows[user_id]
 
         # Remove old entries outside the window
         while window and window[0] <= now - self.window_seconds:
@@ -89,7 +100,7 @@ class RateLimiter:
 
     def get_reset_time(self, user_id: str) -> float | None:
         """Get when the rate limit resets for a user."""
-        window = self.user_windows[user_id]
+        window: deque[float] = self.user_windows[user_id]
         if not window:
             return None
         return window[0] + self.window_seconds
@@ -98,53 +109,57 @@ class RateLimiter:
 class ConnectionInfo:
     """Information about a WebSocket connection."""
 
-    def __init__(self, websocket: WebSocket, user: User, connection_id: str):
-        self.websocket = websocket
-        self.user = user
-        self.connection_id = connection_id
-        self.connected_at = datetime.utcnow()
-        self.last_activity = datetime.utcnow()
-        self.last_heartbeat = datetime.utcnow()
+    def __init__(
+        self,
+        websocket: WebSocket,
+        user: User,
+        connection_id: str,
+    ) -> None:
+        """Initialize ConnectionInfo with websocket, user, and connection ID."""
+        self.websocket: WebSocket = websocket
+        self.user: User = user
+        self.connection_id: str = connection_id
+        self.connected_at: datetime = datetime.now(UTC)
+        self.last_activity: datetime = datetime.now(UTC)
+        self.last_heartbeat: datetime = datetime.now(UTC)
         self.subscriptions: set[str] = set()
-        self.message_count = 0
-        self.error_count = 0
-        self.is_authenticated = True
+        self.message_count: int = 0
+        self.error_count: int = 0
+        self.is_authenticated: bool = True
 
-    def update_activity(self):
+    def update_activity(self) -> None:
         """Update last activity timestamp."""
-        self.last_activity = datetime.utcnow()
+        self.last_activity = datetime.now(UTC)
 
-    def update_heartbeat(self):
+    def update_heartbeat(self) -> None:
         """Update last heartbeat timestamp."""
-        self.last_heartbeat = datetime.utcnow()
+        self.last_heartbeat = datetime.now(UTC)
         self.update_activity()
 
     def is_stale(self, timeout_seconds: int = CONNECTION_TIMEOUT) -> bool:
         """Check if connection is stale."""
-        return (datetime.utcnow() - self.last_heartbeat).seconds > timeout_seconds
+        return (datetime.now(UTC) - self.last_heartbeat).seconds > timeout_seconds
 
 
 class WebSocketConnectionManager:
-    """Enhanced WebSocket connection manager with comprehensive features:
+    """Enhanced WebSocket connection manager with comprehensive features.
+
     - Connection limits and cleanup
     - Rate limiting per user
     - Message validation and sanitization
     - Heartbeat monitoring
     - Error handling and logging
     - Performance monitoring
-    - Security controls
+    - Security controls.
     """
 
     def __init__(self) -> None:
-        # Active connections: connection_id -> ConnectionInfo
+        """Initialize the WebSocketConnectionManager."""
         self.connections: dict[str, ConnectionInfo] = {}
-        # User connections: user_id -> set of connection_ids
         self.user_connections: dict[str, set[str]] = defaultdict(set)
-        # Rate limiter
         self.rate_limiter = RateLimiter(RATE_LIMIT_MAX_MESSAGES, RATE_LIMIT_WINDOW)
-        # Cleanup task
-        self._cleanup_task: asyncio.Task | None = None
-        self._cleanup_started = False
+        self._cleanup_task: asyncio.Task[None] | None = None
+        self._cleanup_started: bool = False
 
     def _start_cleanup_task(self) -> None:
         """Start background task for connection cleanup."""
@@ -163,17 +178,14 @@ class WebSocketConnectionManager:
         """Background task to clean up stale connections."""
         while True:
             try:
-                await asyncio.sleep(30)  # Check every 30 seconds
-
-                stale_connections = []
+                await asyncio.sleep(30)
+                stale_connections: list[str] = []
                 for conn_id, conn_info in self.connections.items():
                     if conn_info.is_stale():
                         stale_connections.append(conn_id)
-
                 for conn_id in stale_connections:
                     logger.warning(f"[WS] Cleaning up stale connection {conn_id}")
                     await self._force_disconnect(conn_id, "Connection timeout")
-
             except asyncio.CancelledError:
                 break
             except Exception as e:
@@ -273,7 +285,7 @@ class WebSocketConnectionManager:
                 "connection_id": connection_id,
                 "user_id": user_id,
                 "duration": (
-                    datetime.utcnow() - conn_info.connected_at
+                    datetime.now(UTC) - conn_info.connected_at
                 ).total_seconds(),
                 "message_count": conn_info.message_count,
                 "total_connections": len(self.connections),
@@ -284,10 +296,8 @@ class WebSocketConnectionManager:
         """Force disconnect a connection."""
         if connection_id in self.connections:
             conn_info = self.connections[connection_id]
-            try:
+            with contextlib.suppress(Exception):
                 await conn_info.websocket.close(code=1000, reason=reason)
-            except Exception:
-                pass  # Connection might already be closed
             await self.disconnect(connection_id)
 
     async def send_to_connection(
@@ -335,7 +345,28 @@ class WebSocketConnectionManager:
             await self.disconnect(connection_id)
             return False
 
-    async def send_to_user(self, user_id: str, message: dict[str, Any]) -> int:
+    async def send_to_user(
+        self,
+        user_id: str,
+        message: (
+            PingMessage
+            | PongMessage
+            | SubscribeMessage
+            | UnsubscribeMessage
+            | UploadCancelMessage
+            | ConnectionEstablishedMessage
+            | ErrorMessage
+            | SubscriptionAckMessage
+            | UploadProgressMessage
+            | UploadCompletedMessage
+            | UploadErrorMessage
+            | SystemNotificationMessage
+            | ReviewUpdatedMessage
+            | FileProcessingMessage
+            | FileReadyMessage
+            | dict[str, Any]
+        ),
+    ) -> int:
         """Send a message to all connections for a specific user.
 
         Args:
@@ -354,7 +385,9 @@ class WebSocketConnectionManager:
         sent_count = 0
 
         for connection_id in connection_ids:
-            if await self.send_to_connection(connection_id, message):
+            if await self.send_to_connection(
+                connection_id, cast(dict[str, Any], message)
+            ):
                 sent_count += 1
 
         logger.debug(
@@ -369,7 +402,27 @@ class WebSocketConnectionManager:
 
         return sent_count
 
-    async def broadcast_to_all(self, message: dict[str, Any]) -> int:
+    async def broadcast_to_all(
+        self,
+        message: (
+            PingMessage
+            | PongMessage
+            | SubscribeMessage
+            | UnsubscribeMessage
+            | UploadCancelMessage
+            | ConnectionEstablishedMessage
+            | ErrorMessage
+            | SubscriptionAckMessage
+            | UploadProgressMessage
+            | UploadCompletedMessage
+            | UploadErrorMessage
+            | SystemNotificationMessage
+            | ReviewUpdatedMessage
+            | FileProcessingMessage
+            | FileReadyMessage
+            | dict[str, Any]
+        ),
+    ) -> int:
         """Broadcast a message to all active connections.
 
         Args:
@@ -383,7 +436,9 @@ class WebSocketConnectionManager:
         connection_ids = list(self.connections.keys())
 
         for connection_id in connection_ids:
-            if await self.send_to_connection(connection_id, message):
+            if await self.send_to_connection(
+                connection_id, cast(dict[str, Any], message)
+            ):
                 total_sent += 1
 
         logger.info(
@@ -400,7 +455,24 @@ class WebSocketConnectionManager:
     async def broadcast_to_subscribers(
         self,
         event_type: str,
-        message: dict[str, Any],
+        message: (
+            PingMessage
+            | PongMessage
+            | SubscribeMessage
+            | UnsubscribeMessage
+            | UploadCancelMessage
+            | ConnectionEstablishedMessage
+            | ErrorMessage
+            | SubscriptionAckMessage
+            | UploadProgressMessage
+            | UploadCompletedMessage
+            | UploadErrorMessage
+            | SystemNotificationMessage
+            | ReviewUpdatedMessage
+            | FileProcessingMessage
+            | FileReadyMessage
+            | dict[str, Any]
+        ),
     ) -> int:
         """Broadcast a message to all connections subscribed to an event type.
 
@@ -416,7 +488,9 @@ class WebSocketConnectionManager:
 
         for connection_id, conn_info in self.connections.items():
             if event_type in conn_info.subscriptions:
-                if await self.send_to_connection(connection_id, message):
+                if await self.send_to_connection(
+                    connection_id, cast(dict[str, Any], message)
+                ):
                     total_sent += 1
 
         logger.info(
@@ -503,7 +577,7 @@ class WebSocketConnectionManager:
                         "message": "Too many messages",
                         "reset_time": reset_time,
                     },
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(UTC).isoformat(),
                     "id": str(uuid4()),
                 },
             )
@@ -529,7 +603,7 @@ class WebSocketConnectionManager:
                         "code": "INVALID_MESSAGE_TYPE",
                         "message": f"Unknown message type: {message_type}",
                     },
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(UTC).isoformat(),
                     "id": str(uuid4()),
                 },
             )
@@ -561,22 +635,20 @@ class WebSocketConnectionManager:
 
         ping_id = message.get("data", {}).get("pingId")
 
-        pong_message = {
+        pong_message: PongMessage = {
             "type": "pong",
             "data": {
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "pingId": ping_id,
             },
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "id": str(uuid4()),
         }
 
-        await self.send_to_connection(connection_id, pong_message)
+        await self.send_to_connection(connection_id, cast(dict[str, Any], pong_message))
 
     async def _handle_subscribe(
-        self,
-        connection_id: str,
-        message: dict[str, Any],
+        self, connection_id: str, message: dict[str, Any]
     ) -> None:
         """Handle subscription request."""
         conn_info = self.connections[connection_id]
@@ -603,22 +675,20 @@ class WebSocketConnectionManager:
         )
 
         # Send acknowledgment
-        ack_message = {
+        ack_message: SubscriptionAckMessage = {
             "type": "subscription.acknowledged",
             "data": {
                 "events": valid_events,
                 "invalid_events": invalid_events,
             },
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "id": str(uuid4()),
         }
 
-        await self.send_to_connection(connection_id, ack_message)
+        await self.send_to_connection(connection_id, cast(dict[str, Any], ack_message))
 
     async def _handle_unsubscribe(
-        self,
-        connection_id: str,
-        message: dict[str, Any],
+        self, connection_id: str, message: dict[str, Any]
     ) -> None:
         """Handle unsubscription request."""
         conn_info = self.connections[connection_id]
@@ -638,9 +708,7 @@ class WebSocketConnectionManager:
         )
 
     async def _handle_heartbeat(
-        self,
-        connection_id: str,
-        message: dict[str, Any],
+        self, connection_id: str, message: dict[str, Any]
     ) -> None:
         """Handle heartbeat message."""
         conn_info = self.connections[connection_id]
@@ -649,9 +717,7 @@ class WebSocketConnectionManager:
         logger.debug(f"[WS] Heartbeat received from {connection_id}")
 
     async def _handle_upload_cancel(
-        self,
-        connection_id: str,
-        message: dict[str, Any],
+        self, connection_id: str, message: dict[str, Any]
     ) -> None:
         """Handle upload cancellation request."""
         upload_id = message.get("data", {}).get("upload_id")
@@ -668,10 +734,8 @@ class WebSocketConnectionManager:
         """Cleanup manager resources."""
         if self._cleanup_task and not self._cleanup_task.done():
             self._cleanup_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError):
                 await self._cleanup_task
-            except asyncio.CancelledError:
-                pass
 
 
 # Global connection manager instance
@@ -679,7 +743,8 @@ connection_manager = WebSocketConnectionManager()
 
 
 async def authenticate_websocket(token: str) -> User:
-    """Authenticate a WebSocket connection using JWT token with enhanced validation.
+    """Authenticate a WebSocket connection using JWT token with enhanced
+    validation.
 
     Args:
         token: JWT access token
@@ -704,7 +769,7 @@ async def authenticate_websocket(token: str) -> User:
 
         # Validate token expiration
         exp = payload.get("exp")
-        if exp and datetime.utcfromtimestamp(exp) < datetime.utcnow():
+        if exp and datetime.fromtimestamp(exp, UTC) < datetime.now(UTC):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token expired",
@@ -738,6 +803,191 @@ async def authenticate_websocket(token: str) -> User:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication token",
         ) from e
+
+
+# --- TypedDicts for WebSocket message schemas ---
+
+
+class PingData(TypedDict, total=False):
+    pingId: str
+
+
+class PingMessage(TypedDict):
+    type: str
+    data: PingData
+    timestamp: str
+    id: str
+
+
+class SubscribeData(TypedDict):
+    events: list[str]
+
+
+class SubscribeMessage(TypedDict):
+    type: str
+    data: SubscribeData
+    timestamp: str
+    id: str
+
+
+class UnsubscribeData(TypedDict):
+    events: list[str]
+
+
+class UnsubscribeMessage(TypedDict):
+    type: str
+    data: UnsubscribeData
+    timestamp: str
+    id: str
+
+
+class UploadCancelData(TypedDict):
+    upload_id: str
+
+
+class UploadCancelMessage(TypedDict):
+    type: str
+    data: UploadCancelData
+    timestamp: str
+    id: str
+
+
+class ConnectionEstablishedData(TypedDict):
+    connection_id: str
+    user_id: str
+    server_time: str
+    features: list[str]
+    limits: dict[str, Any]
+
+
+class ConnectionEstablishedMessage(TypedDict):
+    type: str
+    data: ConnectionEstablishedData
+    timestamp: str
+    id: str
+
+
+class PongData(TypedDict, total=False):
+    timestamp: str
+    pingId: NotRequired[str]
+
+
+class PongMessage(TypedDict):
+    type: str
+    data: PongData
+    timestamp: str
+    id: str
+
+
+class ErrorData(TypedDict, total=False):
+    code: str
+    message: str
+    reset_time: NotRequired[float]
+
+
+class ErrorMessage(TypedDict):
+    type: str
+    data: ErrorData
+    timestamp: str
+    id: str
+
+
+class SubscriptionAckData(TypedDict):
+    events: list[str]
+    invalid_events: list[str]
+
+
+class SubscriptionAckMessage(TypedDict):
+    type: str
+    data: SubscriptionAckData
+    timestamp: str
+    id: str
+
+
+class UploadProgressData(TypedDict, total=False):
+    upload_id: str
+    progress: int
+    timestamp: str
+
+
+class UploadProgressMessage(TypedDict):
+    type: str
+    data: UploadProgressData
+    timestamp: str
+    id: str
+
+
+class UploadCompletedData(TypedDict):
+    upload_id: str
+    result: dict[str, Any]
+    timestamp: str
+
+
+class UploadCompletedMessage(TypedDict):
+    type: str
+    data: UploadCompletedData
+    timestamp: str
+    id: str
+
+
+class UploadErrorData(TypedDict, total=False):
+    upload_id: str
+    error: str
+    timestamp: str
+
+
+class UploadErrorMessage(TypedDict):
+    type: str
+    data: UploadErrorData
+    timestamp: str
+    id: str
+
+
+class SystemNotificationData(TypedDict, total=False):
+    message: str
+    level: str
+    timestamp: str
+
+
+class SystemNotificationMessage(TypedDict):
+    type: str
+    data: SystemNotificationData
+    timestamp: str
+    id: str
+
+
+class ReviewUpdatedData(TypedDict):
+    review_id: str
+    changes: dict[str, Any]
+    timestamp: str
+
+
+class ReviewUpdatedMessage(TypedDict):
+    type: str
+    data: ReviewUpdatedData
+    timestamp: str
+    id: str
+
+
+class FileProcessingData(TypedDict, total=False):
+    file_id: str
+    status: str
+    progress: NotRequired[int]
+    timestamp: str
+
+
+class FileProcessingMessage(TypedDict):
+    type: str
+    data: FileProcessingData
+    timestamp: str
+    id: str
+
+
+class FileReadyMessage(TypedDict):
+    type: str
+    data: FileProcessingData
+    timestamp: str
+    id: str
 
 
 def validate_message_structure(data: str) -> dict[str, Any]:
@@ -779,8 +1029,9 @@ def validate_message_structure(data: str) -> dict[str, Any]:
 async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
     """**Production-Ready WebSocket Communication Endpoint**
 
-    Establishes a persistent WebSocket connection for real-time bidirectional communication
-    with comprehensive error handling, rate limiting, authentication, and monitoring.
+    Establishes a persistent WebSocket connection for real-time
+    bidirectional communication with comprehensive error handling,
+    rate limiting, authentication, and monitoring.
 
     **Authentication:**
     - JWT token passed in URL path: `/ws/{token}`
@@ -825,7 +1076,11 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
     {
         "type": "subscribe",
         "data": {
-            "events": ["upload.progress", "upload.completed", "system.notification"]
+            "events": [
+                "upload.progress",
+                "upload.completed",
+                "system.notification"
+            ]
         },
         "timestamp": "2025-01-08T10:30:00Z",
         "id": "msg_124"
@@ -933,12 +1188,12 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
         connection_id = await connection_manager.connect(websocket, user)
 
         # Send welcome message with server capabilities
-        welcome_message = {
+        welcome_message: ConnectionEstablishedMessage = {
             "type": "connection.established",
             "data": {
                 "connection_id": connection_id,
                 "user_id": str(user.id),
-                "server_time": datetime.utcnow().isoformat(),
+                "server_time": datetime.now(UTC).isoformat(),
                 "features": [
                     "heartbeat",
                     "subscriptions",
@@ -952,10 +1207,12 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
                     "heartbeat_interval": HEARTBEAT_INTERVAL,
                 },
             },
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "id": str(uuid4()),
         }
-        await connection_manager.send_to_connection(connection_id, welcome_message)
+        await connection_manager.send_to_connection(
+            connection_id, cast(dict[str, Any], welcome_message)
+        )
 
         # Main message loop
         while True:
@@ -979,7 +1236,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
                                 "code": "INVALID_MESSAGE_FORMAT",
                                 "message": str(e),
                             },
-                            "timestamp": datetime.utcnow().isoformat(),
+                            "timestamp": datetime.now(UTC).isoformat(),
                             "id": str(uuid4()),
                         },
                     )
@@ -1009,7 +1266,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
                                 "code": "INTERNAL_ERROR",
                                 "message": "Internal server error",
                             },
-                            "timestamp": datetime.utcnow().isoformat(),
+                            "timestamp": datetime.now(UTC).isoformat(),
                             "id": str(uuid4()),
                         },
                     )
@@ -1049,8 +1306,13 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
     - System health metrics
     """,
 )
-async def get_websocket_stats(current_user: User = Depends(get_current_user)) -> Any:
-    """Get comprehensive WebSocket connection statistics for monitoring and administration."""
+async def get_websocket_stats(
+    current_user: User = Depends(get_current_user),
+) -> Any:
+    """
+    Get comprehensive WebSocket connection statistics for monitoring and
+    administration.
+    """
     if not current_user.is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -1078,7 +1340,9 @@ async def get_websocket_stats(current_user: User = Depends(get_current_user)) ->
 @router.get(
     "/ws/connections/{connection_id}",
     summary="Get specific connection information",
-    description="Get detailed information about a specific WebSocket connection. Admin only.",
+    description=(
+        "Get detailed information about a specific WebSocket connection. " "Admin only."
+    ),
 )
 async def get_connection_info(
     connection_id: str,
@@ -1108,7 +1372,9 @@ async def get_connection_info(
 @router.post(
     "/ws/broadcast",
     summary="Broadcast message to all connections",
-    description="Broadcast a message to all active WebSocket connections. Admin only.",
+    description=(
+        "Broadcast a message to all active WebSocket connections. " "Admin only."
+    ),
 )
 async def broadcast_message(
     message: dict[str, Any],
@@ -1122,13 +1388,12 @@ async def broadcast_message(
         )
 
     # Add metadata to message
-    broadcast_msg = {
+    broadcast_msg: dict[str, Any] = {
         **message,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "id": str(uuid4()),
         "source": "admin_broadcast",
     }
-
     sent_count = await connection_manager.broadcast_to_all(broadcast_msg)
 
     return {
@@ -1148,29 +1413,25 @@ async def broadcast_upload_progress(
     user_id: str,
     upload_id: str,
     progress: int,
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
-    """Broadcast upload progress to a specific user.
+    """Broadcast upload progress to a specific user."""
+    # Only allow keys that are valid for UploadProgressData
+    data_dict: UploadProgressData = {
+        "upload_id": upload_id,
+        "progress": progress,
+        "timestamp": datetime.now(UTC).isoformat(),
+    }
+    for k in ("progress", "upload_id", "timestamp"):
+        if k in kwargs:
+            data_dict[k] = kwargs[k]
 
-    Args:
-        user_id: Target user ID
-        upload_id: Upload identifier
-        progress: Progress percentage (0-100)
-        **kwargs: Additional progress data
-
-    """
-    message = {
+    message: UploadProgressMessage = {
         "type": "upload.progress",
-        "data": {
-            "upload_id": upload_id,
-            "progress": progress,
-            "timestamp": datetime.utcnow().isoformat(),
-            **kwargs,
-        },
-        "timestamp": datetime.utcnow().isoformat(),
+        "data": data_dict,
+        "timestamp": datetime.now(UTC).isoformat(),
         "id": str(uuid4()),
     }
-
     await connection_manager.send_to_user(user_id, message)
 
 
@@ -1187,17 +1448,16 @@ async def broadcast_upload_completed(
         result: Upload result data
 
     """
-    message = {
+    message: UploadCompletedMessage = {
         "type": "upload.completed",
         "data": {
             "upload_id": upload_id,
             "result": result,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         },
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "id": str(uuid4()),
     }
-
     await connection_manager.send_to_user(user_id, message)
 
 
@@ -1205,65 +1465,52 @@ async def broadcast_upload_error(
     user_id: str,
     upload_id: str,
     error: str,
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
-    """Broadcast upload error to a specific user.
+    """Broadcast upload error to a specific user."""
+    data_dict: UploadErrorData = {
+        "upload_id": upload_id,
+        "error": error,
+        "timestamp": datetime.now(UTC).isoformat(),
+    }
+    for k in ("upload_id", "error", "timestamp"):
+        if k in kwargs:
+            data_dict[k] = kwargs[k]
 
-    Args:
-        user_id: Target user ID
-        upload_id: Upload identifier
-        error: Error message
-        **kwargs: Additional error data
-
-    """
-    message = {
+    message: UploadErrorMessage = {
         "type": "upload.error",
-        "data": {
-            "upload_id": upload_id,
-            "error": error,
-            "timestamp": datetime.utcnow().isoformat(),
-            **kwargs,
-        },
-        "timestamp": datetime.utcnow().isoformat(),
+        "data": data_dict,
+        "timestamp": datetime.now(UTC).isoformat(),
         "id": str(uuid4()),
     }
-
     await connection_manager.send_to_user(user_id, message)
 
 
 async def broadcast_system_notification(
-    message: str,
+    message_text: str,
     level: str = "info",
     target_users: list[str] | None = None,
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
-    """Broadcast a system notification to users.
-
-    Args:
-        message: Notification message
-        level: Notification level (info, warning, error, success)
-        target_users: Optional list of specific user IDs. If None, broadcasts to all.
-        **kwargs: Additional notification data
-
-    """
-    notification = {
+    """Broadcast a system notification to users."""
+    data_dict: SystemNotificationData = {
+        "message": message_text,
+        "level": level,
+        "timestamp": datetime.now(UTC).isoformat(),
+    }
+    for k in ("message", "level", "timestamp"):
+        if k in kwargs:
+            data_dict[k] = kwargs[k]
+    notification: SystemNotificationMessage = {
         "type": "system.notification",
-        "data": {
-            "message": message,
-            "level": level,
-            "timestamp": datetime.utcnow().isoformat(),
-            **kwargs,
-        },
-        "timestamp": datetime.utcnow().isoformat(),
+        "data": data_dict,
+        "timestamp": datetime.now(UTC).isoformat(),
         "id": str(uuid4()),
     }
-
     if target_users:
-        # Send to specific users
         for user_id in target_users:
             await connection_manager.send_to_user(user_id, notification)
     else:
-        # Broadcast to all
         await connection_manager.broadcast_to_all(notification)
 
 
@@ -1280,17 +1527,16 @@ async def broadcast_review_updated(
         target_users: Optional list of specific user IDs
 
     """
-    message = {
+    message: ReviewUpdatedMessage = {
         "type": "review.updated",
         "data": {
             "review_id": review_id,
             "changes": changes,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         },
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "id": str(uuid4()),
     }
-
     if target_users:
         for user_id in target_users:
             await connection_manager.send_to_user(user_id, message)
@@ -1303,36 +1549,35 @@ async def broadcast_file_processing_status(
     file_id: str,
     status: str,
     progress: int | None = None,
-    **kwargs,
+    **kwargs: Any,
 ) -> None:
-    """Broadcast file processing status to a user.
-
-    Args:
-        user_id: Target user ID
-        file_id: File identifier
-        status: Processing status (processing, completed, error)
-        progress: Optional progress percentage
-        **kwargs: Additional status data
-
-    """
-    message_data = {
+    """Broadcast file processing status to a user."""
+    message_data: FileProcessingData = {
         "file_id": file_id,
         "status": status,
-        "timestamp": datetime.utcnow().isoformat(),
-        **kwargs,
+        "timestamp": datetime.now(UTC).isoformat(),
     }
-
     if progress is not None:
         message_data["progress"] = progress
-
-    message = {
-        "type": "file.processing" if status == "processing" else "file.ready",
-        "data": message_data,
-        "timestamp": datetime.utcnow().isoformat(),
-        "id": str(uuid4()),
-    }
-
-    await connection_manager.send_to_user(user_id, message)
+    for k in ("file_id", "status", "progress", "timestamp"):
+        if k in kwargs:
+            message_data[k] = kwargs[k]
+    if status == "processing":
+        file_processing_message: FileProcessingMessage = {
+            "type": "file.processing",
+            "data": message_data,
+            "timestamp": datetime.now(UTC).isoformat(),
+            "id": str(uuid4()),
+        }
+        await connection_manager.send_to_user(user_id, file_processing_message)
+    else:
+        file_ready_message: FileReadyMessage = {
+            "type": "file.ready",
+            "data": message_data,
+            "timestamp": datetime.now(UTC).isoformat(),
+            "id": str(uuid4()),
+        }
+        await connection_manager.send_to_user(user_id, file_ready_message)
 
 
 # Cleanup function to be called on application shutdown

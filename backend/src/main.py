@@ -86,7 +86,7 @@ def create_app() -> FastAPI:
 
     # DEBUG: Add comprehensive request tracing middleware
     @app.middleware("http")
-    async def trace_all_requests(request: Request, call_next):
+    async def trace_all_requests(request: Request, call_next: Any) -> Any:
         logger.critical(
             f"🔍 TRACE: {request.method} {request.url.path} | "
             f"query: {request.url.query}",
