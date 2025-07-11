@@ -22,8 +22,75 @@ nav:
       - Backend Source Guide: backend-source-guide.md
       - API Reference: api-reference.md
       - Backend API Reference: backend/api-reference.md
-      - Backend Models: backend/src/models/README.md
-      - Backend Utilities: backend/src/utils/README.md
+      - Backend Source:
+          - Overview: backend/src/__init__.py.md
+          - Main Application: backend/src/main.py.md
+          - About: backend/src/__about__.py.md
+          - API Package: backend/src/api/__init__.py.md
+          - API Dependencies: backend/src/api/deps.py.md
+          - API v1 Overview: backend/src/api/v1/__init__.py.md
+          - API v1 Authentication: backend/src/api/v1/auth.py.md
+          - API v1 Health Check: backend/src/api/v1/health.py.md
+          - API v1 File Uploads: backend/src/api/v1/uploads.py.md
+          - API v1 WebSocket: backend/src/api/v1/websocket.py.md
+          - API v1 Users Overview: backend/src/api/v1/users/__init__.py.md
+          - API v1 Users Core: backend/src/api/v1/users/core.py.md
+          - API v1 Users Exports: backend/src/api/v1/users/exports.py.md
+          - API v1 Users Test Router: backend/src/api/v1/users/test_only_router.py.md
+          - Core Package: backend/src/core/__init__.py.md
+          - Core Configuration: backend/src/core/config.py.md
+          - Core Database: backend/src/core/database.py.md
+          - Core Sync Database: backend/src/core/sync_database.py.md
+          - Core Documentation: backend/src/core/documentation.py.md
+          - Core Events: backend/src/core/events.py.md
+          - Core Feature Flags: backend/src/core/feature_flags.py.md
+          - Core Logging: backend/src/core/logging.py.md
+          - Core OpenAPI: backend/src/core/openapi.py.md
+          - Core Security: backend/src/core/security.py.md
+          - Core JOSE Types: backend/src/core/typings/jose.pyi.md
+          - Models Package: backend/src/models/__init__.py.md
+          - Models Base Model: backend/src/models/base.py.md
+          - Models User Model: backend/src/models/user.py.md
+          - Models File Model: backend/src/models/file.py.md
+          - Models Blacklisted Token: backend/src/models/blacklisted_token.py.md
+          - Models Used Password Reset Token: backend/src/models/used_password_reset_token.py.md
+          - Services Package: backend/src/services/__init__.py.md
+          - Services User Service: backend/src/services/user.py.md
+          - Services Upload Service: backend/src/services/upload.py.md
+          - Repositories Package: backend/src/repositories/__init__.py.md
+          - Repositories User Repository: backend/src/repositories/user.py.md
+          - Repositories File Repository: backend/src/repositories/file.py.md
+          - Repositories Blacklisted Token Repository: backend/src/repositories/blacklisted_token.py.md
+          - Schemas Package: backend/src/schemas/__init__.py.md
+          - Schemas Authentication Schemas: backend/src/schemas/auth.py.md
+          - Schemas User Schemas: backend/src/schemas/user.py.md
+          - Schemas File Schemas: backend/src/schemas/file.py.md
+          - Schemas Token Schemas: backend/src/schemas/token.py.md
+          - Schemas Blacklisted Token Schemas: backend/src/schemas/blacklisted_token.py.md
+          - Utils Package: backend/src/utils/__init__.py.md
+          - Utils Cache Utilities: backend/src/utils/cache.py.md
+          - Utils DateTime Utilities: backend/src/utils/datetime.py.md
+          - Utils Environment Utilities: backend/src/utils/environment.py.md
+          - Utils Error Utilities: backend/src/utils/errors.py.md
+          - Utils File Utilities: backend/src/utils/file.py.md
+          - Utils Filter Utilities: backend/src/utils/filters.py.md
+          - Utils Hashing Utilities: backend/src/utils/hashing.py.md
+          - Utils HTTP Error Utilities: backend/src/utils/http_error.py.md
+          - Utils Rate Limit Utilities: backend/src/utils/rate_limit.py.md
+          - Utils Validation Utilities: backend/src/utils/validation.py.md
+          - Middlewares Package: backend/src/middlewares/__init__.py.md
+          - Middlewares Logging Middleware: backend/src/middlewares/logging.py.md
+          - Alembic Migrations: backend/src/alembic_migrations/__init__.py.md
+          - Alembic Configuration: backend/src/alembic_migrations/alembic.ini.md
+          - Alembic Environment: backend/src/alembic_migrations/env.py.md
+          - Alembic Script Template: backend/src/alembic_migrations/script.py.mako.md
+          - Alembic README: backend/src/alembic_migrations/README.md
+          - Migration Initial Migration: backend/src/alembic_migrations/versions/initial_migration.md
+          - Migration Initial Migration (Python): backend/src/alembic_migrations/versions/f140e6f46727_initial_migration.py.md
+          - Migration Users and Files Tables: backend/src/alembic_migrations/versions/9fc3acc47815_initial_migration_users_and_files_tables.md
+          - Migration Add File Size Field: backend/src/alembic_migrations/versions/31eb30e5f037_add_file_size_field.py.md
+          - Migration Add Used Password Reset Tokens: backend/src/alembic_migrations/versions/20250605_add_used_password_reset_tokens.md
+          - Migration Add Used Password Reset Tokens (Python): backend/src/alembic_migrations/versions/20250605_add_used_password_reset_tokens.py.md
       - Backend Tests: backend/tests/README.md
   - Modules:
       - Module Guide: module-guide.md
@@ -99,6 +166,7 @@ plugins:
   #       - main.py.md
   #       - "**/*.py.md"
   #     enable_creation_date: false
+  # - glightbox  # Temporarily disabled - plugin not installed
   - glightbox
   - macros
   - mkdocstrings:

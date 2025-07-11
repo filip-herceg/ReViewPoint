@@ -75,5 +75,5 @@ uvicorn src.main:app --host 0.0.0.0 --port 8000
 
 - [`core/config.py`](core/config.py.md) - Application configuration
 - [`core/database.py`](core/database.py.md) - Database setup
-- [`api/`](../api/) - API endpoint definitions
-- [`models/`](../models/) - Database models
+- [`api/v1/`](api/v1/) - API endpoint definitions
+- [`models/`](models/README.md) - Database models

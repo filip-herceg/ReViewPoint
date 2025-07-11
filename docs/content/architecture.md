@@ -103,63 +103,72 @@ flowchart TD
 
     | File/Folder | Description |
     |-------------|-------------|
-    | [alembic_migrations/](#alembic_migrations) | Database migration scripts and Alembic configuration for schema evolution. |
-    | [api/](#api) | API endpoints and dependencies, including versioned routes and dependency injection. |
-    | [core/](#core) | Core configuration, database setup, logging, security, and event hooks. |
-    | [middlewares/](#middlewares) | Custom FastAPI middleware for request/response processing and logging. |
-    | [models/](#models) | SQLAlchemy ORM models for users, files, and related entities. |
-    | [repositories/](#repositories) | Data access layer (CRUD) for users, files, and other models. |
-    | [schemas/](#schemas) | Pydantic schemas for API request/response validation. |
-    | [services/](#services) | Business logic and service layer for users, uploads, etc. |
-    | [utils/](#utils) | Utility modules for hashing, validation, caching, and more. |
-    | [CONTRIBUTING.md](backend/src/alembic_migrations/README.md) | Guidelines for contributing to database migration development (see README) |
-    | [README.md](backend/src/alembic_migrations/README.md) | Documentation for Alembic database migration configuration |
+    | alembic_migrations/ | Database migration scripts and Alembic configuration for schema evolution. |
+    | api/ | API endpoints and dependencies, including versioned routes and dependency injection. |
+    | core/ | Core configuration, database setup, logging, security, and event hooks. |
+    | middlewares/ | Custom FastAPI middleware for request/response processing and logging. |
+    | models/ | SQLAlchemy ORM models for users, files, and related entities. |
+    | repositories/ | Data access layer (CRUD) for users, files, and other models. |
+    | schemas/ | Pydantic schemas for API request/response validation. |
+    | services/ | Business logic and service layer for users, uploads, etc. |
+    | static/ | Static files and assets served by the backend. |
+    | utils/ | Utility modules for hashing, validation, caching, and more. |
+    | [CONTRIBUTING.md](../backend/src/CONTRIBUTING.md) | Guidelines for contributing to backend development. |
     | [__about__.py](backend/src/__about__.py.md) | Project version and metadata. |
     | [__init__.py](backend/src/__init__.py.md) | Marks the directory as a Python package. |
     | [main.py](backend/src/main.py.md) | FastAPI application entry point and app factory. |
 
-??? info "alembic_migrations"
+??? info "backend/src/alembic_migrations"
     
-    | File | Description |
+    | File/Folder | Description |
     |------|-------------|
-    | [versions/](backend/src/alembic_migrations/versions/initial_migration.md) | Individual migration scripts for schema evolution. |
+    | versions/ | Individual migration scripts for schema evolution. |
     | [README](backend/src/alembic_migrations/README.md) | Generic single-database configuration documentation for Alembic |
     | [__init__.py](backend/src/alembic_migrations/__init__.py.md) | Marks the directory as a Python package. |
-    | [alembic.ini](backend/src/alembic_migrations/alembic.ini.md) | Alembic configuration file defining migration script location and database URL |
     | [env.py](backend/src/alembic_migrations/env.py.md) | Configures Alembic for database schema migrations. |
     | [script.py.mako](backend/src/alembic_migrations/script.py.mako.md) | Mako template for generating new database migration scripts |
 
-??? info "alembic_migrations/versions/"
+??? info "backend/src/alembic_migrations/versions/"
 
     | File | Description |
     |------|-------------|
     | [20250605_add_used_password_reset_tokens.py](backend/src/alembic_migrations/versions/20250605_add_used_password_reset_tokens.md) | Adds table for single-use password reset tokens. |
     | [9fc3acc47815_initial_migration_users_and_files_tables.py](backend/src/alembic_migrations/versions/9fc3acc47815_initial_migration_users_and_files_tables.md) | Initial migration: users & files tables. |
+    | [f140e6f46727_initial_migration.py](backend/src/alembic_migrations/versions/f140e6f46727_initial_migration.md) | Initial database schema migration. |
 
-??? info "api/"
+??? info "backend/src/api/"
 
-    | File | Description |
+    | File/Folder | Description |
     |------|-------------|
-    | [v1/](#api-v1) | Version 1 API endpoints including authentication, users, and file uploads. |
+    | v1/ | Version 1 API endpoints including authentication, users, file uploads, health checks, and WebSocket connections. |
     | [__init__.py](backend/src/api/__init__.py.md) | Marks the directory as a Python package. |
     | [deps.py](backend/src/api/deps.py.md) | FastAPI dependency injection utilities for authentication, database sessions, pagination, and request ID tracking. |
 
-## api-v1
+??? info "backend/src/api/v1/"
 
-??? info "api/v1/"
-
-    | File | Description |
+    | File/Folder | Description |
     |------|-------------|
+    | users/ | User management endpoints organized as a submodule with core operations and data exports. |
     | [__init__.py](backend/src/api/v1/__init__.py.md) | Marks the directory as a Python package. |
     | [auth.py](backend/src/api/v1/auth.py.md) | Authentication endpoints for user registration, login, logout, password reset, and JWT token management. |
+    | [health.py](backend/src/api/v1/health.py.md) | Health check endpoints for monitoring application and database status. |
     | [uploads.py](backend/src/api/v1/uploads.py.md) | File upload and management endpoints with authentication and validation. |
-    | [auth.py](backend/src/api/v1/auth.py.md) | User management endpoints for profile operations and user data retrieval. |
+    | [websocket.py](backend/src/api/v1/websocket.py.md) | WebSocket endpoints for real-time communication and notifications. |
 
-??? info "core/"
+??? info "backend/src/api/v1/users/"
 
     | File | Description |
     |------|-------------|
-    | [typings/](#core-typings) | TypeScript-style type definitions for Python libraries. |
+    | [__init__.py](backend/src/api/v1/users/__init__.py.md) | Marks the directory as a Python package and exports user router. |
+    | [core.py](backend/src/api/v1/users/core.py.md) | Core user management endpoints for profile operations and user data retrieval. |
+    | [exports.py](backend/src/api/v1/users/exports.py.md) | User data export endpoints for generating reports and data downloads. |
+    | [test_only_router.py](backend/src/api/v1/users/test_only_router.py.md) | Test-only endpoints for development and testing purposes. |
+
+??? info "backend/src/core/"
+
+    | File/Folder | Description |
+    |------|-------------|
+    | typings/ | TypeScript-style type definitions for Python libraries. |
     | [__init__.py](backend/src/core/__init__.py.md) | Marks the directory as a Python package. |
     | [config.py](backend/src/core/config.py.md) | Centralized runtime configuration management with environment variable loading and settings validation. |
     | [database.py](backend/src/core/database.py.md) | Async database engine and session management with connection pooling and health monitoring. |
@@ -171,63 +180,70 @@ flowchart TD
     | [security.py](backend/src/core/security.py.md) | JWT token creation, validation, and authentication security utilities. |
     | [sync_database.py](backend/src/core/sync_database.py.md) | Synchronous database utilities and helpers. |
 
-??? info "core-typings"
+??? info "backend/src/core/typings"
 
     | File | Description |
     |------|-------------|
     | [jose.pyi](backend/src/core/typings/jose.pyi.md) | Type definitions for python-jose JWT library. |
 
-??? info "middlewares/"
+??? info "backend/src/middlewares/"
 
     | File | Description |
     |------|-------------|
     | [__init__.py](backend/src/middlewares/__init__.py.md) | Marks the directory as a Python package. |
     | [logging.py](backend/src/middlewares/logging.py.md) | FastAPI middleware for HTTP request/response logging with unique request ID generation and timing. |
 
-??? info "models/"
+??? info "backend/src/models/"
 
     | File | Description |
     |------|-------------|
     | [__init__.py](backend/src/models/__init__.py.md) | Marks the directory as a Python package. |
     | [base.py](backend/src/models/base.py.md) | SQLAlchemy base model classes with common fields like ID, created_at, and updated_at timestamps. |
+    | [blacklisted_token.py](backend/src/models/blacklisted_token.py.md) | SQLAlchemy model for tracking blacklisted JWT tokens to prevent reuse. |
     | [file.py](backend/src/models/file.py.md) | SQLAlchemy model for file uploads with metadata, storage paths, and user associations. |
     | [used_password_reset_token.py](backend/src/models/used_password_reset_token.py.md) | SQLAlchemy model for tracking single-use password reset tokens to prevent replay attacks. |
     | [user.py](backend/src/models/user.py.md) | SQLAlchemy model for user accounts with email, password, and activity status. |
 
-??? info "repositories/"
+??? info "backend/src/repositories/"
 
     | File | Description |
     |------|-------------|
     | [__init__.py](backend/src/repositories/__init__.py.md) | Marks the directory as a Python package. |
+    | [blacklisted_token.py](backend/src/repositories/blacklisted_token.py.md) | Data access layer (CRUD operations) for JWT token blacklist management. |
     | [file.py](backend/src/repositories/file.py.md) | Data access layer (CRUD operations) for file uploads with async database operations. |
     | [user.py](backend/src/repositories/user.py.md) | Data access layer (CRUD operations) for user management with caching, rate limiting, and advanced queries. |
 
-??? info "schemas/"
+??? info "backend/src/schemas/"
 
     | File | Description |
     |------|-------------|
     | [__init__.py](backend/src/schemas/__init__.py.md) | Marks the directory as a Python package. |
     | [auth.py](backend/src/schemas/auth.py.md) | Pydantic schemas for authentication requests and responses including registration, login, and password reset. |
+    | [blacklisted_token.py](backend/src/schemas/blacklisted_token.py.md) | Pydantic schemas for JWT token blacklist validation and serialization. |
     | [file.py](backend/src/schemas/file.py.md) | Pydantic schemas for file upload and metadata validation. |
     | [token.py](backend/src/schemas/token.py.md) | Pydantic schemas for JWT token structures and validation. |
     | [user.py](backend/src/schemas/user.py.md) | Pydantic schemas for user data validation in API requests and responses. |
 
-??? info "services"
+??? info "backend/src/services"
     | File | Description |
     |------|-------------|
     | [__init__.py](backend/src/services/__init__.py.md) | Marks the directory as a Python package. |
     | [upload.py](backend/src/services/upload.py.md) | Business logic service for file upload processing, validation, and storage management. |
     | [user.py](backend/src/services/user.py.md) | Business logic service for user operations including registration, authentication, and profile management. |
 
-??? info "utils/"
+??? info "backend/src/utils/"
 
     | File | Description |
     |------|-------------|
     | [__init__.py](backend/src/utils/__init__.py.md) | Marks the directory as a Python package. |
     | [cache.py](backend/src/utils/cache.py.md) | Asynchronous in-memory cache implementation with per-key TTL support. |
+    | [datetime.py](backend/src/utils/datetime.py.md) | Date and time handling utilities with timezone awareness and formatting. |
+    | [environment.py](backend/src/utils/environment.py.md) | Environment variable management and configuration utilities. |
     | [errors.py](backend/src/utils/errors.py.md) | Custom exception classes for user repository operations and error handling. |
     | [file.py](backend/src/utils/file.py.md) | File utility functions for filename sanitization and validation with strict typing. |
+    | [filters.py](backend/src/utils/filters.py.md) | Data filtering and query utilities for database operations. |
     | [hashing.py](backend/src/utils/hashing.py.md) | Password hashing and verification utilities using bcrypt with configurable security parameters. |
+    | [http_error.py](backend/src/utils/http_error.py.md) | HTTP error handling and response utilities for API endpoints. |
     | [rate_limit.py](backend/src/utils/rate_limit.py.md) | Asynchronous rate limiting implementation for API endpoint protection. |
     | [validation.py](backend/src/utils/validation.py.md) | Email and password validation utilities with RFC compliance and security checks. |
 <!-- markdownlint-enable MD046 -->
@@ -267,7 +283,6 @@ Complete coverage of every TypeScript/JavaScript file in `frontend/src/` and `fr
 ---
 
 ### Backend Documentation
-- [Backend Overview](backend/README.md) - Overview of backend source code organization and structure
 - [Backend API Reference](backend/api-reference.md) - Complete REST API documentation with endpoint specifications
 - [Backend Testing Guide](backend/TESTING.md) - Backend testing strategy and methodologies
 - [Backend Test Logging](backend/TEST_LOGGING.md) - Backend logging configuration for testing
@@ -287,8 +302,13 @@ Complete coverage of every TypeScript/JavaScript file in `frontend/src/` and `fr
 - [API Init (__init__.py)](backend/src/api/__init__.py.md) - API module initialization and routing setup
 - [V1 Router (__init__.py)](backend/src/api/v1/__init__.py.md) - API version 1 routing and endpoint organization
 - [Authentication Endpoints (auth.py)](backend/src/api/v1/auth.py.md) - User authentication and session management endpoints
-- [Upload Endpoints (uploads.py)](backend/src/api/v1/uploads.py.md) - File upload handling and storage management endpoints  
-- [User Endpoints (auth.py)](backend/src/api/v1/auth.py.md) - User management and profile operation endpoints
+- [Health Check Endpoints (health.py)](backend/src/api/v1/health.py.md) - Application and database health monitoring endpoints
+- [Upload Endpoints (uploads.py)](backend/src/api/v1/uploads.py.md) - File upload handling and storage management endpoints
+- [WebSocket Endpoints (websocket.py)](backend/src/api/v1/websocket.py.md) - Real-time communication and notification endpoints
+- [User Management Init (users/__init__.py)](backend/src/api/v1/users/__init__.py.md) - User management module initialization and router exports
+- [Core User Endpoints (users/core.py)](backend/src/api/v1/users/core.py.md) - Core user management and profile operation endpoints
+- [User Export Endpoints (users/exports.py)](backend/src/api/v1/users/exports.py.md) - User data export and reporting endpoints
+- [Test User Endpoints (users/test_only_router.py)](backend/src/api/v1/users/test_only_router.py.md) - Development and testing user endpoints
 
 #### Core Configuration
 - [Application Config (config.py)](backend/src/core/config.py.md) - Application configuration management and environment settings
@@ -494,7 +514,7 @@ Complete coverage of every TypeScript/JavaScript file in `frontend/src/` and `fr
 - [Alert](frontend/src/components/ui/alert.tsx.md) - Alert component
 - [ARIA Live Region](frontend/src/components/ui/aria-live-region.tsx.md) - Accessibility live region
 - [Badge](frontend/src/components/ui/badge.tsx.md) - Badge component
-- [Button](frontend src/components/ui/button.tsx.md) - Button component
+- [Button](frontend/src/components/ui/button.tsx.md) - Button component
 - [Card](frontend/src/components/ui/card.tsx.md) - Card component
 - [Data Table](frontend/src/components/ui/data-table.tsx.md) - Data table component
 - [Dialog](frontend/src/components/ui/dialog.tsx.md) - Dialog component
