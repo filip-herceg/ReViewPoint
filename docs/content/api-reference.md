@@ -25,7 +25,7 @@ Authorization: Bearer <your-jwt-token>
 - [Dependencies](backend/src/api/deps.py.md) - Authentication dependencies and security middleware
 
 ### User Management
-- [User API](backend/src/api/v1/users.py.md) - User profile management, preferences, and account operations
+- [User API](backend/src/api/v1/auth.py.md) - User profile management, preferences, and account operations
 
 ### File Operations
 - [Upload API](backend/src/api/v1/uploads.py.md) - File upload, validation, storage, and metadata management

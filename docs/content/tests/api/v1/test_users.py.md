@@ -35,7 +35,7 @@ def test_user_registration():
 
 ## Related Docs
 
-- [users.py](../../../backend/src/api/v1/users.py.md)
+- [auth.py](../../../backend/src/api/v1/auth.py.md)
 - [Backend Source Guide](../../../backend-source-guide.md)
 
 ---

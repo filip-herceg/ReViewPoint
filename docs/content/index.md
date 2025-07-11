@@ -198,7 +198,7 @@ API documentation, troubleshooting guides, contribution guidelines, and project 
 
 ## License
 
-ReViewPoint is open source software licensed under the [MIT License](../LICENSE).
+ReViewPoint is open source software licensed under the [MIT License](../../LICENSE).
 
 ---
 

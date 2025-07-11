@@ -112,14 +112,14 @@ flowchart TD
     | [schemas/](#schemas) | Pydantic schemas for API request/response validation. |
     | [services/](#services) | Business logic and service layer for users, uploads, etc. |
     | [utils/](#utils) | Utility modules for hashing, validation, caching, and more. |
-    | [CONTRIBUTING.md](backend/src/alembic_migrations/CONTRIBUTING.md) | Guidelines for contributing to database migration development (file does not exist) |
-    | [README.md](backend/src/alembic_migrations/README.md) | Documentation for Alembic database migration configuration (file does not exist) |
+    | [CONTRIBUTING.md](backend/src/alembic_migrations/README.md) | Guidelines for contributing to database migration development (see README) |
+    | [README.md](backend/src/alembic_migrations/README.md) | Documentation for Alembic database migration configuration |
     | [__about__.py](backend/src/__about__.py.md) | Project version and metadata. |
     | [__init__.py](backend/src/__init__.py.md) | Marks the directory as a Python package. |
     | [main.py](backend/src/main.py.md) | FastAPI application entry point and app factory. |
 
-??? info "alembic_migrations/"
-
+??? info "alembic_migrations"
+    
     | File | Description |
     |------|-------------|
     | [versions/](backend/src/alembic_migrations/versions/initial_migration.md) | Individual migration scripts for schema evolution. |
@@ -144,6 +144,8 @@ flowchart TD
     | [__init__.py](backend/src/api/__init__.py.md) | Marks the directory as a Python package. |
     | [deps.py](backend/src/api/deps.py.md) | FastAPI dependency injection utilities for authentication, database sessions, pagination, and request ID tracking. |
 
+## api-v1
+
 ??? info "api/v1/"
 
     | File | Description |
@@ -151,7 +153,7 @@ flowchart TD
     | [__init__.py](backend/src/api/v1/__init__.py.md) | Marks the directory as a Python package. |
     | [auth.py](backend/src/api/v1/auth.py.md) | Authentication endpoints for user registration, login, logout, password reset, and JWT token management. |
     | [uploads.py](backend/src/api/v1/uploads.py.md) | File upload and management endpoints with authentication and validation. |
-    | [users.py](backend/src/api/v1/users.py.md) | User management endpoints for profile operations and user data retrieval. |
+    | [auth.py](backend/src/api/v1/auth.py.md) | User management endpoints for profile operations and user data retrieval. |
 
 ??? info "core/"
 
@@ -162,14 +164,14 @@ flowchart TD
     | [config.py](backend/src/core/config.py.md) | Centralized runtime configuration management with environment variable loading and settings validation. |
     | [database.py](backend/src/core/database.py.md) | Async database engine and session management with connection pooling and health monitoring. |
     | [documentation.py](backend/src/core/documentation.py.md) | OpenAPI documentation configuration and utilities. |
-    | [events.py](backend/src/core/events.md) | Application startup and shutdown event handlers with configuration validation and database connection testing. |
+    | [events.py](backend/src/core/events.py.md) | Application startup and shutdown event handlers with configuration validation and database connection testing. |
     | [feature_flags.py](backend/src/core/feature_flags.py.md) | Feature flag management and configuration. |
     | [logging.py](backend/src/core/logging.py.md) | Logging bootstrap and configuration with support for JSON formatting, colors, and file output. |
     | [openapi.py](backend/src/core/openapi.py.md) | OpenAPI schema generation and configuration. |
     | [security.py](backend/src/core/security.py.md) | JWT token creation, validation, and authentication security utilities. |
     | [sync_database.py](backend/src/core/sync_database.py.md) | Synchronous database utilities and helpers. |
 
-??? info "core/typings/"
+??? info "core-typings"
 
     | File | Description |
     |------|-------------|
@@ -210,8 +212,7 @@ flowchart TD
     | [token.py](backend/src/schemas/token.py.md) | Pydantic schemas for JWT token structures and validation. |
     | [user.py](backend/src/schemas/user.py.md) | Pydantic schemas for user data validation in API requests and responses. |
 
-??? info "services/"
-
+??? info "services"
     | File | Description |
     |------|-------------|
     | [__init__.py](backend/src/services/__init__.py.md) | Marks the directory as a Python package. |
@@ -246,7 +247,7 @@ flowchart TD
 ---
 
 ### Backend Documentation
-- [Backend Overview](backend/src/README.md) - Overview of backend source code organization and structure
+- [Backend Overview](backend/README.md) - Overview of backend source code organization and structure
 - [Backend API Reference](backend/api-reference.md) - Complete REST API documentation with endpoint specifications
 - [Backend Testing Guide](backend/TESTING.md) - Backend testing strategy and methodologies
 - [Backend Test Logging](backend/TEST_LOGGING.md) - Backend logging configuration for testing
@@ -267,7 +268,7 @@ flowchart TD
 - [V1 Router (__init__.py)](backend/src/api/v1/__init__.py.md) - API version 1 routing and endpoint organization
 - [Authentication Endpoints (auth.py)](backend/src/api/v1/auth.py.md) - User authentication and session management endpoints
 - [Upload Endpoints (uploads.py)](backend/src/api/v1/uploads.py.md) - File upload handling and storage management endpoints  
-- [User Endpoints (users.py)](backend/src/api/v1/users.py.md) - User management and profile operation endpoints
+- [User Endpoints (auth.py)](backend/src/api/v1/auth.py.md) - User management and profile operation endpoints
 
 #### Core Configuration
 - [Application Config (config.py)](backend/src/core/config.py.md) - Application configuration management and environment settings
@@ -330,7 +331,7 @@ flowchart TD
 - [Migration Script Template (script.py.mako)](backend/src/alembic_migrations/script.py.mako.md) - Template for generating new migration scripts
 - [Migration Configuration (alembic.ini)](backend/src/alembic_migrations/alembic.ini.md) - Alembic configuration file
 - [Migrations Init (__init__.py)](backend/src/alembic_migrations/__init__.py.md) - Migrations module initialization
-- [Migration Versions](backend/src/alembic_migrations/versions/) - All database migration files
+- [Migration Versions](backend/src/alembic_migrations/versions/initial_migration.md) - All database migration files
 
 ### Backend Test Documentation
 - [Test Overview (README.md)](backend/tests/README.md) - Overview of backend testing strategy and organization
@@ -384,7 +385,7 @@ flowchart TD
 - [Test Blacklisted Token Model](backend/tests/models/test_blacklisted_token.py.md) - Blacklisted token model tests
 - [Test File Model](backend/tests/models/test_file.py.md) - File model tests
 - [Test User Model](backend/tests/models/test_user.py.md) - User model tests
-- [Test User Repository](backend/tests/models/test_user_repository.py.md) - User repository tests
+- [Test User Repository](tests/models/test_user_repository.py.md) - User repository tests
 - [Test Used Password Reset Token Model](backend/tests/models/test_used_password_reset_token.py.md) - Used password reset token model tests
 
 ### Performance Tests
@@ -473,7 +474,7 @@ flowchart TD
 - [Alert](frontend/src/components/ui/alert.tsx.md) - Alert component
 - [ARIA Live Region](frontend/src/components/ui/aria-live-region.tsx.md) - Accessibility live region
 - [Badge](frontend/src/components/ui/badge.tsx.md) - Badge component
-- [Button](frontend/src/components/ui/button.tsx.md) - Button component
+- [Button](frontend src/components/ui/button.tsx.md) - Button component
 - [Card](frontend/src/components/ui/card.tsx.md) - Card component
 - [Data Table](frontend/src/components/ui/data-table.tsx.md) - Data table component
 - [Dialog](frontend/src/components/ui/dialog.tsx.md) - Dialog component
