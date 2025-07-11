@@ -3,8 +3,8 @@
 
 import sys
 
-sys.path.append("./backend")
-sys.path.append(".")
+sys.path.append("../../backend")
+sys.path.append("../../")
 
 import asyncio
 
@@ -27,7 +27,7 @@ async def check_database():
                 text(
                     "SELECT table_name FROM information_schema.tables "
                     "WHERE table_schema = 'public' AND table_name = 'users'",
-                )
+                ),
             )
             table_exists = result.scalar() is not None
             print(f"Users table exists: {table_exists}")
@@ -40,7 +40,7 @@ async def check_database():
                         "FROM information_schema.columns "
                         "WHERE table_schema = 'public' AND table_name = 'users' "
                         "ORDER BY ordinal_position",
-                    )
+                    ),
                 )
                 columns = result.fetchall()
                 print("\nUsers table columns:")
@@ -56,7 +56,7 @@ async def check_database():
                 text(
                     "SELECT table_name FROM information_schema.tables "
                     "WHERE table_schema = 'public' ORDER BY table_name",
-                )
+                ),
             )
             tables = result.fetchall()
             print(f"\nExisting tables in 'public' schema ({len(tables)}):")
@@ -68,14 +68,14 @@ async def check_database():
                 text(
                     "SELECT table_name FROM information_schema.tables "
                     "WHERE table_schema = 'public' AND table_name = 'alembic_version'",
-                )
+                ),
             )
             alembic_exists = result.scalar() is not None
             print(f"\nAlembic version table exists: {alembic_exists}")
 
             if alembic_exists:
                 result = await session.execute(
-                    text("SELECT version_num FROM alembic_version")
+                    text("SELECT version_num FROM alembic_version"),
                 )
                 version = result.scalar()
                 print(f"Current migration version: {version if version else 'None'}")

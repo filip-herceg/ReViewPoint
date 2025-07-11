@@ -1,5 +1,4 @@
-"""
-Clean fast test runner that uses environment variables instead of file swapping.
+"""Clean fast test runner that uses environment variables instead of file swapping.
 
 This runner sets up the fast test environment (SQLite in-memory) and runs ALL tests,
 including those marked as slow. The focus is on providing a complete test suite
@@ -21,7 +20,7 @@ from typing import (
 )
 
 # --- Constants ---
-BACKEND_DIR: Final[Path] = Path(__file__).parent
+BACKEND_DIR: Final[Path] = Path(__file__).parent / "backend"
 FAST_TESTS_ENV: Final[dict[str, str]] = {
     "FAST_TESTS": "1",
     "REVIEWPOINT_ENVIRONMENT": "test",
@@ -37,13 +36,14 @@ FAST_TESTS_ENV: Final[dict[str, str]] = {
 
 
 def main() -> int:
-    """
-    Run fast tests using unified conftest with environment variables.
+    """Run fast tests using unified conftest with environment variables.
 
     Returns:
         int: The exit code from the pytest process.
+
     Raises:
         subprocess.SubprocessError: If the subprocess fails to start.
+
     """
     args: list[str] = sys.argv[1:]
     use_fast_only: bool = "--fast-only" in args
@@ -80,7 +80,10 @@ def main() -> int:
     )
     print(f"Running {test_type}: {' '.join(cmd)}")
     result: subprocess.CompletedProcess[bytes] = subprocess.run(
-        cmd, cwd=BACKEND_DIR, env=env
+        cmd,
+        check=False,
+        cwd=BACKEND_DIR,
+        env=env,
     )
     return result.returncode
 

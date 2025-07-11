@@ -201,9 +201,9 @@ def get_password_validation_error() -> Callable[[str], str | None]:
     )
 
 
-def get_async_refresh_access_token() -> Callable[
-    [AsyncSession, str], Awaitable[object]
-]:
+def get_async_refresh_access_token() -> (
+    Callable[[AsyncSession, str], Awaitable[object]]
+):
     async_refresh_access_token = cast(
         "Callable[[AsyncSession, str, str, str], Awaitable[object]]",
         registry.get("async_refresh_access_token"),

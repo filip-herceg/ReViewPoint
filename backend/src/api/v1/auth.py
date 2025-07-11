@@ -63,7 +63,9 @@ class LogExtraDict(TypedDict, total=False):
 
 
 REGISTER_SUMMARY: Final[str] = "Register a new user"
-REGISTER_DESCRIPTION: Final[str] = """
+REGISTER_DESCRIPTION: Final[
+    str
+] = """
 **User Registration**
 
 Creates a new user account and returns authentication tokens for immediate login.
@@ -107,7 +109,9 @@ Creates a new user account and returns authentication tokens for immediate login
 """
 
 LOGIN_SUMMARY: Final[str] = "User login"
-LOGIN_DESCRIPTION: Final[str] = """
+LOGIN_DESCRIPTION: Final[
+    str
+] = """
 **User Authentication**
 
 Authenticates user credentials and returns JWT tokens for API access.
@@ -167,7 +171,9 @@ Authenticates user credentials and returns JWT tokens for API access.
 """
 
 LOGOUT_SUMMARY: Final[str] = "Logout user"
-LOGOUT_DESCRIPTION: Final[str] = """
+LOGOUT_DESCRIPTION: Final[
+    str
+] = """
 Logs out the current user and blacklists the access token.
 
 **Steps:**
@@ -180,7 +186,9 @@ Logs out the current user and blacklists the access token.
 """
 
 REFRESH_SUMMARY: Final[str] = "Refresh JWT access token"
-REFRESH_DESCRIPTION: Final[str] = """
+REFRESH_DESCRIPTION: Final[
+    str
+] = """
 Refreshes the JWT access token using a valid refresh token.
 
 **Steps:**
@@ -193,7 +201,9 @@ Refreshes the JWT access token using a valid refresh token.
 """
 
 PWRESET_REQUEST_SUMMARY: Final[str] = "Request password reset"
-PWRESET_REQUEST_DESCRIPTION: Final[str] = """
+PWRESET_REQUEST_DESCRIPTION: Final[
+    str
+] = """
 Initiates a password reset flow.
 
 **Steps:**
@@ -208,7 +218,9 @@ Initiates a password reset flow.
 """
 
 PWRESET_SUMMARY: Final[str] = "Reset password"
-PWRESET_DESCRIPTION: Final[str] = """
+PWRESET_DESCRIPTION: Final[
+    str
+] = """
 Completes the password reset flow using a valid reset token.
 
 **Steps:**
@@ -222,7 +234,9 @@ Completes the password reset flow using a valid reset token.
 """
 
 ME_SUMMARY: Final[str] = "Get current user profile"
-ME_DESCRIPTION: Final[str] = """
+ME_DESCRIPTION: Final[
+    str
+] = """
 Returns the profile information of the currently authenticated user.
 
 **How it works:**

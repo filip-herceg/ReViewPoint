@@ -15,15 +15,14 @@ def test_pydantic_env_loading():
 
     # Test direct pydantic-settings loading
     try:
-        from typing import Optional
 
         from pydantic_settings import BaseSettings
 
         class TestSettings(BaseSettings):
             # Test a few key variables
-            reviewpoint_db_url: Optional[str] = None
-            reviewpoint_feature_auth_register: Optional[str] = None
-            reviewpoint_jwt_secret_key: Optional[str] = None
+            reviewpoint_db_url: str | None = None
+            reviewpoint_feature_auth_register: str | None = None
+            reviewpoint_jwt_secret_key: str | None = None
 
             class Config:
                 env_file = "backend/config/.env"

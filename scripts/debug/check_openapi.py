@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
-"""
-Script to check the current OpenAPI schema implementation
-"""
+"""Script to check the current OpenAPI schema implementation"""
+
 import os
 
 # Set required environment variables
 os.environ["REVIEWPOINT_DB_URL"] = "postgresql+asyncpg://test:test@localhost:5432/test"
 os.environ["REVIEWPOINT_SECRET_KEY"] = "test-secret-key"
 os.environ["REVIEWPOINT_ENVIRONMENT"] = "test"
+
+# Add backend to path
+import sys
+
+sys.path.insert(0, "../../backend/src")
 
 from src.main import app
 
@@ -19,22 +23,22 @@ def main() -> dict[str, object]:
 
     print("=== OpenAPI Schema Overview ===")
     info = schema.get("info", {})
-    print(f'Title: {info.get("title")}')
-    print(f'Version: {info.get("version")}')
-    print(f'Description Length: {len(info.get("description", ""))} chars')
-    print(f'Number of paths: {len(schema.get("paths", {}))}')
-    print(f'Number of servers: {len(schema.get("servers", []))}')
+    print(f"Title: {info.get('title')}")
+    print(f"Version: {info.get('version')}")
+    print(f"Description Length: {len(info.get('description', ''))} chars")
+    print(f"Number of paths: {len(schema.get('paths', {}))}")
+    print(f"Number of servers: {len(schema.get('servers', []))}")
 
     components = schema.get("components", {})
     security_schemes = components.get("securitySchemes", {})
     print(f"Security schemes: {list(security_schemes.keys())}")
 
     tags = schema.get("tags", [])
-    print(f'Tags: {[tag["name"] for tag in tags]}')
+    print(f"Tags: {[tag['name'] for tag in tags]}")
 
     # Check if contact and license are present
-    print(f'Has contact info: {"contact" in info}')
-    print(f'Has license info: {"license" in info}')
+    print(f"Has contact info: {'contact' in info}")
+    print(f"Has license info: {'license' in info}")
 
     # Check specific paths
     paths = schema.get("paths", {})
@@ -95,12 +99,12 @@ def main() -> dict[str, object]:
 
     print("\n=== Servers Configuration ===")
     for server in schema.get("servers", []):
-        print(f'- {server.get("url")}: {server.get("description")}')
+        print(f"- {server.get('url')}: {server.get('description')}")
 
     print("\n=== Security Schemes ===")
     for scheme_name, scheme in security_schemes.items():
         print(
-            f'- {scheme_name}: {scheme.get("type")} ({scheme.get("description", "No description")[:50]}...)'
+            f"- {scheme_name}: {scheme.get('type')} ({scheme.get('description', 'No description')[:50]}...)",
         )
 
     return schema
