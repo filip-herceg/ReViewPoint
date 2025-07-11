@@ -124,7 +124,7 @@ const UploadsPage: React.FC = () => {
                         </p>
                     </div>
                     <Button asChild size="lg" className="group hover-lift">
-                        <Link to="/uploads/new">
+                        <Link to="/uploads/new" className="flex items-center">
                             <Upload className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
                             Upload Document
                         </Link>
@@ -259,7 +259,9 @@ const UploadsPage: React.FC = () => {
 
                                     <div className="flex items-center gap-2">
                                         <Button variant="outline" size="sm" asChild>
-                                            <Link to={`/uploads/${upload.id}`}>View Details</Link>
+                                            <Link to={`/uploads/${upload.id}`} className="flex items-center">
+                                                View Details
+                                            </Link>
                                         </Button>
                                     </div>
                                 </div>
@@ -281,8 +283,10 @@ const UploadsPage: React.FC = () => {
                                 {!searchTerm && statusFilter === 'all' && (
                                     <Button asChild>
                                         <Link to="/uploads/new">
-                                            <Upload className="mr-2 h-4 w-4" />
-                                            Upload Document
+                                            <span className="flex items-center">
+                                                <Upload className="mr-2 h-4 w-4" />
+                                                <span>Upload Document</span>
+                                            </span>
                                         </Link>
                                     </Button>
                                 )}

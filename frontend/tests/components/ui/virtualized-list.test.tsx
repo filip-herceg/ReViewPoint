@@ -6,6 +6,7 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { VirtualizedList, VirtualizedGrid, useVirtualizedList } from '@/components/ui/virtualized-list';
+import { Button } from '@/components/ui/button';
 import { customRender, testLogger } from '../../test-utils';
 
 // Create test template for virtualized list items
@@ -331,10 +332,10 @@ describe('useVirtualizedList Hook', () => {
         return (
             <div>
                 <div data-testid="scroll-top">{scrollTop}</div>
-                <button onClick={() => scrollToIndex(10)}>Scroll to 10</button>
-                <button onClick={scrollToTop}>Scroll to Top</button>
-                <button onClick={scrollToBottom}>Scroll to Bottom</button>
-                <button onClick={() => setScrollTop(100)}>Set Scroll 100</button>
+                <Button onClick={() => scrollToIndex(10)}>Scroll to 10</Button>
+                <Button onClick={scrollToTop}>Scroll to Top</Button>
+                <Button onClick={scrollToBottom}>Scroll to Bottom</Button>
+                <Button onClick={() => setScrollTop(100)}>Set Scroll 100</Button>
             </div>
         );
     };

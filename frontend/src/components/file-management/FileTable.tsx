@@ -188,34 +188,42 @@ export const FileTable: React.FC<FileTableProps> = ({
                                             </Button>
                                             <div className="hidden absolute right-0 mt-2 w-48 bg-background rounded-md shadow-lg border border-border z-10">
                                                 <div className="py-1">
-                                                    <button
-                                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted justify-start"
                                                         onClick={() => onPreview(file)}
                                                     >
                                                         <Eye className="mr-2 h-4 w-4" />
                                                         Preview
-                                                    </button>
-                                                    <button
-                                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted justify-start"
                                                         onClick={() => onDownload(file)}
                                                     >
                                                         <Download className="mr-2 h-4 w-4" />
                                                         Download
-                                                    </button>
-                                                    <button
-                                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted justify-start"
                                                         onClick={() => onShare(file)}
                                                     >
                                                         <Share2 className="mr-2 h-4 w-4" />
                                                         Share
-                                                    </button>
-                                                    <button
-                                                        className="flex items-center w-full px-4 py-2 text-sm text-destructive hover:bg-muted"
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="flex items-center w-full px-4 py-2 text-sm text-destructive hover:bg-muted justify-start"
                                                         onClick={() => onDelete(file)}
                                                     >
                                                         <Trash2 className="mr-2 h-4 w-4" />
                                                         Delete
-                                                    </button>
+                                                    </Button>
                                                 </div>
                                             </div>
                                         </div>

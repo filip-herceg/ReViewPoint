@@ -129,17 +129,15 @@ const SettingsPage: React.FC = () => {
                                 {tabs.map((tab) => {
                                     const Icon = tab.icon;
                                     return (
-                                        <button
+                                        <Button
                                             key={tab.id}
+                                            variant="tab"
+                                            active={activeTab === tab.id}
                                             onClick={() => setActiveTab(tab.id)}
-                                            className={`w-full flex items-center gap-3 px-3 py-2 text-left rounded-md transition-colors ${activeTab === tab.id
-                                                ? 'bg-primary/10 text-primary'
-                                                : 'hover:bg-muted'
-                                                }`}
                                         >
                                             <Icon className="w-4 h-4" />
                                             <span className="text-sm font-medium">{tab.label}</span>
-                                        </button>
+                                        </Button>
                                     );
                                 })}
                             </nav>
@@ -331,36 +329,33 @@ const SettingsPage: React.FC = () => {
                                 <div>
                                     <h4 className="font-medium mb-3">Theme</h4>
                                     <div className="grid grid-cols-3 gap-3">
-                                        <button
+                                        <Button
+                                            variant="theme-option"
+                                            size="none"
+                                            active={settings.appearance.theme === 'light'}
                                             onClick={() => updateAppearanceSetting('theme', 'light')}
-                                            className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition-colors ${settings.appearance.theme === 'light'
-                                                ? 'border-primary bg-primary/10'
-                                                : 'border-border hover:bg-muted'
-                                                }`}
                                         >
                                             <Sun className="w-6 h-6" />
                                             <span className="text-sm">Light</span>
-                                        </button>
-                                        <button
+                                        </Button>
+                                        <Button
+                                            variant="theme-option"
+                                            size="none"
+                                            active={settings.appearance.theme === 'dark'}
                                             onClick={() => updateAppearanceSetting('theme', 'dark')}
-                                            className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition-colors ${settings.appearance.theme === 'dark'
-                                                ? 'border-primary bg-primary/10'
-                                                : 'border-border hover:bg-muted'
-                                                }`}
                                         >
                                             <Moon className="w-6 h-6" />
                                             <span className="text-sm">Dark</span>
-                                        </button>
-                                        <button
+                                        </Button>
+                                        <Button
+                                            variant="theme-option"
+                                            size="none"
+                                            active={settings.appearance.theme === 'system'}
                                             onClick={() => updateAppearanceSetting('theme', 'system')}
-                                            className={`p-3 border rounded-lg flex flex-col items-center gap-2 transition-colors ${settings.appearance.theme === 'system'
-                                                ? 'border-primary bg-primary/10'
-                                                : 'border-border hover:bg-muted'
-                                                }`}
                                         >
                                             <Monitor className="w-6 h-6" />
                                             <span className="text-sm">System</span>
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
 
@@ -443,10 +438,10 @@ const SettingsPage: React.FC = () => {
                                     <div className="border-t pt-4">
                                         <h4 className="font-medium mb-2 text-red-600">Danger Zone</h4>
                                         <div className="space-y-3">
-                                            <Button variant="outline" size="sm" className="border-destructive text-destructive hover:bg-destructive/10">
+                                            <Button variant="outline-destructive" size="sm">
                                                 Export Account Data
                                             </Button>
-                                            <Button variant="outline" size="sm" className="border-destructive text-destructive hover:bg-destructive/10">
+                                            <Button variant="outline-destructive" size="sm">
                                                 Delete Account
                                             </Button>
                                         </div>

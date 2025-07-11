@@ -120,10 +120,12 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({
                                 { field: 'created_at' as SortField, label: 'Date' },
                                 { field: 'content_type' as SortField, label: 'Type' },
                             ].map(({ field, label }) => (
-                                <button
+                                <Button
                                     key={field}
+                                    variant="ghost"
+                                    size="sm"
                                     className={cn(
-                                        'flex items-center w-full px-4 py-2 text-sm hover:bg-muted',
+                                        'flex items-center w-full px-4 py-2 text-sm hover:bg-muted justify-between',
                                         sortField === field ? 'text-info bg-info/10' : 'text-foreground'
                                     )}
                                     onClick={() => handleSortClick(field)}
@@ -134,7 +136,7 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({
                                     {sortField === field && (
                                         sortOrder === 'asc' ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />
                                     )}
-                                </button>
+                                </Button>
                             ))}
                         </div>
                     </div>

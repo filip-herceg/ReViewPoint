@@ -43,10 +43,16 @@ export default defineConfig(({ mode }) => ({
         },
     },
     build: {
-        sourcemap: mode === 'development' ? 'inline' : true,
+        sourcemap: mode === 'development' ? 'inline' : false, // Disable sourcemaps in production to avoid warnings
         rollupOptions: {
             output: {
-                sourcemapExcludeSources: false
+                sourcemapExcludeSources: true, // Exclude source content from sourcemaps
+                // Better chunking strategy
+                manualChunks: {
+                    vendor: ['react', 'react-dom'],
+                    router: ['react-router-dom'],
+                    ui: ['@radix-ui/react-slot', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu']
+                }
             }
         }
     },
@@ -58,5 +64,10 @@ export default defineConfig(({ mode }) => ({
     optimizeDeps: {
         include: ['react', 'react-dom', 'react-router-dom'],
         exclude: []
-    }
+    },
+    // Suppress source map warnings in development
+    ...(mode === 'development' && {
+        logLevel: 'warn',
+        clearScreen: false
+    })
 }));

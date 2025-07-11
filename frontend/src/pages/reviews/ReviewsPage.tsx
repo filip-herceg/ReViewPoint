@@ -332,15 +332,19 @@ const ReviewsPage: React.FC = () => {
                                     {review.status === 'pending' || review.status === 'in-progress' ? (
                                         <Button size="sm" asChild>
                                             <Link to={`/reviews/${review.id}`}>
-                                                <Eye className="h-4 w-4 mr-2" />
-                                                Review
+                                                <span className="flex items-center">
+                                                    <Eye className="h-4 w-4 mr-2" />
+                                                    <span>Review</span>
+                                                </span>
                                             </Link>
                                         </Button>
                                     ) : (
                                         <Button variant="outline" size="sm" asChild>
                                             <Link to={`/reviews/${review.id}`}>
-                                                <MessageSquare className="h-4 w-4 mr-2" />
-                                                View Details
+                                                <span className="flex items-center">
+                                                    <MessageSquare className="h-4 w-4 mr-2" />
+                                                    <span>View Details</span>
+                                                </span>
                                             </Link>
                                         </Button>
                                     )}

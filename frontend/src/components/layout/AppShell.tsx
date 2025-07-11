@@ -37,12 +37,12 @@ function ErrorFallback({ error }: { error: unknown }) {
         <div className="p-4 bg-destructive/10 border border-destructive rounded-lg">
             <h2 className="text-lg font-semibold text-destructive mb-2">Something went wrong</h2>
             <p className="text-destructive mb-4">{getErrorMessage(error)}</p>
-            <button
+            <Button
                 onClick={() => window.location.reload()}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/80 px-4 py-2 rounded transition-colors"
+                variant="destructive"
             >
                 Reload page
-            </button>
+            </Button>
         </div>
     );
 }

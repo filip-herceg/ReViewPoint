@@ -163,11 +163,12 @@ const ReviewDetailPage: React.FC = () => {
                 <span className="text-sm font-medium">Rating:</span>
                 <div className="flex items-center gap-1">
                     {Array.from({ length: 5 }, (_, i) => (
-                        <button
+                        <Button
                             key={i}
                             type="button"
+                            variant="icon-sm"
+                            size="icon-sm"
                             onClick={() => handleRatingClick(i + 1)}
-                            className="focus:outline-none"
                         >
                             <Star
                                 className={`h-6 w-6 cursor-pointer transition-colors ${i < reviewData.rating
@@ -175,7 +176,7 @@ const ReviewDetailPage: React.FC = () => {
                                     : 'text-gray-300 hover:text-yellow-300'
                                     }`}
                             />
-                        </button>
+                        </Button>
                     ))}
                 </div>
                 <span className="text-sm text-muted-foreground">
@@ -191,8 +192,10 @@ const ReviewDetailPage: React.FC = () => {
             <div className="flex items-center gap-4">
                 <Button variant="ghost" size="sm" asChild>
                     <Link to="/reviews">
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        Back to Reviews
+                        <span className="flex items-center">
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            <span>Back to Reviews</span>
+                        </span>
                     </Link>
                 </Button>
             </div>
@@ -225,8 +228,10 @@ const ReviewDetailPage: React.FC = () => {
                         <div className="flex items-center gap-2">
                             <Button variant="outline" size="sm" asChild>
                                 <Link to={`/uploads/${review.documentId}`}>
-                                    <Eye className="h-4 w-4 mr-2" />
-                                    View Document
+                                    <span className="flex items-center">
+                                        <Eye className="h-4 w-4 mr-2" />
+                                        <span>View Document</span>
+                                    </span>
                                 </Link>
                             </Button>
                             <Button size="sm">

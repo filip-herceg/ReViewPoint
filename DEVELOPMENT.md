@@ -70,3 +70,27 @@ This project no longer uses Husky or pre-commit Git hooks. Please run linting an
 - `frontend/` - React frontend application
 - `backend/` - Python FastAPI backend
 - `docs/` - Documentation
+
+## Frontend Development Standards
+
+### Button Usage Policy
+
+All buttons must use the standardized `Button` component from `@/components/ui/button`. Raw `<button>` elements are prohibited to ensure:
+- Consistent visual design
+- Proper accessibility
+- Maintainable codebase
+- Theme consistency
+
+See [Button Standards Documentation](docs/development/BUTTON_STANDARDS.md) for complete guidelines.
+
+Quick examples:
+```tsx
+// ✅ CORRECT
+<Button variant="destructive">Delete</Button>
+<Button variant="outline" size="sm">Cancel</Button>
+
+// ❌ PROHIBITED
+<button className="px-4 py-2 bg-red-500">Delete</button>
+```
+
+The ESLint configuration will automatically flag violations of this policy.

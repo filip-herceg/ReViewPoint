@@ -159,8 +159,10 @@ const RegisterPage: React.FC = () => {
                                     })}
                                 />
                                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                <button
+                                <Button
                                     type="button"
+                                    variant="ghost"
+                                    size="icon-sm"
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                                     disabled={isLoading || isSubmitting}
@@ -170,7 +172,7 @@ const RegisterPage: React.FC = () => {
                                     ) : (
                                         <Eye className="h-4 w-4" />
                                     )}
-                                </button>
+                                </Button>
                             </div>
                             {errors.password && (
                                 <p className="text-sm text-destructive">{errors.password.message}</p>
@@ -194,8 +196,10 @@ const RegisterPage: React.FC = () => {
                                     })}
                                 />
                                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                <button
+                                <Button
                                     type="button"
+                                    variant="ghost"
+                                    size="icon-sm"
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                     className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                                     disabled={isLoading || isSubmitting}
@@ -205,7 +209,7 @@ const RegisterPage: React.FC = () => {
                                     ) : (
                                         <Eye className="h-4 w-4" />
                                     )}
-                                </button>
+                                </Button>
                             </div>
                             {errors.confirmPassword && (
                                 <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>

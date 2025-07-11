@@ -37,10 +37,14 @@ const ResetPasswordPage: React.FC = () => {
                         </p>
                         <div className="space-y-2">
                             <Button asChild className="w-full">
-                                <Link to="/auth/forgot-password">Request new reset link</Link>
+                                <Link to="/auth/forgot-password">
+                                    <span>Request new reset link</span>
+                                </Link>
                             </Button>
                             <Button variant="outline" asChild className="w-full">
-                                <Link to="/auth/login">Back to sign in</Link>
+                                <Link to="/auth/login">
+                                    <span>Back to sign in</span>
+                                </Link>
                             </Button>
                         </div>
                     </CardContent>
@@ -105,7 +109,9 @@ const ResetPasswordPage: React.FC = () => {
                             You can now sign in with your new password.
                         </p>
                         <Button asChild className="w-full">
-                            <Link to="/auth/login">Sign in to your account</Link>
+                            <Link to="/auth/login">
+                                <span>Sign in to your account</span>
+                            </Link>
                         </Button>
                     </CardContent>
                 </Card>
@@ -148,10 +154,12 @@ const ResetPasswordPage: React.FC = () => {
                                     className="pl-10 pr-10"
                                 />
                                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                <button
+                                <Button
                                     type="button"
+                                    variant="ghost"
+                                    size="icon-sm"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                                    className="absolute right-3 top-3"
                                     disabled={isLoading}
                                 >
                                     {showPassword ? (
@@ -159,7 +167,7 @@ const ResetPasswordPage: React.FC = () => {
                                     ) : (
                                         <Eye className="h-4 w-4" />
                                     )}
-                                </button>
+                                </Button>
                             </div>
                             <p className="text-xs text-muted-foreground">
                                 Password must be at least 8 characters long
@@ -184,10 +192,12 @@ const ResetPasswordPage: React.FC = () => {
                                     className="pl-10 pr-10"
                                 />
                                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                <button
+                                <Button
                                     type="button"
+                                    variant="ghost"
+                                    size="icon-sm"
                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                                    className="absolute right-3 top-3"
                                     disabled={isLoading}
                                 >
                                     {showConfirmPassword ? (
@@ -195,7 +205,7 @@ const ResetPasswordPage: React.FC = () => {
                                     ) : (
                                         <Eye className="h-4 w-4" />
                                     )}
-                                </button>
+                                </Button>
                             </div>
                         </div>
 

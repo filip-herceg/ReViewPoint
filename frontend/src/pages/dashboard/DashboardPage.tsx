@@ -107,19 +107,19 @@ const DashboardPage: React.FC = () => {
                     </CardHeader>
                     <CardContent className="flex flex-col sm:flex-row gap-4">
                         <Button asChild size="lg" className="group hover-lift">
-                            <Link to="/uploads/new">
+                            <Link to="/uploads/new" className="flex items-center">
                                 <Upload className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
                                 Upload Document
                             </Link>
                         </Button>
                         <Button variant="outline" asChild size="lg" className="hover-lift">
-                            <Link to="/uploads">
+                            <Link to="/uploads" className="flex items-center">
                                 <FileText className="mr-2 h-5 w-5" />
                                 View All Uploads
                             </Link>
                         </Button>
                         <Button variant="outline" asChild size="lg" className="hover-lift">
-                            <Link to="/reviews">
+                            <Link to="/reviews" className="flex items-center">
                                 <Eye className="mr-2 h-5 w-5" />
                                 Review Documents
                             </Link>
@@ -156,7 +156,7 @@ const DashboardPage: React.FC = () => {
                                                 {upload.status}
                                             </Badge>
                                             <Button variant="ghost" size="sm" asChild>
-                                                <Link to={`/uploads/${upload.id}`}>
+                                                <Link to={`/uploads/${upload.id}`} className="flex items-center">
                                                     <Eye className="h-4 w-4" />
                                                 </Link>
                                             </Button>
@@ -166,7 +166,9 @@ const DashboardPage: React.FC = () => {
                             </div>
                             <div className="mt-6">
                                 <Button variant="ghost" size="sm" asChild className="w-full hover-lift">
-                                    <Link to="/uploads">View all uploads →</Link>
+                                    <Link to="/uploads" className="flex items-center">
+                                        View all uploads →
+                                    </Link>
                                 </Button>
                             </div>
                         </CardContent>
@@ -204,7 +206,9 @@ const DashboardPage: React.FC = () => {
                             </div>
                             <div className="mt-6">
                                 <Button variant="ghost" size="sm" asChild className="w-full hover-lift">
-                                    <Link to="/reviews">View all reviews →</Link>
+                                    <Link to="/reviews" className="flex items-center">
+                                        View all reviews →
+                                    </Link>
                                 </Button>
                             </div>
                         </CardContent>

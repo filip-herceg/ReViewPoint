@@ -146,8 +146,10 @@ const LoginPage: React.FC = () => {
                                         })}
                                     />
                                     <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="ghost"
+                                        size="icon-sm"
                                         onClick={() => setShowPassword(!showPassword)}
                                         className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                                         disabled={isLoading || isSubmitting}
@@ -157,7 +159,7 @@ const LoginPage: React.FC = () => {
                                         ) : (
                                             <Eye className="h-4 w-4" />
                                         )}
-                                    </button>
+                                    </Button>
                                 </div>
                                 {errors.password && (
                                     <p className="text-sm text-destructive">{errors.password.message}</p>

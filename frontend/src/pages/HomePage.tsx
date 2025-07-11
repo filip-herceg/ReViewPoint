@@ -42,13 +42,13 @@ export default function HomePage() {
                         {!isAuthenticated && (
                             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-slide-up">
                                 <Button asChild size="lg" className="group hover-lift">
-                                    <Link to="/auth/register">
+                                    <Link to="/auth/register" className="flex items-center">
                                         Get Started Free
                                         <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                                     </Link>
                                 </Button>
                                 <Button asChild variant="outline" size="lg" className="hover-lift">
-                                    <Link to="/auth/login">
+                                    <Link to="/auth/login" className="flex items-center">
                                         Sign In
                                     </Link>
                                 </Button>
@@ -260,7 +260,7 @@ export default function HomePage() {
                                 </p>
                             </div>
                             <Button asChild size="lg" className="hover-lift">
-                                <Link to="/uploads/new">
+                                <Link to="/uploads/new" className="flex items-center">
                                     <Upload className="h-4 w-4 mr-2" />
                                     Upload New File
                                 </Link>
@@ -334,13 +334,13 @@ export default function HomePage() {
 
                                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                     <Button asChild size="lg" className="hover-lift group">
-                                        <Link to="/auth/register">
+                                        <Link to="/auth/register" className="flex items-center">
                                             Get Started Free
                                             <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                                         </Link>
                                     </Button>
                                     <Button asChild variant="outline" size="lg" className="hover-lift">
-                                        <Link to="/auth/login">
+                                        <Link to="/auth/login" className="flex items-center">
                                             Sign In to Your Account
                                         </Link>
                                     </Button>

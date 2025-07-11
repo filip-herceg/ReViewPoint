@@ -13,6 +13,7 @@ import {
     LiveRegionProvider,
     useLiveRegion
 } from '@/components/ui/aria-live-region';
+import { Button } from '@/components/ui/button';
 import { customRender, testLogger } from '../../test-utils';
 
 describe('AriaLiveRegion Component', () => {
@@ -147,10 +148,10 @@ describe('useAriaLive Hook', () => {
             <div>
                 <div data-testid="message">{message}</div>
                 <div data-testid="politeness">{politeness}</div>
-                <button onClick={() => announce('Test message', 'assertive')}>Announce</button>
-                <button onClick={() => announcePolite('Polite message')}>Announce Polite</button>
-                <button onClick={() => announceAssertive('Assertive message')}>Announce Assertive</button>
-                <button onClick={clear}>Clear</button>
+                <Button onClick={() => announce('Test message', 'assertive')}>Announce</Button>
+                <Button onClick={() => announcePolite('Polite message')}>Announce Polite</Button>
+                <Button onClick={() => announceAssertive('Assertive message')}>Announce Assertive</Button>
+                <Button onClick={clear}>Clear</Button>
             </div>
         );
     };
@@ -326,9 +327,9 @@ describe('LiveRegionProvider and useLiveRegion', () => {
 
         return (
             <div>
-                <button onClick={() => announce('Test message')}>Announce</button>
-                <button onClick={() => announceSuccess('Success message')}>Success</button>
-                <button onClick={() => announceError('Error message')}>Error</button>
+                <Button onClick={() => announce('Test message')}>Announce</Button>
+                <Button onClick={() => announceSuccess('Success message')}>Success</Button>
+                <Button onClick={() => announceError('Error message')}>Error</Button>
             </div>
         );
     };

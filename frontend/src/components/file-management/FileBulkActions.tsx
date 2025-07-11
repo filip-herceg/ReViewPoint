@@ -132,8 +132,10 @@ export const FileBulkActions: React.FC<FileBulkActionsProps> = ({
                         </Button>
                         <div className="hidden absolute bottom-full right-0 mb-2 w-48 bg-background rounded-md shadow-lg border border-border z-10">
                             <div className="py-1">
-                                <button
-                                    className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted justify-start"
                                     onClick={() => {
                                         // Add to favorites functionality
                                         console.log('Add to favorites');
@@ -141,9 +143,11 @@ export const FileBulkActions: React.FC<FileBulkActionsProps> = ({
                                 >
                                     <span className="mr-2">⭐</span>
                                     Add to Favorites
-                                </button>
-                                <button
-                                    className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted justify-start"
                                     onClick={() => {
                                         // Copy links functionality
                                         console.log('Copy links');
@@ -151,9 +155,11 @@ export const FileBulkActions: React.FC<FileBulkActionsProps> = ({
                                 >
                                     <span className="mr-2">🔗</span>
                                     Copy Links
-                                </button>
-                                <button
-                                    className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted justify-start"
                                     onClick={() => {
                                         // Export metadata functionality
                                         console.log('Export metadata');
@@ -161,10 +167,12 @@ export const FileBulkActions: React.FC<FileBulkActionsProps> = ({
                                 >
                                     <span className="mr-2">📋</span>
                                     Export Metadata
-                                </button>
+                                </Button>
                                 <div className="border-t border-border my-1" />
-                                <button
-                                    className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted justify-start"
                                     onClick={() => {
                                         // Change permissions functionality
                                         console.log('Change permissions');
@@ -172,7 +180,7 @@ export const FileBulkActions: React.FC<FileBulkActionsProps> = ({
                                 >
                                     <span className="mr-2">🔒</span>
                                     Change Permissions
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </div>

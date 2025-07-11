@@ -193,11 +193,11 @@ export default function ModerationPanelPage() {
                                                 <Eye className="h-4 w-4 mr-1" />
                                                 Review
                                             </Button>
-                                            <Button variant="outline" size="sm" className="text-success-foreground hover:text-success-foreground/80">
+                                            <Button variant="outline-success" size="sm">
                                                 <CheckCircle className="h-4 w-4 mr-1" />
                                                 Approve
                                             </Button>
-                                            <Button variant="outline" size="sm" className="text-destructive hover:text-destructive/80">
+                                            <Button variant="outline-destructive" size="sm">
                                                 <XCircle className="h-4 w-4 mr-1" />
                                                 Remove
                                             </Button>

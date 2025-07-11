@@ -44,7 +44,9 @@ const ForgotPasswordPage: React.FC = () => {
                         </p>
                         <div className="space-y-2">
                             <Button asChild className="w-full">
-                                <Link to="/auth/login">Back to sign in</Link>
+                                <Link to="/auth/login">
+                                    <span>Back to sign in</span>
+                                </Link>
                             </Button>
                             <Button
                                 variant="outline"

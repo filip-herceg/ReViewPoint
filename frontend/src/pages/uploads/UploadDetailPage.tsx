@@ -106,8 +106,10 @@ const UploadDetailPage: React.FC = () => {
             <div className="flex items-center gap-4">
                 <Button variant="ghost" size="sm" asChild>
                     <Link to="/uploads">
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        Back to Uploads
+                        <span className="flex items-center">
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            <span>Back to Uploads</span>
+                        </span>
                     </Link>
                 </Button>
             </div>
@@ -259,8 +261,10 @@ const UploadDetailPage: React.FC = () => {
                     <div className="flex items-center gap-4">
                         <Button variant="outline" asChild>
                             <Link to={`/reviews/${upload.id}/new`}>
-                                <MessageSquare className="h-4 w-4 mr-2" />
-                                Add Review
+                                <span className="flex items-center">
+                                    <MessageSquare className="h-4 w-4 mr-2" />
+                                    <span>Add Review</span>
+                                </span>
                             </Link>
                         </Button>
                         <Button variant="outline">

@@ -292,7 +292,9 @@ function DefaultAuthFallback() {
                 <div className="flex items-center justify-between">
                     <span>Please sign in to access this content.</span>
                     <Button asChild size="sm" variant="outline" className="ml-4">
-                        <Link to="/auth/login">Sign In</Link>
+                        <Link to="/auth/login">
+                            <span>Sign In</span>
+                        </Link>
                     </Button>
                 </div>
             </AlertDescription>
@@ -326,7 +328,9 @@ function DefaultAlreadyAuthenticatedFallback() {
                 <div className="flex items-center justify-between">
                     <span>You are already signed in.</span>
                     <Button asChild size="sm" variant="outline" className="ml-4">
-                        <Link to="/dashboard">Go to Dashboard</Link>
+                        <Link to="/dashboard">
+                            <span>Go to Dashboard</span>
+                        </Link>
                     </Button>
                 </div>
             </AlertDescription>

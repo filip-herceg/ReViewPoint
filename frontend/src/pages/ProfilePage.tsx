@@ -101,9 +101,9 @@ const ProfilePage: React.FC = () => {
                                     <User className="w-12 h-12 text-secondary" />
                                 )}
                             </div>
-                            <button className="absolute -bottom-2 -right-2 bg-primary text-inverse p-2 rounded-full hover:opacity-90 transition-all">
+                            <Button variant="floating-icon" size="floating" className="-bottom-2 -right-2">
                                 <Camera className="w-4 h-4" />
-                            </button>
+                            </Button>
                         </div>
 
                         {/* Profile Info */}

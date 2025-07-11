@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { Button } from '@/components/ui/button';
 
 // Test component that throws an error
 const ThrowError = ({ shouldThrow = false }: { shouldThrow?: boolean }) => {
@@ -102,7 +103,7 @@ describe('ErrorBoundary Component', () => {
         const customFallback = (error: Error, errorInfo: React.ErrorInfo, retry: () => void) => (
             <div data-testid="custom-fallback">
                 <p>Custom error message</p>
-                <button onClick={retry} data-testid="custom-retry">Custom Retry</button>
+                <Button onClick={retry} data-testid="custom-retry">Custom Retry</Button>
             </div>
         );
 

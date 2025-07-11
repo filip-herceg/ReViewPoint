@@ -6,6 +6,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { FocusTrap, useFocusTrap } from '@/components/ui/focus-trap';
+import { Button } from '@/components/ui/button';
 import { customRender, testLogger } from '../../test-utils';
 import { createTestError } from '../../test-templates';
 
@@ -39,10 +40,10 @@ describe('FocusTrap Component', () => {
 
         render(
             <div>
-                <button data-testid="outside-button">Outside</button>
+                <Button data-testid="outside-button">Outside</Button>
                 <FocusTrap active={true}>
-                    <button data-testid="inside-button-1">Inside 1</button>
-                    <button data-testid="inside-button-2">Inside 2</button>
+                    <Button data-testid="inside-button-1">Inside 1</Button>
+                    <Button data-testid="inside-button-2">Inside 2</Button>
                 </FocusTrap>
             </div>
         );
@@ -76,7 +77,7 @@ describe('FocusTrap Component', () => {
 
         render(
             <FocusTrap active={true} onEscape={onEscape}>
-                <button>Test button</button>
+                <Button>Test button</Button>
             </FocusTrap>
         );
 
@@ -90,8 +91,8 @@ describe('FocusTrap Component', () => {
 
         render(
             <FocusTrap active={true} initialFocus="[data-testid='target']">
-                <button data-testid="first">First</button>
-                <button data-testid="target">Target</button>
+                <Button data-testid="first">First</Button>
+                <Button data-testid="target">Target</Button>
             </FocusTrap>
         );
 
@@ -108,19 +109,19 @@ describe('FocusTrap Component', () => {
 
             return (
                 <div>
-                    <button
+                    <Button
                         data-testid="trigger"
                         onClick={() => setActive(true)}
                     >
                         Trigger
-                    </button>
+                    </Button>
                     <FocusTrap active={active} restoreFocus={true}>
-                        <button
+                        <Button
                             data-testid="close"
                             onClick={() => setActive(false)}
                         >
                             Close
-                        </button>
+                        </Button>
                     </FocusTrap>
                 </div>
             );
@@ -158,9 +159,9 @@ describe('FocusTrap Component', () => {
 
         render(
             <div>
-                <button data-testid="outside">Outside</button>
+                <Button data-testid="outside">Outside</Button>
                 <FocusTrap active={false}>
-                    <button data-testid="inside">Inside</button>
+                    <Button data-testid="inside">Inside</Button>
                 </FocusTrap>
             </div>
         );
@@ -210,7 +211,7 @@ describe('FocusTrap Component', () => {
 
         render(
             <FocusTrap active={true} onEscape={onEscape}>
-                <button>Test</button>
+                <Button>Test</Button>
             </FocusTrap>
         );
 
@@ -232,8 +233,8 @@ describe('useFocusTrap Hook', () => {
             return (
                 <div>
                     <span data-testid="status">{isActive ? 'active' : 'inactive'}</span>
-                    <button data-testid="activate" onClick={activate}>Activate</button>
-                    <button data-testid="deactivate" onClick={deactivate}>Deactivate</button>
+                    <Button data-testid="activate" onClick={activate}>Activate</Button>
+                    <Button data-testid="deactivate" onClick={deactivate}>Deactivate</Button>
                 </div>
             );
         };

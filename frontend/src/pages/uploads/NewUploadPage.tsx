@@ -130,8 +130,10 @@ const NewUploadPage: React.FC = () => {
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="sm" asChild className="hover-lift">
                         <Link to="/uploads">
-                            <ArrowLeft className="h-4 w-4 mr-2" />
-                            Back to Uploads
+                            <span className="flex items-center">
+                                <ArrowLeft className="h-4 w-4 mr-2" />
+                                <span>Back to Uploads</span>
+                            </span>
                         </Link>
                     </Button>
                 </div>
@@ -269,14 +271,16 @@ const NewUploadPage: React.FC = () => {
                                         {formData.tags.map((tag) => (
                                             <Badge key={tag} variant="secondary" className="flex items-center gap-1">
                                                 {tag}
-                                                <button
+                                                <Button
                                                     type="button"
+                                                    variant="icon-sm"
+                                                    size="icon-sm"
                                                     onClick={() => removeTag(tag)}
                                                     disabled={isUploading}
                                                     className="ml-1 hover:text-destructive"
                                                 >
                                                     <X className="h-3 w-3" />
-                                                </button>
+                                                </Button>
                                             </Badge>
                                         ))}
                                     </div>
@@ -355,7 +359,9 @@ const NewUploadPage: React.FC = () => {
                             )}
                         </Button>
                         <Button type="button" variant="outline" asChild disabled={isUploading}>
-                            <Link to="/uploads">Cancel</Link>
+                            <Link to="/uploads" className="flex items-center">
+                                Cancel
+                            </Link>
                         </Button>
                     </div>
                 </form>

@@ -166,8 +166,10 @@ export const FileGrid: React.FC<FileGridProps> = ({
                             </Button>
                             <div className="hidden absolute right-0 mt-2 w-48 bg-background rounded-md shadow-lg border border-border z-20">
                                 <div className="py-1">
-                                    <button
-                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted justify-start"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onPreview(file);
@@ -175,9 +177,11 @@ export const FileGrid: React.FC<FileGridProps> = ({
                                     >
                                         <Eye className="mr-2 h-4 w-4" />
                                         Preview
-                                    </button>
-                                    <button
-                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted justify-start"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onDownload(file);
@@ -185,9 +189,11 @@ export const FileGrid: React.FC<FileGridProps> = ({
                                     >
                                         <Download className="mr-2 h-4 w-4" />
                                         Download
-                                    </button>
-                                    <button
-                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="flex items-center w-full px-4 py-2 text-sm text-muted-foreground hover:bg-muted justify-start"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onShare(file);
@@ -195,9 +201,11 @@ export const FileGrid: React.FC<FileGridProps> = ({
                                     >
                                         <Share2 className="mr-2 h-4 w-4" />
                                         Share
-                                    </button>
-                                    <button
-                                        className="flex items-center w-full px-4 py-2 text-sm text-destructive hover:bg-muted"
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="flex items-center w-full px-4 py-2 text-sm text-destructive hover:bg-muted justify-start"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onDelete(file);
@@ -205,7 +213,7 @@ export const FileGrid: React.FC<FileGridProps> = ({
                                     >
                                         <Trash2 className="mr-2 h-4 w-4" />
                                         Delete
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         </div>

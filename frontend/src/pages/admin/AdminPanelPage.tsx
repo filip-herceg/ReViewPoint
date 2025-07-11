@@ -60,7 +60,9 @@ export default function AdminPanelPage() {
                                     • Deactivate accounts
                                 </div>
                                 <Button asChild className="w-full mt-4">
-                                    <Link to="/admin/users">Manage Users</Link>
+                                    <Link to="/admin/users">
+                                        <span>Manage Users</span>
+                                    </Link>
                                 </Button>
                             </div>
                         </CardContent>
@@ -89,7 +91,9 @@ export default function AdminPanelPage() {
                                     • Security configuration
                                 </div>
                                 <Button asChild className="w-full mt-4">
-                                    <Link to="/admin/settings">System Settings</Link>
+                                    <Link to="/admin/settings">
+                                        <span>System Settings</span>
+                                    </Link>
                                 </Button>
                             </div>
                         </CardContent>
@@ -118,7 +122,9 @@ export default function AdminPanelPage() {
                                     • System performance metrics
                                 </div>
                                 <Button asChild className="w-full mt-4" variant="outline">
-                                    <Link to="/admin/analytics">View Analytics</Link>
+                                    <Link to="/admin/analytics">
+                                        <span>View Analytics</span>
+                                    </Link>
                                 </Button>
                             </div>
                         </CardContent>

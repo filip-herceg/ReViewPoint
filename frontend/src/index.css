@@ -539,30 +539,6 @@ body {
   font-weight: 500;
 }
 
-/* Interactive button styles using centralized colors */
-.btn-primary {
-  background-color: var(--primary);
-  color: var(--primary-foreground);
-  border: 1px solid var(--primary);
-}
-
-.btn-primary:hover {
-  background-color: var(--primary);
-  opacity: 0.9;
-}
-
-.btn-secondary {
-  background-color: var(--secondary);
-  color: var(--secondary-foreground);
-  border: 1px solid var(--border);
-}
-
-.btn-destructive {
-  background-color: var(--destructive);
-  color: var(--destructive-foreground);
-  border: 1px solid var(--destructive);
-}
-
 /* Modern Interactive Elements */
 .interactive-scale {
   transition: transform 0.2s ease;
