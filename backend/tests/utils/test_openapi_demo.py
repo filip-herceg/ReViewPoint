@@ -6,12 +6,12 @@ import os
 # Set minimal environment for testing
 os.environ.update(
     {
-        "REVIEWPOINT_DB_URL": "sqlite:///test.db",
+        "REVIEWPOINT_DB_URL": "sqlite+aiosqlite:///test.db",
         "REVIEWPOINT_SECRET_KEY": "test-secret-key-for-demo",
         "REVIEWPOINT_CORS_ORIGINS": '["http://localhost:3000"]',
         "REVIEWPOINT_FEATURE_FLAGS": "{}",
         "REVIEWPOINT_ENVIRONMENT": "test",
-    }
+    },
 )
 
 
@@ -40,7 +40,7 @@ def test_openapi_schema() -> bool:
         print(f"Servers: {len(enhanced['servers'])} environments")
         print(f"Tags: {len(enhanced['tags'])} categories")
         print(
-            f"Security schemes: {list(enhanced['components']['securitySchemes'].keys())}"
+            f"Security schemes: {list(enhanced['components']['securitySchemes'].keys())}",
         )
         print(f"Examples: {list(enhanced['components']['examples'].keys())}")
 
