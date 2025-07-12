@@ -20,6 +20,7 @@ import {
     ThumbsDown,
     AlertTriangle
 } from 'lucide-react';
+import { CitationsSection } from '@/components/citations/CitationsSection';
 
 const ReviewDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -407,6 +408,9 @@ const ReviewDetailPage: React.FC = () => {
                     </CardContent>
                 </Card>
             )}
+
+            {/* Citations Section - Always visible */}
+            <CitationsSection documentId={review.documentId} />
         </div>
     );
 };

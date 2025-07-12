@@ -18,6 +18,7 @@ import {
     ArrowLeft,
     Share2
 } from 'lucide-react';
+import { CitationsSection } from '@/components/citations/CitationsSection';
 
 const UploadDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -228,6 +229,9 @@ const UploadDetailPage: React.FC = () => {
                     )}
                 </CardContent>
             </Card>
+
+            {/* Citations */}
+            <CitationsSection documentId={upload.id} />
 
             {/* Actions */}
             <Card>
