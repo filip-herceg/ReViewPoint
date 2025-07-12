@@ -1,5 +1,4 @@
-"""User service: registration, authentication, logout, and authentication check.
-"""
+"""User service: registration, authentication, logout, and authentication check."""
 
 import os
 import secrets
@@ -92,14 +91,19 @@ async def register_user(session: AsyncSession, data: Mapping[str, object]) -> Us
     logger.info("User registration attempt", email=email)
     # Use repo helper for validation and creation
     user: User = await user_repo.create_user_with_validation(
-        session, email, password, name,
+        session,
+        email,
+        password,
+        name,
     )
     logger.info("User registered successfully", user_id=user.id, email=user.email)
     return user
 
 
 async def authenticate_user(
-    session: AsyncSession, email: str, password: str,
+    session: AsyncSession,
+    email: str,
+    password: str,
 ) -> tuple[str, str]:
     """Authenticate user credentials and return a tuple of (access_token, refresh_token).
     Raises ValidationError or UserNotFoundError on error.
@@ -238,8 +242,7 @@ def refresh_access_token(user_id: int | str, refresh_token: str) -> str:
 
 
 def revoke_refresh_token(user_id: int, token: str) -> None:
-    """Blacklist or invalidate the refresh token (stub).
-    """
+    """Blacklist or invalidate the refresh token (stub)."""
     # Placeholder: In production, store revoked tokens in a DB or cache
 
 
@@ -256,8 +259,7 @@ def verify_email_token(token: str) -> Mapping[str, object]:
 
 
 def get_password_reset_token(email: str) -> str:
-    """Generate a secure token and simulate sending a reset link via logging.
-    """
+    """Generate a secure token and simulate sending a reset link via logging."""
     token: str = create_access_token(
         {"sub": email, "purpose": "reset", "nonce": secrets.token_urlsafe(8)},
     )
@@ -301,7 +303,8 @@ async def reset_password(session: AsyncSession, token: str, new_password: str) -
         err: str | None = get_password_validation_error(new_password)
         if err:
             logger.warning(
-                "Password reset failed: validation requirements not met", email=email,
+                "Password reset failed: validation requirements not met",
+                email=email,
             )
             raise ValidationError(err)
         result = await session.execute(
@@ -310,7 +313,8 @@ async def reset_password(session: AsyncSession, token: str, new_password: str) -
         user: User | None = result.scalar_one_or_none()
         if not user or not user.is_active or user.is_deleted:
             logger.warning(
-                "Password reset failed: user not found or inactive", email=email,
+                "Password reset failed: user not found or inactive",
+                email=email,
             )
             raise UserNotFoundError("User not found.")
         hashed: str = hash_password(new_password)
@@ -320,7 +324,9 @@ async def reset_password(session: AsyncSession, token: str, new_password: str) -
 
         session.add(
             UsedPasswordResetToken(
-                email=email, nonce=nonce, used_at=datetime.now().replace(tzinfo=None),
+                email=email,
+                nonce=nonce,
+                used_at=datetime.now().replace(tzinfo=None),
             ),
         )
         await session.commit()
@@ -333,7 +339,10 @@ async def reset_password(session: AsyncSession, token: str, new_password: str) -
 
 
 async def change_password(
-    session: AsyncSession, user_id: int, old_pw: str, new_pw: str,
+    session: AsyncSession,
+    user_id: int,
+    old_pw: str,
+    new_pw: str,
 ) -> None:
     """Check old password and update if correct.
     :raises UserNotFoundError: If user not found.
@@ -342,23 +351,27 @@ async def change_password(
     user: User | None = await get_user_by_id(session, user_id)
     if not user or not user.is_active or user.is_deleted:
         logger.warning(
-            "Password change failed: user not found or inactive", user_id=user_id,
+            "Password change failed: user not found or inactive",
+            user_id=user_id,
         )
         raise UserNotFoundError("User not found.")
     if not verify_password(old_pw, user.hashed_password):
         logger.warning(
-            "Password change failed: incorrect old password", user_id=user_id,
+            "Password change failed: incorrect old password",
+            user_id=user_id,
         )
         raise ValidationError("Old password is incorrect.")
     if old_pw == new_pw or verify_password(new_pw, user.hashed_password):
         logger.warning(
-            "Password change failed: new password same as old", user_id=user_id,
+            "Password change failed: new password same as old",
+            user_id=user_id,
         )
         raise ValidationError("New password must be different from the old password.")
     err: str | None = get_password_validation_error(new_pw)
     if err:
         logger.warning(
-            "Password change failed: validation requirements not met", user_id=user_id,
+            "Password change failed: validation requirements not met",
+            user_id=user_id,
         )
         raise ValidationError(err)
     hashed: str = hash_password(new_pw)
@@ -398,7 +411,9 @@ async def get_user_profile(session: AsyncSession, user_id: int) -> UserProfile:
 
 
 async def update_user_profile(
-    session: AsyncSession, user_id: int, data: Mapping[str, object],
+    session: AsyncSession,
+    user_id: int,
+    data: Mapping[str, object],
 ) -> UserProfile:
     # Only pass fields that are valid for UserProfileUpdate and cast to correct types
     valid_fields: dict[str, object] = {}
@@ -418,7 +433,9 @@ async def update_user_profile(
     valid_fields.pop("name", None)
     valid_fields.pop("bio", None)
     update_data: dict[str, object] = UserProfileUpdate(
-        name=name, bio=bio, **valid_fields,
+        name=name,
+        bio=bio,
+        **valid_fields,
     ).model_dump(exclude_unset=True)
     user: User | None = await partial_update_user(session, user_id, update_data)
     if not user:
@@ -427,7 +444,9 @@ async def update_user_profile(
 
 
 async def set_user_preferences(
-    session: AsyncSession, user_id: int, preferences: Mapping[str, object],
+    session: AsyncSession,
+    user_id: int,
+    preferences: Mapping[str, object],
 ) -> UserPreferences:
     user: User | None = await get_user_by_id(session, user_id)
     if not user or user.is_deleted:
@@ -445,7 +464,9 @@ async def set_user_preferences(
 
 
 async def upload_avatar(
-    session: AsyncSession, user_id: int, file: UploadFile,
+    session: AsyncSession,
+    user_id: int,
+    file: UploadFile,
 ) -> UserAvatarResponse:
     user: User | None = await get_user_by_id(session, user_id)
     if not user or user.is_deleted:
@@ -463,7 +484,10 @@ async def upload_avatar(
 
 
 async def delete_user_account(
-    session: AsyncSession, user_id: int, *, anonymize: bool = False,
+    session: AsyncSession,
+    user_id: int,
+    *,
+    anonymize: bool = False,
 ) -> bool:
     """Delete or anonymize a user account depending on policy.
     If anonymize=True, irreversibly remove PII and disable account (GDPR).
@@ -492,7 +516,10 @@ async def deactivate_user(session: AsyncSession, user_id: int) -> bool:
     """
     result: bool = await user_repo.deactivate_user(session, user_id)
     await user_repo.audit_log_user_change(
-        session, user_id, "deactivate", "User deactivated (is_active=False).",
+        session,
+        user_id,
+        "deactivate",
+        "User deactivated (is_active=False).",
     )
     return result
 
@@ -503,7 +530,10 @@ async def reactivate_user(session: AsyncSession, user_id: int) -> bool:
     """
     result: bool = await user_repo.reactivate_user(session, user_id)
     await user_repo.audit_log_user_change(
-        session, user_id, "reactivate", "User reactivated (is_active=True).",
+        session,
+        user_id,
+        "reactivate",
+        "User reactivated (is_active=True).",
     )
     return result
 
@@ -542,7 +572,11 @@ async def get_users_paginated(
         raise ValidationError("Invalid pagination parameters.")
     offset: int = (page - 1) * limit
     users_list, total_count = await user_repo.list_users(
-        session, offset=offset, limit=limit, email=email, name=name,
+        session,
+        offset=offset,
+        limit=limit,
+        email=email,
+        name=name,
     )
     users: Sequence[User] = users_list
     total: int = total_count
@@ -575,8 +609,7 @@ async def assign_role(user_id: int, role: str) -> bool:
 
 
 async def check_user_role(user_id: int, required_role: str) -> bool:
-    """Check if user has the required role. Stub: checks in-memory store.
-    """
+    """Check if user has the required role. Stub: checks in-memory store."""
     roles: set[str] = _mock_user_roles.get(user_id, set())
     return required_role in roles
 
@@ -598,7 +631,9 @@ async def async_refresh_access_token(
     """
     try:
         payload: Mapping[str, object] = jwt.decode(
-            token, jwt_secret, algorithms=[jwt_algorithm],
+            token,
+            jwt_secret,
+            algorithms=[jwt_algorithm],
         )
         user_id_val = payload.get("user_id")
         if not isinstance(user_id_val, int | str):
@@ -612,7 +647,9 @@ async def async_refresh_access_token(
         limiter_key: str = f"refresh:{user_id}"
         if callable(user_action_limiter):
             is_allowed: bool = await user_action_limiter(
-                limiter_key, max_attempts=max_attempts, window_seconds=window_seconds,
+                limiter_key,
+                max_attempts=max_attempts,
+                window_seconds=window_seconds,
             )
             if not is_allowed:
                 raise RefreshTokenRateLimitError("Too many token refresh attempts.")
@@ -656,12 +693,17 @@ class UserService:
     """
 
     async def register_user(
-        self, session: AsyncSession, data: Mapping[str, object],
+        self,
+        session: AsyncSession,
+        data: Mapping[str, object],
     ) -> User:
         return await register_user(session, data)
 
     async def authenticate_user(
-        self, session: AsyncSession, email: str, password: str,
+        self,
+        session: AsyncSession,
+        email: str,
+        password: str,
     ) -> tuple[str, str]:
         return await authenticate_user(session, email, password)
 
@@ -669,7 +711,10 @@ class UserService:
         return await logout_user(session, user_id)
 
     async def reset_password(
-        self, session: AsyncSession, token: str, new_password: str,
+        self,
+        session: AsyncSession,
+        token: str,
+        new_password: str,
     ) -> None:
         return await reset_password(session, token, new_password)
 
@@ -677,17 +722,25 @@ class UserService:
         return get_password_reset_token(email)
 
     async def get_users_paginated(
-        self, session: AsyncSession, page: int = 1, limit: int = 20,
+        self,
+        session: AsyncSession,
+        page: int = 1,
+        limit: int = 20,
     ) -> PaginatedUsersResponse:
         return await get_users_paginated(session, page, limit)
 
     async def get_user_profile(
-        self, session: AsyncSession, user_id: int,
+        self,
+        session: AsyncSession,
+        user_id: int,
     ) -> UserProfile:
         return await get_user_profile(session, user_id)
 
     async def update_user(
-        self, session: AsyncSession, user_id: int, data: Mapping[str, object],
+        self,
+        session: AsyncSession,
+        user_id: int,
+        data: Mapping[str, object],
     ) -> User:
         # Implement update logic or call the appropriate repository/service function
         from src.repositories.user import is_email_unique
@@ -701,7 +754,9 @@ class UserService:
                 raise ValidationError("Email must be a string.")
             # Check for unique email, excluding current user
             is_unique: bool = await is_email_unique(
-                session, email_val, exclude_user_id=user_id,
+                session,
+                email_val,
+                exclude_user_id=user_id,
             )
             if not is_unique:
                 raise UserAlreadyExistsError("Email already exists.")

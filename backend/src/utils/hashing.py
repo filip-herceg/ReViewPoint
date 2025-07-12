@@ -1,5 +1,4 @@
-"""Password hashing and verification utilities using passlib's bcrypt.
-"""
+"""Password hashing and verification utilities using passlib's bcrypt."""
 
 from typing import Final, Literal, Protocol
 

@@ -11,8 +11,7 @@ from src.models.base import BaseModel
 
 
 class File(BaseModel):
-    """SQLAlchemy model for a file uploaded by a user.
-    """
+    """SQLAlchemy model for a file uploaded by a user."""
 
     __tablename__ = "files"
     __table_args__ = (Index("ix_files_user_id", "user_id"),)
@@ -20,7 +19,9 @@ class File(BaseModel):
     filename: Mapped[str] = mapped_column(String(255), nullable=False)
     content_type: Mapped[str] = mapped_column(String(128), nullable=False)
     size: Mapped[int] = mapped_column(
-        BigInteger, nullable=True, default=0,
+        BigInteger,
+        nullable=True,
+        default=0,
     )  # File size in bytes
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 

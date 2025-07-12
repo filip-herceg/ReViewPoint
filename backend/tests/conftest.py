@@ -759,7 +759,7 @@ async def async_session(
 
 
 @pytest.fixture(scope="function")
-def patch_loguru_remove(monkeypatch: pytest.MonkeyPatch) -> Generator[None, None, None]:
+def patch_loguru_remove(monkeypatch: pytest.MonkeyPatch) -> None:
     """Fixture to patch loguru remove for function scope."""
     return
 
@@ -768,7 +768,7 @@ def patch_loguru_remove(monkeypatch: pytest.MonkeyPatch) -> Generator[None, None
 
 
 @pytest.fixture(scope="function")
-def test_app(async_session: object) -> Generator[FastAPI, None, None]:
+def test_app(async_session: object) -> FastAPI:
     """Provides a new FastAPI app instance for each test function.
     Overrides get_async_session and get_db dependencies to use the test
     async_session fixture.
