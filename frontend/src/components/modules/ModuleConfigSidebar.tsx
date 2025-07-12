@@ -245,7 +245,7 @@ export const ModuleConfigSidebar: React.FC<ModuleConfigSidebarProps> = ({
         <>
             {/* Backdrop */}
             <div
-                className="fixed inset-0 bg-black/50 z-40"
+                className="fixed inset-0 bg-black/20 z-40"
                 onClick={onClose}
             />
 

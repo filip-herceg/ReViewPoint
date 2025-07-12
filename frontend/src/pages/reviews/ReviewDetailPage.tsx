@@ -33,6 +33,8 @@ const ReviewDetailPage: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [configSidebarOpen, setConfigSidebarOpen] = useState(false);
     const [selectedModule, setSelectedModule] = useState<any>(null);
+    const [runningModules, setRunningModules] = useState<Set<string>>(new Set());
+    const [moduleResults, setModuleResults] = useState<Record<string, any>>({});
 
     // Get marketplace data for available modules
     const { userSubscriptions, isModuleSubscribed, getUserSubscription } = useMarketplace();
@@ -149,7 +151,8 @@ const ReviewDetailPage: React.FC = () => {
         }
     };
 
-    const handleRunModule = (moduleId: string) => {
+    // Configure module - opens the configuration sidebar
+    const handleConfigureModule = (moduleId: string) => {
         const subscription = getUserSubscription(moduleId);
         if (subscription) {
             const module = userSubscriptions.find(s => s.moduleId === moduleId)?.module;
@@ -169,6 +172,192 @@ const ReviewDetailPage: React.FC = () => {
                 setConfigSidebarOpen(true);
             }
         }
+    };
+
+    // Run module analysis - executes the module and simulates results
+    const handleRunModule = async (moduleId: string) => {
+        const subscription = getUserSubscription(moduleId);
+        if (!subscription) return;
+
+        const module = userSubscriptions.find(s => s.moduleId === moduleId)?.module;
+        if (!module) return;
+
+        // Add to running modules
+        setRunningModules(prev => new Set([...prev, moduleId]));
+
+        try {
+            // Simulate module execution time
+            await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 3000));
+
+            // Generate simulated results based on module type
+            const simulatedResult = generateModuleResult(module, review);
+            setModuleResults(prev => ({
+                ...prev,
+                [moduleId]: simulatedResult
+            }));
+
+            console.log(`Module ${module.name} completed analysis:`, simulatedResult);
+        } catch (error) {
+            console.error(`Module ${module.name} execution failed:`, error);
+        } finally {
+            // Remove from running modules
+            setRunningModules(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(moduleId);
+                return newSet;
+            });
+        }
+    };
+
+    // Generate simulated module results
+    const generateModuleResult = (module: any, reviewDoc: any) => {
+        const results = {
+            'plagiarism-detector': {
+                status: 'completed',
+                score: Math.round((Math.random() * 20 + 80) * 100) / 100, // 80-100%
+                findings: Math.floor(Math.random() * 3), // 0-2 issues
+                details: [
+                    'Document appears to be original content',
+                    'No significant plagiarism detected',
+                    'Minor similarity found in standard terminology (acceptable)'
+                ].slice(0, Math.floor(Math.random() * 3) + 1)
+            },
+            'citation-validator-pro': {
+                status: 'completed',
+                score: Math.round((Math.random() * 25 + 65) * 100) / 100, // 65-90%
+                findings: Math.floor(Math.random() * 6) + 2, // 2-7 issues
+                totalCitations: Math.floor(Math.random() * 15) + 12, // 12-26 citations
+                validCitations: Math.floor(Math.random() * 8) + 8, // 8-15 valid
+                issues: [
+                    {
+                        type: 'misrepresentation',
+                        severity: 'high',
+                        location: 'Page 3, Paragraph 2, Line 8-10',
+                        citation: 'Smith et al. (2021)',
+                        issue: 'The paper claims Smith et al. found "significant improvement in 95% of cases", but the source actually reports 73% improvement rate.',
+                        recommendation: 'Correct the percentage or find additional supporting evidence'
+                    },
+                    {
+                        type: 'missing_context',
+                        severity: 'medium',
+                        location: 'Page 5, Section 3.1, Line 15',
+                        citation: 'Johnson & Brown (2020)',
+                        issue: 'The citation is used to support a broad claim about "all manufacturing processes", but the source only studied automotive manufacturing.',
+                        recommendation: 'Narrow the claim or cite additional sources covering other industries'
+                    },
+                    {
+                        type: 'outdated_source',
+                        severity: 'medium',
+                        location: 'Page 7, Introduction, Line 3',
+                        citation: 'Williams (1998)',
+                        issue: 'Source is 27 years old in a rapidly evolving field. Current standards and practices may have changed significantly.',
+                        recommendation: 'Find more recent sources (preferably within last 5-10 years) to support this claim'
+                    },
+                    {
+                        type: 'unreliable_source',
+                        severity: 'high',
+                        location: 'Page 9, Discussion, Line 22',
+                        citation: 'TechBlog.com (2023)',
+                        issue: 'Source appears to be a commercial blog without peer review. Not appropriate for academic citation.',
+                        recommendation: 'Replace with peer-reviewed academic source or industry report from reputable organization'
+                    },
+                    {
+                        type: 'citation_not_found',
+                        severity: 'high',
+                        location: 'Page 4, Methodology, Line 12',
+                        citation: 'Davis et al. (2022)',
+                        issue: 'The cited work does not contain any information about the methodology being referenced.',
+                        recommendation: 'Verify the citation is correct or find the appropriate source for this methodology'
+                    },
+                    {
+                        type: 'format_error',
+                        severity: 'low',
+                        location: 'Page 6, References, Entry 12',
+                        citation: 'Thompson, K. (2021)',
+                        issue: 'Incomplete citation missing journal name, volume, and page numbers.',
+                        recommendation: 'Complete the citation according to APA format requirements'
+                    },
+                    {
+                        type: 'overcitation',
+                        severity: 'low',
+                        location: 'Page 8, Paragraph 3',
+                        citation: 'Multiple (5 citations for single claim)',
+                        issue: 'Five citations provided for a basic, well-established fact that requires minimal support.',
+                        recommendation: 'Reduce to 1-2 most authoritative sources'
+                    },
+                    {
+                        type: 'cherry_picking',
+                        severity: 'medium',
+                        location: 'Page 10, Results, Line 5-8',
+                        citation: 'Anderson (2023)',
+                        issue: 'Only favorable results from the source are cited, ignoring contradictory findings mentioned in the same paper.',
+                        recommendation: 'Present a balanced view or acknowledge limitations mentioned in the source'
+                    },
+                    {
+                        type: 'predatory_journal',
+                        severity: 'high',
+                        location: 'Page 11, Literature Review, Line 18',
+                        citation: 'Martinez & Lee (2022) - Journal of Universal Science',
+                        issue: 'Source appears to be from a predatory journal with questionable peer review standards.',
+                        recommendation: 'Find equivalent research published in reputable, indexed journals'
+                    },
+                    {
+                        type: 'broken_link',
+                        severity: 'medium',
+                        location: 'Page 12, References, Entry 8',
+                        citation: 'World Health Organization (2021)',
+                        issue: 'URL provided in citation returns 404 error. Document may have been moved or removed.',
+                        recommendation: 'Find current URL or use alternative access method (DOI, archived version)'
+                    }
+                ].slice(0, Math.floor(Math.random() * 6) + 4), // Show 4-9 random issues
+                recommendations: [
+                    'Consider using citation management software to ensure consistent formatting',
+                    'Prioritize peer-reviewed sources over blog posts and commercial websites',
+                    'Verify all claims against the actual content of cited sources',
+                    'Update outdated references where more recent research is available',
+                    'Ensure citations directly support the specific claims being made'
+                ]
+            },
+            'grammar-checker': {
+                status: 'completed',
+                score: Math.round((Math.random() * 30 + 70) * 100) / 100, // 70-100%
+                findings: Math.floor(Math.random() * 8), // 0-7 issues
+                issues: [
+                    'Passive voice usage in paragraph 3',
+                    'Missing comma in compound sentence (line 42)',
+                    'Consider shorter sentences for clarity',
+                    'Technical jargon could be simplified',
+                    'Inconsistent terminology usage'
+                ].slice(0, Math.floor(Math.random() * 5) + 1)
+            },
+            'fact-checker': {
+                status: 'completed',
+                score: Math.round((Math.random() * 25 + 75) * 100) / 100, // 75-100%
+                findings: Math.floor(Math.random() * 4), // 0-3 issues
+                claims: [
+                    { claim: 'Statistical data in section 2', verified: Math.random() > 0.3 },
+                    { claim: 'Historical references', verified: Math.random() > 0.2 },
+                    { claim: 'Technical specifications', verified: Math.random() > 0.1 }
+                ]
+            },
+            'bias-detector': {
+                status: 'completed',
+                score: Math.round((Math.random() * 20 + 80) * 100) / 100, // 80-100%
+                findings: Math.floor(Math.random() * 3), // 0-2 issues
+                biases: [
+                    'Slight confirmation bias in argument structure',
+                    'Neutral language maintained throughout',
+                    'Balanced presentation of viewpoints'
+                ].slice(0, Math.floor(Math.random() * 2) + 1)
+            }
+        };
+
+        return (results as any)[module.id] || {
+            status: 'completed',
+            score: Math.round((Math.random() * 30 + 70) * 100) / 100,
+            findings: Math.floor(Math.random() * 5),
+            analysis: `Analysis completed for ${module.name}. Document reviewed successfully.`
+        };
     };
 
     const handleSaveModuleConfig = async (config: any) => {
@@ -383,15 +572,26 @@ const ReviewDetailPage: React.FC = () => {
                                                 <Button
                                                     size="sm"
                                                     onClick={() => handleRunModule(module.id)}
+                                                    disabled={runningModules.has(module.id)}
                                                     className="flex-1"
                                                 >
-                                                    <Play className="h-4 w-4 mr-2" />
-                                                    Run Analysis
+                                                    {runningModules.has(module.id) ? (
+                                                        <>
+                                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                                            Running...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Play className="h-4 w-4 mr-2" />
+                                                            Run Analysis
+                                                        </>
+                                                    )}
                                                 </Button>
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    onClick={() => handleRunModule(module.id)}
+                                                    onClick={() => handleConfigureModule(module.id)}
+                                                    title="Configure module settings"
                                                 >
                                                     <Settings className="h-4 w-4" />
                                                 </Button>
@@ -404,6 +604,214 @@ const ReviewDetailPage: React.FC = () => {
                                     );
                                 })}
                             </div>
+                            
+                            {/* Module Results Section */}
+                            {Object.keys(moduleResults).length > 0 && (
+                                <div className="space-y-4 mt-6">
+                                    <h4 className="font-medium flex items-center gap-2">
+                                        <CheckCircle className="h-4 w-4 text-green-600" />
+                                        Analysis Results
+                                    </h4>
+                                    {Object.entries(moduleResults).map(([moduleId, result]) => {
+                                        const module = userSubscriptions.find(s => s.moduleId === moduleId)?.module;
+                                        if (!module) return null;
+                                        
+                                        return (
+                                            <Card key={moduleId} className="border-green-200 bg-green-50/50">
+                                                <CardHeader className="pb-3">
+                                                    <CardTitle className="text-base flex items-center gap-2">
+                                                        <Badge variant="secondary" className="bg-green-100 text-green-800">
+                                                            {module.displayName || module.name}
+                                                        </Badge>
+                                                        <Badge variant="outline" className="text-green-600 border-green-600">
+                                                            {result.status}
+                                                        </Badge>
+                                                    </CardTitle>
+                                                </CardHeader>
+                                                <CardContent className="pt-0">
+                                                    <div className="space-y-3">
+                                                        {result.score && (
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-sm text-muted-foreground">Score:</span>
+                                                                <Badge variant={result.score > 90 ? "default" : result.score > 70 ? "secondary" : "destructive"}>
+                                                                    {result.score}%
+                                                                </Badge>
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {result.findings !== undefined && (
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-sm text-muted-foreground">Issues found:</span>
+                                                                <Badge variant={result.findings === 0 ? "default" : "secondary"}>
+                                                                    {result.findings}
+                                                                </Badge>
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {result.details && (
+                                                            <div className="space-y-1">
+                                                                <p className="text-sm font-medium">Details:</p>
+                                                                <ul className="text-sm text-muted-foreground space-y-1">
+                                                                    {result.details.map((detail: string, idx: number) => (
+                                                                        <li key={idx} className="flex items-start gap-2">
+                                                                            <span className="w-1 h-1 bg-muted-foreground rounded-full mt-2 flex-shrink-0"></span>
+                                                                            {detail}
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {result.issues && Array.isArray(result.issues) && result.issues.length > 0 && typeof result.issues[0] === 'string' && (
+                                                            <div className="space-y-1">
+                                                                <p className="text-sm font-medium">Issues:</p>
+                                                                <ul className="text-sm text-muted-foreground space-y-1">
+                                                                    {result.issues.map((issue: string, idx: number) => (
+                                                                        <li key={idx} className="flex items-start gap-2">
+                                                                            <span className="w-1 h-1 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></span>
+                                                                            {issue}
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {result.claims && (
+                                                            <div className="space-y-1">
+                                                                <p className="text-sm font-medium">Fact Checks:</p>
+                                                                <div className="space-y-1">
+                                                                    {result.claims.map((claim: any, idx: number) => (
+                                                                        <div key={idx} className="flex items-center gap-2 text-sm">
+                                                                            {claim.verified ? (
+                                                                                <CheckCircle className="h-3 w-3 text-green-600" />
+                                                                            ) : (
+                                                                                <XCircle className="h-3 w-3 text-red-600" />
+                                                                            )}
+                                                                            <span className={claim.verified ? "text-green-700" : "text-red-700"}>
+                                                                                {claim.claim}
+                                                                            </span>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {result.biases && (
+                                                            <div className="space-y-1">
+                                                                <p className="text-sm font-medium">Bias Analysis:</p>
+                                                                <ul className="text-sm text-muted-foreground space-y-1">
+                                                                    {result.biases.map((bias: string, idx: number) => (
+                                                                        <li key={idx} className="flex items-start gap-2">
+                                                                            <span className="w-1 h-1 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
+                                                                            {bias}
+                                                                        </li>
+                                                                    ))}
+                                                                </ul>
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {/* Citation Validator Pro specific results */}
+                                                        {result.totalCitations && (
+                                                            <div className="grid grid-cols-3 gap-4 p-3 bg-blue-50 rounded-lg">
+                                                                <div className="text-center">
+                                                                    <div className="text-lg font-semibold text-blue-900">{result.totalCitations}</div>
+                                                                    <div className="text-xs text-blue-700">Total Citations</div>
+                                                                </div>
+                                                                <div className="text-center">
+                                                                    <div className="text-lg font-semibold text-green-700">{result.validCitations}</div>
+                                                                    <div className="text-xs text-green-600">Valid Citations</div>
+                                                                </div>
+                                                                <div className="text-center">
+                                                                    <div className="text-lg font-semibold text-red-700">{result.totalCitations - result.validCitations}</div>
+                                                                    <div className="text-xs text-red-600">Issues Found</div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {result.issues && Array.isArray(result.issues) && result.issues.length > 0 && typeof result.issues[0] === 'object' && (
+                                                            <div className="space-y-3">
+                                                                <p className="text-sm font-medium">Citation Issues Found:</p>
+                                                                <div className="space-y-3 max-h-96 overflow-y-auto">
+                                                                    {result.issues.map((issue: any, idx: number) => (
+                                                                        <div key={idx} className={`border rounded-lg p-3 ${
+                                                                            issue.severity === 'high' ? 'border-red-300 bg-red-50' :
+                                                                            issue.severity === 'medium' ? 'border-yellow-300 bg-yellow-50' :
+                                                                            'border-blue-300 bg-blue-50'
+                                                                        }`}>
+                                                                            <div className="flex items-start justify-between mb-2">
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <Badge variant={
+                                                                                        issue.severity === 'high' ? 'destructive' :
+                                                                                        issue.severity === 'medium' ? 'secondary' :
+                                                                                        'outline'
+                                                                                    }>
+                                                                                        {issue.severity} priority
+                                                                                    </Badge>
+                                                                                    <Badge variant="outline" className="text-xs">
+                                                                                        {issue.type.replace('_', ' ')}
+                                                                                    </Badge>
+                                                                                </div>
+                                                                            </div>
+                                                                            
+                                                                            <div className="space-y-2 text-sm">
+                                                                                <div>
+                                                                                    <span className="font-medium text-gray-700">Location:</span>
+                                                                                    <span className="ml-2 font-mono text-blue-700 bg-blue-100 px-2 py-1 rounded text-xs">
+                                                                                        {issue.location}
+                                                                                    </span>
+                                                                                </div>
+                                                                                
+                                                                                <div>
+                                                                                    <span className="font-medium text-gray-700">Citation:</span>
+                                                                                    <span className="ml-2 italic text-purple-700">
+                                                                                        {issue.citation}
+                                                                                    </span>
+                                                                                </div>
+                                                                                
+                                                                                <div>
+                                                                                    <span className="font-medium text-gray-700">Issue:</span>
+                                                                                    <p className="mt-1 text-gray-600">{issue.issue}</p>
+                                                                                </div>
+                                                                                
+                                                                                <div className="bg-white p-2 rounded border-l-4 border-blue-400">
+                                                                                    <span className="font-medium text-blue-700">Recommendation:</span>
+                                                                                    <p className="mt-1 text-blue-600 text-sm">{issue.recommendation}</p>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {result.recommendations && (
+                                                            <div className="space-y-2">
+                                                                <p className="text-sm font-medium">General Recommendations:</p>
+                                                                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                                                                    <ul className="text-sm text-green-700 space-y-1">
+                                                                        {result.recommendations.map((rec: string, idx: number) => (
+                                                                            <li key={idx} className="flex items-start gap-2">
+                                                                                <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                                                                                {rec}
+                                                                            </li>
+                                                                        ))}
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {result.analysis && (
+                                                            <div className="text-sm text-muted-foreground bg-white p-3 rounded border">
+                                                                {result.analysis}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        );
+                                    })}
+                                </div>
+                            )}
                             
                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                                 <div className="flex items-start gap-2">
