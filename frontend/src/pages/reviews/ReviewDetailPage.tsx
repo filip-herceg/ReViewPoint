@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { StatusBadge, PriorityBadge, OverdueBadge } from '@/components/ui/status-badge';
 import {
     FileText,
     Download,
@@ -56,26 +57,6 @@ const ReviewDetailPage: React.FC = () => {
         suggestions: [''],
         decision: '' as 'approve' | 'reject' | 'request-changes' | ''
     });
-
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'pending': return 'bg-warning/10 text-warning-foreground';
-            case 'in-progress': return 'bg-primary/10 text-primary';
-            case 'completed': return 'bg-success/10 text-success-foreground';
-            case 'rejected': return 'bg-destructive/10 text-destructive';
-            default: return 'bg-muted text-muted-foreground';
-        }
-    };
-
-    const getStatusIcon = (status: string) => {
-        switch (status) {
-            case 'pending': return <Clock className="h-4 w-4" />;
-            case 'in-progress': return <Eye className="h-4 w-4" />;
-            case 'completed': return <CheckCircle className="h-4 w-4" />;
-            case 'rejected': return <XCircle className="h-4 w-4" />;
-            default: return <FileText className="h-4 w-4" />;
-        }
-    };
 
     const getPriorityColor = (priority: string) => {
         switch (priority) {
@@ -207,18 +188,10 @@ const ReviewDetailPage: React.FC = () => {
                         <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                                 <CardTitle className="text-2xl">{review.documentName}</CardTitle>
-                                <Badge className={getStatusColor(review.status)}>
-                                    {getStatusIcon(review.status)}
-                                    <span className="ml-1 capitalize">{review.status}</span>
-                                </Badge>
-                                <Badge className={getPriorityColor(review.priority)}>
-                                    {review.priority} priority
-                                </Badge>
+                                <StatusBadge status={review.status} />
+                                <PriorityBadge priority={review.priority} />
                                 {review.dueDate && isOverdue(review.dueDate) && review.status !== 'completed' && (
-                                    <Badge className="bg-destructive/10 text-destructive">
-                                        <AlertTriangle className="h-4 w-4 mr-1" />
-                                        Overdue
-                                    </Badge>
+                                    <OverdueBadge />
                                 )}
                             </div>
                             <CardDescription className="text-base">

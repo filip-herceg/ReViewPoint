@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { StatusBadge } from '@/components/ui/status-badge';
 // import { Separator } from '@/components/ui/separator';
 import {
     FileText,
@@ -65,27 +66,6 @@ const UploadDetailPage: React.FC = () => {
         }
     ];
 
-    // Use semantic Tailwind classes for status badge
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'pending': return 'bg-warning/10 text-warning-foreground';
-            case 'in-review': return 'bg-primary/10 text-primary';
-            case 'reviewed': return 'bg-success/10 text-success-foreground';
-            case 'rejected': return 'bg-destructive/10 text-destructive';
-            default: return 'bg-muted text-muted-foreground';
-        }
-    };
-
-    const getStatusIcon = (status: string) => {
-        switch (status) {
-            case 'pending': return <Clock className="h-4 w-4" />;
-            case 'in-review': return <Eye className="h-4 w-4" />;
-            case 'reviewed': return <CheckCircle className="h-4 w-4" />;
-            case 'rejected': return <XCircle className="h-4 w-4" />;
-            default: return <FileText className="h-4 w-4" />;
-        }
-    };
-
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
             month: 'long',
@@ -121,10 +101,7 @@ const UploadDetailPage: React.FC = () => {
                         <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                                 <CardTitle className="text-2xl">{upload.name}</CardTitle>
-                                <Badge className={getStatusColor(upload.status)}>
-                                    {getStatusIcon(upload.status)}
-                                    <span className="ml-1 capitalize">{upload.status}</span>
-                                </Badge>
+                                <StatusBadge status={upload.status} />
                             </div>
                             <CardDescription className="text-base">
                                 {upload.description}

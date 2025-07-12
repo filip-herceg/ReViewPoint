@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { StatusBadge, PriorityBadge, OverdueBadge } from '@/components/ui/status-badge';
 import {
     Eye,
     FileText,
@@ -90,35 +91,6 @@ const ReviewsPage: React.FC = () => {
             (viewMode === 'completed' && review.status === 'completed');
         return matchesSearch && matchesStatus && matchesView;
     });
-
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'pending': return 'bg-warning/10 text-warning-foreground';
-            case 'in-progress': return 'bg-primary/10 text-primary';
-            case 'completed': return 'bg-success/10 text-success-foreground';
-            case 'rejected': return 'bg-destructive/10 text-destructive';
-            default: return 'bg-muted text-muted-foreground';
-        }
-    };
-
-    const getStatusIcon = (status: string) => {
-        switch (status) {
-            case 'pending': return <Clock className="h-4 w-4" />;
-            case 'in-progress': return <Eye className="h-4 w-4" />;
-            case 'completed': return <CheckCircle className="h-4 w-4" />;
-            case 'rejected': return <XCircle className="h-4 w-4" />;
-            default: return <FileText className="h-4 w-4" />;
-        }
-    };
-
-    const getPriorityColor = (priority: string) => {
-        switch (priority) {
-            case 'high': return 'bg-destructive/10 text-destructive';
-            case 'medium': return 'bg-warning/10 text-warning-foreground';
-            case 'low': return 'bg-success/10 text-success-foreground';
-            default: return 'bg-muted text-muted-foreground';
-        }
-    };
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -271,17 +243,10 @@ const ReviewsPage: React.FC = () => {
                                         >
                                             {review.documentName}
                                         </Link>
-                                        <Badge className={getStatusColor(review.status)}>
-                                            {getStatusIcon(review.status)}
-                                            <span className="ml-1 capitalize">{review.status}</span>
-                                        </Badge>
-                                        <Badge className={getPriorityColor(review.priority)}>
-                                            {review.priority} priority
-                                        </Badge>
+                                        <StatusBadge status={review.status} />
+                                        <PriorityBadge priority={review.priority} />
                                         {review.dueDate && isOverdue(review.dueDate) && review.status !== 'completed' && (
-                                            <Badge className="bg-destructive/10 text-destructive">
-                                                Overdue
-                                            </Badge>
+                                            <OverdueBadge />
                                         )}
                                     </div>
 

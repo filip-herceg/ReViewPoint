@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { StatusBadge } from '@/components/ui/status-badge';
 // import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
     Upload,
@@ -80,27 +81,6 @@ const UploadsPage: React.FC = () => {
         const matchesStatus = statusFilter === 'all' || upload.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
-
-    // Use semantic Tailwind classes for status badge
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'pending': return 'bg-warning/10 text-warning-foreground';
-            case 'in-review': return 'bg-primary/10 text-primary';
-            case 'reviewed': return 'bg-success/10 text-success-foreground';
-            case 'rejected': return 'bg-destructive/10 text-destructive';
-            default: return 'bg-muted text-muted-foreground';
-        }
-    };
-
-    const getStatusIcon = (status: string) => {
-        switch (status) {
-            case 'pending': return <Clock className="h-4 w-4" />;
-            case 'in-review': return <Eye className="h-4 w-4" />;
-            case 'reviewed': return <CheckCircle className="h-4 w-4" />;
-            case 'rejected': return <XCircle className="h-4 w-4" />;
-            default: return <FileText className="h-4 w-4" />;
-        }
-    };
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -221,10 +201,7 @@ const UploadsPage: React.FC = () => {
                                             >
                                                 {upload.name}
                                             </Link>
-                                            <Badge className={getStatusColor(upload.status)}>
-                                                {getStatusIcon(upload.status)}
-                                                <span className="ml-1 capitalize">{upload.status}</span>
-                                            </Badge>
+                                            <StatusBadge status={upload.status} />
                                         </div>
 
                                         <p className="text-muted-foreground mb-3">{upload.description}</p>
