@@ -21,11 +21,67 @@ import {
     AlertTriangle,
     Settings,
     Play,
-    Package
+    Package,
+    ChevronDown,
+    ChevronRight,
+    Filter,
+    SortAsc,
+    SortDesc
 } from 'lucide-react';
 import { CitationsSection } from '@/components/citations/CitationsSection';
 import { useMarketplace } from '@/hooks/useMarketplace';
+import { useCitations } from '@/hooks/useCitations';
 import { ModuleConfigSidebar } from '@/components/modules/ModuleConfigSidebar';
+
+// Citation issue sorting and filtering helpers
+const getSeverityWeight = (severity: string) => {
+    switch (severity) {
+        case 'high': return 3;
+        case 'medium': return 2;
+        case 'low': return 1;
+        default: return 0;
+    }
+};
+
+const parseLocation = (location: string) => {
+    // Parse "Page 3, Paragraph 2, Line 8-10" format
+    const pageMatch = location.match(/Page (\d+)/);
+    const paragraphMatch = location.match(/Paragraph (\d+)/);
+    const lineMatch = location.match(/Line (\d+)/);
+    
+    return {
+        page: pageMatch ? parseInt(pageMatch[1]) : 0,
+        paragraph: paragraphMatch ? parseInt(paragraphMatch[1]) : 0,
+        line: lineMatch ? parseInt(lineMatch[1]) : 0
+    };
+};
+
+const sortIssues = (issues: any[], sortBy: string, direction: 'asc' | 'desc') => {
+    return [...issues].sort((a, b) => {
+        let comparison = 0;
+        
+        if (sortBy === 'severity') {
+            comparison = getSeverityWeight(a.severity) - getSeverityWeight(b.severity);
+        } else if (sortBy === 'location') {
+            const locA = parseLocation(a.location);
+            const locB = parseLocation(b.location);
+            
+            comparison = locA.page - locB.page || 
+                        locA.paragraph - locB.paragraph || 
+                        locA.line - locB.line;
+        }
+        
+        return direction === 'desc' ? -comparison : comparison;
+    });
+};
+
+const filterIssues = (issues: any[], severityFilter: string, typeFilter: string) => {
+    return issues.filter(issue => {
+        const severityMatch = severityFilter === 'all' || issue.severity === severityFilter;
+        const typeMatch = typeFilter === 'all' || issue.type === typeFilter;
+        return severityMatch && typeMatch;
+    });
+};
 
 const ReviewDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -35,6 +91,13 @@ const ReviewDetailPage: React.FC = () => {
     const [selectedModule, setSelectedModule] = useState<any>(null);
     const [runningModules, setRunningModules] = useState<Set<string>>(new Set());
     const [moduleResults, setModuleResults] = useState<Record<string, any>>({});
+    
+    // Citation Validator Pro UI state
+    const [selectedIssue, setSelectedIssue] = useState<number | null>(null);
+    const [sortBy, setSortBy] = useState<'location' | 'severity'>('severity');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+    const [severityFilter, setSeverityFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all');
+    const [typeFilter, setTypeFilter] = useState<'all' | string>('all');
 
     // Get marketplace data for available modules
     const { userSubscriptions, isModuleSubscribed, getUserSubscription } = useMarketplace();
@@ -63,6 +126,12 @@ const ReviewDetailPage: React.FC = () => {
             'Assess maintainability and documentation quality'
         ]
     };
+    
+    // Get citations data for realistic counts
+    const { data: citationsData } = useCitations({
+        documentId: review.documentId,
+        enabled: true
+    });
 
     const [reviewData, setReviewData] = useState({
         rating: 0,
@@ -211,6 +280,10 @@ const ReviewDetailPage: React.FC = () => {
 
     // Generate simulated module results
     const generateModuleResult = (module: any, reviewDoc: any) => {
+        // Get realistic citation counts from actual citations data
+        const totalCitations = citationsData?.citationsUsed.total || Math.floor(Math.random() * 20) + 35; // Fallback to 35-54
+        const citedByCount = citationsData?.citedBy.total || Math.floor(Math.random() * 30) + 15; // Fallback to 15-44
+        
         const results = {
             'plagiarism-detector': {
                 status: 'completed',
@@ -225,91 +298,129 @@ const ReviewDetailPage: React.FC = () => {
             'citation-validator-pro': {
                 status: 'completed',
                 score: Math.round((Math.random() * 25 + 65) * 100) / 100, // 65-90%
-                findings: Math.floor(Math.random() * 6) + 2, // 2-7 issues
-                totalCitations: Math.floor(Math.random() * 15) + 12, // 12-26 citations
-                validCitations: Math.floor(Math.random() * 8) + 8, // 8-15 valid
+                findings: 14, // Fixed 14 issues as requested
+                // Use realistic citation count from actual citations data (matches Citations section)
+                totalCitations: totalCitations,
+                validCitations: totalCitations - 14, // Total - issues found = valid citations
+                // Additional metadata about citation analysis
+                citationsAnalyzed: totalCitations,
+                citedByDocuments: citedByCount, // From "Cited By" tab
+                analysisDate: new Date().toISOString(),
+                coveragePercentage: Math.round((totalCitations / (totalCitations + 5)) * 100), // Assuming some citations might be missed
                 issues: [
                     {
                         type: 'misrepresentation',
                         severity: 'high',
-                        location: 'Page 3, Paragraph 2, Line 8-10',
-                        citation: 'Smith et al. (2021)',
-                        issue: 'The paper claims Smith et al. found "significant improvement in 95% of cases", but the source actually reports 73% improvement rate.',
-                        recommendation: 'Correct the percentage or find additional supporting evidence'
+                        location: 'Page 2, Section 1.2, Line 15-17',
+                        citation: 'Fowler & Lewis (2014)',
+                        issue: 'The document claims Fowler & Lewis recommend "always using microservices for all applications", but the source advocates for careful consideration and warns against microservices complexity for simple applications.',
+                        recommendation: 'Correct the interpretation to reflect the nuanced guidance in the original source'
                     },
                     {
                         type: 'missing_context',
                         severity: 'medium',
-                        location: 'Page 5, Section 3.1, Line 15',
-                        citation: 'Johnson & Brown (2020)',
-                        issue: 'The citation is used to support a broad claim about "all manufacturing processes", but the source only studied automotive manufacturing.',
-                        recommendation: 'Narrow the claim or cite additional sources covering other industries'
+                        location: 'Page 4, Section 2.1, Line 8',
+                        citation: 'Newman (2015)',
+                        issue: 'The citation supports container orchestration benefits but ignores the operational complexity concerns discussed in the same chapter.',
+                        recommendation: 'Include both benefits and challenges mentioned in the source for balanced perspective'
                     },
                     {
                         type: 'outdated_source',
-                        severity: 'medium',
-                        location: 'Page 7, Introduction, Line 3',
-                        citation: 'Williams (1998)',
-                        issue: 'Source is 27 years old in a rapidly evolving field. Current standards and practices may have changed significantly.',
-                        recommendation: 'Find more recent sources (preferably within last 5-10 years) to support this claim'
+                        severity: 'high',
+                        location: 'Page 3, Architecture Overview, Line 22',
+                        citation: 'Docker Documentation (2016)',
+                        issue: 'Docker documentation from 2016 is outdated for current containerization best practices. Many security and performance recommendations have changed.',
+                        recommendation: 'Update to current Docker documentation or recent container security guides'
                     },
                     {
                         type: 'unreliable_source',
                         severity: 'high',
-                        location: 'Page 9, Discussion, Line 22',
-                        citation: 'TechBlog.com (2023)',
-                        issue: 'Source appears to be a commercial blog without peer review. Not appropriate for academic citation.',
-                        recommendation: 'Replace with peer-reviewed academic source or industry report from reputable organization'
+                        location: 'Page 7, Performance Analysis, Line 33',
+                        citation: 'TechCrunch Article (2023)',
+                        issue: 'TechCrunch is a news publication, not an authoritative source for technical architecture decisions. Lacks peer review and technical depth.',
+                        recommendation: 'Replace with academic research, technical white papers, or industry benchmark studies'
                     },
                     {
                         type: 'citation_not_found',
                         severity: 'high',
-                        location: 'Page 4, Methodology, Line 12',
-                        citation: 'Davis et al. (2022)',
-                        issue: 'The cited work does not contain any information about the methodology being referenced.',
-                        recommendation: 'Verify the citation is correct or find the appropriate source for this methodology'
+                        location: 'Page 5, Database Design, Line 19',
+                        citation: 'PostgreSQL Performance Tuning Guide (2022)',
+                        issue: 'The cited performance optimization techniques do not appear in the referenced PostgreSQL documentation.',
+                        recommendation: 'Verify the source or find the correct PostgreSQL performance documentation'
                     },
                     {
                         type: 'format_error',
                         severity: 'low',
-                        location: 'Page 6, References, Entry 12',
-                        citation: 'Thompson, K. (2021)',
-                        issue: 'Incomplete citation missing journal name, volume, and page numbers.',
-                        recommendation: 'Complete the citation according to APA format requirements'
+                        location: 'Page 9, References, Entry 15',
+                        citation: 'Kubernetes Official Docs',
+                        issue: 'Incomplete citation missing specific page, version, and access date for web documentation.',
+                        recommendation: 'Include full URL, version number, and access date for web resources'
                     },
                     {
                         type: 'overcitation',
                         severity: 'low',
-                        location: 'Page 8, Paragraph 3',
-                        citation: 'Multiple (5 citations for single claim)',
-                        issue: 'Five citations provided for a basic, well-established fact that requires minimal support.',
-                        recommendation: 'Reduce to 1-2 most authoritative sources'
+                        location: 'Page 6, Section 3.2, Paragraph 1',
+                        citation: 'Multiple (6 citations for REST principles)',
+                        issue: 'Six citations provided for basic REST architectural principles that are well-established.',
+                        recommendation: 'Reduce to 1-2 authoritative sources like Fielding\'s original dissertation'
                     },
                     {
                         type: 'cherry_picking',
                         severity: 'medium',
-                        location: 'Page 10, Results, Line 5-8',
-                        citation: 'Anderson (2023)',
-                        issue: 'Only favorable results from the source are cited, ignoring contradictory findings mentioned in the same paper.',
-                        recommendation: 'Present a balanced view or acknowledge limitations mentioned in the source'
+                        location: 'Page 8, Scalability Section, Line 12-15',
+                        citation: 'AWS Architecture Center (2023)',
+                        issue: 'Only positive scalability metrics cited while ignoring cost implications and complexity warnings in the same AWS documentation.',
+                        recommendation: 'Present complete picture including trade-offs mentioned in the source'
                     },
                     {
                         type: 'predatory_journal',
-                        severity: 'high',
-                        location: 'Page 11, Literature Review, Line 18',
-                        citation: 'Martinez & Lee (2022) - Journal of Universal Science',
-                        issue: 'Source appears to be from a predatory journal with questionable peer review standards.',
-                        recommendation: 'Find equivalent research published in reputable, indexed journals'
+                        severity: 'medium',
+                        location: 'Page 10, Security Patterns, Line 28',
+                        citation: 'International Journal of Computer Science (2022)',
+                        issue: 'This journal has questionable peer review standards and is not indexed in major academic databases.',
+                        recommendation: 'Replace with security research from reputable conferences like IEEE S&P or ACM CCS'
                     },
                     {
                         type: 'broken_link',
                         severity: 'medium',
-                        location: 'Page 12, References, Entry 8',
-                        citation: 'World Health Organization (2021)',
-                        issue: 'URL provided in citation returns 404 error. Document may have been moved or removed.',
-                        recommendation: 'Find current URL or use alternative access method (DOI, archived version)'
+                        location: 'Page 11, References, Entry 23',
+                        citation: 'Microsoft Azure Architecture Patterns (2021)',
+                        issue: 'URL provided returns 404 error. Microsoft may have restructured their documentation.',
+                        recommendation: 'Find current Azure architecture documentation or use archived version'
+                    },
+                    {
+                        type: 'version_mismatch',
+                        severity: 'medium',
+                        location: 'Page 12, Implementation Guide, Line 5',
+                        citation: 'Spring Boot Reference (2019)',
+                        issue: 'Citing Spring Boot 2.1 documentation while project appears to use Spring Boot 3.x features.',
+                        recommendation: 'Update citation to match the Spring Boot version actually being used'
+                    },
+                    {
+                        type: 'scope_mismatch',
+                        severity: 'medium',
+                        location: 'Page 13, Monitoring Strategy, Line 18',
+                        citation: 'Prometheus Monitoring (Small Scale Deployments)',
+                        issue: 'Source discusses monitoring for small-scale deployments but is used to support enterprise-scale architecture decisions.',
+                        recommendation: 'Find monitoring guidance appropriate for enterprise-scale microservices'
+                    },
+                    {
+                        type: 'conflicting_sources',
+                        severity: 'low',
+                        location: 'Page 14, API Gateway Pattern, Line 7-10',
+                        citation: 'Richardson (2018) vs Kong Documentation (2023)',
+                        issue: 'Two sources provide contradictory recommendations about API gateway placement without acknowledging the conflict.',
+                        recommendation: 'Acknowledge conflicting approaches and explain chosen rationale'
+                    },
+                    {
+                        type: 'insufficient_evidence',
+                        severity: 'medium',
+                        location: 'Page 15, Technology Selection, Line 25',
+                        citation: 'Single blog post (2023)',
+                        issue: 'Critical technology choice (React vs Angular) supported by only one informal blog post.',
+                        recommendation: 'Provide multiple comparative studies or formal evaluation criteria'
                     }
-                ].slice(0, Math.floor(Math.random() * 6) + 4), // Show 4-9 random issues
+                ],
                 recommendations: [
                     'Consider using citation management software to ensure consistent formatting',
                     'Prioritize peer-reviewed sources over blog posts and commercial websites',
@@ -712,74 +823,210 @@ const ReviewDetailPage: React.FC = () => {
                                                         
                                                         {/* Citation Validator Pro specific results */}
                                                         {result.totalCitations && (
-                                                            <div className="grid grid-cols-3 gap-4 p-3 bg-blue-50 rounded-lg">
-                                                                <div className="text-center">
-                                                                    <div className="text-lg font-semibold text-blue-900">{result.totalCitations}</div>
-                                                                    <div className="text-xs text-blue-700">Total Citations</div>
+                                                            <div className="space-y-4">
+                                                                {/* Summary Stats */}
+                                                                <div className="grid grid-cols-3 gap-4 p-3 bg-blue-50 rounded-lg">
+                                                                    <div className="text-center">
+                                                                        <div className="text-lg font-semibold text-blue-900">{result.totalCitations}</div>
+                                                                        <div className="text-xs text-blue-700">Total Citations</div>
+                                                                    </div>
+                                                                    <div className="text-center">
+                                                                        <div className="text-lg font-semibold text-green-700">{result.validCitations}</div>
+                                                                        <div className="text-xs text-green-600">Valid Citations</div>
+                                                                    </div>
+                                                                    <div className="text-center">
+                                                                        <div className="text-lg font-semibold text-red-700">{result.totalCitations - result.validCitations}</div>
+                                                                        <div className="text-xs text-red-600">Issues Found</div>
+                                                                    </div>
                                                                 </div>
-                                                                <div className="text-center">
-                                                                    <div className="text-lg font-semibold text-green-700">{result.validCitations}</div>
-                                                                    <div className="text-xs text-green-600">Valid Citations</div>
+                                                                
+                                                                {/* Controls */}
+                                                                <div className="flex flex-wrap gap-2 items-center">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Filter className="h-4 w-4 text-gray-500" />
+                                                                        <select 
+                                                                            value={severityFilter} 
+                                                                            onChange={(e) => setSeverityFilter(e.target.value as any)}
+                                                                            className="px-2 py-1 border rounded text-sm"
+                                                                        >
+                                                                            <option value="all">All Severities</option>
+                                                                            <option value="high">High Priority</option>
+                                                                            <option value="medium">Medium Priority</option>
+                                                                            <option value="low">Low Priority</option>
+                                                                        </select>
+                                                                    </div>
+                                                                    
+                                                                    <select 
+                                                                        value={typeFilter} 
+                                                                        onChange={(e) => setTypeFilter(e.target.value)}
+                                                                        className="px-2 py-1 border rounded text-sm"
+                                                                    >
+                                                                        <option value="all">All Types</option>
+                                                                        <option value="misrepresentation">Misrepresentation</option>
+                                                                        <option value="missing_context">Missing Context</option>
+                                                                        <option value="outdated_source">Outdated Source</option>
+                                                                        <option value="unreliable_source">Unreliable Source</option>
+                                                                        <option value="citation_not_found">Citation Not Found</option>
+                                                                        <option value="format_error">Format Error</option>
+                                                                        <option value="overcitation">Over Citation</option>
+                                                                        <option value="cherry_picking">Cherry Picking</option>
+                                                                        <option value="predatory_journal">Predatory Journal</option>
+                                                                        <option value="broken_link">Broken Link</option>
+                                                                    </select>
+                                                                    
+                                                                    <Button 
+                                                                        variant="outline" 
+                                                                        size="sm"
+                                                                        onClick={() => {
+                                                                            if (sortBy === 'severity') {
+                                                                                setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                                                                            } else {
+                                                                                setSortBy('severity');
+                                                                                setSortDirection('desc');
+                                                                            }
+                                                                        }}
+                                                                        className="flex items-center gap-1"
+                                                                    >
+                                                                        {sortBy === 'severity' && sortDirection === 'desc' ? 
+                                                                            <SortDesc className="h-3 w-3" /> : 
+                                                                            <SortAsc className="h-3 w-3" />
+                                                                        }
+                                                                        Severity
+                                                                    </Button>
+                                                                    
+                                                                    <Button 
+                                                                        variant="outline" 
+                                                                        size="sm"
+                                                                        onClick={() => {
+                                                                            if (sortBy === 'location') {
+                                                                                setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+                                                                            } else {
+                                                                                setSortBy('location');
+                                                                                setSortDirection('asc');
+                                                                            }
+                                                                        }}
+                                                                        className="flex items-center gap-1"
+                                                                    >
+                                                                        {sortBy === 'location' && sortDirection === 'desc' ? 
+                                                                            <SortDesc className="h-3 w-3" /> : 
+                                                                            <SortAsc className="h-3 w-3" />
+                                                                        }
+                                                                        Location
+                                                                    </Button>
                                                                 </div>
-                                                                <div className="text-center">
-                                                                    <div className="text-lg font-semibold text-red-700">{result.totalCitations - result.validCitations}</div>
-                                                                    <div className="text-xs text-red-600">Issues Found</div>
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                        
-                                                        {result.issues && Array.isArray(result.issues) && result.issues.length > 0 && typeof result.issues[0] === 'object' && (
-                                                            <div className="space-y-3">
-                                                                <p className="text-sm font-medium">Citation Issues Found:</p>
-                                                                <div className="space-y-3 max-h-96 overflow-y-auto">
-                                                                    {result.issues.map((issue: any, idx: number) => (
-                                                                        <div key={idx} className={`border rounded-lg p-3 ${
-                                                                            issue.severity === 'high' ? 'border-red-300 bg-red-50' :
-                                                                            issue.severity === 'medium' ? 'border-yellow-300 bg-yellow-50' :
-                                                                            'border-blue-300 bg-blue-50'
-                                                                        }`}>
-                                                                            <div className="flex items-start justify-between mb-2">
-                                                                                <div className="flex items-center gap-2">
-                                                                                    <Badge variant={
-                                                                                        issue.severity === 'high' ? 'destructive' :
-                                                                                        issue.severity === 'medium' ? 'secondary' :
-                                                                                        'outline'
-                                                                                    }>
-                                                                                        {issue.severity} priority
-                                                                                    </Badge>
-                                                                                    <Badge variant="outline" className="text-xs">
-                                                                                        {issue.type.replace('_', ' ')}
-                                                                                    </Badge>
-                                                                                </div>
-                                                                            </div>
-                                                                            
-                                                                            <div className="space-y-2 text-sm">
-                                                                                <div>
-                                                                                    <span className="font-medium text-gray-700">Location:</span>
-                                                                                    <span className="ml-2 font-mono text-blue-700 bg-blue-100 px-2 py-1 rounded text-xs">
-                                                                                        {issue.location}
-                                                                                    </span>
-                                                                                </div>
-                                                                                
-                                                                                <div>
-                                                                                    <span className="font-medium text-gray-700">Citation:</span>
-                                                                                    <span className="ml-2 italic text-purple-700">
-                                                                                        {issue.citation}
-                                                                                    </span>
-                                                                                </div>
-                                                                                
-                                                                                <div>
-                                                                                    <span className="font-medium text-gray-700">Issue:</span>
-                                                                                    <p className="mt-1 text-gray-600">{issue.issue}</p>
-                                                                                </div>
-                                                                                
-                                                                                <div className="bg-white p-2 rounded border-l-4 border-blue-400">
-                                                                                    <span className="font-medium text-blue-700">Recommendation:</span>
-                                                                                    <p className="mt-1 text-blue-600 text-sm">{issue.recommendation}</p>
-                                                                                </div>
-                                                                            </div>
+                                                                
+                                                                {/* Two-column layout */}
+                                                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                                                    {/* Left: Issue Navigator */}
+                                                                    <div className="space-y-2">
+                                                                        <h4 className="font-medium text-sm text-gray-700">Issues Navigator</h4>
+                                                                        <div className="max-h-96 overflow-y-auto border rounded-lg bg-gray-50">
+                                                                            {result.issues && Array.isArray(result.issues) && 
+                                                                             filterIssues(sortIssues(result.issues, sortBy, sortDirection), severityFilter, typeFilter)
+                                                                             .map((issue: any, idx: number) => {
+                                                                                const originalIdx = result.issues.indexOf(issue);
+                                                                                return (
+                                                                                    <button
+                                                                                        key={originalIdx}
+                                                                                        onClick={() => setSelectedIssue(selectedIssue === originalIdx ? null : originalIdx)}
+                                                                                        className={`w-full text-left p-3 border-b hover:bg-white transition-colors ${
+                                                                                            selectedIssue === originalIdx ? 'bg-white border-l-4 border-l-blue-500' : ''
+                                                                                        }`}
+                                                                                    >
+                                                                                        <div className="flex items-center justify-between mb-1">
+                                                                                            <div className="flex items-center gap-2">
+                                                                                                <Badge 
+                                                                                                    variant={
+                                                                                                        issue.severity === 'high' ? 'destructive' :
+                                                                                                        issue.severity === 'medium' ? 'warning' :
+                                                                                                        'secondary'
+                                                                                                    }
+                                                                                                    className="text-xs"
+                                                                                                >
+                                                                                                    {issue.severity}
+                                                                                                </Badge>
+                                                                                                {selectedIssue === originalIdx ? 
+                                                                                                    <ChevronDown className="h-3 w-3 text-gray-400" /> : 
+                                                                                                    <ChevronRight className="h-3 w-3 text-gray-400" />
+                                                                                                }
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div className="text-xs text-gray-600 font-mono mb-1">
+                                                                                            {issue.location}
+                                                                                        </div>
+                                                                                        <div className="text-sm font-medium text-gray-800 truncate">
+                                                                                            {issue.type.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                                                                                        </div>
+                                                                                        <div className="text-xs text-gray-500 italic truncate mt-1">
+                                                                                            {issue.citation}
+                                                                                        </div>
+                                                                                    </button>
+                                                                                );
+                                                                            })}
                                                                         </div>
-                                                                    ))}
+                                                                    </div>
+                                                                    
+                                                                    {/* Right: Issue Details */}
+                                                                    <div className="space-y-2">
+                                                                        <h4 className="font-medium text-sm text-gray-700">Issue Details</h4>
+                                                                        <div className="border rounded-lg bg-white min-h-96">
+                                                                            {selectedIssue !== null && result.issues[selectedIssue] ? (
+                                                                                <div className="p-4 space-y-4">
+                                                                                    <div className="flex items-start justify-between">
+                                                                                        <div className="flex items-center gap-2">
+                                                                                            <Badge 
+                                                                                                variant={
+                                                                                                    result.issues[selectedIssue].severity === 'high' ? 'destructive' :
+                                                                                                    result.issues[selectedIssue].severity === 'medium' ? 'warning' :
+                                                                                                    'secondary'
+                                                                                                }
+                                                                                            >
+                                                                                                {result.issues[selectedIssue].severity} priority
+                                                                                            </Badge>
+                                                                                            <Badge variant="outline" className="text-xs">
+                                                                                                {result.issues[selectedIssue].type.replace(/_/g, ' ')}
+                                                                                            </Badge>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    
+                                                                                    <div className="space-y-3 text-sm">
+                                                                                        <div>
+                                                                                            <span className="font-medium text-gray-700">Location:</span>
+                                                                                            <span className="ml-2 font-mono text-blue-700 bg-blue-100 px-2 py-1 rounded text-xs">
+                                                                                                {result.issues[selectedIssue].location}
+                                                                                            </span>
+                                                                                        </div>
+                                                                                        
+                                                                                        <div>
+                                                                                            <span className="font-medium text-gray-700">Citation:</span>
+                                                                                            <div className="mt-1 italic text-purple-700 bg-purple-50 p-2 rounded">
+                                                                                                {result.issues[selectedIssue].citation}
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        
+                                                                                        <div>
+                                                                                            <span className="font-medium text-gray-700">Issue Description:</span>
+                                                                                            <div className="mt-1 text-gray-600 leading-relaxed">
+                                                                                                {result.issues[selectedIssue].issue}
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        
+                                                                                        <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-400">
+                                                                                            <span className="font-medium text-blue-700">Recommendation:</span>
+                                                                                            <div className="mt-1 text-blue-600 text-sm leading-relaxed">
+                                                                                                {result.issues[selectedIssue].recommendation}
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <div className="p-8 text-center text-gray-500">
+                                                                                    <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                                                                                    <p className="text-sm">Select an issue from the navigator to view details</p>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         )}

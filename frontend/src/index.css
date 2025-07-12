@@ -337,9 +337,12 @@
 }
 
 .text-error,
-.text-destructive,
-.text-destructive-foreground {
+.text-destructive {
   color: var(--destructive) !important;
+}
+
+.text-destructive-foreground {
+  color: var(--destructive-foreground) !important;
 }
 
 .text-info,
