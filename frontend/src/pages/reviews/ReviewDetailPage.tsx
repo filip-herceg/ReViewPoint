@@ -129,8 +129,7 @@ const ReviewDetailPage: React.FC = () => {
     
     // Get citations data for realistic counts
     const { data: citationsData } = useCitations({
-        documentId: review.documentId,
-        enabled: true
+        documentId: review.documentId
     });
 
     const [reviewData, setReviewData] = useState({
@@ -281,8 +280,10 @@ const ReviewDetailPage: React.FC = () => {
     // Generate simulated module results
     const generateModuleResult = (module: any, reviewDoc: any) => {
         // Get realistic citation counts from actual citations data
-        const totalCitations = citationsData?.citationsUsed.total || Math.floor(Math.random() * 20) + 35; // Fallback to 35-54
-        const citedByCount = citationsData?.citedBy.total || Math.floor(Math.random() * 30) + 15; // Fallback to 15-44
+        const sourcesData = citationsData?.sourcesUsed;
+        const totalCitations = sourcesData?.totalCitations || Math.floor(Math.random() * 20) + 35; // Fallback to 35-54
+        const uniqueSources = sourcesData?.totalSources || Math.floor(Math.random() * 15) + 15; // Fallback to 15-29  
+        const citedByCount = citationsData?.citedBy?.total || Math.floor(Math.random() * 30) + 15; // Fallback to 15-44
         
         const results = {
             'plagiarism-detector': {
@@ -299,10 +300,11 @@ const ReviewDetailPage: React.FC = () => {
                 status: 'completed',
                 score: Math.round((Math.random() * 25 + 65) * 100) / 100, // 65-90%
                 findings: 14, // Fixed 14 issues as requested
-                // Use realistic citation count from actual citations data (matches Citations section)
-                totalCitations: totalCitations,
+                // Use realistic citation count from actual citations data (total citation instances, not sources)
+                totalCitations: totalCitations, // This is now the actual number of citations in the paper
                 validCitations: totalCitations - 14, // Total - issues found = valid citations
                 // Additional metadata about citation analysis
+                totalSources: uniqueSources, // Number of unique sources
                 citationsAnalyzed: totalCitations,
                 citedByDocuments: citedByCount, // From "Cited By" tab
                 analysisDate: new Date().toISOString(),

@@ -18,8 +18,9 @@ import {
 } from 'lucide-react';
 import { CitationItem } from './CitationItem';
 import { CitedByItem } from './CitedByItem';
+import { SourceWithCitations } from './SourceWithCitations';
 import { useCitations } from '@/hooks/useCitations';
-import type { CitationsFilters, Citation } from '@/types/citations';
+import type { CitationsFilters, Citation, Source } from '@/types/citations';
 
 interface CitationsSectionProps {
     documentId: string;
@@ -56,13 +57,14 @@ export const CitationsSection: React.FC<CitationsSectionProps> = ({
         updateFilters
     } = useCitations({
         documentId,
-        filters,
-        pageSize: 20
+        filters
     });
 
     // Update filters when local state changes
     React.useEffect(() => {
-        updateFilters(filters);
+        if (updateFilters) {
+            updateFilters(filters);
+        }
     }, [filters, updateFilters]);
 
     const citationTypes: { value: Citation['citationType'] | 'all'; label: string }[] = [
@@ -71,7 +73,7 @@ export const CitationsSection: React.FC<CitationsSectionProps> = ({
         { value: 'book', label: 'Books' },
         { value: 'website', label: 'Websites' },
         { value: 'conference', label: 'Conference Papers' },
-        { value: 'report', label: 'Reports' },
+        { value: 'thesis', label: 'Thesis' },
         { value: 'other', label: 'Other' }
     ];
 
@@ -82,18 +84,17 @@ export const CitationsSection: React.FC<CitationsSectionProps> = ({
     ];
 
     const handleExportCitations = () => {
-        if (!data?.citationsUsed.citations) return;
+        if (!data?.sourcesUsed?.sources) return;
         
         const csvContent = [
-            ['Title', 'Authors', 'Year', 'Source', 'Type', 'DOI', 'URL'].join(','),
-            ...data.citationsUsed.citations.map(citation => [
-                `"${citation.title}"`,
-                `"${citation.authors.join('; ')}"`,
-                citation.year,
-                `"${citation.source}"`,
-                citation.citationType,
-                citation.doi || '',
-                citation.url || ''
+            ['Title', 'Authors', 'Year', 'Journal', 'DOI', 'Citation Count'].join(','),
+            ...data.sourcesUsed.sources.map(source => [
+                `"${source.title}"`,
+                `"${source.authors.join('; ')}"`,
+                source.year,
+                `"${source.journal || ''}"`,
+                source.doi || '',
+                source.citationInstances.length
             ].join(','))
         ].join('\n');
 
@@ -133,7 +134,7 @@ export const CitationsSection: React.FC<CitationsSectionProps> = ({
                             Citations & References
                         </CardTitle>
                         <CardDescription>
-                            Citations used in this document and documents that cite this work
+                            Sources used in this document and documents that cite this work
                         </CardDescription>
                     </div>
                     <div className="flex items-center gap-2">
@@ -141,7 +142,7 @@ export const CitationsSection: React.FC<CitationsSectionProps> = ({
                             variant="outline"
                             size="sm"
                             onClick={handleExportCitations}
-                            disabled={!data?.citationsUsed.citations.length}
+                            disabled={!data?.sourcesUsed?.sources?.length}
                         >
                             <Download className="h-4 w-4 mr-2" />
                             Export
@@ -238,11 +239,16 @@ export const CitationsSection: React.FC<CitationsSectionProps> = ({
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="used" className="flex items-center gap-2">
                             <Quote className="h-4 w-4" />
-                            Citations Used
+                            Sources Used
                             {data && (
-                                <Badge variant="secondary" className="ml-2">
-                                    {data.citationsUsed.total}
-                                </Badge>
+                                <div className="ml-2 flex gap-1">
+                                    <Badge variant="secondary">
+                                        {data.sourcesUsed?.totalSources || 0} sources
+                                    </Badge>
+                                    <Badge variant="outline">
+                                        {data.sourcesUsed?.totalCitations || 0} citations
+                                    </Badge>
+                                </div>
                             )}
                         </TabsTrigger>
                         <TabsTrigger value="citedBy" className="flex items-center gap-2">
@@ -265,22 +271,16 @@ export const CitationsSection: React.FC<CitationsSectionProps> = ({
                                     </div>
                                 ))}
                             </div>
-                        ) : data?.citationsUsed.citations.length ? (
+                        ) : data?.sourcesUsed.sources.length ? (
                             <div className="space-y-4">
-                                {data.citationsUsed.citations.map((citation, index) => {
-                                    const docCitation = data.citationsUsed.documentCitations.find(
-                                        dc => dc.citationId === citation.id
-                                    );
-                                    return (
-                                        <CitationItem
-                                            key={citation.id}
-                                            citation={citation}
-                                            documentCitation={docCitation}
-                                            showContext={true}
-                                            compact={viewMode === 'compact'}
-                                        />
-                                    );
-                                })}
+                                {data.sourcesUsed.sources.map((source) => (
+                                    <SourceWithCitations
+                                        key={source.id}
+                                        source={source}
+                                        showContext={true}
+                                        compact={viewMode === 'compact'}
+                                    />
+                                ))}
                                 
                                 {hasMoreCitationsUsed && (
                                     <div className="flex justify-center pt-4">
@@ -311,12 +311,13 @@ export const CitationsSection: React.FC<CitationsSectionProps> = ({
                                     </div>
                                 ))}
                             </div>
-                        ) : data?.citedBy.documents.length ? (
+                        ) : data?.citedBy.items?.length ? (
                             <div className="space-y-4">
-                                {data.citedBy.documents.map((document) => (
-                                    <CitedByItem
-                                        key={document.id}
-                                        document={document}
+                                {data.citedBy.items.map((citation) => (
+                                    <CitationItem
+                                        key={citation.id}
+                                        citation={citation}
+                                        showContext={true}
                                         compact={viewMode === 'compact'}
                                     />
                                 ))}
