@@ -73,37 +73,32 @@
 // This provides a clean structure mirroring the backend API organization
 
 export { authApi } from "./auth";
-export { healthApi } from "./health";
-export { uploadsApi } from "./uploads";
-
+// Re-export base utilities
+export { request } from "./base";
 // Type-safe generated API clients
 export { uploadApiClient } from "./clients/uploads";
 export { generatedApiClient } from "./generated/client";
-
+export { healthApi } from "./health";
+// Legacy exports for backwards compatibility
+export { createUpload, uploadsApi } from "./uploads";
+export { usersApi } from "./users";
 // Users sub-module exports
 export { usersCoreApi } from "./users/core";
 export { usersExportsApi } from "./users/exports";
 export { usersTestOnlyApi } from "./users/test_only_router";
-export { usersApi } from "./users";
-
-// Re-export base utilities
-export { request } from "./base";
-
-// Legacy exports for backwards compatibility
-export { createUpload } from "./uploads";
 
 // Create a default export for backwards compatibility
 import { authApi } from "./auth";
 import { healthApi } from "./health";
-import { uploadsApi, createUpload } from "./uploads";
+import { createUpload, uploadsApi } from "./uploads";
 import { usersApi } from "./users";
 
 const api = {
-  ...authApi,
-  ...uploadsApi,
-  ...usersApi,
-  ...healthApi,
-  createUpload,
+	...authApi,
+	...uploadsApi,
+	...usersApi,
+	...healthApi,
+	createUpload,
 };
 
 export default api;

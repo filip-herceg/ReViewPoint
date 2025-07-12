@@ -1,27 +1,26 @@
-import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { BrowserRouter, Link } from "react-router-dom";
-import { Button } from "./src/components/ui/button";
 import { it } from "vitest";
+import { Button } from "./src/components/ui/button";
 
 // Quick debug test
 function DebugTest() {
-  console.log("=== DEBUG TEST START ===");
+	console.log("=== DEBUG TEST START ===");
 
-  const { container } = render(
-    <BrowserRouter>
-      <Button asChild>
-        <Link to="/test">Navigate</Link>
-      </Button>
-    </BrowserRouter>,
-  );
+	const { container } = render(
+		<BrowserRouter>
+			<Button asChild>
+				<Link to="/test">Navigate</Link>
+			</Button>
+		</BrowserRouter>,
+	);
 
-  console.log("Container HTML:", container.innerHTML);
-  console.log("=== DEBUG TEST END ===");
+	console.log("Container HTML:", container.innerHTML);
+	console.log("=== DEBUG TEST END ===");
 
-  return null;
+	return null;
 }
 
 it("debug button asChild", () => {
-  DebugTest();
+	DebugTest();
 });

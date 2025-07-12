@@ -68,81 +68,81 @@ import { request } from "./base";
 
 // Types that match the backend
 interface PoolStats {
-  size?: number;
-  checkedin?: number;
-  checkedout?: number;
-  overflow?: number;
-  awaiting?: number;
+	size?: number;
+	checkedin?: number;
+	checkedout?: number;
+	overflow?: number;
+	awaiting?: number;
 }
 
 interface DBStatus {
-  ok: boolean;
-  error?: string;
-  pool?: PoolStats;
+	ok: boolean;
+	error?: string;
+	pool?: PoolStats;
 }
 
 interface Versions {
-  python: string;
-  fastapi?: string;
-  sqlalchemy?: string;
+	python: string;
+	fastapi?: string;
+	sqlalchemy?: string;
 }
 
 interface HealthResponse {
-  status: "ok" | "error";
-  db: DBStatus;
-  uptime: number;
-  response_time: number;
-  versions: Versions;
-  detail?: string;
+	status: "ok" | "error";
+	db: DBStatus;
+	uptime: number;
+	response_time: number;
+	versions: Versions;
+	detail?: string;
 }
 
 export const healthApi = {
-  // Get API and database health status
-  getHealth: async (): Promise<HealthResponse> => {
-    logger.info("Fetching health status");
-    try {
-      const response = await request<HealthResponse>("/health");
+	// Get API and database health status
+	getHealth: async (): Promise<HealthResponse> => {
+		logger.info("Fetching health status");
+		try {
+			const response = await request<HealthResponse>("/health");
 
-      if (response.error) {
-        logger.warn("Failed to get health status", { error: response.error });
-        throw new Error(response.error);
-      }
+			if (response.error) {
+				logger.warn("Failed to get health status", { error: response.error });
+				throw new Error(response.error);
+			}
 
-      logger.info("Health status retrieved successfully", {
-        status: response.data!.status,
-      });
-      return response.data!;
-    } catch (error) {
-      logger.warn("Failed to get health status", { error });
-      throw error;
-    }
-  },
+			logger.info("Health status retrieved successfully", {
+				status: response.data?.status,
+			});
+			return response.data!;
+		} catch (error) {
+			logger.warn("Failed to get health status", { error });
+			throw error;
+		}
+	},
 
-  // Alias for backwards compatibility
-  getHealthStatus: async (): Promise<HealthResponse> => {
-    return healthApi.getHealth();
-  },
+	// Alias for backwards compatibility
+	getHealthStatus: async (): Promise<HealthResponse> => {
+		return healthApi.getHealth();
+	},
 
-  // Get Prometheus metrics
-  getMetrics: async (): Promise<string> => {
-    logger.info("Fetching application metrics");
-    try {
-      const response = await request<string>("/metrics", {
-        headers: {
-          Accept: "text/plain",
-        },
-      });
+	// Get Prometheus metrics
+	getMetrics: async (): Promise<string> => {
+		logger.info("Fetching application metrics");
+		try {
+			const response = await request<string>("/metrics", {
+				headers: {
+					Accept: "text/plain",
+				},
+			});
 
-      if (response.error) {
-        logger.warn("Failed to get metrics", { error: response.error });
-        throw new Error(response.error);
-      }
+			if (response.error) {
+				logger.warn("Failed to get metrics", { error: response.error });
+				throw new Error(response.error);
+			}
 
-      logger.info("Metrics retrieved successfully");
-      return response.data!;
-    } catch (error) {
-      logger.warn("Failed to get metrics", { error });
-      throw error;
-    }
-  },
+			logger.info("Metrics retrieved successfully");
+			return response.data!;
+		} catch (error) {
+			logger.warn("Failed to get metrics", { error });
+			throw error;
+		}
+	},
 };
