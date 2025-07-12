@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +16,9 @@ import {
     MessageSquare,
     AlertCircle,
     Eye,
-    EyeOff
+    EyeOff,
+    Code,
+    ArrowRight
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/authStore';
 
@@ -108,7 +111,8 @@ const SettingsPage: React.FC = () => {
         { id: 'notifications', label: 'Notifications', icon: Bell },
         { id: 'privacy', label: 'Privacy', icon: Eye },
         { id: 'appearance', label: 'Appearance', icon: Palette },
-        { id: 'security', label: 'Security', icon: Shield }
+        { id: 'security', label: 'Security', icon: Shield },
+        { id: 'developer', label: 'Developer', icon: Code }
     ];
 
     return (
@@ -444,6 +448,59 @@ const SettingsPage: React.FC = () => {
                                             <Button variant="outline-destructive" size="sm">
                                                 Delete Account
                                             </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {activeTab === 'developer' && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Code className="w-5 h-5" />
+                                    Developer Tools
+                                </CardTitle>
+                                <CardDescription>
+                                    Testing and development utilities for debugging and diagnostics
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-6">
+                                    <div>
+                                        <h4 className="font-medium mb-3">Testing Tools</h4>
+                                        <div className="space-y-3">
+                                            <Link to="/settings/file-dashboard-test">
+                                                <Button variant="outline" className="w-full justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <AlertCircle className="w-4 h-4" />
+                                                        File Dashboard Test
+                                                    </div>
+                                                    <ArrowRight className="w-4 h-4" />
+                                                </Button>
+                                            </Link>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground mt-2">
+                                            Test file upload, analysis, and dashboard functionality
+                                        </p>
+                                    </div>
+
+                                    <div className="border-t pt-4">
+                                        <h4 className="font-medium mb-3">Debug Information</h4>
+                                        <div className="space-y-3 text-sm">
+                                            <div className="flex justify-between">
+                                                <span className="text-muted-foreground">Environment:</span>
+                                                <span className="font-mono">development</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-muted-foreground">API Version:</span>
+                                                <span className="font-mono">v1.0.0</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-muted-foreground">Build:</span>
+                                                <span className="font-mono">local</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

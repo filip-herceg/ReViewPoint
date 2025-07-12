@@ -19,6 +19,7 @@ import {
     Share2
 } from 'lucide-react';
 import { CitationsSection } from '@/components/citations/CitationsSection';
+import { ModuleRunner } from '@/components/modules/ModuleRunner';
 
 const UploadDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -232,6 +233,23 @@ const UploadDetailPage: React.FC = () => {
 
             {/* Citations */}
             <CitationsSection documentId={upload.id} />
+
+            {/* Module Analysis */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Analysis Modules</CardTitle>
+                    <CardDescription>
+                        Run automated analysis on this document using your installed modules
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ModuleRunner 
+                        documentId={upload.id}
+                        documentName={upload.name}
+                        documentType={upload.fileType}
+                    />
+                </CardContent>
+            </Card>
 
             {/* Actions */}
             <Card>

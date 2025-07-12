@@ -9,13 +9,13 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Navigation } from '@/components/navigation/Navigation';
+import { Sidebar } from '@/components/layout/Sidebar';
 import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
 import { WebSocketStatus } from '@/components/websocket/WebSocketStatus';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { SkipLinks } from '@/components/ui/skip-links';
 import { useAuth } from '@/hooks/useAuth';
 import { useUIStore } from '@/lib/store/uiStore';
-import { getRoleBasedNavigationRoutes } from '@/lib/router/routes';
 import { ErrorBoundary } from 'react-error-boundary';
 import { getErrorMessage } from '@/lib/utils/errorHandling';
 import logger from '@/logger';
@@ -32,6 +32,8 @@ const iconMap: Record<string, React.ComponentType<any>> = {
     Settings: Icons.Settings,
     Shield: Icons.Shield,
     UserCheck: Icons.UserCheck,
+    Store: Icons.Store,
+    Package: Icons.Package,
 };
 
 function ErrorFallback({ error }: { error: unknown }) {
@@ -63,14 +65,6 @@ export function AppShell({ children }: AppShellProps) {
     const { sidebarOpen, setSidebarOpen } = useUIStore();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    const userRoles = user?.roles || [];
-    const navigationRoutes = getRoleBasedNavigationRoutes(userRoles);
-
-    const toggleSidebar = () => {
-        setSidebarOpen(!sidebarOpen);
-        logger.info('AppShell: Sidebar toggled', { sidebarOpen: !sidebarOpen });
-    };
-
     const toggleMobileMenu = () => {
         setMobileMenuOpen(!mobileMenuOpen);
         logger.info('AppShell: Mobile menu toggled', { mobileMenuOpen: !mobileMenuOpen });
@@ -92,21 +86,41 @@ export function AppShell({ children }: AppShellProps) {
             >
                 <div className="px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
-                        {/* Logo and Title */}
-                        <div className="flex items-center">
+                        {/* Sidebar Toggle Button - Top Level */}
+                        {isAuthenticated && (
+                            <Button
+                                variant="ghost"
+                                size="default"
+                                onClick={() => setSidebarOpen(!sidebarOpen)}
+                                className="hover:bg-accent p-2"
+                                aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+                            >
+                                <Icons.PanelLeftClose
+                                    className={cn(
+                                        'h-6 w-6 transition-transform duration-300',
+                                        !sidebarOpen && 'rotate-180'
+                                    )}
+                                />
+                            </Button>
+                        )}
+
+                        {/* Center Section - Logo */}
+                        <div className="flex items-center space-x-3">
+                            {/* Mobile Menu Button */}
                             {isAuthenticated && (
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={toggleSidebar}
-                                    className="mr-3 md:hidden hover:bg-accent"
+                                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                                    className="md:hidden hover:bg-accent"
                                     aria-label="Toggle sidebar"
                                 >
                                     <Icons.Menu className="h-5 w-5" />
                                 </Button>
                             )}
 
-                            <Link to="/" className="flex items-center space-x-2 group h-11">
+                            {/* Logo */}
+                            <Link to={isAuthenticated ? "/dashboard" : "/"} className="flex items-center space-x-2 group h-11">
                                 <img src={logoSymbol} alt="Logo Symbol" className="h-full w-auto" />
                                 <img src={logoText} alt="Logo Text" className="h-full w-auto" />
                             </Link>
@@ -150,154 +164,15 @@ export function AppShell({ children }: AppShellProps) {
             <div className="flex pt-16">
                 {/* Sidebar */}
                 {isAuthenticated && (
-                    <>
-                        {/* Desktop Sidebar */}
-                        <aside
-                            id="sidebar"
-                            className={cn(
-                                'hidden md:flex flex-col bg-background/95 backdrop-blur-md border-r border-border shadow-xl fixed top-16 left-0 h-[calc(100vh-4rem)] z-40', // Adjust top and height to respect navbar
-                                sidebarOpen ? 'w-64' : 'w-[5rem]' // Maintain collapsed width
-                            )}
-                        >
-                            {/* Sidebar Header */}
-                            <div className="p-4 border-b border-border">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={toggleSidebar}
-                                    className="w-full justify-start hover:bg-accent transition-all duration-200 z-50" // Ensure button visibility
-                                    aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-                                >
-                                    <Icons.PanelLeftClose
-                                        className={cn(
-                                            'transition-transform duration-300 text-foreground flex-shrink-0', // Prevent resizing
-                                            !sidebarOpen && 'rotate-180'
-                                        )}
-                                    />
-                                    {sidebarOpen && <span className="ml-2 text-foreground">Collapse</span>}
-                                </Button>
-                            </div>
-
-                            {/* Sidebar Navigation */}
-                            <nav id="navigation" className="flex-1 p-4 space-y-3">
-                                {navigationRoutes.map((route) => {
-                                    if (route.requiresAuth && !isAuthenticated) {
-                                        return null;
-                                    }
-
-                                    const Icon = route.icon ? iconMap[route.icon] : null;
-                                    const isActive = location.pathname === route.path ||
-                                        (route.path !== '/' && location.pathname.startsWith(route.path));
-
-                                    return (
-                                        <Link
-                                            key={route.path}
-                                            to={route.path}
-                                            className={cn(
-                                                'group flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-105',
-                                                isActive
-                                                    ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
-                                                    : 'text-muted-foreground hover:text-foreground hover:bg-accent hover:shadow-md'
-                                            )}
-                                            title={sidebarOpen ? undefined : route.title}
-                                        >
-                                            {Icon && (
-                                                <Icon className={cn(
-                                                    'h-5 w-5 flex-shrink-0 transition-all duration-200',
-                                                    sidebarOpen && 'mr-3',
-                                                    isActive
-                                                        ? 'text-primary-foreground'
-                                                        : 'text-muted-foreground group-hover:text-foreground group-hover:scale-110'
-                                                )} />
-                                            )}
-                                            {sidebarOpen && (
-                                                <span className="truncate">{route.title}</span>
-                                            )}
-                                        </Link>
-                                    );
-                                })}
-                            </nav>
-
-                            {/* Sidebar Footer */}
-                            {sidebarOpen && (
-                                <div className="p-4 border-t border-border">
-                                    <div className="flex items-center space-x-3 p-3 rounded-xl bg-accent hover:bg-accent/80 transition-colors">
-                                        <div className="p-2 bg-gradient-to-br from-primary to-primary/80 rounded-lg">
-                                            <Icons.User className="h-4 w-4 text-primary-foreground" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-foreground truncate">
-                                                {user?.name || user?.email}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground truncate">
-                                                {user?.email}
-                                            </p>
-                                        </div>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={logout}
-                                            aria-label="Logout"
-                                            className="hover:bg-destructive hover:text-destructive-foreground transition-colors"
-                                        >
-                                            <Icons.LogOut className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            )}
-                        </aside>
-
-                        {/* Mobile Sidebar Overlay */}
-                        {sidebarOpen && (
-                            <div className="md:hidden fixed inset-0 z-30 bg-black/50 backdrop-blur-sm" onClick={toggleSidebar}>
-                                <aside className="fixed left-0 top-16 bottom-0 w-64 bg-background/95 backdrop-blur-md border-r border-border shadow-2xl">
-                                    <nav className="p-4 space-y-3">
-                                        {navigationRoutes.map((route) => {
-                                            if (route.requiresAuth && !isAuthenticated) {
-                                                return null;
-                                            }
-
-                                            const Icon = route.icon ? iconMap[route.icon] : null;
-                                            const isActive = location.pathname === route.path ||
-                                                (route.path !== '/' && location.pathname.startsWith(route.path));
-
-                                            return (
-                                                <Link
-                                                    key={route.path}
-                                                    to={route.path}
-                                                    onClick={closeMobileMenu}
-                                                    className={cn(
-                                                        'flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 hover:scale-105',
-                                                        isActive
-                                                            ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
-                                                            : 'text-muted-foreground hover:text-foreground hover:bg-accent hover:shadow-md'
-                                                    )}
-                                                >
-                                                    {Icon && (
-                                                        <Icon className={cn(
-                                                            'h-5 w-5 mr-3 transition-all duration-200',
-                                                            isActive
-                                                                ? 'text-primary-foreground'
-                                                                : 'text-muted-foreground group-hover:text-foreground group-hover:scale-110'
-                                                        )} />
-                                                    )}
-                                                    {route.title}
-                                                </Link>
-                                            );
-                                        })}
-                                    </nav>
-                                </aside>
-                            </div>
-                        )}
-                    </>
+                    <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
                 )}
 
                 {/* Main Content */}
                 <main
                     id="main-content"
                     className={cn(
-                        'flex-1 transition-all duration-200 ml-[5rem]', // Add margin to prevent overlap with collapsed sidebar
-                        sidebarOpen && 'ml-64' // Adjust margin when sidebar is expanded
+                        'flex-1 transition-all duration-200',
+                        isAuthenticated && sidebarOpen ? 'ml-64' : 'ml-0' // Only add margin when sidebar is open
                     )}
                 >
                     <div className="px-4 sm:px-6 lg:px-8 py-6">

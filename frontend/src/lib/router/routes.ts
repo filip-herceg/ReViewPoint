@@ -131,6 +131,39 @@ export const routes: RouteConfig[] = [
         ]
     },
     {
+        path: '/marketplace',
+        title: 'Marketplace',
+        description: 'Browse and install modules to enhance your workflow',
+        requiresAuth: true,
+        icon: 'Store',
+        children: [
+            {
+                path: '/marketplace/modules/:id',
+                title: 'Module Details',
+                description: 'View detailed information about a module'
+            }
+        ]
+    },
+    {
+        path: '/my-modules',
+        title: 'My Modules',
+        description: 'Manage your installed modules and subscriptions',
+        requiresAuth: true,
+        icon: 'Package',
+        children: [
+            {
+                path: '/my-modules/:id/configure',
+                title: 'Configure Module',
+                description: 'Configure module settings'
+            },
+            {
+                path: '/my-modules/:id/history',
+                title: 'Module History',
+                description: 'View module usage history'
+            }
+        ]
+    },
+    {
         path: '/profile',
         title: 'Profile',
         description: 'Manage your account settings',
@@ -142,14 +175,14 @@ export const routes: RouteConfig[] = [
         title: 'Settings',
         description: 'Application preferences and configuration',
         requiresAuth: true,
-        icon: 'Settings'
-    },
-    {
-        path: '/file-dashboard-test',
-        title: 'File Dashboard Test',
-        description: 'Test page for file management dashboard',
-        requiresAuth: true,
-        icon: 'FileDigit'
+        icon: 'Settings',
+        children: [
+            {
+                path: '/settings/file-dashboard-test',
+                title: 'File Dashboard Test',
+                description: 'Test page for file management dashboard'
+            }
+        ]
     }
 ];
 

@@ -4,6 +4,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { getRoleBasedNavigationRoutes } from '@/lib/router/routes';
 import { cn } from '@/lib/utils';
 import * as Icons from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const iconMap: Record<string, React.ComponentType<any>> = {
     Home: Icons.Home,
@@ -14,6 +22,8 @@ const iconMap: Record<string, React.ComponentType<any>> = {
     Settings: Icons.Settings,
     Shield: Icons.Shield,
     UserCheck: Icons.UserCheck,
+    Store: Icons.Store,
+    Package: Icons.Package,
 };
 
 export function Navigation() {
@@ -22,11 +32,19 @@ export function Navigation() {
     const userRoles = user?.roles || [];
     const navigationRoutes = getRoleBasedNavigationRoutes(userRoles);
 
+    // Filter out Home when authenticated, and Profile since it's now in the dropdown
+    const filteredRoutes = navigationRoutes.filter(route => {
+        if (isAuthenticated && route.path === '/') return false; // Remove Home when logged in
+        if (route.path === '/profile') return false; // Profile is now in dropdown
+        if (route.path === '/file-dashboard-test') return false; // Move to settings
+        return true;
+    });
+
     return (
         <nav className="flex items-center space-x-4">
             {/* Main Navigation Links */}
             <div className="hidden md:flex space-x-1">
-                {navigationRoutes.map((route) => {
+                {filteredRoutes.map((route) => {
                     // Only show authenticated routes if user is logged in
                     if (route.requiresAuth && !isAuthenticated) {
                         return null;
@@ -63,24 +81,46 @@ export function Navigation() {
 
             {/* User Menu */}
             {isAuthenticated ? (
-                <div className="flex items-center space-x-2">
-                    <span className="text-sm text-muted-foreground">
-                        Welcome, {user?.name || user?.email}
-                    </span>
-                    <Link
-                        to="/profile"
-                        className="flex items-center px-3 py-2 rounded-xl text-sm font-medium text-info-foreground hover:text-info hover:bg-accent/70 transition-all duration-200 hover:scale-105 underline-offset-2 hover:underline"
-                    >
-                        <Icons.User className="h-4 w-4 mr-1" />
-                        Profile
-                    </Link>
-                    <button
-                        onClick={logout}
-                        className="px-3 py-2 text-sm font-medium text-destructive hover:text-destructive-foreground hover:bg-destructive/10 rounded-xl transition-all duration-200 hover:scale-105"
-                    >
-                        Logout
-                    </button>
-                </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <button className="flex items-center space-x-2 px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200 hover:scale-105">
+                            <Icons.User className="h-4 w-4" />
+                            <span className="hidden sm:block">{user?.name || user?.email}</span>
+                            <Icons.ChevronDown className="h-4 w-4" />
+                        </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuLabel>
+                            <div className="flex flex-col space-y-1">
+                                <p className="text-sm font-medium leading-none">{user?.name || 'User'}</p>
+                                <p className="text-xs leading-none text-muted-foreground">
+                                    {user?.email}
+                                </p>
+                            </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                            <Link to="/profile" className="flex items-center">
+                                <Icons.User className="mr-2 h-4 w-4" />
+                                <span>Profile</span>
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link to="/settings" className="flex items-center">
+                                <Icons.Settings className="mr-2 h-4 w-4" />
+                                <span>Settings</span>
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                            onClick={logout}
+                            className="text-destructive focus:text-destructive"
+                        >
+                            <Icons.LogOut className="mr-2 h-4 w-4" />
+                            <span>Logout</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             ) : (
                 <div className="flex items-center space-x-2">
                     <Link

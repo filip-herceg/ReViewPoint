@@ -21,12 +21,17 @@ const ForgotPasswordPage = React.lazy(() => import('@/pages/auth/ForgotPasswordP
 const ResetPasswordPage = React.lazy(() => import('@/pages/auth/ResetPasswordPage'));
 const ProfilePage = React.lazy(() => import('@/pages/ProfilePage'));
 const SettingsPage = React.lazy(() => import('@/pages/SettingsPage'));
-const FileDashboardTestPage = React.lazy(() => import('@/pages/FileDashboardTestPage'));
+const FileDashboardTestPage = React.lazy(() => import('@/pages/settings/FileDashboardTestPage'));
 
 // Admin and Moderation pages
 const AdminPanelPage = React.lazy(() => import('@/pages/admin/AdminPanelPage'));
 const UserManagementPage = React.lazy(() => import('@/pages/admin/UserManagementPage'));
 const ModerationPanelPage = React.lazy(() => import('@/pages/moderation/ModerationPanelPage'));
+
+// Marketplace pages
+const MarketplacePage = React.lazy(() => import('@/pages/marketplace/MarketplacePage'));
+const ModuleDetailPage = React.lazy(() => import('@/pages/marketplace/ModuleDetailPage'));
+const MyModulesPage = React.lazy(() => import('@/pages/marketplace/MyModulesPage'));
 
 // Layout components
 import { AppShell } from '@/components/layout/AppShell';
@@ -146,15 +151,17 @@ export const router = createBrowserRouter([
                     <ProtectedRoute>
                         <SettingsPage />
                     </ProtectedRoute>
-                )
-            },
-            {
-                path: 'file-dashboard-test',
-                element: (
-                    <ProtectedRoute>
-                        <FileDashboardTestPage />
-                    </ProtectedRoute>
-                )
+                ),
+                children: [
+                    {
+                        path: 'file-dashboard-test',
+                        element: (
+                            <ProtectedRoute>
+                                <FileDashboardTestPage />
+                            </ProtectedRoute>
+                        )
+                    }
+                ]
             },
             {
                 path: 'admin',
@@ -181,6 +188,40 @@ export const router = createBrowserRouter([
                         <ModerationPanelPage />
                     </ProtectedRoute>
                 )
+            },
+            {
+                path: 'marketplace',
+                children: [
+                    {
+                        index: true,
+                        element: (
+                            <ProtectedRoute>
+                                <MarketplacePage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'modules/:moduleId',
+                        element: (
+                            <ProtectedRoute>
+                                <ModuleDetailPage />
+                            </ProtectedRoute>
+                        )
+                    }
+                ]
+            },
+            {
+                path: 'my-modules',
+                children: [
+                    {
+                        index: true,
+                        element: (
+                            <ProtectedRoute>
+                                <MyModulesPage />
+                            </ProtectedRoute>
+                        )
+                    }
+                ]
             }
         ]
     },
