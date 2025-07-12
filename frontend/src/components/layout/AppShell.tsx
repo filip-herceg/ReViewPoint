@@ -86,7 +86,7 @@ export function AppShell({ children }: AppShellProps) {
             {/* Header */}
             <header
                 id="header"
-                className="bg-background/95 backdrop-blur-md shadow-sm border-b border-border/50 fixed top-0 left-0 right-0 z-40"
+                className="bg-background/95 backdrop-blur-md shadow-sm border-b border-border/50 fixed top-0 left-0 right-0 z-50" // Increase z-index for dominance
             >
                 <div className="px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
@@ -157,8 +157,8 @@ export function AppShell({ children }: AppShellProps) {
                         <aside
                             id="sidebar"
                             className={cn(
-                                'hidden md:flex flex-col bg-background/95 backdrop-blur-md border-r border-border shadow-xl',
-                                sidebarOpen ? 'w-64' : 'w-[5rem]' // Increase collapsed width to 5rem
+                                'hidden md:flex flex-col bg-background/95 backdrop-blur-md border-r border-border shadow-xl fixed top-16 left-0 h-[calc(100vh-4rem)] z-40', // Adjust top and height to respect navbar
+                                sidebarOpen ? 'w-64' : 'w-[5rem]' // Maintain collapsed width
                             )}
                         >
                             {/* Sidebar Header */}
@@ -167,7 +167,7 @@ export function AppShell({ children }: AppShellProps) {
                                     variant="ghost"
                                     size="sm"
                                     onClick={toggleSidebar}
-                                    className="w-full justify-start hover:bg-accent transition-all duration-200"
+                                    className="w-full justify-start hover:bg-accent transition-all duration-200 z-50" // Ensure button visibility
                                     aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
                                 >
                                     <Icons.PanelLeftClose
@@ -298,9 +298,8 @@ export function AppShell({ children }: AppShellProps) {
                 <main
                     id="main-content"
                     className={cn(
-                        'flex-1 transition-all duration-200',
-                        isAuthenticated && sidebarOpen ? 'md:ml-0' : '',
-                        !isAuthenticated && 'w-full'
+                        'flex-1 transition-all duration-200 ml-[5rem]', // Add margin to prevent overlap with collapsed sidebar
+                        sidebarOpen && 'ml-64' // Adjust margin when sidebar is expanded
                     )}
                 >
                     <div className="px-4 sm:px-6 lg:px-8 py-6">
