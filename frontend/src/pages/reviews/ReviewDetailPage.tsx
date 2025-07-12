@@ -280,9 +280,9 @@ const ReviewDetailPage: React.FC = () => {
     // Generate simulated module results
     const generateModuleResult = (module: any, reviewDoc: any) => {
         // Get realistic citation counts from actual citations data
-        const sourcesData = citationsData?.sourcesUsed;
-        const totalCitations = sourcesData?.totalCitations || Math.floor(Math.random() * 20) + 35; // Fallback to 35-54
-        const uniqueSources = sourcesData?.totalSources || Math.floor(Math.random() * 15) + 15; // Fallback to 15-29  
+        const citationData = citationsData?.citationsUsed;
+        const totalCitations = citationData?.total || Math.floor(Math.random() * 20) + 35; // Fallback to 35-54
+        const uniqueSources = citationData?.items?.length || Math.floor(Math.random() * 15) + 15; // Fallback to 15-29  
         const citedByCount = citationsData?.citedBy?.total || Math.floor(Math.random() * 30) + 15; // Fallback to 15-44
         
         const results = {

@@ -1,32 +1,3 @@
-export interface CitationInstance {
-  id: string;
-  sourceId: string;
-  page: number;
-  paragraph: number;
-  line: number;
-  context: string;
-  severity: 'info' | 'warning' | 'error';
-  citationStyle: 'APA' | 'MLA' | 'IEEE' | 'Chicago';
-}
-
-export interface Source {
-  id: string;
-  title: string;
-  authors: string[];
-  year: number;
-  journal?: string;
-  source?: string;
-  doi?: string;
-  url?: string;
-  pages?: string;
-  volume?: string;
-  issue?: string;
-  type: 'book' | 'journal' | 'website' | 'conference' | 'thesis' | 'other';
-  abstract?: string;
-  tags?: string[];
-  citationInstances: CitationInstance[];
-}
-
 export interface Citation {
   id: string;
   title: string;
@@ -71,15 +42,11 @@ export interface CitationsFilters {
 }
 
 export interface CitationsData {
-  sourcesUsed: {
-    sources: Source[];
-    totalSources: number;
-    totalCitations: number;
-    // Backward compatibility
-    items?: Citation[];
-    citations?: Citation[];
-    documentCitations?: DocumentCitation[];
-    total?: number;
+  citationsUsed: {
+    items: Citation[];
+    citations?: Citation[]; // For backward compatibility
+    documentCitations?: DocumentCitation[]; // For backward compatibility
+    total: number;
   };
   citedBy: {
     items: Citation[];
