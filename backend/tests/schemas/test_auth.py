@@ -31,13 +31,13 @@ class PasswordResetConfirmRequestDict(TypedDict):
 
 class TestAuthSchemas(AuthEndpointTestTemplate):
     def test_user_register_request_valid(self: "TestAuthSchemas") -> None:
-        """
-        Verifies that UserRegisterRequest accepts valid input and sets all fields correctly.
-        """
+        """Verifies that UserRegisterRequest accepts valid input and sets all fields correctly."""
         from src.schemas.auth import UserRegisterRequest
 
         req: UserRegisterRequest = UserRegisterRequest(
-            email=get_unique_email(), password="password123", name="Test User"
+            email=get_unique_email(),
+            password="password123",
+            name="Test User",
         )
         assert req.email.endswith("@example.com")  # Check it's a unique email
         assert req.password == "password123"
@@ -51,11 +51,12 @@ class TestAuthSchemas(AuthEndpointTestTemplate):
         ],
     )
     def test_user_register_request_invalid(
-        self: "TestAuthSchemas", email: str, password: str, name: str | None
+        self: "TestAuthSchemas",
+        email: str,
+        password: str,
+        name: str | None,
     ) -> None:
-        """
-        Verifies that UserRegisterRequest raises ValidationError for invalid input.
-        """
+        """Verifies that UserRegisterRequest raises ValidationError for invalid input."""
         from pydantic import ValidationError
 
         from src.schemas.auth import UserRegisterRequest
@@ -64,34 +65,30 @@ class TestAuthSchemas(AuthEndpointTestTemplate):
             UserRegisterRequest(email=email, password=password, name=name)
 
     def test_user_login_request_valid(self: "TestAuthSchemas") -> None:
-        """
-        Verifies that UserLoginRequest accepts valid input and sets all fields correctly.
-        """
+        """Verifies that UserLoginRequest accepts valid input and sets all fields correctly."""
         from src.schemas.auth import UserLoginRequest
 
         req: UserLoginRequest = UserLoginRequest(
-            email=get_unique_email(), password="password123"
+            email=get_unique_email(),
+            password="password123",
         )
         assert req.email.endswith("@example.com")  # Check it's a unique email
         assert req.password == "password123"
 
     def test_password_reset_request_valid(self: "TestAuthSchemas") -> None:
-        """
-        Verifies that PasswordResetRequest accepts valid input and sets the email field correctly.
-        """
+        """Verifies that PasswordResetRequest accepts valid input and sets the email field correctly."""
         from src.schemas.auth import PasswordResetRequest
 
         req: PasswordResetRequest = PasswordResetRequest(email=get_unique_email())
         assert req.email.endswith("@example.com")  # Check it's a unique email
 
     def test_password_reset_confirm_request_valid(self: "TestAuthSchemas") -> None:
-        """
-        Verifies that PasswordResetConfirmRequest accepts valid input and sets all fields correctly.
-        """
+        """Verifies that PasswordResetConfirmRequest accepts valid input and sets all fields correctly."""
         from src.schemas.auth import PasswordResetConfirmRequest
 
         req: PasswordResetConfirmRequest = PasswordResetConfirmRequest(
-            token="sometoken", new_password="newpassword123"
+            token="sometoken",
+            new_password="newpassword123",
         )
         assert req.token == "sometoken"
         assert req.new_password == "newpassword123"
@@ -99,9 +96,7 @@ class TestAuthSchemas(AuthEndpointTestTemplate):
     def test_password_reset_confirm_request_short_password(
         self: "TestAuthSchemas",
     ) -> None:
-        """
-        Verifies that PasswordResetConfirmRequest raises ValidationError for a too-short password.
-        """
+        """Verifies that PasswordResetConfirmRequest raises ValidationError for a too-short password."""
         from pydantic import ValidationError
 
         from src.schemas.auth import PasswordResetConfirmRequest
@@ -110,9 +105,7 @@ class TestAuthSchemas(AuthEndpointTestTemplate):
             PasswordResetConfirmRequest(token="t", new_password="short")
 
     def test_auth_response(self: "TestAuthSchemas") -> None:
-        """
-        Verifies that AuthResponse sets all fields correctly.
-        """
+        """Verifies that AuthResponse sets all fields correctly."""
         from src.schemas.auth import AuthResponse
 
         resp: AuthResponse = AuthResponse(access_token="abc123", refresh_token="def456")
@@ -121,9 +114,7 @@ class TestAuthSchemas(AuthEndpointTestTemplate):
         assert resp.token_type == "bearer"
 
     def test_message_response(self: "TestAuthSchemas") -> None:
-        """
-        Verifies that MessageResponse sets the message field correctly.
-        """
+        """Verifies that MessageResponse sets the message field correctly."""
         from src.schemas.auth import MessageResponse
 
         resp: MessageResponse = MessageResponse(message="ok")
@@ -132,8 +123,7 @@ class TestAuthSchemas(AuthEndpointTestTemplate):
 
 class TestAuthEndpoints(AuthEndpointTestTemplate):
     def create_fresh_app(self: "TestAuthEndpoints") -> FastAPI:
-        """
-        Create a fresh FastAPI app with current environment variables and override the async session dependency.
+        """Create a fresh FastAPI app with current environment variables and override the async session dependency.
         Ensures config cache is cleared after setting env vars, before app creation.
         Also overrides require_api_key to a no-op for test isolation.
         """
@@ -155,11 +145,19 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
         # Create the app
         app: FastAPI = create_app()
 
-        # Override the database dependency
+        # Override the database dependencies
         async def _override_get_async_session() -> AsyncGenerator[object, None]:
             yield self.async_session
 
+        async def _override_get_db() -> AsyncGenerator[object, None]:
+            yield self.async_session
+
         app.dependency_overrides[get_async_session] = _override_get_async_session
+
+        # Also override get_db dependency which some endpoints use
+        from src.api.deps import get_db
+
+        app.dependency_overrides[get_db] = _override_get_db
         # Override require_api_key to a no-op for all tests in this class
         try:
             from src.api.deps import require_api_key
@@ -182,13 +180,12 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_AUTH_ENABLED": "true",
                 "REVIEWPOINT_FEATURE_AUTH_REGISTER": "true",
                 "REVIEWPOINT_FEATURES": "auth:register",
-            }
+            },
         )
 
         fresh_app = self.create_fresh_app()
         transport = ASGITransport(app=fresh_app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
-
             resp = await ac.post(
                 "/api/v1/auth/register",
                 json={
@@ -212,13 +209,12 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_AUTH_ENABLED": "true",
                 "REVIEWPOINT_FEATURE_AUTH_LOGIN": "true",
                 "REVIEWPOINT_FEATURES": "auth:login",
-            }
+            },
         )
 
         fresh_app = self.create_fresh_app()
         transport = ASGITransport(app=fresh_app)
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
-
             email = get_unique_email()
             password = "SecurePass123!"
             await ac.post(
@@ -248,7 +244,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_AUTH_ENABLED": "true",
                 "REVIEWPOINT_FEATURE_AUTH_LOGOUT": "true",
                 "REVIEWPOINT_FEATURES": "auth:logout",
-            }
+            },
         )
 
         fresh_app = self.create_fresh_app()
@@ -266,14 +262,15 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             )
             token = resp.json()["access_token"]
             resp2 = await ac.post(
-                "/api/v1/auth/logout", headers={"Authorization": f"Bearer {token}"}
+                "/api/v1/auth/logout",
+                headers={"Authorization": f"Bearer {token}"},
             )
             assert resp2.status_code == 200
             assert resp2.json()["message"] == "Logged out successfully."
 
     @pytest.mark.asyncio
     @pytest.mark.skip_if_fast_tests(
-        "Refresh token tests not reliable in fast test mode"
+        "Refresh token tests not reliable in fast test mode",
     )
     async def test_refresh_token_success(self: "TestAuthEndpoints") -> None:
         from httpx import ASGITransport, AsyncClient
@@ -284,7 +281,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_AUTH_ENABLED": "true",
                 "REVIEWPOINT_FEATURE_AUTH_REFRESH_TOKEN": "true",
                 "REVIEWPOINT_FEATURES": "auth:refresh_token",
-            }
+            },
         )
 
         fresh_app = self.create_fresh_app()
@@ -322,7 +319,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_AUTH_ENABLED": "true",
                 "REVIEWPOINT_FEATURE_AUTH_REQUEST_PASSWORD_RESET": "true",
                 "REVIEWPOINT_FEATURES": "auth:request_password_reset",
-            }
+            },
         )
 
         fresh_app = self.create_fresh_app()
@@ -355,7 +352,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_AUTH_ENABLED": "true",
                 "REVIEWPOINT_FEATURE_AUTH_LOGOUT": "true",
                 "REVIEWPOINT_FEATURES": "auth:logout",
-            }
+            },
         )
 
         fresh_app = self.create_fresh_app()
@@ -389,7 +386,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_AUTH_ENABLED": "true",
                 "REVIEWPOINT_FEATURE_AUTH_LOGOUT": "true",
                 "REVIEWPOINT_FEATURES": "auth:logout",
-            }
+            },
         )
 
         fresh_app = self.create_fresh_app()
@@ -421,7 +418,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_AUTH_ENABLED": "true",
                 "REVIEWPOINT_FEATURE_AUTH_REFRESH_TOKEN": "true",
                 "REVIEWPOINT_FEATURES": "auth:refresh_token",
-            }
+            },
         )
 
         fresh_app = self.create_fresh_app()
@@ -435,7 +432,6 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             lambda: MockRefresh()
         )
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
-
             email = get_unique_email()
             await ac.post(
                 "/api/v1/auth/register",
@@ -470,7 +466,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_AUTH_ENABLED": "true",
                 "REVIEWPOINT_FEATURE_AUTH_REFRESH_TOKEN": "true",
                 "REVIEWPOINT_FEATURES": "auth:refresh_token",
-            }
+            },
         )
 
         fresh_app = self.create_fresh_app()
@@ -485,7 +481,6 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             lambda: MockRefresh()
         )
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
-
             email = get_unique_email()
             await ac.post(
                 "/api/v1/auth/register",
@@ -520,7 +515,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_AUTH_ENABLED": "true",
                 "REVIEWPOINT_FEATURE_AUTH_REFRESH_TOKEN": "true",
                 "REVIEWPOINT_FEATURES": "auth:refresh_token",
-            }
+            },
         )
 
         fresh_app = self.create_fresh_app()
@@ -534,7 +529,6 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             lambda: MockRefresh()
         )
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
-
             email = get_unique_email()
             await ac.post(
                 "/api/v1/auth/register",
@@ -559,7 +553,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
 
     @pytest.mark.asyncio
     @pytest.mark.skip_if_fast_tests(
-        "Refresh token tests not reliable in fast test mode"
+        "Refresh token tests not reliable in fast test mode",
     )
     async def test_refresh_token_unexpected_error(self: "TestAuthEndpoints") -> None:
         from httpx import ASGITransport, AsyncClient
@@ -572,7 +566,7 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 "REVIEWPOINT_AUTH_ENABLED": "true",
                 "REVIEWPOINT_FEATURE_AUTH_REFRESH_TOKEN": "true",
                 "REVIEWPOINT_FEATURES": "auth:refresh_token",
-            }
+            },
         )
 
         fresh_app = self.create_fresh_app()
@@ -587,7 +581,6 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
             lambda: MockRefresh()
         )
         async with AsyncClient(transport=transport, base_url="http://test") as ac:
-
             email = get_unique_email()
             await ac.post(
                 "/api/v1/auth/register",
@@ -616,16 +609,14 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
     async def test_password_reset_confirm_success_branch(
         self: "TestAuthEndpoints",
     ) -> None:
-        """
-        Test the password reset confirm endpoint (success branch) using only in-method imports and the test template.
-        """
+        """Test the password reset confirm endpoint (success branch) using only in-method imports and the test template."""
         self.override_env_vars(
             {
                 "REVIEWPOINT_API_KEY_ENABLED": "false",
                 "REVIEWPOINT_AUTH_ENABLED": "true",
                 "REVIEWPOINT_FEATURE_AUTH_RESET_PASSWORD": "true",
                 "REVIEWPOINT_FEATURES": "auth:reset_password",
-            }
+            },
         )
 
         fresh_app = self.create_fresh_app()
@@ -655,7 +646,8 @@ class TestAuthEndpoints(AuthEndpointTestTemplate):
                 )
             # Patch reset_password to simulate success
             with patch(
-                "src.services.user.reset_password", new=AsyncMock(return_value=None)
+                "src.services.user.reset_password",
+                new=AsyncMock(return_value=None),
             ):
                 resp = await ac.post(
                     "/api/v1/auth/reset-password",

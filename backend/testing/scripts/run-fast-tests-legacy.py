@@ -35,7 +35,7 @@ def main() -> int:
             "REVIEWPOINT_LOG_LEVEL": "WARNING",
             "REVIEWPOINT_DB_URL": "sqlite+aiosqlite:///:memory:",
             "PYTHONPATH": str(backend_dir / "src"),
-        }
+        },
     )
 
     try:
@@ -69,7 +69,7 @@ def main() -> int:
 
         test_type = "fast-only tests" if use_fast_only else "all tests"
         print(f"Running {test_type}: {' '.join(cmd)}")
-        result = subprocess.run(cmd, cwd=backend_dir, env=env)
+        result = subprocess.run(cmd, check=False, cwd=backend_dir, env=env)
         return result.returncode
 
     finally:

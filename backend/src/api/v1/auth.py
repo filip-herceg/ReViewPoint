@@ -12,6 +12,7 @@ from src.api.deps import (
     get_async_refresh_access_token,
     get_blacklist_token,
     get_current_user,
+    get_db,
     get_password_validation_error,
     get_request_id,
     get_user_action_limiter,
@@ -21,7 +22,6 @@ from src.api.deps import (
     require_feature,
 )
 from src.core.config import get_settings
-from src.core.database import get_async_session
 from src.models.user import User
 from src.schemas.auth import (
     AuthResponse,
@@ -244,7 +244,7 @@ Returns the profile information of the currently authenticated user.
 - Returns user ID, email, name, bio, avatar, and timestamps.
 """
 
-router: Final[APIRouter] = APIRouter(prefix="/auth", tags=["Auth"])
+router: Final[APIRouter] = APIRouter(tags=["Auth"])
 
 
 class UserActionLimiterProtocol:
@@ -258,8 +258,7 @@ async def check_rate_limit(
     log_extra: Mapping[str, object],
     action: str = "action",
 ) -> None:
-    """
-    Checks if the action is allowed by the rate limiter.
+    """Checks if the action is allowed by the rate limiter.
     Raises HTTP 429 if not allowed.
     """
     allowed: bool = await user_action_limiter.is_allowed(limiter_key)
@@ -268,14 +267,12 @@ async def check_rate_limit(
             429,
             f"Too many {action} attempts. Please try again later.",
             logger.warning,
-            cast(ExtraLogInfo, log_extra),
+            cast("ExtraLogInfo", log_extra),
         )
 
 
 def common_auth_deps(feature: str) -> tuple[object, object, object]:
-    """
-    Returns a tuple of common dependencies for auth endpoints.
-    """
+    """Returns a tuple of common dependencies for auth endpoints."""
     from fastapi import Depends as FastAPIDepends
 
     return (
@@ -286,14 +283,12 @@ def common_auth_deps(feature: str) -> tuple[object, object, object]:
 
 
 def rate_limit(action: str, key_func: Callable[[Request], str] | None = None) -> object:
-    """
-    Returns a dependency for rate limiting.
-    """
+    """Returns a dependency for rate limiting."""
 
     async def dependency(
         request: Request,
         user_action_limiter: UserActionLimiterProtocol = Depends(
-            get_user_action_limiter
+            get_user_action_limiter,
         ),
     ) -> None:
         key: str
@@ -312,7 +307,7 @@ def rate_limit(action: str, key_func: Callable[[Request], str] | None = None) ->
                 429,
                 f"Too many {action} attempts. Please try again later.",
                 logger.warning,
-                cast(ExtraLogInfo, {"limiter_key": key}),
+                cast("ExtraLogInfo", {"limiter_key": key}),
             )
 
     return Depends(dependency)
@@ -346,19 +341,20 @@ async def register(
                     "password": "strongpassword123",
                     "name": "Jane Doe",
                 },
-            }
+            },
         ],
     ),
-    session: AsyncSession = Depends(get_async_session),
+    session: AsyncSession = Depends(get_db),
     user_service: UserService = Depends(get_user_service),
     user_action_limiter: UserActionLimiterProtocol = Depends(get_user_action_limiter),
 ) -> AuthResponse:
-    """
-    Registers a new user account and returns a JWT access token.
+    """Registers a new user account and returns a JWT access token.
+
     Raises:
         UserAlreadyExistsError: If the user already exists.
         InvalidDataError: If registration data is invalid.
         Exception: For unexpected errors.
+
     """
     await check_rate_limit(
         user_action_limiter,
@@ -367,7 +363,7 @@ async def register(
         action="registration",
     )
     logger.info(
-        f"User registration attempt: {data.email}, name: {getattr(data, 'name', None)}"
+        f"User registration attempt: {data.email}, name: {getattr(data, 'name', None)}",
     )
     logger.debug(f"Registration payload: {data}")
     try:
@@ -375,7 +371,9 @@ async def register(
         access_token: str
         refresh_token: str
         access_token, refresh_token = await user_service.authenticate_user(
-            session, data.email, data.password
+            session,
+            data.email,
+            data.password,
         )
         logger.info(f"User registered successfully: {user.email}")
         return AuthResponse(access_token=access_token, refresh_token=refresh_token)
@@ -384,7 +382,15 @@ async def register(
             400,
             "User with this email already exists.",
             logger.warning,
-            cast(ExtraLogInfo, {"email": data.email}),
+            cast("ExtraLogInfo", {"email": data.email}),
+            e,
+        )
+    except ValidationError as e:
+        http_error(
+            400,
+            "Invalid registration data.",
+            logger.warning,
+            cast("ExtraLogInfo", {"email": data.email}),
             e,
         )
     except InvalidDataError as e:
@@ -392,18 +398,20 @@ async def register(
             400,
             "Invalid registration data.",
             logger.warning,
-            cast(ExtraLogInfo, {"email": data.email}),
+            cast("ExtraLogInfo", {"email": data.email}),
             e,
         )
     except Exception as e:
+        # Add detailed error logging
         import traceback
 
-        tb: str = traceback.format_exc()
+        logger.error(f"DETAILED ERROR in registration: {type(e).__name__}: {e}")
+        logger.error(f"TRACEBACK: {traceback.format_exc()}")
         http_error(
-            400,
-            "Invalid registration data.",
-            logger.warning,
-            cast(ExtraLogInfo, {"email": data.email, "error": str(e), "traceback": tb}),
+            500,
+            "An unexpected error occurred. Please try again later.",
+            logger.error,
+            cast("ExtraLogInfo", {"email": data.email, "error": str(e)}),
             e,
         )
     raise AssertionError("Unreachable")
@@ -422,16 +430,17 @@ async def register(
 )
 async def login(
     data: UserLoginRequest,
-    session: AsyncSession = Depends(get_async_session),
+    session: AsyncSession = Depends(get_db),
     user_service: UserService = Depends(get_user_service),
     user_action_limiter: UserActionLimiterProtocol = Depends(get_user_action_limiter),
 ) -> AuthResponse:
-    """
-    Authenticates a user and returns a JWT access token.
+    """Authenticates a user and returns a JWT access token.
+
     Raises:
         UserNotFoundError: If user is not found.
         ValidationError: If credentials are invalid.
         Exception: For unexpected errors.
+
     """
     await check_rate_limit(
         user_action_limiter,
@@ -444,7 +453,9 @@ async def login(
         access_token: str
         refresh_token: str
         access_token, refresh_token = await user_service.authenticate_user(
-            session, data.email, data.password
+            session,
+            data.email,
+            data.password,
         )
         logger.info(f"User authenticated successfully: {data.email}")
         return AuthResponse(access_token=access_token, refresh_token=refresh_token)
@@ -454,7 +465,7 @@ async def login(
             401,
             "Invalid credentials",
             logger.warning,
-            cast(ExtraLogInfo, {"email": data.email}),
+            cast("ExtraLogInfo", {"email": data.email}),
             e,
         )
     except ValidationError as e:
@@ -463,7 +474,7 @@ async def login(
             401,
             "Invalid credentials",
             logger.warning,
-            cast(ExtraLogInfo, {"email": data.email}),
+            cast("ExtraLogInfo", {"email": data.email}),
             e,
         )
     except Exception as e:
@@ -472,7 +483,7 @@ async def login(
             401,
             "An unexpected error occurred. Please try again later.",
             logger.error,
-            cast(ExtraLogInfo, {"email": data.email, "error": str(e)}),
+            cast("ExtraLogInfo", {"email": data.email, "error": str(e)}),
             e,
         )
     raise AssertionError("Unreachable")
@@ -497,16 +508,17 @@ async def login(
 async def logout(
     request: Request,
     current_user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(get_async_session),
+    session: AsyncSession = Depends(get_db),
     user_service: UserService = Depends(get_user_service),
     blacklist_token: Callable[[AsyncSession, str, datetime], Awaitable[None]] = Depends(
-        get_blacklist_token
+        get_blacklist_token,
     ),
 ) -> MessageResponse:
-    """
-    Logs out the current user and blacklists the access token.
+    """Logs out the current user and blacklists the access token.
+
     Raises:
         Exception: If token is invalid or expired.
+
     """
     logger.info("logout_attempt", extra={"user_id": current_user.id})
     auth_header: str | None = request.headers.get("authorization") if request else None
@@ -517,15 +529,18 @@ async def logout(
             if not settings.jwt_secret_key:
                 raise ValueError("JWT secret key is not configured.")
             payload: Mapping[str, object] = jwt.decode(
-                token, str(settings.jwt_secret_key), algorithms=[settings.jwt_algorithm]
+                token,
+                str(settings.jwt_secret_key),
+                algorithms=[settings.jwt_algorithm],
             )
-            jti: str = cast(str, payload.get("jti") or token)
-            exp: int | None = cast(int | None, payload.get("exp"))
+            jti: str = cast("str", payload.get("jti") or token)
+            exp: int | None = cast("int | None", payload.get("exp"))
             if exp is not None:
                 expires_at: datetime = datetime.fromtimestamp(exp, tz=UTC)
                 await blacklist_token(session, jti, expires_at)
                 logger.info(
-                    "logout_token_blacklisted", extra={"user_id": current_user.id}
+                    "logout_token_blacklisted",
+                    extra={"user_id": current_user.id},
                 )
         except Exception as e:
             logger.error(
@@ -541,7 +556,7 @@ async def logout(
                 401,
                 "Invalid or expired token.",
                 logger.warning,
-                cast(ExtraLogInfo, {"error": str(e)}),
+                cast("ExtraLogInfo", {"error": str(e)}),
             )
     await user_service.logout_user(session, current_user.id)
     logger.info("logout_success", extra={"user_id": current_user.id})
@@ -566,18 +581,19 @@ async def logout(
 )
 async def refresh_token(
     body: Mapping[str, object] = Body(...),
-    session: AsyncSession = Depends(get_async_session),
+    session: AsyncSession = Depends(get_db),
     async_refresh_access_token: Callable[[AsyncSession, str], Awaitable[str]] = Depends(
-        get_async_refresh_access_token
+        get_async_refresh_access_token,
     ),
 ) -> AuthResponse:
-    """
-    Accepts either {"token": ...} or {"refresh_token": ...} for compatibility with tests.
+    """Accepts either {"token": ...} or {"refresh_token": ...} for compatibility with tests.
+
     Raises:
         RefreshTokenRateLimitError: If too many attempts.
         RefreshTokenBlacklistedError: If token is blacklisted.
         RefreshTokenError: If token is invalid.
         ValueError: If token is missing or invalid.
+
     """
     token_val: object | None = body.get("token") or body.get("refresh_token")
     if not isinstance(token_val, str):
@@ -592,28 +608,28 @@ async def refresh_token(
             429,
             "Too many token refresh attempts. Please try again later.",
             logger.warning,
-            cast(ExtraLogInfo, {"token": token}),
+            cast("ExtraLogInfo", {"token": token}),
         )
     except RefreshTokenBlacklistedError:
         http_error(
             401,
             "Invalid or expired refresh token.",
             logger.warning,
-            cast(ExtraLogInfo, {"token": token}),
+            cast("ExtraLogInfo", {"token": token}),
         )
     except RefreshTokenError:
         http_error(
             401,
             "Invalid or expired refresh token.",
             logger.warning,
-            cast(ExtraLogInfo, {"token": token}),
+            cast("ExtraLogInfo", {"token": token}),
         )
     except ValueError as e:
         http_error(
             401,
             "Invalid or expired refresh token.",
             logger.warning,
-            cast(ExtraLogInfo, {"token": token, "error": str(e)}),
+            cast("ExtraLogInfo", {"token": token, "error": str(e)}),
             e,
         )
     except Exception as e:
@@ -621,7 +637,7 @@ async def refresh_token(
             401,
             "Invalid or expired refresh token.",
             logger.warning,
-            cast(ExtraLogInfo, {"token": token, "error": str(e)}),
+            cast("ExtraLogInfo", {"token": token, "error": str(e)}),
             e,
         )
     raise AssertionError("Unreachable")
@@ -645,15 +661,16 @@ async def refresh_token(
 )
 async def request_password_reset(
     data: PasswordResetRequest,
-    session: AsyncSession = Depends(get_async_session),
+    session: AsyncSession = Depends(get_db),
     user_service: UserService = Depends(get_user_service),
     user_action_limiter: UserActionLimiterProtocol = Depends(get_user_action_limiter),
     validate_email: Callable[[str], bool] = Depends(get_validate_email),
 ) -> MessageResponse:
-    """
-    Initiates a password reset flow.
+    """Initiates a password reset flow.
+
     Raises:
         Exception: For unexpected errors.
+
     """
     await check_rate_limit(
         user_action_limiter,
@@ -668,7 +685,8 @@ async def request_password_reset(
         return MessageResponse(message="Password reset link sent.")
     except Exception as e:
         logger.warning(
-            f"Password reset request failed: {data.email}", extra={"error": str(e)}
+            f"Password reset request failed: {data.email}",
+            extra={"error": str(e)},
         )
         return MessageResponse(message="Password reset link sent.")
 
@@ -686,17 +704,18 @@ async def request_password_reset(
 )
 async def reset_password(
     data: PasswordResetConfirmRequest = Body(...),
-    session: AsyncSession = Depends(get_async_session),
+    session: AsyncSession = Depends(get_db),
     user_service: UserService = Depends(get_user_service),
     get_password_validation_error: Callable[[str], str | None] = Depends(
-        get_password_validation_error
+        get_password_validation_error,
     ),
 ) -> MessageResponse:
-    """
-    Completes the password reset flow using a valid reset token.
+    """Completes the password reset flow using a valid reset token.
+
     Raises:
         ValidationError: If password is invalid.
         Exception: For unexpected errors.
+
     """
     pw_error: str | None = get_password_validation_error(data.new_password)
     if pw_error is not None:
@@ -704,7 +723,7 @@ async def reset_password(
             400,
             pw_error,
             logger.warning,
-            cast(ExtraLogInfo, {"token_prefix": data.token[:8]}),
+            cast("ExtraLogInfo", {"token_prefix": data.token[:8]}),
         )
     logger.info(f"Password reset confirm attempt: {data.token[:8]}")
     try:
@@ -716,7 +735,7 @@ async def reset_password(
             400,
             str(e),
             logger.warning,
-            cast(ExtraLogInfo, {"token_prefix": data.token[:8], "error": str(e)}),
+            cast("ExtraLogInfo", {"token_prefix": data.token[:8], "error": str(e)}),
             e,
         )
     except Exception as e:
@@ -724,7 +743,7 @@ async def reset_password(
             400,
             "An error occurred while resetting the password. Please try again later.",
             logger.error,
-            cast(ExtraLogInfo, {"token_prefix": data.token[:8], "error": str(e)}),
+            cast("ExtraLogInfo", {"token_prefix": data.token[:8], "error": str(e)}),
             e,
         )
     raise AssertionError("Unreachable")
@@ -749,9 +768,7 @@ async def reset_password(
 async def get_me(
     current_user: User = Depends(get_current_user),
 ) -> UserProfile:
-    """
-    Returns the profile information of the currently authenticated user.
-    """
+    """Returns the profile information of the currently authenticated user."""
     logger.info("Get current user info", extra={"user_id": current_user.id})
     user_dict: dict[str, object] = {
         "id": current_user.id,

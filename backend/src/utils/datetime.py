@@ -2,8 +2,7 @@ from datetime import UTC, datetime
 
 
 def parse_flexible_datetime(dt: str) -> datetime | None:
-    """
-    Parse an ISO format datetime with flexible input formats.
+    """Parse an ISO format datetime with flexible input formats.
     Assumes UTC if no timezone specified.
 
     Args:
@@ -14,6 +13,7 @@ def parse_flexible_datetime(dt: str) -> datetime | None:
 
     Raises:
         ValueError: If the input string is not a valid datetime format.
+
     """
     if not dt:
         return None

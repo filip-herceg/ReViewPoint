@@ -18,7 +18,9 @@
     "frontend:format": "cd frontend && pnpm run format",
     "frontend:test": "cd frontend && pnpm run test:run"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "ws": "^8.18.3"
+  },
   "workspaces": [
     "frontend",
     "backend"

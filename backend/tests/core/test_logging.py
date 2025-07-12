@@ -12,18 +12,18 @@ from _pytest.capture import CaptureFixture
 
 from tests.test_templates import LogCaptureTestTemplate
 
-MODULE: Final[str] = "src.core.logging"
+MODULE: Final[str] = "src.core.app_logging"
 
 
 class TestLogging(LogCaptureTestTemplate):
     """Test class for logging configuration and functionality."""
 
     def reload_logging(self) -> ModuleType:
-        """
-        Reload the logging module to ensure clean state between tests.
+        """Reload the logging module to ensure clean state between tests.
 
         Returns:
             The reloaded logging module.
+
         """
         if MODULE in sys.modules:
             importlib.reload(sys.modules[MODULE])
@@ -86,6 +86,6 @@ class TestLogging(LogCaptureTestTemplate):
 
     def test_core_logging_import_smoke(self) -> None:
         """Smoke test to ensure the logging module can be imported and has expected attributes."""
-        import src.core.logging
+        import src.core.app_logging
 
-        assert hasattr(src.core.logging, "init_logging")
+        assert hasattr(src.core.app_logging, "init_logging")
