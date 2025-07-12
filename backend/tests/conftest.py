@@ -17,21 +17,67 @@ import pathlib
 import re
 import sys
 import uuid
-from collections.abc import AsyncGenerator, Callable, Generator, Iterator
+from collections.abc import (
+    AsyncGenerator,
+    Callable,
+    Generator,
+    Iterator,
+)
 from pathlib import Path
 from typing import cast
 
 import pytest
 import pytest_asyncio
-from _pytest.config import Config
-from _pytest.nodes import Item
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from loguru import logger
+from pytest import Config, Item
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 # Check if we're in fast test mode early
 IS_FAST_TEST_MODE = os.environ.get("FAST_TESTS") == "1"
+
+
+def _check_backend_connectivity() -> bool:
+    """Check if backend is available on localhost:8000.
+
+    Returns:
+        bool: True if backend is accessible, False otherwise.
+
+    """
+    try:
+        import asyncio
+
+        import httpx
+
+        async def _check() -> bool:
+            try:
+                timeout_config = httpx.Timeout(2.0)  # Short timeout
+                async with httpx.AsyncClient(timeout=timeout_config) as client:
+                    response = await client.get("http://localhost:8000/health")
+                    return response.status_code == 200
+            except Exception:
+                return False
+
+        # Run the async check
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # If loop is already running, we can't check connectivity
+                # in this context, so assume backend is not available
+                return False
+            return loop.run_until_complete(_check())
+        except RuntimeError:
+            # No event loop, create one
+            return asyncio.run(_check())
+
+    except ImportError:
+        # httpx not available
+        return False
+    except Exception:
+        # Any other error
+        return False
+
 
 # Set up the source path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
@@ -179,6 +225,10 @@ def pytest_configure(config: Config) -> None:
         "markers",
         "requires_timing_precision: marks tests that require precise timing and may be flaky on slow systems",
     )
+    config.addinivalue_line(
+        "markers",
+        "requires_live_backend: marks tests requiring live backend server",
+    )
     # Check if user specified log level via CLI and override environment accordingly
     log_level = None
 
@@ -194,7 +244,8 @@ def pytest_configure(config: Config) -> None:
 
 
 def pytest_runtest_setup(item: Item) -> None:
-    """Skip tests marked with skip_if_fast_tests or requires_real_db when in fast test mode."""
+    """Skip tests based on markers and environment conditions."""
+    # Skip fast test mode exclusions
     if IS_FAST_TEST_MODE and (
         item.get_closest_marker("skip_if_fast_tests")
         or item.get_closest_marker("requires_real_db")
@@ -207,6 +258,11 @@ def pytest_runtest_setup(item: Item) -> None:
         if marker and marker.args:
             reason = marker.args[0]
         pytest.skip(reason)
+
+    # Skip tests requiring live backend when backend is not available
+    if not IS_FAST_TEST_MODE and item.get_closest_marker("requires_live_backend"):
+        if not _check_backend_connectivity():
+            pytest.skip("Backend not available on localhost:8000")
 
 
 def pytest_sessionstart(session: pytest.Session) -> None:
@@ -714,8 +770,10 @@ def patch_loguru_remove(monkeypatch: pytest.MonkeyPatch) -> Generator[None, None
 @pytest.fixture(scope="function")
 def test_app(async_session: object) -> Generator[FastAPI, None, None]:
     """Provides a new FastAPI app instance for each test function.
-    Overrides get_async_session dependency to use the test async_session fixture.
+    Overrides get_async_session and get_db dependencies to use the test
+    async_session fixture.
     """
+    from src.api.deps import get_db
     from src.core.database import get_async_session
     from src.main import create_app
 
@@ -725,7 +783,11 @@ def test_app(async_session: object) -> Generator[FastAPI, None, None]:
     async def _override_get_async_session() -> AsyncGenerator[object, None]:
         yield async_session
 
+    async def _override_get_db() -> AsyncGenerator[object, None]:
+        yield async_session
+
     app.dependency_overrides[get_async_session] = _override_get_async_session
+    app.dependency_overrides[get_db] = _override_get_db
     return app
 
 
@@ -988,7 +1050,6 @@ def get_auth_header(
 
 if IS_FAST_TEST_MODE:
     # Import fast test dependencies
-    from fastapi.testclient import TestClient
     from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
     @pytest_asyncio.fixture(scope="session")
@@ -1024,7 +1085,8 @@ if IS_FAST_TEST_MODE:
 
     @pytest_asyncio.fixture
     async def create_test_user() -> Callable[
-        ["AsyncSession", dict[str, object]], object
+        ["AsyncSession", dict[str, object]],
+        object,
     ]:
         """Factory fixture to create test users in fast tests."""
 
@@ -1053,7 +1115,8 @@ if IS_FAST_TEST_MODE:
 
     @pytest_asyncio.fixture
     async def create_test_file() -> Callable[
-        ["AsyncSession", uuid.UUID, dict[str, object]], object
+        ["AsyncSession", uuid.UUID, dict[str, object]],
+        object,
     ]:
         """Factory fixture to create test files in fast tests."""
 

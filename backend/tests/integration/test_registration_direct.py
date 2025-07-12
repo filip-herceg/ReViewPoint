@@ -9,6 +9,8 @@ import sys
 import traceback
 from typing import TYPE_CHECKING, Any, Final
 
+import pytest
+
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
@@ -37,6 +39,9 @@ FAILURE_MESSAGE: Final[str] = "❌ Registration failed!"
 REQUEST_FAILED_MESSAGE: Final[str] = "❌ Request failed:"
 
 
+@pytest.mark.skip_if_fast_tests
+@pytest.mark.requires_live_backend
+@pytest.mark.asyncio
 async def test_registration() -> bool:
     """Test the registration endpoint directly.
 

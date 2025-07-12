@@ -7,6 +7,7 @@ import asyncio
 from typing import Final
 
 import httpx
+import pytest
 
 # HTTP status constants
 HTTP_STATUS_OK: Final[int] = 200
@@ -45,6 +46,9 @@ CONNECTION_ERROR_MSG: Final[str] = "❌ Cannot connect to backend - is it runnin
 UNEXPECTED_ERROR_MSG: Final[str] = "❌ Unexpected error:"
 
 
+@pytest.mark.skip_if_fast_tests
+@pytest.mark.requires_live_backend
+@pytest.mark.asyncio
 async def test_endpoint_connectivity() -> None:
     """Test if we can connect to the registration endpoint at all.
 

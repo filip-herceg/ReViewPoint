@@ -8,6 +8,7 @@ import time
 from typing import Any, Final
 
 import httpx
+import pytest
 
 # HTTP status constants
 HTTP_STATUS_OK: Final[int] = 200
@@ -28,6 +29,9 @@ TOKEN_MISSING: Final[str] = "✗ Missing"
 USER_ID_FALLBACK: Final[str] = "N/A"
 
 
+@pytest.mark.skip_if_fast_tests
+@pytest.mark.requires_live_backend
+@pytest.mark.asyncio
 async def test_registration_flow() -> None:
     """Test registration with unique email.
 

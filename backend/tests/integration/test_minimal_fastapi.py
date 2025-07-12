@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
+import pytest
 import uvicorn
 from fastapi import FastAPI
 
@@ -37,6 +38,8 @@ async def root() -> Mapping[str, str]:
 
 
 @app.get("/test")
+@pytest.mark.skip_if_fast_tests
+@pytest.mark.asyncio
 async def test() -> Mapping[str, str]:
     """Test endpoint to verify server functionality.
 

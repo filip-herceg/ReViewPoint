@@ -6,7 +6,7 @@ from typing import Any, Final
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from loguru import logger
 
@@ -137,16 +137,17 @@ def create_app() -> FastAPI:
         "/{full_path:path}",
         methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     )
-    async def catch_all(request: Request, full_path: str) -> dict[str, Any]:
+    async def catch_all(request: Request, full_path: str) -> Response:
         logger.critical(
             f"🚨 CATCH-ALL: {request.method} /{full_path} - NO ROUTE MATCHED!",
         )
-        return {
+        content = {
             "error": "Route not found",
             "method": request.method,
             "path": f"/{full_path}",
             "message": "This request was caught by the catch-all handler",
         }
+        return JSONResponse(status_code=404, content=content)
 
     import logging
 
