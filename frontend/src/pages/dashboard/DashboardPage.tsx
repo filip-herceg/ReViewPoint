@@ -59,11 +59,11 @@ const DashboardPage: React.FC = () => {
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Pending Reviews</CardTitle>
                             <div className="p-2 bg-warning/10 rounded-lg">
-                                <Clock className="h-4 w-4 text-warning-foreground" />
+                                <Clock className="h-4 w-4 text-warning" />
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-3xl font-bold text-warning-foreground">{stats.pendingReviews}</div>
+                            <div className="text-3xl font-bold text-warning">{stats.pendingReviews}</div>
                             <p className="text-xs text-muted-foreground flex items-center mt-1">
                                 <span className="text-success-foreground mr-1">-2</span> from yesterday
                             </p>
