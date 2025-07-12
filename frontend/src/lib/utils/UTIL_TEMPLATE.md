@@ -12,8 +12,8 @@ Consistent error handling for network, 4xx, 5xx, and unknown errors. Integrates 
 ## Usage Example
 
 ```ts
-import { handleApiError } from '@/lib/api/errorHandling';
-import { getErrorMessage } from '@/lib/utils/errorHandling';
+import { handleApiError } from "@/lib/api/errorHandling";
+import { getErrorMessage } from "@/lib/utils/errorHandling";
 
 try {
   // ...

@@ -5,35 +5,40 @@
 
 const rule = {
   meta: {
-    type: 'problem',
+    type: "problem",
     docs: {
-      description: 'Enforce use of standardized Button component instead of raw <button> elements',
-      category: 'Best Practices',
+      description:
+        "Enforce use of standardized Button component instead of raw <button> elements",
+      category: "Best Practices",
       recommended: true,
     },
     fixable: null,
     schema: [],
     messages: {
-      noRawButton: 'Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance.',
+      noRawButton:
+        "Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance.",
     },
   },
-  
+
   create(context) {
     return {
       JSXOpeningElement(node) {
-        if (node.name && node.name.name === 'button') {
+        if (node.name && node.name.name === "button") {
           // Allow <button> if it's inside a Button component implementation
           const sourceCode = context.getSourceCode();
           const filename = context.getFilename();
-          
+
           // Skip the rule for the Button component itself
-          if (filename.includes('/components/ui/button.tsx') || filename.includes('\\components\\ui\\button.tsx')) {
+          if (
+            filename.includes("/components/ui/button.tsx") ||
+            filename.includes("\\components\\ui\\button.tsx")
+          ) {
             return;
           }
-          
+
           context.report({
             node,
-            messageId: 'noRawButton',
+            messageId: "noRawButton",
           });
         }
       },

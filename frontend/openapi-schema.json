@@ -8,9 +8,7 @@
   "paths": {
     "/api/v1/auth/register": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Register a new user",
         "description": "Registers a new user account and returns a JWT access token.\n\n**Steps:**\n1. User submits registration data (email, password, name).\n2. System validates input and checks for duplicate email.\n3. On success, a new user is created and a JWT access token is returned.\n\n**Notes:**\n- Duplicate emails are not allowed.\n- Password must meet security requirements.\n- Rate limiting is applied to prevent abuse.",
         "operationId": "register_api_v1_auth_register_post",
@@ -78,9 +76,7 @@
     },
     "/api/v1/auth/login": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "User login",
         "description": "Authenticates a user and returns a JWT access token.\n\n**Steps:**\n1. User submits email and password.\n2. System validates credentials and rate limits attempts.\n3. On success, a JWT access token is returned.\n\n**Notes:**\n- Invalid credentials or too many attempts will result in errors.\n- Use the returned token for authenticated requests.",
         "operationId": "login_api_v1_auth_login_post",
@@ -138,9 +134,7 @@
     },
     "/api/v1/auth/logout": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Logout user",
         "description": "Logs out the current user and blacklists the access token.\n\n**Steps:**\n1. User sends a logout request with a valid access token.\n2. System blacklists the token and ends the session.\n\n**Notes:**\n- Blacklisted tokens cannot be reused.\n- Rate limiting is applied to prevent abuse.",
         "operationId": "logout_api_v1_auth_logout_post",
@@ -193,9 +187,7 @@
     },
     "/api/v1/auth/refresh-token": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Refresh JWT access token",
         "description": "Refreshes the JWT access token using a valid refresh token.\n\n**Steps:**\n1. User provides a valid refresh token.\n2. System validates the token and issues a new access token.\n\n**Notes:**\n- Expired or blacklisted tokens will be rejected.\n- Rate limiting is applied to prevent abuse.",
         "operationId": "refresh_token_api_v1_auth_refresh_token_post",
@@ -255,9 +247,7 @@
     },
     "/api/v1/auth/request-password-reset": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Request password reset",
         "description": "Initiates a password reset flow.\n\n**Steps:**\n1. User submits email via this endpoint.\n2. System sends a password reset link to the email if it exists.\n3. User clicks the link and is directed to the reset form.\n4. User completes the process via `/reset-password`.\n\n**Notes:**\n- For security, this endpoint always returns a success message, even if the email is not registered.\n- Rate limiting is applied to prevent abuse.",
         "operationId": "request_password_reset_api_v1_auth_request_password_reset_post",
@@ -315,9 +305,7 @@
     },
     "/api/v1/auth/reset-password": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Reset password",
         "description": "Completes the password reset flow using a valid reset token.\n\n**Steps:**\n1. User receives a reset link from `/request-password-reset`.\n2. User submits the token and new password to this endpoint.\n3. System validates the token and updates the password.\n\n**Notes:**\n- The token must be valid and not expired.\n- Rate limiting is applied to prevent abuse.",
         "operationId": "reset_password_api_v1_auth_reset_password_post",
@@ -375,9 +363,7 @@
     },
     "/api/v1/auth/me": {
       "get": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "summary": "Get current user profile",
         "description": "Returns the profile information of the currently authenticated user.\n\n**How it works:**\n- Requires a valid JWT Bearer token.\n- Returns user ID, email, name, bio, avatar, and timestamps.",
         "operationId": "get_me_api_v1_auth_me_get",
@@ -430,9 +416,7 @@
     },
     "/api/v1/health": {
       "get": {
-        "tags": [
-          "Health"
-        ],
+        "tags": ["Health"],
         "summary": "Health check",
         "description": "Returns the health status of the API and database connection, including uptime and dependency versions.\n\n    **Features:**\n    - Checks database connectivity\n    - Returns API/server uptime\n    - Returns dependency versions (Python, FastAPI, SQLAlchemy)\n    - Adds response time in headers\n\n    **Example:**\n    ```bash\n    curl https://api.reviewpoint.org/api/v1/health\n    ```",
         "operationId": "health_check_api_v1_health_get",
@@ -613,9 +597,7 @@
     },
     "/api/v1/metrics": {
       "get": {
-        "tags": [
-          "Health"
-        ],
+        "tags": ["Health"],
         "summary": "Prometheus metrics",
         "description": "Returns Prometheus-style metrics for uptime and database connection pool.\n\n    **Metrics Provided:**\n    - `app_uptime_seconds`: API uptime in seconds\n    - `db_pool_size`: Database connection pool size\n    - `db_pool_checkedin`: Idle connections\n    - `db_pool_checkedout`: Active connections\n    - `db_pool_overflow`: Overflow connections\n    - `db_pool_awaiting`: Awaiting connections\n\n    **Use case:**\n    - Monitoring with Prometheus or similar tools\n    - Health dashboards",
         "operationId": "metrics_api_v1_metrics_get",
@@ -1202,9 +1184,7 @@
     },
     "/api/v1/users/promote-admin": {
       "post": {
-        "tags": [
-          "Test Utilities"
-        ],
+        "tags": ["Test Utilities"],
         "summary": "Promote User To Admin Async",
         "description": "Promote a user to admin by email. Only allowed in test mode.\n\nArgs:\n    email (str): The email of the user to promote.\n    session (AsyncSession): The SQLAlchemy async session.\n\nReturns:\n    PromoteAdminResponse: A dict with a detail message.\n\nRaises:\n    HTTPException: If not in test mode (403) or user not found (404).",
         "operationId": "promote_user_to_admin_async_api_v1_users_promote_admin_post",
@@ -1244,10 +1224,7 @@
     },
     "/api/v1/uploads/root-test": {
       "get": {
-        "tags": [
-          "File",
-          "File"
-        ],
+        "tags": ["File", "File"],
         "summary": "Root level test endpoint",
         "description": "**Diagnostic Endpoint**\n\n    Checks if the uploads router is registered and responding. Useful for debugging router registration issues.\n\n    **Returns:**\n    - JSON status and router name.",
         "operationId": "uploads_main_root_test",
@@ -1279,10 +1256,7 @@
     },
     "/api/v1/uploads/test-alive": {
       "get": {
-        "tags": [
-          "File",
-          "File"
-        ],
+        "tags": ["File", "File"],
         "summary": "Test endpoint for router registration",
         "description": "**Health Check**\n\n    Confirms the uploads router is active and properly registered. Returns a simple status JSON object.\n\n    **Use case:**\n    - Health checks\n    - Integration tests",
         "operationId": "_test_alive_response_api_v1_uploads_test_alive_get",
@@ -1313,10 +1287,7 @@
     },
     "/api/v1/uploads/export-alive": {
       "get": {
-        "tags": [
-          "File",
-          "File"
-        ],
+        "tags": ["File", "File"],
         "summary": "Test endpoint for export router",
         "description": "**Export Router Health Check**\n\n    Returns 200 if the uploads export router is active. Used for integration and deployment checks.",
         "operationId": "_export_alive_response_api_v1_uploads_export_alive_get",
@@ -1347,10 +1318,7 @@
     },
     "/api/v1/uploads/export-test": {
       "get": {
-        "tags": [
-          "File",
-          "File"
-        ],
+        "tags": ["File", "File"],
         "summary": "Test endpoint for export router",
         "description": "**Export Router Test**\n\n    Returns 200 if the uploads export router is active. Requires authentication.\n\n    **Returns:**\n    - JSON status\n    - Current user ID (if authenticated)",
         "operationId": "export_test_api_v1_uploads_export_test_get",
@@ -1414,9 +1382,7 @@
     },
     "/api/v1/uploads/export": {
       "get": {
-        "tags": [
-          "File"
-        ],
+        "tags": ["File"],
         "summary": "Export files as CSV",
         "description": "**Export Operation**\n\n    Exports the list of uploaded files as a CSV file.\n\n    **Steps:**\n    1. Authenticated user requests export.\n    2. Server filters and sorts files as requested.\n    3. Returns a CSV with filename and URL columns.\n\n    **Notes:**\n    - Supports filtering by creation date and filename.\n    - Rate limiting and authentication required.",
         "operationId": "export_files_csv_api_v1_uploads_export_get",
@@ -1449,10 +1415,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "enum": [
-                "created_at",
-                "filename"
-              ],
+              "enum": ["created_at", "filename"],
               "type": "string",
               "description": "Sort by field: created_at, filename",
               "default": "created_at",
@@ -1465,10 +1428,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "enum": [
-                "desc",
-                "asc"
-              ],
+              "enum": ["desc", "asc"],
               "type": "string",
               "description": "Sort order: asc or desc",
               "default": "desc",
@@ -1702,9 +1662,7 @@
     },
     "/api/v1/uploads": {
       "post": {
-        "tags": [
-          "File"
-        ],
+        "tags": ["File"],
         "summary": "Upload a file",
         "description": "**File Upload**\n\n    Uploads a file and returns its filename and URL.\n\n    **How it works:**\n    1. User sends a file using multipart/form-data.\n    2. The server validates the file type and size.\n    3. If valid, the file is saved and a URL is returned.\n\n    **Notes:**\n    - Only certain file types may be allowed (e.g., PDF, images).\n    - File size limits and rate limiting may apply.\n    - Use the returned URL to access or download the file.",
         "operationId": "upload_file_api_v1_uploads_post",
@@ -1889,9 +1847,7 @@
         ]
       },
       "get": {
-        "tags": [
-          "File"
-        ],
+        "tags": ["File"],
         "summary": "List all uploaded files",
         "description": "**File Listing**\n\n    Returns a paginated list of all uploaded files for the current user.\n\n    **How it works:**\n    1. The server retrieves files uploaded by the current user.\n    2. Files can be filtered and sorted.\n    3. Returns a list of files with pagination information.\n\n    **Notes:**\n    - Supports filtering by filename and creation date.\n    - Supports sorting by creation date or filename.\n    - Supports field selection to limit the returned data.",
         "operationId": "list_files_api_v1_uploads_get",
@@ -1942,10 +1898,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "enum": [
-                "created_at",
-                "filename"
-              ],
+              "enum": ["created_at", "filename"],
               "type": "string",
               "description": "Field to sort by",
               "default": "created_at",
@@ -1958,10 +1911,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "enum": [
-                "desc",
-                "asc"
-              ],
+              "enum": ["desc", "asc"],
               "type": "string",
               "description": "Sort order (asc or desc)",
               "default": "desc",
@@ -2098,9 +2048,7 @@
     },
     "/api/v1/uploads/{filename}": {
       "get": {
-        "tags": [
-          "File"
-        ],
+        "tags": ["File"],
         "summary": "Get uploaded file info",
         "description": "Retrieves metadata for an uploaded file by filename.",
         "operationId": "get_file_api_v1_uploads__filename__get",
@@ -2226,9 +2174,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "File"
-        ],
+        "tags": ["File"],
         "summary": "Delete uploaded file",
         "description": "Deletes an uploaded file by filename.",
         "operationId": "delete_file_by_filename_api_v1_uploads__filename__delete",
@@ -2381,10 +2327,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "access_token",
-          "refresh_token"
-        ],
+        "required": ["access_token", "refresh_token"],
         "title": "AuthResponse"
       },
       "Body_promote_user_to_admin_async_api_v1_users_promote_admin_post": {
@@ -2395,9 +2338,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "email"
-        ],
+        "required": ["email"],
         "title": "Body_promote_user_to_admin_async_api_v1_users_promote_admin_post"
       },
       "Body_upload_file_api_v1_uploads_post": {
@@ -2410,9 +2351,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "file"
-        ],
+        "required": ["file"],
         "title": "Body_upload_file_api_v1_uploads_post"
       },
       "DBStatusDict": {
@@ -2448,9 +2387,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "status"
-        ],
+        "required": ["status"],
         "title": "ExportAliveResponse"
       },
       "ExportSimpleResponse": {
@@ -2462,9 +2399,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "users"
-        ],
+        "required": ["users"],
         "title": "ExportSimpleResponse"
       },
       "FileDict": {
@@ -2496,10 +2431,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "files",
-          "total"
-        ],
+        "required": ["files", "total"],
         "title": "FileListResponse",
         "examples": [
           {
@@ -2532,10 +2464,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "filename",
-          "url"
-        ],
+        "required": ["filename", "url"],
         "title": "FileUploadResponse",
         "example": {
           "filename": "document.pdf",
@@ -2559,10 +2488,7 @@
         "properties": {
           "status": {
             "type": "string",
-            "enum": [
-              "ok",
-              "error"
-            ],
+            "enum": ["ok", "error"],
             "title": "Status"
           },
           "db": {
@@ -2602,9 +2528,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "message"
-        ],
+        "required": ["message"],
         "title": "MessageResponse"
       },
       "PasswordResetConfirmRequest": {
@@ -2621,10 +2545,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "token",
-          "new_password"
-        ],
+        "required": ["token", "new_password"],
         "title": "PasswordResetConfirmRequest"
       },
       "PasswordResetRequest": {
@@ -2636,9 +2557,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "email"
-        ],
+        "required": ["email"],
         "title": "PasswordResetRequest"
       },
       "PoolStatsDict": {
@@ -2710,9 +2629,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "detail"
-        ],
+        "required": ["detail"],
         "title": "PromoteAdminResponse"
       },
       "UserCreateRequest": {
@@ -2731,11 +2648,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "email",
-          "password",
-          "name"
-        ],
+        "required": ["email", "password", "name"],
         "title": "UserCreateRequest",
         "examples": [
           {
@@ -2760,10 +2673,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "users",
-          "total"
-        ],
+        "required": ["users", "total"],
         "title": "UserListResponse"
       },
       "UserLoginRequest": {
@@ -2779,10 +2689,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
+        "required": ["email", "password"],
         "title": "UserLoginRequest"
       },
       "UserProfile": {
@@ -2853,10 +2760,7 @@
         },
         "additionalProperties": false,
         "type": "object",
-        "required": [
-          "id",
-          "email"
-        ],
+        "required": ["id", "email"],
         "title": "UserProfile"
       },
       "UserRegisterRequest": {
@@ -2886,10 +2790,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
+        "required": ["email", "password"],
         "title": "UserRegisterRequest"
       },
       "ValidationError": {
@@ -2918,11 +2819,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "loc",
-          "msg",
-          "type"
-        ],
+        "required": ["loc", "msg", "type"],
         "title": "ValidationError"
       },
       "VersionsDict": {
@@ -2955,11 +2852,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "python",
-          "fastapi",
-          "sqlalchemy"
-        ],
+        "required": ["python", "fastapi", "sqlalchemy"],
         "title": "VersionsDict"
       }
     },

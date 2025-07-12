@@ -9,14 +9,20 @@ export interface Citation {
   url?: string;
   page?: number;
   pages?: string; // Add pages property
-  volume?: string; // Add volume property  
+  volume?: string; // Add volume property
   issue?: string; // Add issue property
   paragraph?: number;
   line?: number;
-  citationStyle: 'APA' | 'MLA' | 'IEEE' | 'Chicago';
-  severity: 'info' | 'warning' | 'error';
-  type: 'book' | 'journal' | 'website' | 'conference' | 'thesis' | 'other';
-  citationType?: 'book' | 'journal' | 'website' | 'conference' | 'thesis' | 'other'; // Add citationType for backward compatibility
+  citationStyle: "APA" | "MLA" | "IEEE" | "Chicago";
+  severity: "info" | "warning" | "error";
+  type: "book" | "journal" | "website" | "conference" | "thesis" | "other";
+  citationType?:
+    | "book"
+    | "journal"
+    | "website"
+    | "conference"
+    | "thesis"
+    | "other"; // Add citationType for backward compatibility
   citationInstances?: number; // How many times this source is cited
   abstract?: string; // Add abstract property
   tags?: string[]; // Add tags property
@@ -37,8 +43,8 @@ export interface CitedByDocument {
 
 export interface CitationsFilters {
   search: string;
-  sortBy: 'date' | 'title' | 'year' | 'relevance';
-  sortOrder: 'asc' | 'desc';
+  sortBy: "date" | "title" | "year" | "relevance";
+  sortOrder: "asc" | "desc";
 }
 
 export interface CitationsData {

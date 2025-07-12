@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { useWebSocket } from '../../lib/websocket/hooks';
-import { getWebSocketConfig } from '../../lib/websocket/config';
-import { useWebSocketStore } from '../../lib/store/webSocketStore';
-import { webSocketService } from '../../lib/websocket/webSocketService';
+import React, { useState, useEffect } from "react";
+import { useWebSocket } from "../../lib/websocket/hooks";
+import { getWebSocketConfig } from "../../lib/websocket/config";
+import { useWebSocketStore } from "../../lib/store/webSocketStore";
+import { webSocketService } from "../../lib/websocket/webSocketService";
 
 interface ConnectionLog {
   id: string;
   timestamp: Date;
-  type: 'connect' | 'disconnect' | 'message' | 'error' | 'heartbeat';
+  type: "connect" | "disconnect" | "message" | "error" | "heartbeat";
   data: any;
 }
 
@@ -16,24 +16,26 @@ export const WebSocketDebug: React.FC = () => {
   const store = useWebSocketStore();
   const [logs, setLogs] = useState<ConnectionLog[]>([]);
   const [showLogs, setShowLogs] = useState(false);
-  const [testMessage, setTestMessage] = useState('{"type": "ping", "data": "test"}');
+  const [testMessage, setTestMessage] = useState(
+    '{"type": "ping", "data": "test"}',
+  );
   const [lastMessage, setLastMessage] = useState<any>(null);
   const config = getWebSocketConfig();
 
   // Log connection events
   useEffect(() => {
-    const addLog = (type: ConnectionLog['type'], data: any) => {
+    const addLog = (type: ConnectionLog["type"], data: any) => {
       const log: ConnectionLog = {
         id: Date.now().toString(),
         timestamp: new Date(),
         type,
-        data
+        data,
       };
-      setLogs(prev => [log, ...prev.slice(0, 49)]); // Keep last 50 logs
+      setLogs((prev) => [log, ...prev.slice(0, 49)]); // Keep last 50 logs
     };
 
     // Log connection state changes
-    addLog('connect', { state: connectionState });
+    addLog("connect", { state: connectionState });
 
     // Listen to WebSocket events for logging
     const unsubscribes: (() => void)[] = [];
@@ -42,26 +44,26 @@ export const WebSocketDebug: React.FC = () => {
       // Listen to all events for debugging
       const messageHandler = (event: any) => {
         setLastMessage(event);
-        addLog('message', event);
+        addLog("message", event);
       };
-      
+
       const errorHandler = (error: any) => {
-        addLog('error', error);
+        addLog("error", error);
       };
 
       unsubscribes.push(
-        webSocketService.on('connection.established', messageHandler),
-        webSocketService.on('upload.progress', messageHandler),
-        webSocketService.on('upload.completed', messageHandler),
-        webSocketService.on('upload.error', messageHandler),
-        webSocketService.on('system.notification', messageHandler),
-        webSocketService.on('pong', messageHandler),
-        webSocketService.on('error', errorHandler)
+        webSocketService.on("connection.established", messageHandler),
+        webSocketService.on("upload.progress", messageHandler),
+        webSocketService.on("upload.completed", messageHandler),
+        webSocketService.on("upload.error", messageHandler),
+        webSocketService.on("system.notification", messageHandler),
+        webSocketService.on("pong", messageHandler),
+        webSocketService.on("error", errorHandler),
       );
     }
 
     return () => {
-      unsubscribes.forEach(fn => fn());
+      unsubscribes.forEach((fn) => fn());
     };
   }, [connectionState, store.isConnected]);
 
@@ -71,65 +73,67 @@ export const WebSocketDebug: React.FC = () => {
       // Use webSocketService.send directly since it's not exposed in hooks
       if (store.isConnected) {
         // For now, just log the attempt since we don't have direct send access
-        console.log('Would send message:', message);
-        addLog('message', { type: 'outgoing', data: message });
+        console.log("Would send message:", message);
+        addLog("message", { type: "outgoing", data: message });
       }
     } catch (e) {
-      console.error('Invalid JSON:', e);
+      console.error("Invalid JSON:", e);
     }
   };
 
-  const addLog = (type: ConnectionLog['type'], data: any) => {
+  const addLog = (type: ConnectionLog["type"], data: any) => {
     const log: ConnectionLog = {
       id: Date.now().toString(),
       timestamp: new Date(),
       type,
-      data
+      data,
     };
-    setLogs(prev => [log, ...prev.slice(0, 49)]); // Keep last 50 logs
+    setLogs((prev) => [log, ...prev.slice(0, 49)]); // Keep last 50 logs
   };
 
   const getStatusColor = (state: string) => {
     switch (state) {
-      case 'connected':
-        return 'text-green-600 bg-green-50 border-green-200';
-      case 'connecting':
-        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case 'disconnected':
-        return 'text-red-600 bg-red-50 border-red-200';
-      case 'reconnecting':
-        return 'text-blue-600 bg-blue-50 border-blue-200';
+      case "connected":
+        return "text-green-600 bg-green-50 border-green-200";
+      case "connecting":
+        return "text-yellow-600 bg-yellow-50 border-yellow-200";
+      case "disconnected":
+        return "text-red-600 bg-red-50 border-red-200";
+      case "reconnecting":
+        return "text-blue-600 bg-blue-50 border-blue-200";
       default:
-        return 'text-muted-foreground bg-muted border-border';
+        return "text-muted-foreground bg-muted border-border";
     }
   };
 
-  const getLogTypeColor = (type: ConnectionLog['type']) => {
+  const getLogTypeColor = (type: ConnectionLog["type"]) => {
     switch (type) {
-      case 'connect':
-        return 'text-green-600 bg-green-50';
-      case 'disconnect':
-        return 'text-red-600 bg-red-50';
-      case 'message':
-        return 'text-blue-600 bg-blue-50';
-      case 'error':
-        return 'text-red-600 bg-red-100';
-      case 'heartbeat':
-        return 'text-purple-600 bg-purple-50';
+      case "connect":
+        return "text-green-600 bg-green-50";
+      case "disconnect":
+        return "text-red-600 bg-red-50";
+      case "message":
+        return "text-blue-600 bg-blue-50";
+      case "error":
+        return "text-red-600 bg-red-100";
+      case "heartbeat":
+        return "text-purple-600 bg-purple-50";
       default:
-        return 'text-muted-foreground bg-muted';
+        return "text-muted-foreground bg-muted";
     }
   };
 
   return (
     <div className="fixed bottom-4 right-4 w-96 bg-background border border-border rounded-lg shadow-lg p-4 z-50">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-foreground">WebSocket Debug</h3>
+        <h3 className="text-lg font-semibold text-foreground">
+          WebSocket Debug
+        </h3>
         <button
           onClick={() => setShowLogs(!showLogs)}
           className="text-sm px-2 py-1 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 transition-colors"
         >
-          {showLogs ? 'Hide Logs' : 'Show Logs'}
+          {showLogs ? "Hide Logs" : "Show Logs"}
         </button>
       </div>
 
@@ -137,11 +141,13 @@ export const WebSocketDebug: React.FC = () => {
       <div className="mb-4">
         <div className="flex items-center gap-2 mb-2">
           <span className="text-sm font-medium text-foreground">Status:</span>
-          <span className={`px-2 py-1 rounded text-xs font-medium border ${getStatusColor(connectionState)}`}>
+          <span
+            className={`px-2 py-1 rounded text-xs font-medium border ${getStatusColor(connectionState)}`}
+          >
             {connectionState.toUpperCase()}
           </span>
         </div>
-        
+
         {lastError && (
           <div className="text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded p-2 mb-2">
             <strong>Error:</strong> {lastError}
@@ -152,10 +158,19 @@ export const WebSocketDebug: React.FC = () => {
       {/* Configuration Info */}
       <div className="mb-4 text-xs">
         <div className="bg-muted rounded p-2 space-y-1">
-          <div><strong>URL:</strong> <code className="text-muted-foreground">{config.url}</code></div>
-          <div><strong>Max Reconnects:</strong> {config.maxReconnectAttempts}</div>
-          <div><strong>Heartbeat:</strong> {config.heartbeatInterval}ms</div>
-          <div><strong>Rate Limit:</strong> {config.rateLimitMaxMessages}/window</div>
+          <div>
+            <strong>URL:</strong>{" "}
+            <code className="text-muted-foreground">{config.url}</code>
+          </div>
+          <div>
+            <strong>Max Reconnects:</strong> {config.maxReconnectAttempts}
+          </div>
+          <div>
+            <strong>Heartbeat:</strong> {config.heartbeatInterval}ms
+          </div>
+          <div>
+            <strong>Rate Limit:</strong> {config.rateLimitMaxMessages}/window
+          </div>
         </div>
       </div>
 
@@ -163,14 +178,16 @@ export const WebSocketDebug: React.FC = () => {
       <div className="flex gap-2 mb-4">
         <button
           onClick={connect}
-          disabled={connectionState === 'connected' || connectionState === 'connecting'}
+          disabled={
+            connectionState === "connected" || connectionState === "connecting"
+          }
           className="flex-1 px-3 py-1 text-sm bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           Connect
         </button>
         <button
           onClick={disconnect}
-          disabled={connectionState === 'disconnected'}
+          disabled={connectionState === "disconnected"}
           className="flex-1 px-3 py-1 text-sm bg-destructive text-destructive-foreground rounded hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           Disconnect
@@ -179,7 +196,9 @@ export const WebSocketDebug: React.FC = () => {
 
       {/* Test Message */}
       <div className="mb-4">
-        <label className="block text-xs font-medium text-foreground mb-1">Test Message:</label>
+        <label className="block text-xs font-medium text-foreground mb-1">
+          Test Message:
+        </label>
         <div className="flex gap-2">
           <input
             type="text"
@@ -190,7 +209,7 @@ export const WebSocketDebug: React.FC = () => {
           />
           <button
             onClick={handleSendTestMessage}
-            disabled={connectionState !== 'connected'}
+            disabled={connectionState !== "connected"}
             className="px-3 py-1 text-xs bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Send
@@ -201,7 +220,9 @@ export const WebSocketDebug: React.FC = () => {
       {/* Last Message */}
       {lastMessage && (
         <div className="mb-4">
-          <label className="block text-xs font-medium text-foreground mb-1">Last Message:</label>
+          <label className="block text-xs font-medium text-foreground mb-1">
+            Last Message:
+          </label>
           <div className="bg-muted rounded p-2 text-xs">
             <pre className="text-muted-foreground whitespace-pre-wrap break-all">
               {JSON.stringify(lastMessage, null, 2)}
@@ -214,7 +235,9 @@ export const WebSocketDebug: React.FC = () => {
       {showLogs && (
         <div className="border-t border-border pt-4">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-medium text-foreground">Connection Logs</h4>
+            <h4 className="text-sm font-medium text-foreground">
+              Connection Logs
+            </h4>
             <button
               onClick={() => setLogs([])}
               className="text-xs px-2 py-1 text-muted-foreground hover:text-foreground transition-colors"
@@ -224,12 +247,19 @@ export const WebSocketDebug: React.FC = () => {
           </div>
           <div className="max-h-48 overflow-y-auto space-y-1">
             {logs.length === 0 ? (
-              <div className="text-xs text-muted-foreground italic">No logs yet...</div>
+              <div className="text-xs text-muted-foreground italic">
+                No logs yet...
+              </div>
             ) : (
               logs.map((log) => (
-                <div key={log.id} className="text-xs border border-border rounded p-2">
+                <div
+                  key={log.id}
+                  className="text-xs border border-border rounded p-2"
+                >
                   <div className="flex items-center gap-2 mb-1">
-                    <span className={`px-1 py-0.5 rounded text-xs font-medium ${getLogTypeColor(log.type)}`}>
+                    <span
+                      className={`px-1 py-0.5 rounded text-xs font-medium ${getLogTypeColor(log.type)}`}
+                    >
                       {log.type}
                     </span>
                     <span className="text-muted-foreground">
@@ -237,7 +267,9 @@ export const WebSocketDebug: React.FC = () => {
                     </span>
                   </div>
                   <pre className="text-muted-foreground whitespace-pre-wrap break-all">
-                    {typeof log.data === 'object' ? JSON.stringify(log.data, null, 2) : String(log.data)}
+                    {typeof log.data === "object"
+                      ? JSON.stringify(log.data, null, 2)
+                      : String(log.data)}
                   </pre>
                 </div>
               ))

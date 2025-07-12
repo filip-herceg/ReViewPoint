@@ -7,7 +7,7 @@ This directory contains the frontend API modules that mirror the backend API str
 ```
 frontend/src/lib/api/
 ├── auth.ts              # Maps to backend/src/api/v1/auth.py
-├── health.ts            # Maps to backend/src/api/v1/health.py  
+├── health.ts            # Maps to backend/src/api/v1/health.py
 ├── uploads.ts           # Maps to backend/src/api/v1/uploads.py
 ├── users/               # Maps to backend/src/api/v1/users/
 │   ├── core.ts          # Maps to backend/src/api/v1/users/core.py
@@ -21,7 +21,7 @@ frontend/src/lib/api/
 └── types/               # Type definitions
     ├── auth.ts          # Authentication types
     ├── common.ts        # Shared API types (ApiResponse, etc.)
-    ├── upload.ts        # Upload/file types  
+    ├── upload.ts        # Upload/file types
     ├── user.ts          # User types
     └── index.ts         # Central type exports
 ```
@@ -46,16 +46,16 @@ frontend/src/lib/api/
 ### New Structured Approach (Recommended)
 
 ```typescript
-import { authApi, uploadsApi, usersApi, healthApi } from '@/lib/api';
+import { authApi, uploadsApi, usersApi, healthApi } from "@/lib/api";
 // or
-import { structuredApi } from '@/lib/api';
+import { structuredApi } from "@/lib/api";
 const { auth, uploads, users, health } = structuredApi;
 ```
 
 ### Legacy Approach (Backwards Compatible)
 
 ```typescript
-import api from '@/lib/api';
+import api from "@/lib/api";
 // All methods available at top level like before
 ```
 

@@ -52,14 +52,14 @@ If you need to test error monitoring functionality:
 
 ```typescript
 // ✅ DO: Create isolated unit tests
-describe('Error Service - Unit Tests', () => {
-  it('should format error messages', () => {
+describe("Error Service - Unit Tests", () => {
+  it("should format error messages", () => {
     // Test pure functions only
   });
 });
 
 // ❌ DON'T: Test full error monitoring system
-describe('Error Monitoring Integration', () => {
+describe("Error Monitoring Integration", () => {
   // This will likely cause infinite loops
 });
 ```
@@ -69,7 +69,7 @@ describe('Error Monitoring Integration', () => {
 If you need to work on error monitoring:
 
 - Focus on testing individual functions
-- Use explicit timeouts for ALL async operations  
+- Use explicit timeouts for ALL async operations
 - Mock ALL external dependencies
 - Test in complete isolation
 

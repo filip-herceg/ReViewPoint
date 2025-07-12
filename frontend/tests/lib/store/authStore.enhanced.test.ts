@@ -1,6 +1,6 @@
 /**
  * Enhanced Auth Store Tests
- * 
+ *
  * Tests for the enhanced auth store functionality including:
  * - Token management
  * - Refresh state tracking
@@ -8,295 +8,309 @@
  * - Error handling
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { useAuthStore, getToken, getRefreshToken } from '@/lib/store/authStore';
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { useAuthStore, getToken, getRefreshToken } from "@/lib/store/authStore";
 import {
-    createUser,
-    createValidAuthTokens,
-    createExpiredAuthTokens,
-} from '../../test-templates';
-import { testLogger } from '../../test-utils';
+  createUser,
+  createValidAuthTokens,
+  createExpiredAuthTokens,
+} from "../../test-templates";
+import { testLogger } from "../../test-utils";
 
 // Mock logger to prevent console output during tests
-vi.mock('@/logger', () => ({
-    default: {
-        info: vi.fn(),
-        debug: vi.fn(),
-        warn: vi.fn(),
-        error: vi.fn(),
-    },
+vi.mock("@/logger", () => ({
+  default: {
+    info: vi.fn(),
+    debug: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  },
 }));
 
-describe('Enhanced Auth Store', () => {
-    beforeEach(() => {
-        testLogger.info('Setting up auth store test');
+describe("Enhanced Auth Store", () => {
+  beforeEach(() => {
+    testLogger.info("Setting up auth store test");
 
-        // Reset store state
-        useAuthStore.setState({
-            user: null,
-            tokens: null,
-            isAuthenticated: false,
-            isRefreshing: false
-        });
-
-        vi.clearAllMocks();
+    // Reset store state
+    useAuthStore.setState({
+      user: null,
+      tokens: null,
+      isAuthenticated: false,
+      isRefreshing: false,
     });
 
-    describe('Login Functionality', () => {
-        it('should login user with valid data', () => {
-            testLogger.info('Testing user login with valid data');
+    vi.clearAllMocks();
+  });
 
-            const user = createUser();
-            const tokens = createValidAuthTokens();
+  describe("Login Functionality", () => {
+    it("should login user with valid data", () => {
+      testLogger.info("Testing user login with valid data");
 
-            const authStore = useAuthStore.getState();
-            authStore.login(user, tokens);
+      const user = createUser();
+      const tokens = createValidAuthTokens();
 
-            const state = useAuthStore.getState();
-            expect(state.user).toEqual(user);
-            expect(state.tokens).toEqual(tokens);
-            expect(state.isAuthenticated).toBe(true);
-            expect(state.isRefreshing).toBe(false);
+      const authStore = useAuthStore.getState();
+      authStore.login(user, tokens);
 
-            testLogger.debug('User login test passed', { userId: user.id, email: user.email });
-        });
+      const state = useAuthStore.getState();
+      expect(state.user).toEqual(user);
+      expect(state.tokens).toEqual(tokens);
+      expect(state.isAuthenticated).toBe(true);
+      expect(state.isRefreshing).toBe(false);
 
-        it('should throw error for invalid user data', () => {
-            testLogger.info('Testing login with invalid user data');
-
-            const tokens = createValidAuthTokens();
-            const authStore = useAuthStore.getState();
-
-            expect(() => authStore.login(null as any, tokens)).toThrow('User and tokens required for login');
-
-            // Store should remain unchanged
-            const state = useAuthStore.getState();
-            expect(state.user).toBeNull();
-            expect(state.tokens).toBeNull();
-            expect(state.isAuthenticated).toBe(false);
-
-            testLogger.debug('Invalid user login test passed');
-        });
-
-        it('should throw error for invalid tokens', () => {
-            testLogger.info('Testing login with invalid tokens');
-
-            const user = createUser();
-            const authStore = useAuthStore.getState();
-
-            expect(() => authStore.login(user, null as any)).toThrow('User and tokens required for login');
-
-            // Store should remain unchanged
-            const state = useAuthStore.getState();
-            expect(state.user).toBeNull();
-            expect(state.tokens).toBeNull();
-            expect(state.isAuthenticated).toBe(false);
-
-            testLogger.debug('Invalid tokens login test passed');
-        });
+      testLogger.debug("User login test passed", {
+        userId: user.id,
+        email: user.email,
+      });
     });
 
-    describe('Logout Functionality', () => {
-        it('should logout user and clear all data', () => {
-            testLogger.info('Testing user logout');
+    it("should throw error for invalid user data", () => {
+      testLogger.info("Testing login with invalid user data");
 
-            const user = createUser();
-            const tokens = createValidAuthTokens();
+      const tokens = createValidAuthTokens();
+      const authStore = useAuthStore.getState();
 
-            // First login
-            const authStore = useAuthStore.getState();
-            authStore.login(user, tokens);
+      expect(() => authStore.login(null as any, tokens)).toThrow(
+        "User and tokens required for login",
+      );
 
-            // Verify logged in
-            expect(useAuthStore.getState().isAuthenticated).toBe(true);
+      // Store should remain unchanged
+      const state = useAuthStore.getState();
+      expect(state.user).toBeNull();
+      expect(state.tokens).toBeNull();
+      expect(state.isAuthenticated).toBe(false);
 
-            // Now logout
-            authStore.logout();
-
-            const state = useAuthStore.getState();
-            expect(state.user).toBeNull();
-            expect(state.tokens).toBeNull();
-            expect(state.isAuthenticated).toBe(false);
-            expect(state.isRefreshing).toBe(false);
-
-            testLogger.debug('User logout test passed');
-        });
+      testLogger.debug("Invalid user login test passed");
     });
 
-    describe('Token Management', () => {
-        it('should set tokens with valid data', () => {
-            testLogger.info('Testing token setting with valid data');
+    it("should throw error for invalid tokens", () => {
+      testLogger.info("Testing login with invalid tokens");
 
-            const tokens = createValidAuthTokens();
-            const authStore = useAuthStore.getState();
+      const user = createUser();
+      const authStore = useAuthStore.getState();
 
-            authStore.setTokens(tokens);
+      expect(() => authStore.login(user, null as any)).toThrow(
+        "User and tokens required for login",
+      );
 
-            const state = useAuthStore.getState();
-            expect(state.tokens).toEqual(tokens);
-            expect(state.isAuthenticated).toBe(true);
+      // Store should remain unchanged
+      const state = useAuthStore.getState();
+      expect(state.user).toBeNull();
+      expect(state.tokens).toBeNull();
+      expect(state.isAuthenticated).toBe(false);
 
-            testLogger.debug('Set tokens test passed');
-        });
+      testLogger.debug("Invalid tokens login test passed");
+    });
+  });
 
-        it('should throw error for invalid tokens', () => {
-            testLogger.info('Testing token setting with invalid data');
+  describe("Logout Functionality", () => {
+    it("should logout user and clear all data", () => {
+      testLogger.info("Testing user logout");
 
-            const authStore = useAuthStore.getState();
+      const user = createUser();
+      const tokens = createValidAuthTokens();
 
-            expect(() => authStore.setTokens(null as any)).toThrow('Invalid tokens provided');
-            expect(() => authStore.setTokens({ access_token: '', refresh_token: 'test', token_type: 'bearer' }))
-                .toThrow('Invalid tokens provided');
+      // First login
+      const authStore = useAuthStore.getState();
+      authStore.login(user, tokens);
 
-            // Store should remain unchanged
-            const state = useAuthStore.getState();
-            expect(state.tokens).toBeNull();
-            expect(state.isAuthenticated).toBe(false);
+      // Verify logged in
+      expect(useAuthStore.getState().isAuthenticated).toBe(true);
 
-            testLogger.debug('Invalid tokens setting test passed');
-        });
+      // Now logout
+      authStore.logout();
 
-        it('should clear tokens', () => {
-            testLogger.info('Testing token clearing');
+      const state = useAuthStore.getState();
+      expect(state.user).toBeNull();
+      expect(state.tokens).toBeNull();
+      expect(state.isAuthenticated).toBe(false);
+      expect(state.isRefreshing).toBe(false);
 
-            const tokens = createValidAuthTokens();
-            const authStore = useAuthStore.getState();
+      testLogger.debug("User logout test passed");
+    });
+  });
 
-            // First set tokens
-            authStore.setTokens(tokens);
-            expect(useAuthStore.getState().isAuthenticated).toBe(true);
+  describe("Token Management", () => {
+    it("should set tokens with valid data", () => {
+      testLogger.info("Testing token setting with valid data");
 
-            // Now clear
-            authStore.clearTokens();
+      const tokens = createValidAuthTokens();
+      const authStore = useAuthStore.getState();
 
-            const state = useAuthStore.getState();
-            expect(state.tokens).toBeNull();
-            expect(state.isAuthenticated).toBe(false);
+      authStore.setTokens(tokens);
 
-            testLogger.debug('Clear tokens test passed');
-        });
+      const state = useAuthStore.getState();
+      expect(state.tokens).toEqual(tokens);
+      expect(state.isAuthenticated).toBe(true);
+
+      testLogger.debug("Set tokens test passed");
     });
 
-    describe('Refresh State Management', () => {
-        it('should set refreshing state', () => {
-            testLogger.info('Testing refresh state setting');
+    it("should throw error for invalid tokens", () => {
+      testLogger.info("Testing token setting with invalid data");
 
-            const authStore = useAuthStore.getState();
+      const authStore = useAuthStore.getState();
 
-            authStore.setRefreshing(true);
-            expect(useAuthStore.getState().isRefreshing).toBe(true);
+      expect(() => authStore.setTokens(null as any)).toThrow(
+        "Invalid tokens provided",
+      );
+      expect(() =>
+        authStore.setTokens({
+          access_token: "",
+          refresh_token: "test",
+          token_type: "bearer",
+        }),
+      ).toThrow("Invalid tokens provided");
 
-            authStore.setRefreshing(false);
-            expect(useAuthStore.getState().isRefreshing).toBe(false);
+      // Store should remain unchanged
+      const state = useAuthStore.getState();
+      expect(state.tokens).toBeNull();
+      expect(state.isAuthenticated).toBe(false);
 
-            testLogger.debug('Refresh state setting test passed');
-        });
+      testLogger.debug("Invalid tokens setting test passed");
     });
 
-    describe('Token Utility Functions', () => {
-        it('should get current access token', () => {
-            testLogger.info('Testing access token utility');
+    it("should clear tokens", () => {
+      testLogger.info("Testing token clearing");
 
-            const tokens = createValidAuthTokens();
-            useAuthStore.setState({ tokens, isAuthenticated: true });
+      const tokens = createValidAuthTokens();
+      const authStore = useAuthStore.getState();
 
-            const accessToken = getToken();
-            expect(accessToken).toBe(tokens.access_token);
+      // First set tokens
+      authStore.setTokens(tokens);
+      expect(useAuthStore.getState().isAuthenticated).toBe(true);
 
-            testLogger.debug('Access token utility test passed');
-        });
+      // Now clear
+      authStore.clearTokens();
 
-        it('should get current refresh token', () => {
-            testLogger.info('Testing refresh token utility');
+      const state = useAuthStore.getState();
+      expect(state.tokens).toBeNull();
+      expect(state.isAuthenticated).toBe(false);
 
-            const tokens = createValidAuthTokens();
-            useAuthStore.setState({ tokens, isAuthenticated: true });
+      testLogger.debug("Clear tokens test passed");
+    });
+  });
 
-            const refreshToken = getRefreshToken();
-            expect(refreshToken).toBe(tokens.refresh_token);
+  describe("Refresh State Management", () => {
+    it("should set refreshing state", () => {
+      testLogger.info("Testing refresh state setting");
 
-            testLogger.debug('Refresh token utility test passed');
-        });
+      const authStore = useAuthStore.getState();
 
-        it('should return undefined when no tokens available', () => {
-            testLogger.info('Testing token utilities with no tokens');
+      authStore.setRefreshing(true);
+      expect(useAuthStore.getState().isRefreshing).toBe(true);
 
-            useAuthStore.setState({ tokens: null, isAuthenticated: false });
+      authStore.setRefreshing(false);
+      expect(useAuthStore.getState().isRefreshing).toBe(false);
 
-            const accessToken = getToken();
-            const refreshToken = getRefreshToken();
+      testLogger.debug("Refresh state setting test passed");
+    });
+  });
 
-            expect(accessToken).toBeUndefined();
-            expect(refreshToken).toBeUndefined();
+  describe("Token Utility Functions", () => {
+    it("should get current access token", () => {
+      testLogger.info("Testing access token utility");
 
-            testLogger.debug('No tokens utility test passed');
-        });
+      const tokens = createValidAuthTokens();
+      useAuthStore.setState({ tokens, isAuthenticated: true });
+
+      const accessToken = getToken();
+      expect(accessToken).toBe(tokens.access_token);
+
+      testLogger.debug("Access token utility test passed");
     });
 
-    describe('State Consistency', () => {
-        it('should maintain consistent state during login', () => {
-            testLogger.info('Testing state consistency during login');
+    it("should get current refresh token", () => {
+      testLogger.info("Testing refresh token utility");
 
-            const user = createUser();
-            const tokens = createValidAuthTokens();
+      const tokens = createValidAuthTokens();
+      useAuthStore.setState({ tokens, isAuthenticated: true });
 
-            const authStore = useAuthStore.getState();
-            authStore.login(user, tokens);
+      const refreshToken = getRefreshToken();
+      expect(refreshToken).toBe(tokens.refresh_token);
 
-            const state = useAuthStore.getState();
-
-            // All related fields should be consistent
-            expect(state.isAuthenticated).toBe(true);
-            expect(state.user).toBeTruthy();
-            expect(state.tokens).toBeTruthy();
-            expect(state.isRefreshing).toBe(false);
-
-            testLogger.debug('Login state consistency test passed');
-        });
-
-        it('should maintain consistent state during logout', () => {
-            testLogger.info('Testing state consistency during logout');
-
-            const user = createUser();
-            const tokens = createValidAuthTokens();
-
-            // First login
-            const authStore = useAuthStore.getState();
-            authStore.login(user, tokens);
-
-            // Then logout
-            authStore.logout();
-
-            const state = useAuthStore.getState();
-
-            // All related fields should be reset
-            expect(state.isAuthenticated).toBe(false);
-            expect(state.user).toBeNull();
-            expect(state.tokens).toBeNull();
-            expect(state.isRefreshing).toBe(false);
-
-            testLogger.debug('Logout state consistency test passed');
-        });
-
-        it('should maintain consistent state during token operations', () => {
-            testLogger.info('Testing state consistency during token operations');
-
-            const tokens = createValidAuthTokens();
-            const authStore = useAuthStore.getState();
-
-            // Set tokens
-            authStore.setTokens(tokens);
-            let state = useAuthStore.getState();
-            expect(state.isAuthenticated).toBe(true);
-            expect(state.tokens).toBeTruthy();
-
-            // Clear tokens
-            authStore.clearTokens();
-            state = useAuthStore.getState();
-            expect(state.isAuthenticated).toBe(false);
-            expect(state.tokens).toBeNull();
-
-            testLogger.debug('Token operations state consistency test passed');
-        });
+      testLogger.debug("Refresh token utility test passed");
     });
+
+    it("should return undefined when no tokens available", () => {
+      testLogger.info("Testing token utilities with no tokens");
+
+      useAuthStore.setState({ tokens: null, isAuthenticated: false });
+
+      const accessToken = getToken();
+      const refreshToken = getRefreshToken();
+
+      expect(accessToken).toBeUndefined();
+      expect(refreshToken).toBeUndefined();
+
+      testLogger.debug("No tokens utility test passed");
+    });
+  });
+
+  describe("State Consistency", () => {
+    it("should maintain consistent state during login", () => {
+      testLogger.info("Testing state consistency during login");
+
+      const user = createUser();
+      const tokens = createValidAuthTokens();
+
+      const authStore = useAuthStore.getState();
+      authStore.login(user, tokens);
+
+      const state = useAuthStore.getState();
+
+      // All related fields should be consistent
+      expect(state.isAuthenticated).toBe(true);
+      expect(state.user).toBeTruthy();
+      expect(state.tokens).toBeTruthy();
+      expect(state.isRefreshing).toBe(false);
+
+      testLogger.debug("Login state consistency test passed");
+    });
+
+    it("should maintain consistent state during logout", () => {
+      testLogger.info("Testing state consistency during logout");
+
+      const user = createUser();
+      const tokens = createValidAuthTokens();
+
+      // First login
+      const authStore = useAuthStore.getState();
+      authStore.login(user, tokens);
+
+      // Then logout
+      authStore.logout();
+
+      const state = useAuthStore.getState();
+
+      // All related fields should be reset
+      expect(state.isAuthenticated).toBe(false);
+      expect(state.user).toBeNull();
+      expect(state.tokens).toBeNull();
+      expect(state.isRefreshing).toBe(false);
+
+      testLogger.debug("Logout state consistency test passed");
+    });
+
+    it("should maintain consistent state during token operations", () => {
+      testLogger.info("Testing state consistency during token operations");
+
+      const tokens = createValidAuthTokens();
+      const authStore = useAuthStore.getState();
+
+      // Set tokens
+      authStore.setTokens(tokens);
+      let state = useAuthStore.getState();
+      expect(state.isAuthenticated).toBe(true);
+      expect(state.tokens).toBeTruthy();
+
+      // Clear tokens
+      authStore.clearTokens();
+      state = useAuthStore.getState();
+      expect(state.isAuthenticated).toBe(false);
+      expect(state.tokens).toBeNull();
+
+      testLogger.debug("Token operations state consistency test passed");
+    });
+  });
 });

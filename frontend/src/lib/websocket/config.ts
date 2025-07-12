@@ -1,10 +1,10 @@
 /**
  * WebSocket Configuration
- * 
+ *
  * Centralized configuration for WebSocket connections with proper typing and validation.
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // WebSocket configuration schema
 const WebSocketConfigSchema = z.object({
@@ -29,7 +29,7 @@ export type WebSocketConfig = z.infer<typeof WebSocketConfigSchema>;
 
 // Default configuration
 export const DEFAULT_WEBSOCKET_CONFIG: WebSocketConfig = {
-  url: 'ws://localhost:8000/api/v1/ws',
+  url: "ws://localhost:8000/api/v1/ws",
   maxReconnectAttempts: 10,
   reconnectDelay: 1000,
   maxReconnectDelay: 30000,
@@ -48,91 +48,96 @@ export const DEFAULT_WEBSOCKET_CONFIG: WebSocketConfig = {
 
 // Environment-specific configuration
 export function getWebSocketConfig(environment?: string): WebSocketConfig {
-  const env = environment || import.meta.env.NODE_ENV || 'development';
-  
+  const env = environment || import.meta.env.NODE_ENV || "development";
+
   const baseConfig = { ...DEFAULT_WEBSOCKET_CONFIG };
-  
+
   // Override based on environment
   switch (env) {
-    case 'development':
+    case "development":
       return {
         ...baseConfig,
-        url: import.meta.env.VITE_WS_URL || 'ws://localhost:8000/api/v1/websocket/ws',
+        url:
+          import.meta.env.VITE_WS_URL ||
+          "ws://localhost:8000/api/v1/websocket/ws",
         maxReconnectAttempts: 20, // More attempts in dev
         reconnectDelay: 500, // Faster reconnect in dev
       };
-      
-    case 'staging':
+
+    case "staging":
       return {
         ...baseConfig,
-        url: import.meta.env.VITE_WS_URL || 'wss://staging-api.reviewpoint.com/ws',
+        url:
+          import.meta.env.VITE_WS_URL || "wss://staging-api.reviewpoint.com/ws",
         maxReconnectAttempts: 15,
         reconnectDelay: 2000,
       };
-      
-    case 'production':
+
+    case "production":
       return {
         ...baseConfig,
-        url: import.meta.env.VITE_WS_URL || 'wss://api.reviewpoint.com/ws',
+        url: import.meta.env.VITE_WS_URL || "wss://api.reviewpoint.com/ws",
         maxReconnectAttempts: 10,
         reconnectDelay: 3000,
         maxReconnectDelay: 60000, // Longer max delay in production
       };
-      
-    case 'test':
+
+    case "test":
       return {
         ...baseConfig,
-        url: 'ws://localhost:8001/api/v1/websocket/ws',
+        url: "ws://localhost:8001/api/v1/websocket/ws",
         enableAutoReconnect: false, // Disable auto-reconnect in tests
         enableHeartbeat: false, // Disable heartbeat in tests
         connectionTimeout: 1000, // Faster timeout in tests
       };
-      
+
     default:
       return baseConfig;
   }
 }
 
 // Validate configuration
-export function validateWebSocketConfig(config: Partial<WebSocketConfig>): WebSocketConfig {
+export function validateWebSocketConfig(
+  config: Partial<WebSocketConfig>,
+): WebSocketConfig {
   return WebSocketConfigSchema.parse(config);
 }
 
 // Connection states
 export type ConnectionState =
-  | 'disconnected'
-  | 'connecting'
-  | 'connected'
-  | 'reconnecting'
-  | 'error'
-  | 'rate_limited'
-  | 'authentication_failed';
+  | "disconnected"
+  | "connecting"
+  | "connected"
+  | "reconnecting"
+  | "error"
+  | "rate_limited"
+  | "authentication_failed";
 
 // WebSocket event types (expanded)
 export type WebSocketEventType =
-  | 'connection.established'
-  | 'connection.lost'
-  | 'connection.error'
-  | 'connection.rate_limited'
-  | 'connection.authentication_failed'
-  | 'ping'
-  | 'pong'
-  | 'subscribe'
-  | 'unsubscribe'
-  | 'subscription.acknowledged'
-  | 'upload.progress'
-  | 'upload.completed'
-  | 'upload.error'
-  | 'upload.cancelled'
-  | 'review.updated'
-  | 'review.created'
-  | 'review.deleted'
-  | 'system.notification'
-  | 'system.maintenance'
-  | 'user.status_changed'
-  | 'file.processing'
-  | 'file.ready'
-  | 'error';
+  | "connection.established"
+  | "connection.lost"
+  | "connection.error"
+  | "connection.rate_limited"
+  | "connection.authentication_failed"
+  | "ping"
+  | "pong"
+  | "subscribe"
+  | "unsubscribe"
+  | "subscription.acknowledged"
+  | "upload.progress"
+  | "upload.completed"
+  | "upload.error"
+  | "upload.cancelled"
+  | "review.updated"
+  | "review.created"
+  | "review.deleted"
+  | "system.notification"
+  | "system.maintenance"
+  | "user.status_changed"
+  | "file.processing"
+  | "file.ready"
+  | "error";
 
 // Message validation schemas
 export const WebSocketMessageSchema = z.object({
@@ -144,11 +149,11 @@ export const WebSocketMessageSchema = z.object({
 
 export const WebSocketIncomingMessageSchema = z.object({
   type: z.enum([
-    'ping',
-    'subscribe',
-    'unsubscribe',
-    'upload.cancel',
-    'heartbeat',
+    "ping",
+    "subscribe",
+    "unsubscribe",
+    "upload.cancel",
+    "heartbeat",
   ]),
   data: z.any().optional().default({}),
   timestamp: z.string().optional(),
@@ -156,7 +161,9 @@ export const WebSocketIncomingMessageSchema = z.object({
 });
 
 export type WebSocketMessage = z.infer<typeof WebSocketMessageSchema>;
-export type WebSocketIncomingMessage = z.infer<typeof WebSocketIncomingMessageSchema>;
+export type WebSocketIncomingMessage = z.infer<
+  typeof WebSocketIncomingMessageSchema
+>;
 
 // Error types
 export interface WebSocketError {

@@ -3,7 +3,6 @@
  * Do not make direct changes to the file.
  */
 
-
 export interface paths {
   "/api/v1/auth/register": {
     /**
@@ -583,7 +582,6 @@ export type $defs = Record<string, never>;
 export type external = Record<string, never>;
 
 export interface operations {
-
   /**
    * Register a new user
    * @description Registers a new user account and returns a JWT access token.

@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { useWebSocket } from '../../lib/websocket/hooks';
-import { getWebSocketConfig } from '../../lib/websocket/config';
-import { useWebSocketStore } from '../../lib/store/webSocketStore';
-import { webSocketService } from '../../lib/websocket/webSocketService';
-import * as Icons from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect } from "react";
+import { useWebSocket } from "../../lib/websocket/hooks";
+import { getWebSocketConfig } from "../../lib/websocket/config";
+import { useWebSocketStore } from "../../lib/store/webSocketStore";
+import { webSocketService } from "../../lib/websocket/webSocketService";
+import * as Icons from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface ConnectionLog {
   id: string;
   timestamp: Date;
-  type: 'connect' | 'disconnect' | 'message' | 'error' | 'heartbeat';
+  type: "connect" | "disconnect" | "message" | "error" | "heartbeat";
   data: any;
 }
 
@@ -18,7 +18,9 @@ interface WebSocketSidebarDebugProps {
   className?: string;
 }
 
-export const WebSocketSidebarDebug: React.FC<WebSocketSidebarDebugProps> = ({ className }) => {
+export const WebSocketSidebarDebug: React.FC<WebSocketSidebarDebugProps> = ({
+  className,
+}) => {
   const { connectionState, lastError, connect, disconnect } = useWebSocket();
   const store = useWebSocketStore();
   const [logs, setLogs] = useState<ConnectionLog[]>([]);
@@ -28,18 +30,18 @@ export const WebSocketSidebarDebug: React.FC<WebSocketSidebarDebugProps> = ({ cl
 
   // Log connection events
   useEffect(() => {
-    const addLog = (type: ConnectionLog['type'], data: any) => {
+    const addLog = (type: ConnectionLog["type"], data: any) => {
       const log: ConnectionLog = {
         id: Date.now().toString(),
         timestamp: new Date(),
         type,
-        data
+        data,
       };
-      setLogs(prev => [log, ...prev.slice(0, 19)]); // Keep last 20 logs for sidebar
+      setLogs((prev) => [log, ...prev.slice(0, 19)]); // Keep last 20 logs for sidebar
     };
 
     // Log connection state changes
-    addLog('connect', { state: connectionState });
+    addLog("connect", { state: connectionState });
 
     // Listen to WebSocket events for logging
     const unsubscribes: (() => void)[] = [];
@@ -48,55 +50,55 @@ export const WebSocketSidebarDebug: React.FC<WebSocketSidebarDebugProps> = ({ cl
       // Listen to all events for debugging
       const messageHandler = (event: any) => {
         setLastMessage(event);
-        addLog('message', event);
+        addLog("message", event);
       };
-      
+
       const errorHandler = (error: any) => {
-        addLog('error', error);
+        addLog("error", error);
       };
 
       unsubscribes.push(
-        webSocketService.on('connection.established', messageHandler),
-        webSocketService.on('upload.progress', messageHandler),
-        webSocketService.on('upload.completed', messageHandler),
-        webSocketService.on('upload.error', messageHandler),
-        webSocketService.on('system.notification', messageHandler),
-        webSocketService.on('pong', messageHandler),
-        webSocketService.on('error', errorHandler)
+        webSocketService.on("connection.established", messageHandler),
+        webSocketService.on("upload.progress", messageHandler),
+        webSocketService.on("upload.completed", messageHandler),
+        webSocketService.on("upload.error", messageHandler),
+        webSocketService.on("system.notification", messageHandler),
+        webSocketService.on("pong", messageHandler),
+        webSocketService.on("error", errorHandler),
       );
     }
 
     return () => {
-      unsubscribes.forEach(fn => fn());
+      unsubscribes.forEach((fn) => fn());
     };
   }, [connectionState, store.isConnected]);
 
   const getStatusColor = (state: string) => {
     switch (state) {
-      case 'connected':
-        return 'text-green-600 bg-green-50 border-green-200';
-      case 'connecting':
-        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case 'disconnected':
-        return 'text-red-600 bg-red-50 border-red-200';
-      case 'reconnecting':
-        return 'text-blue-600 bg-blue-50 border-blue-200';
+      case "connected":
+        return "text-green-600 bg-green-50 border-green-200";
+      case "connecting":
+        return "text-yellow-600 bg-yellow-50 border-yellow-200";
+      case "disconnected":
+        return "text-red-600 bg-red-50 border-red-200";
+      case "reconnecting":
+        return "text-blue-600 bg-blue-50 border-blue-200";
       default:
-        return 'text-muted-foreground bg-muted border-border';
+        return "text-muted-foreground bg-muted border-border";
     }
   };
 
-  const getLogTypeIcon = (type: ConnectionLog['type']) => {
+  const getLogTypeIcon = (type: ConnectionLog["type"]) => {
     switch (type) {
-      case 'connect':
+      case "connect":
         return <Icons.Wifi className="h-3 w-3 text-green-600" />;
-      case 'disconnect':
+      case "disconnect":
         return <Icons.WifiOff className="h-3 w-3 text-red-600" />;
-      case 'message':
+      case "message":
         return <Icons.MessageSquare className="h-3 w-3 text-blue-600" />;
-      case 'error':
+      case "error":
         return <Icons.AlertTriangle className="h-3 w-3 text-red-600" />;
-      case 'heartbeat':
+      case "heartbeat":
         return <Icons.Heart className="h-3 w-3 text-purple-600" />;
       default:
         return <Icons.Circle className="h-3 w-3 text-muted-foreground" />;
@@ -105,14 +107,18 @@ export const WebSocketSidebarDebug: React.FC<WebSocketSidebarDebugProps> = ({ cl
 
   const getStatusIcon = (state: string) => {
     switch (state) {
-      case 'connected':
+      case "connected":
         return <Icons.Wifi className="h-4 w-4 text-green-600" />;
-      case 'connecting':
-        return <Icons.RotateCw className="h-4 w-4 text-yellow-600 animate-spin" />;
-      case 'disconnected':
+      case "connecting":
+        return (
+          <Icons.RotateCw className="h-4 w-4 text-yellow-600 animate-spin" />
+        );
+      case "disconnected":
         return <Icons.WifiOff className="h-4 w-4 text-red-600" />;
-      case 'reconnecting':
-        return <Icons.RotateCw className="h-4 w-4 text-blue-600 animate-spin" />;
+      case "reconnecting":
+        return (
+          <Icons.RotateCw className="h-4 w-4 text-blue-600 animate-spin" />
+        );
       default:
         return <Icons.AlertCircle className="h-4 w-4 text-muted-foreground" />;
     }
@@ -132,7 +138,9 @@ export const WebSocketSidebarDebug: React.FC<WebSocketSidebarDebugProps> = ({ cl
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             {getStatusIcon(connectionState)}
-            <span className="text-sm font-medium">{connectionState.toUpperCase()}</span>
+            <span className="text-sm font-medium">
+              {connectionState.toUpperCase()}
+            </span>
           </div>
           <Button
             variant="ghost"
@@ -159,7 +167,9 @@ export const WebSocketSidebarDebug: React.FC<WebSocketSidebarDebugProps> = ({ cl
       <div className="flex gap-2 px-3">
         <Button
           onClick={connect}
-          disabled={connectionState === 'connected' || connectionState === 'connecting'}
+          disabled={
+            connectionState === "connected" || connectionState === "connecting"
+          }
           size="sm"
           variant="outline"
           className="flex-1 h-7 text-xs"
@@ -169,7 +179,7 @@ export const WebSocketSidebarDebug: React.FC<WebSocketSidebarDebugProps> = ({ cl
         </Button>
         <Button
           onClick={disconnect}
-          disabled={connectionState === 'disconnected'}
+          disabled={connectionState === "disconnected"}
           size="sm"
           variant="outline"
           className="flex-1 h-7 text-xs"
@@ -184,9 +194,18 @@ export const WebSocketSidebarDebug: React.FC<WebSocketSidebarDebugProps> = ({ cl
         <div className="space-y-3 px-3">
           {/* Configuration Info */}
           <div className="bg-muted rounded p-2 text-xs space-y-1">
-            <div><strong>URL:</strong> <code className="text-muted-foreground break-all">{config.url}</code></div>
-            <div><strong>Heartbeat:</strong> {config.heartbeatInterval}ms</div>
-            <div><strong>Rate Limit:</strong> {config.rateLimitMaxMessages}/window</div>
+            <div>
+              <strong>URL:</strong>{" "}
+              <code className="text-muted-foreground break-all">
+                {config.url}
+              </code>
+            </div>
+            <div>
+              <strong>Heartbeat:</strong> {config.heartbeatInterval}ms
+            </div>
+            <div>
+              <strong>Rate Limit:</strong> {config.rateLimitMaxMessages}/window
+            </div>
           </div>
 
           {/* Last Message */}
@@ -214,24 +233,31 @@ export const WebSocketSidebarDebug: React.FC<WebSocketSidebarDebugProps> = ({ cl
             </div>
             <div className="max-h-32 overflow-y-auto space-y-1">
               {logs.length === 0 ? (
-                <div className="text-xs text-muted-foreground italic px-2 py-1">No activity yet...</div>
+                <div className="text-xs text-muted-foreground italic px-2 py-1">
+                  No activity yet...
+                </div>
               ) : (
                 logs.slice(0, 5).map((log) => (
-                  <div key={log.id} className="flex items-start gap-2 text-xs p-2 bg-background rounded border">
+                  <div
+                    key={log.id}
+                    className="flex items-start gap-2 text-xs p-2 bg-background rounded border"
+                  >
                     {getLogTypeIcon(log.type)}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1">
-                        <span className="font-medium capitalize">{log.type}</span>
+                        <span className="font-medium capitalize">
+                          {log.type}
+                        </span>
                         <span className="text-muted-foreground">
-                          {log.timestamp.toLocaleTimeString('en-US', { 
-                            hour12: false, 
-                            hour: '2-digit', 
-                            minute: '2-digit', 
-                            second: '2-digit' 
+                          {log.timestamp.toLocaleTimeString("en-US", {
+                            hour12: false,
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
                           })}
                         </span>
                       </div>
-                      {typeof log.data === 'object' && log.data !== null && (
+                      {typeof log.data === "object" && log.data !== null && (
                         <div className="text-muted-foreground truncate">
                           {JSON.stringify(log.data).substring(0, 50)}...
                         </div>

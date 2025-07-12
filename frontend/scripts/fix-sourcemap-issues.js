@@ -4,27 +4,27 @@
  * Script to fix common source map issues in development
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-console.log('🔧 Fixing source map issues...');
+console.log("🔧 Fixing source map issues...");
 
 // Clear Vite cache
-const viteCacheDir = path.join(__dirname, '..', 'node_modules', '.vite');
+const viteCacheDir = path.join(__dirname, "..", "node_modules", ".vite");
 if (fs.existsSync(viteCacheDir)) {
-    console.log('🗑️  Clearing Vite cache...');
-    fs.rmSync(viteCacheDir, { recursive: true, force: true });
+  console.log("🗑️  Clearing Vite cache...");
+  fs.rmSync(viteCacheDir, { recursive: true, force: true });
 }
 
 // Clear dist directory
-const distDir = path.join(__dirname, '..', 'dist');
+const distDir = path.join(__dirname, "..", "dist");
 if (fs.existsSync(distDir)) {
-    console.log('🗑️  Clearing dist directory...');
-    fs.rmSync(distDir, { recursive: true, force: true });
+  console.log("🗑️  Clearing dist directory...");
+  fs.rmSync(distDir, { recursive: true, force: true });
 }
 
 // Clear browser cache instructions

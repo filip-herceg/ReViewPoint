@@ -1,184 +1,203 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import React from 'react';
-import { FormField } from '@/components/ui/form-field';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import React from "react";
+import { FormField } from "@/components/ui/form-field";
 
-describe('FormField Component', () => {
-    const defaultProps = {
-        name: 'test-field',
-        label: 'Test Field',
-        testId: 'test-form-field',
+describe("FormField Component", () => {
+  const defaultProps = {
+    name: "test-field",
+    label: "Test Field",
+    testId: "test-form-field",
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("renders basic text input correctly", () => {
+    render(<FormField {...defaultProps} />);
+
+    expect(screen.getByTestId("test-form-field")).toBeInTheDocument();
+    expect(screen.getByTestId("test-form-field-label")).toHaveTextContent(
+      "Test Field",
+    );
+    expect(screen.getByTestId("test-form-field-input")).toBeInTheDocument();
+    expect(screen.getByTestId("test-form-field-input")).toHaveAttribute(
+      "type",
+      "text",
+    );
+  });
+
+  it("shows required indicator when required is true", () => {
+    render(<FormField {...defaultProps} required />);
+
+    const label = screen.getByTestId("test-form-field-label");
+    expect(label).toHaveClass("after:content-['*']");
+  });
+
+  it("displays error message when error is provided", () => {
+    const errorMessage = "This field is required";
+    render(<FormField {...defaultProps} error={errorMessage} />);
+
+    expect(screen.getByTestId("test-form-field-error")).toHaveTextContent(
+      errorMessage,
+    );
+    expect(screen.getByTestId("test-form-field-input")).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+  });
+
+  it("handles text input changes", async () => {
+    const mockOnChange = vi.fn();
+    const user = userEvent.setup();
+
+    // Create a controlled component that updates its value
+    const ControlledFormField = () => {
+      const [value, setValue] = React.useState("");
+
+      return (
+        <FormField
+          {...defaultProps}
+          value={value}
+          onChange={(newValue) => {
+            setValue(newValue);
+            mockOnChange(newValue);
+          }}
+        />
+      );
     };
 
-    beforeEach(() => {
-        vi.clearAllMocks();
-    });
+    render(<ControlledFormField />);
 
-    it('renders basic text input correctly', () => {
-        render(<FormField {...defaultProps} />);
+    const input = screen.getByTestId("test-form-field-input");
 
-        expect(screen.getByTestId('test-form-field')).toBeInTheDocument();
-        expect(screen.getByTestId('test-form-field-label')).toHaveTextContent('Test Field');
-        expect(screen.getByTestId('test-form-field-input')).toBeInTheDocument();
-        expect(screen.getByTestId('test-form-field-input')).toHaveAttribute('type', 'text');
-    });
+    // Type the text and check that onChange is called
+    await user.type(input, "test value");
 
-    it('shows required indicator when required is true', () => {
-        render(<FormField {...defaultProps} required />);
+    // The onChange handler should be called for each character typed
+    expect(mockOnChange).toHaveBeenCalledTimes(10); // 'test value' has 10 characters
 
-        const label = screen.getByTestId('test-form-field-label');
-        expect(label).toHaveClass('after:content-[\'*\']');
-    });
+    // Check that the component is working correctly
+    expect(mockOnChange).toHaveBeenCalled();
+    expect(input).toHaveValue("test value");
+  });
 
-    it('displays error message when error is provided', () => {
-        const errorMessage = 'This field is required';
-        render(<FormField {...defaultProps} error={errorMessage} />);
+  it("renders textarea when type is textarea", () => {
+    render(<FormField {...defaultProps} type="textarea" />);
 
-        expect(screen.getByTestId('test-form-field-error')).toHaveTextContent(errorMessage);
-        expect(screen.getByTestId('test-form-field-input')).toHaveAttribute('aria-invalid', 'true');
-    });
+    const textarea = screen.getByTestId("test-form-field-input");
+    expect(textarea.tagName).toBe("TEXTAREA");
+    expect(textarea).toHaveAttribute("rows", "4");
+  });
 
-    it('handles text input changes', async () => {
-        const mockOnChange = vi.fn();
-        const user = userEvent.setup();
+  it("renders select when type is select", () => {
+    const options = [
+      { value: "option1", label: "Option 1" },
+      { value: "option2", label: "Option 2" },
+    ];
 
-        // Create a controlled component that updates its value
-        const ControlledFormField = () => {
-            const [value, setValue] = React.useState('');
+    render(
+      <FormField
+        {...defaultProps}
+        type="select"
+        options={options}
+        placeholder="Select an option"
+      />,
+    );
 
-            return (
-                <FormField
-                    {...defaultProps}
-                    value={value}
-                    onChange={(newValue) => {
-                        setValue(newValue);
-                        mockOnChange(newValue);
-                    }}
-                />
-            );
-        };
+    expect(screen.getByTestId("test-form-field-select")).toBeInTheDocument();
+    expect(screen.getByText("Select an option")).toBeInTheDocument();
+  });
 
-        render(<ControlledFormField />);
+  it.skip("handles select changes", async () => {
+    // TODO: Fix this test - the Radix Select component has pointer capture issues in test environment
+    const mockOnChange = vi.fn();
+    const user = userEvent.setup();
+    const options = [
+      { value: "option1", label: "Option 1" },
+      { value: "option2", label: "Option 2" },
+    ];
 
-        const input = screen.getByTestId('test-form-field-input');
+    render(
+      <FormField
+        {...defaultProps}
+        type="select"
+        options={options}
+        onChange={mockOnChange}
+      />,
+    );
 
-        // Type the text and check that onChange is called
-        await user.type(input, 'test value');
+    const select = screen.getByTestId("test-form-field-select");
+    await user.click(select);
 
-        // The onChange handler should be called for each character typed
-        expect(mockOnChange).toHaveBeenCalledTimes(10); // 'test value' has 10 characters
+    const option = screen.getByTestId("test-form-field-option-option1");
+    await user.click(option);
 
-        // Check that the component is working correctly
-        expect(mockOnChange).toHaveBeenCalled();
-        expect(input).toHaveValue('test value');
-    });
+    expect(mockOnChange).toHaveBeenCalledWith("option1");
+  });
 
-    it('renders textarea when type is textarea', () => {
-        render(<FormField {...defaultProps} type="textarea" />);
+  it("disables input when disabled is true", () => {
+    render(<FormField {...defaultProps} disabled />);
 
-        const textarea = screen.getByTestId('test-form-field-input');
-        expect(textarea.tagName).toBe('TEXTAREA');
-        expect(textarea).toHaveAttribute('rows', '4');
-    });
+    const input = screen.getByTestId("test-form-field-input");
+    expect(input).toBeDisabled();
+  });
 
-    it('renders select when type is select', () => {
-        const options = [
-            { value: 'option1', label: 'Option 1' },
-            { value: 'option2', label: 'Option 2' },
-        ];
+  it("handles different input types correctly", () => {
+    const { rerender } = render(<FormField {...defaultProps} type="email" />);
+    expect(screen.getByTestId("test-form-field-input")).toHaveAttribute(
+      "type",
+      "email",
+    );
 
-        render(
-            <FormField
-                {...defaultProps}
-                type="select"
-                options={options}
-                placeholder="Select an option"
-            />
-        );
+    rerender(<FormField {...defaultProps} type="password" />);
+    expect(screen.getByTestId("test-form-field-input")).toHaveAttribute(
+      "type",
+      "password",
+    );
 
-        expect(screen.getByTestId('test-form-field-select')).toBeInTheDocument();
-        expect(screen.getByText('Select an option')).toBeInTheDocument();
-    });
+    rerender(<FormField {...defaultProps} type="number" />);
+    expect(screen.getByTestId("test-form-field-input")).toHaveAttribute(
+      "type",
+      "number",
+    );
+  });
 
-    it.skip('handles select changes', async () => {
-        // TODO: Fix this test - the Radix Select component has pointer capture issues in test environment
-        const mockOnChange = vi.fn();
-        const user = userEvent.setup();
-        const options = [
-            { value: 'option1', label: 'Option 1' },
-            { value: 'option2', label: 'Option 2' },
-        ];
+  it("handles blur events", async () => {
+    const mockOnBlur = vi.fn();
+    const user = userEvent.setup();
 
-        render(
-            <FormField
-                {...defaultProps}
-                type="select"
-                options={options}
-                onChange={mockOnChange}
-            />
-        );
+    render(<FormField {...defaultProps} onBlur={mockOnBlur} />);
 
-        const select = screen.getByTestId('test-form-field-select');
-        await user.click(select);
+    const input = screen.getByTestId("test-form-field-input");
+    await user.click(input);
+    await user.tab();
 
-        const option = screen.getByTestId('test-form-field-option-option1');
-        await user.click(option);
+    expect(mockOnBlur).toHaveBeenCalled();
+  });
 
-        expect(mockOnChange).toHaveBeenCalledWith('option1');
-    });
+  it("applies custom className", () => {
+    render(<FormField {...defaultProps} className="custom-class" />);
 
-    it('disables input when disabled is true', () => {
-        render(<FormField {...defaultProps} disabled />);
+    const container = screen.getByTestId("test-form-field");
+    expect(container).toHaveClass("custom-class");
+  });
 
-        const input = screen.getByTestId('test-form-field-input');
-        expect(input).toBeDisabled();
-    });
+  it("sets placeholder correctly", () => {
+    const placeholder = "Enter your value";
+    render(<FormField {...defaultProps} placeholder={placeholder} />);
 
-    it('handles different input types correctly', () => {
-        const { rerender } = render(<FormField {...defaultProps} type="email" />);
-        expect(screen.getByTestId('test-form-field-input')).toHaveAttribute('type', 'email');
+    const input = screen.getByTestId("test-form-field-input");
+    expect(input).toHaveAttribute("placeholder", placeholder);
+  });
 
-        rerender(<FormField {...defaultProps} type="password" />);
-        expect(screen.getByTestId('test-form-field-input')).toHaveAttribute('type', 'password');
+  it("sets initial value correctly", () => {
+    const initialValue = "initial value";
+    render(<FormField {...defaultProps} value={initialValue} />);
 
-        rerender(<FormField {...defaultProps} type="number" />);
-        expect(screen.getByTestId('test-form-field-input')).toHaveAttribute('type', 'number');
-    });
-
-    it('handles blur events', async () => {
-        const mockOnBlur = vi.fn();
-        const user = userEvent.setup();
-
-        render(<FormField {...defaultProps} onBlur={mockOnBlur} />);
-
-        const input = screen.getByTestId('test-form-field-input');
-        await user.click(input);
-        await user.tab();
-
-        expect(mockOnBlur).toHaveBeenCalled();
-    });
-
-    it('applies custom className', () => {
-        render(<FormField {...defaultProps} className="custom-class" />);
-
-        const container = screen.getByTestId('test-form-field');
-        expect(container).toHaveClass('custom-class');
-    });
-
-    it('sets placeholder correctly', () => {
-        const placeholder = 'Enter your value';
-        render(<FormField {...defaultProps} placeholder={placeholder} />);
-
-        const input = screen.getByTestId('test-form-field-input');
-        expect(input).toHaveAttribute('placeholder', placeholder);
-    });
-
-    it('sets initial value correctly', () => {
-        const initialValue = 'initial value';
-        render(<FormField {...defaultProps} value={initialValue} />);
-
-        const input = screen.getByTestId('test-form-field-input');
-        expect(input).toHaveValue(initialValue);
-    });
+    const input = screen.getByTestId("test-form-field-input");
+    expect(input).toHaveValue(initialValue);
+  });
 });
