@@ -158,7 +158,7 @@ export function AppShell({ children }: AppShellProps) {
                             id="sidebar"
                             className={cn(
                                 'hidden md:flex flex-col bg-background/95 backdrop-blur-md border-r border-border shadow-xl',
-                                sidebarOpen ? 'w-64' : 'w-16'
+                                sidebarOpen ? 'w-64' : 'w-[5rem]' // Increase collapsed width to 5rem
                             )}
                         >
                             {/* Sidebar Header */}
@@ -170,10 +170,12 @@ export function AppShell({ children }: AppShellProps) {
                                     className="w-full justify-start hover:bg-accent transition-all duration-200"
                                     aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
                                 >
-                                    <Icons.PanelLeftClose className={cn(
-                                        'h-5 w-5 transition-transform duration-300 text-foreground',
-                                        !sidebarOpen && 'rotate-180'
-                                    )} />
+                                    <Icons.PanelLeftClose
+                                        className={cn(
+                                            'transition-transform duration-300 text-foreground flex-shrink-0', // Prevent resizing
+                                            !sidebarOpen && 'rotate-180'
+                                        )}
+                                    />
                                     {sidebarOpen && <span className="ml-2 text-foreground">Collapse</span>}
                                 </Button>
                             </div>
