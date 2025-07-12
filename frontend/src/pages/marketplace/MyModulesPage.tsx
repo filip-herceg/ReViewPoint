@@ -3,13 +3,14 @@
  * Shows installed modules, configuration, and usage statistics
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Progress } from '@/components/ui/progress';
+import { ModuleConfigSidebar } from '@/components/modules/ModuleConfigSidebar';
 import { 
     Settings, 
     BarChart3, 
@@ -31,6 +32,45 @@ const MyModulesPage: React.FC = () => {
         loading, 
         unsubscribeFromModule 
     } = useMarketplace();
+
+    const [configSidebarOpen, setConfigSidebarOpen] = useState(false);
+    const [selectedModule, setSelectedModule] = useState<any>(null);
+
+    const openConfigSidebar = (module: any, subscription: any) => {
+        // Combine module and subscription data for configuration
+        setSelectedModule({
+            id: module.id,
+            name: module.displayName || module.name,
+            version: module.currentVersion,
+            description: module.description,
+            configSchema: module.configuration || {},
+            userConfig: subscription.configuration || {},
+            defaultConfig: Object.keys(module.configuration || {}).reduce((acc, key) => {
+                acc[key] = module.configuration![key].default;
+                return acc;
+            }, {} as any)
+        });
+        setConfigSidebarOpen(true);
+    };
+
+    const handleSaveConfig = async (config: any) => {
+        // TODO: Implement API call to save configuration
+        console.log('Saving config for module:', selectedModule?.id, config);
+        
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Update local state or refetch data
+        console.log('Configuration saved successfully');
+    };
+
+    const handleRevertConfig = () => {
+        console.log('Reverting configuration changes');
+    };
+
+    const handleResetToDefault = () => {
+        console.log('Resetting to default configuration');
+    };
 
     if (loading) {
         return (
@@ -179,11 +219,13 @@ const MyModulesPage: React.FC = () => {
                                         </div>
                                         
                                         <div className="flex items-center gap-2 ml-4">
-                                            <Button variant="outline" size="sm" asChild>
-                                                <Link to={`/my-modules/${module.id}/configure`}>
-                                                    <Settings className="h-4 w-4 mr-2" />
-                                                    Configure
-                                                </Link>
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm" 
+                                                onClick={() => openConfigSidebar(module, subscription)}
+                                            >
+                                                <Settings className="h-4 w-4 mr-2" />
+                                                Configure
                                             </Button>
                                             <Button variant="outline" size="sm" asChild>
                                                 <Link to={`/marketplace/modules/${module.id}`}>
@@ -329,6 +371,16 @@ const MyModulesPage: React.FC = () => {
                     })}
                 </div>
             )}
+
+            {/* Module Configuration Sidebar */}
+            <ModuleConfigSidebar
+                isOpen={configSidebarOpen}
+                onClose={() => setConfigSidebarOpen(false)}
+                module={selectedModule}
+                onSave={handleSaveConfig}
+                onRevert={handleRevertConfig}
+                onResetToDefault={handleResetToDefault}
+            />
         </div>
     );
 };

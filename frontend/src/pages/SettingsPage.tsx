@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,8 +24,12 @@ import { useAuthStore } from '@/lib/store/authStore';
 
 const SettingsPage: React.FC = () => {
     const { user } = useAuthStore();
+    const location = useLocation();
     const [isLoading, setIsLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('notifications');
+
+    // Check if we're on a child route
+    const isChildRoute = location.pathname !== '/settings';
 
     // Settings state
     const [settings, setSettings] = useState({
@@ -114,6 +118,11 @@ const SettingsPage: React.FC = () => {
         { id: 'security', label: 'Security', icon: Shield },
         { id: 'developer', label: 'Developer', icon: Code }
     ];
+
+    // If we're on a child route, render the child component
+    if (isChildRoute) {
+        return <Outlet />;
+    }
 
     return (
         <div className="space-y-6">
@@ -528,6 +537,8 @@ const SettingsPage: React.FC = () => {
             </div>
         </div>
     );
+
+
 };
 
 export default SettingsPage;

@@ -18,14 +18,24 @@ import {
     MessageSquare,
     ThumbsUp,
     ThumbsDown,
-    AlertTriangle
+    AlertTriangle,
+    Settings,
+    Play,
+    Package
 } from 'lucide-react';
 import { CitationsSection } from '@/components/citations/CitationsSection';
+import { useMarketplace } from '@/hooks/useMarketplace';
+import { ModuleConfigSidebar } from '@/components/modules/ModuleConfigSidebar';
 
 const ReviewDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [configSidebarOpen, setConfigSidebarOpen] = useState(false);
+    const [selectedModule, setSelectedModule] = useState<any>(null);
+
+    // Get marketplace data for available modules
+    const { userSubscriptions, isModuleSubscribed, getUserSubscription } = useMarketplace();
 
     // TODO: Replace with actual data from API
     const review = {
@@ -137,6 +147,56 @@ const ReviewDetailPage: React.FC = () => {
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const handleRunModule = (moduleId: string) => {
+        const subscription = getUserSubscription(moduleId);
+        if (subscription) {
+            const module = userSubscriptions.find(s => s.moduleId === moduleId)?.module;
+            if (module) {
+                setSelectedModule({
+                    id: module.id,
+                    name: module.displayName || module.name,
+                    version: module.currentVersion,
+                    description: module.description,
+                    configSchema: module.configuration || {},
+                    userConfig: subscription.configuration || {},
+                    defaultConfig: Object.keys(module.configuration || {}).reduce((acc, key) => {
+                        acc[key] = module.configuration![key].default;
+                        return acc;
+                    }, {} as any)
+                });
+                setConfigSidebarOpen(true);
+            }
+        }
+    };
+
+    const handleSaveModuleConfig = async (config: any) => {
+        console.log('Running module with config:', selectedModule?.id, config);
+        
+        // TODO: Implement actual module execution
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        console.log('Module executed successfully');
+        setConfigSidebarOpen(false);
+    };
+
+    const handleRevertConfig = () => {
+        console.log('Reverting module configuration');
+    };
+
+    const handleResetToDefault = () => {
+        console.log('Resetting module to default configuration');
+    };
+
+    // Get modules that can process this document type
+    const getCompatibleModules = () => {
+        return userSubscriptions.filter(subscription => {
+            const module = subscription.module;
+            // Check if module supports the file type and is active
+            return subscription.status === 'active' && 
+                   module.capabilities.supportedFormats.includes(review.fileType as any);
+        });
     };
 
     const renderStarRating = () => {
@@ -286,6 +346,99 @@ const ReviewDetailPage: React.FC = () => {
                 </CardContent>
             </Card>
 
+            {/* Management - Run Modules */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Settings className="h-5 w-5" />
+                        Document Management
+                    </CardTitle>
+                    <CardDescription>
+                        Run analysis modules on this document to get additional insights
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {getCompatibleModules().length > 0 ? (
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {getCompatibleModules().map((subscription) => {
+                                    const module = subscription.module;
+                                    return (
+                                        <div key={module.id} className="border rounded-lg p-4 space-y-3">
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-primary/10 rounded-lg">
+                                                        <Package className="h-4 w-4 text-primary" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="font-medium">{module.displayName}</h4>
+                                                        <p className="text-sm text-muted-foreground">
+                                                            {module.description}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex items-center gap-2">
+                                                <Button
+                                                    size="sm"
+                                                    onClick={() => handleRunModule(module.id)}
+                                                    className="flex-1"
+                                                >
+                                                    <Play className="h-4 w-4 mr-2" />
+                                                    Run Analysis
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleRunModule(module.id)}
+                                                >
+                                                    <Settings className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                            
+                                            <div className="text-xs text-muted-foreground">
+                                                Estimated time: ~{module.capabilities.estimatedProcessingTime}s
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            
+                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <div className="flex items-start gap-2">
+                                    <AlertTriangle className="h-4 w-4 text-blue-600 mt-0.5" />
+                                    <div className="text-sm text-blue-700">
+                                        <p className="font-medium">Running modules will:</p>
+                                        <ul className="mt-1 list-disc list-inside space-y-1">
+                                            <li>Process the document with selected analysis tools</li>
+                                            <li>Generate additional insights and reports</li>
+                                            <li>Add results to your review for consideration</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-8">
+                            <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                            <h3 className="font-medium text-muted-foreground mb-2">
+                                No Compatible Modules
+                            </h3>
+                            <p className="text-sm text-muted-foreground mb-4">
+                                You don't have any active modules that can process {review.fileType.toUpperCase()} files.
+                            </p>
+                            <Button variant="outline" asChild>
+                                <Link to="/marketplace">
+                                    <Package className="h-4 w-4 mr-2" />
+                                    Browse Marketplace
+                                </Link>
+                            </Button>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
             {/* Review Form */}
             {(review.status === 'pending' || review.status === 'in-progress') && (
                 <Card>
@@ -411,6 +564,16 @@ const ReviewDetailPage: React.FC = () => {
 
             {/* Citations Section - Always visible */}
             <CitationsSection documentId={review.documentId} />
+
+            {/* Module Configuration Sidebar */}
+            <ModuleConfigSidebar
+                isOpen={configSidebarOpen}
+                onClose={() => setConfigSidebarOpen(false)}
+                module={selectedModule}
+                onSave={handleSaveModuleConfig}
+                onRevert={handleRevertConfig}
+                onResetToDefault={handleResetToDefault}
+            />
         </div>
     );
 };

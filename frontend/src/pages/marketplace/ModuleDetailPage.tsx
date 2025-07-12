@@ -9,8 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
+import { ModuleConfigSidebar } from '@/components/modules/ModuleConfigSidebar';
 import { 
     ArrowLeft,
     Star, 
@@ -61,6 +61,31 @@ const ModuleDetailPage: React.FC = () => {
 
     const [installing, setInstalling] = useState(false);
     const [activeTab, setActiveTab] = useState('overview');
+    const [configSidebarOpen, setConfigSidebarOpen] = useState(false);
+
+    const openConfigSidebar = () => {
+        if (module && subscription) {
+            setConfigSidebarOpen(true);
+        }
+    };
+
+    const handleSaveConfig = async (config: any) => {
+        // TODO: Implement API call to save configuration
+        console.log('Saving config for module:', module?.id, config);
+        
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        console.log('Configuration saved successfully');
+    };
+
+    const handleRevertConfig = () => {
+        console.log('Reverting configuration changes');
+    };
+
+    const handleResetToDefault = () => {
+        console.log('Resetting to default configuration');
+    };
 
     const module = allModules.find(m => m.id === moduleId);
     const isSubscribed = module ? isModuleSubscribed(module.id) : false;
@@ -154,10 +179,9 @@ const ModuleDetailPage: React.FC = () => {
                             
                             {/* Author Info */}
                             <div className="flex items-center gap-3">
-                                <Avatar className="h-8 w-8">
-                                    <AvatarImage src={module.author.avatar} />
-                                    <AvatarFallback>{module.author.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                                </Avatar>
+                                <div className="h-8 w-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
+                                    {module.author.name.split(' ').map(n => n[0]).join('')}
+                                </div>
                                 <div>
                                     <div className="font-medium">{module.author.name}</div>
                                     {module.author.organization && (
@@ -245,11 +269,12 @@ const ModuleDetailPage: React.FC = () => {
                                     )}
 
                                     <div className="space-y-2">
-                                        <Button className="w-full" asChild>
-                                            <a href={`/my-modules/${module.id}/configure`}>
-                                                <Settings className="h-4 w-4 mr-2" />
-                                                Configure
-                                            </a>
+                                        <Button 
+                                            className="w-full" 
+                                            onClick={openConfigSidebar}
+                                        >
+                                            <Settings className="h-4 w-4 mr-2" />
+                                            Configure
                                         </Button>
                                         
                                         <Button 
@@ -536,6 +561,27 @@ const ModuleDetailPage: React.FC = () => {
                     </Card>
                 </TabsContent>
             </Tabs>
+
+            {/* Module Configuration Sidebar */}
+            <ModuleConfigSidebar
+                isOpen={configSidebarOpen}
+                onClose={() => setConfigSidebarOpen(false)}
+                module={isSubscribed && subscription ? {
+                    id: module.id,
+                    name: module.displayName || module.name,
+                    version: module.currentVersion,
+                    description: module.description,
+                    configSchema: module.configuration || {},
+                    userConfig: subscription.configuration || {},
+                    defaultConfig: Object.keys(module.configuration || {}).reduce((acc, key) => {
+                        acc[key] = module.configuration![key].default;
+                        return acc;
+                    }, {} as any)
+                } : null}
+                onSave={handleSaveConfig}
+                onRevert={handleRevertConfig}
+                onResetToDefault={handleResetToDefault}
+            />
         </div>
     );
 };
