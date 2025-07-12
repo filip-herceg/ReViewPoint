@@ -20,6 +20,8 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { getErrorMessage } from '@/lib/utils/errorHandling';
 import logger from '@/logger';
 import * as Icons from 'lucide-react';
+import logoSymbol from '@/assets/logos/Logo_symbol_color.svg';
+import logoText from '@/assets/logos/Logo_text1_color.svg';
 
 const iconMap: Record<string, React.ComponentType<any>> = {
     Home: Icons.Home,
@@ -104,13 +106,9 @@ export function AppShell({ children }: AppShellProps) {
                                 </Button>
                             )}
 
-                            <Link to="/" className="flex items-center space-x-2 group">
-                                <div className="p-2 bg-gradient-to-br from-primary to-accent rounded-xl shadow-lg group-hover:shadow-primary/25 transition-all duration-200">
-                                    <Icons.FileText className="h-6 w-6 text-primary-foreground" />
-                                </div>
-                                <h1 className="text-xl font-bold bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent">
-                                    ReViewPoint
-                                </h1>
+                            <Link to="/" className="flex items-center space-x-2 group h-11">
+                                <img src={logoSymbol} alt="Logo Symbol" className="h-full w-auto" />
+                                <img src={logoText} alt="Logo Text" className="h-full w-auto" />
                             </Link>
                         </div>
 
