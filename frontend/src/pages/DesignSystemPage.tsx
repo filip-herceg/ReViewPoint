@@ -79,7 +79,7 @@ export default function DesignSystemPage() {
 	});
 
 	const { addNotification } = useUIStore();
-	const { mode, toggleMode, colors } = useTheme();
+	const { mode, toggleMode } = useTheme();
 
 	const handleShowNotification = (
 		type: "success" | "error" | "warning" | "info",

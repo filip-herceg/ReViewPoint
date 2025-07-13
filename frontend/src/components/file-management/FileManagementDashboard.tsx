@@ -495,20 +495,15 @@ export const FileManagementDashboard: React.FC<
 							{totalFiles} total files
 						</span>
 					</div>
-					{hasSelection && (
-						<span className="px-2 py-1 bg-info/10 text-info-foreground rounded-full text-xs border border-info">
-							{selectedCount} selected
-						</span>
-					)}
 				</div>
 			</div>
 
-			{/* Toolbar */}
+			{/* File Toolbar */}
 			<FileToolbar
-				searchQuery={searchQuery}
-				onSearchChange={handleSearchChange}
 				viewMode={viewMode}
 				onViewModeChange={setViewMode}
+				searchQuery={searchQuery}
+				onSearchChange={handleSearchChange}
 				sortField={sortField}
 				sortOrder={sortOrder}
 				onSortChange={handleSortChange}
@@ -590,21 +585,21 @@ export const FileManagementDashboard: React.FC<
 				</div>
 
 				<div className="flex items-center gap-2">
-					{" "}
-					<button
-						type="button"
+					<Button
+						variant="outline"
+						size="icon"
 						onClick={() => setCurrentPage(currentPage - 1)}
 						disabled={currentPage === 1}
 						aria-label="Previous page"
-						className="inline-flex items-center justify-center h-9 w-9 rounded-md border border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						<ChevronLeft className="h-4 w-4" />
-					</button>
+					</Button>
 					<span className="px-3 py-1 text-sm text-muted-foreground">
 						Page {currentPage}
-					</span>{" "}
-					<button
-						type="button"
+					</span>
+					<Button
+						variant="outline"
+						size="icon"
 						onClick={() => setCurrentPage(currentPage + 1)}
 						disabled={
 							currentPage >=
@@ -613,10 +608,9 @@ export const FileManagementDashboard: React.FC<
 							)
 						}
 						aria-label="Next page"
-						className="inline-flex items-center justify-center h-9 w-9 rounded-md border border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
 					>
 						<ChevronRight className="h-4 w-4" />
-					</button>
+					</Button>
 				</div>
 			</div>
 
@@ -652,21 +646,18 @@ export const FileManagementDashboard: React.FC<
 							This action cannot be undone.
 						</p>
 						<div className="flex gap-3 justify-end">
-							{" "}
-							<button
-								type="button"
+							<Button
+								variant="outline"
 								onClick={handleCancelDelete}
-								className="px-4 py-2 text-sm font-medium text-foreground bg-muted hover:bg-muted/70 rounded-md transition-colors"
 							>
 								Cancel
-							</button>{" "}
-							<button
-								type="button"
+							</Button>
+							<Button
+								variant="destructive"
 								onClick={handleConfirmDelete}
-								className="px-4 py-2 text-sm font-medium rounded-md transition-colors bg-destructive text-destructive-foreground hover:bg-destructive/80"
 							>
 								Confirm
-							</button>
+							</Button>
 						</div>
 					</div>
 				</div>

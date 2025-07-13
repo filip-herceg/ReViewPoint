@@ -114,10 +114,11 @@ export const FileList: React.FC<FileListProps> = ({
 				const isSelected = selectedFiles.includes(file.filename);
 
 				return (
-					<button
+					<Button
 						key={file.filename}
+						variant="ghost"
 						className={cn(
-							"flex items-center space-x-4 p-3 bg-background border border-border rounded-lg hover:shadow-sm transition-shadow cursor-pointer group w-full text-left",
+							"flex items-center space-x-4 p-3 bg-background border border-border rounded-lg hover:shadow-sm transition-shadow cursor-pointer group w-full text-left h-auto justify-start",
 							isSelected && "ring-2 ring-info border-info",
 						)}
 						onClick={() => onPreview(file)}
@@ -245,7 +246,7 @@ export const FileList: React.FC<FileListProps> = ({
 								</div>
 							</div>
 						</div>
-					</button>
+					</Button>
 				);
 			})}
 		</div>

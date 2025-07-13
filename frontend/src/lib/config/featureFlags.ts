@@ -8,6 +8,7 @@ import { getEnvironmentConfig } from "@/lib/config/environment";
 import logger from "@/logger";
 
 // Window feature flags interface to avoid any types
+// eslint-disable-next-line no-undef
 interface WindowWithFeatureFlags extends Window {
 	FEATURE_FLAGS?: Partial<FeatureFlags>;
 }

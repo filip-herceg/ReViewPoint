@@ -8,6 +8,18 @@ import { getMonitoringConfig } from "@/lib/config/environment";
 import { isFeatureEnabled } from "@/lib/config/featureFlags";
 import logger from "@/logger";
 
+// Browser API type declarations
+declare global {
+	interface Window {
+		// eslint-disable-next-line no-undef
+		PerformanceObserver: typeof PerformanceObserver;
+	}
+}
+
+// Ensure PerformanceResourceTiming is available
+// eslint-disable-next-line no-undef
+type PerformanceResourceTimingType = PerformanceResourceTiming;
+
 export interface PerformanceMetric {
 	id: string;
 	name: string;
@@ -35,6 +47,7 @@ class PerformanceMonitoringService {
 	private metrics: PerformanceMetric[] = [];
 	private config: PerformanceConfig;
 	private isInitialized = false;
+	// eslint-disable-next-line no-undef
 	private observer?: PerformanceObserver;
 
 	constructor() {
@@ -118,10 +131,11 @@ class PerformanceMonitoringService {
 		if (typeof window === "undefined" || !window.PerformanceObserver) return;
 
 		try {
+			// eslint-disable-next-line no-undef
 			this.observer = new PerformanceObserver((list) => {
 				list.getEntries().forEach((entry) => {
 					if (entry.entryType === "resource") {
-						this.recordResourceTiming(entry as PerformanceResourceTiming);
+						this.recordResourceTiming(entry as PerformanceResourceTimingType);
 					}
 				});
 			});
@@ -174,7 +188,7 @@ class PerformanceMonitoringService {
 	/**
 	 * Record resource timing data
 	 */
-	private recordResourceTiming(entry: PerformanceResourceTiming): void {
+	private recordResourceTiming(entry: PerformanceResourceTimingType): void {
 		// Only track significant resources
 		if (entry.duration < 100) return; // Skip resources that load very quickly
 

@@ -138,10 +138,11 @@ export const FileGrid: React.FC<FileGridProps> = ({
 				const isSelected = selectedFiles.includes(file.filename);
 
 				return (
-					<button
+					<Button
 						key={file.filename}
+						variant="ghost"
 						className={cn(
-							"relative bg-background border border-border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer group w-full text-left",
+							"relative bg-background border border-border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer group w-full text-left h-auto justify-start",
 							isSelected && "ring-2 ring-info border-info",
 						)}
 						onClick={() => onPreview(file)}
@@ -262,7 +263,7 @@ export const FileGrid: React.FC<FileGridProps> = ({
 								</span>
 							</div>
 						</div>
-					</button>
+					</Button>
 				);
 			})}
 		</div>

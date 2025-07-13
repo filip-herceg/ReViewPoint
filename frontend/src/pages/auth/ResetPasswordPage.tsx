@@ -84,7 +84,7 @@ const ResetPasswordPage: React.FC = () => {
 			await new Promise((resolve) => setTimeout(resolve, 1000));
 
 			setIsSuccess(true);
-		} catch (_err) {
+		} catch {
 			setError("Failed to reset password. Please try again.");
 		} finally {
 			setIsLoading(false);

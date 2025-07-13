@@ -28,7 +28,7 @@ const ForgotPasswordPage: React.FC = () => {
 			await new Promise((resolve) => setTimeout(resolve, 1000));
 
 			setIsSubmitted(true);
-		} catch (_err) {
+		} catch {
 			setError("Failed to send reset email. Please try again.");
 		} finally {
 			setIsLoading(false);

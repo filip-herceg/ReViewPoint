@@ -87,7 +87,7 @@ export interface UserCreateRequest {
  * User read response
  * Matches backend UserRead schema (alias of UserProfile)
  */
-export interface UserResponse extends User {}
+export type UserResponse = User;
 
 /**
  * User list response
@@ -103,7 +103,7 @@ export interface UserListResponse {
 /**
  * Paginated user list response
  */
-export interface PaginatedUserListResponse extends PaginatedResponse<User> {}
+export type PaginatedUserListResponse = PaginatedResponse<User>;
 
 /**
  * User search/filter parameters

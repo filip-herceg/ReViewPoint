@@ -1,4 +1,5 @@
 import type React from "react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface SwitchProps {
@@ -17,15 +18,16 @@ export const Switch: React.FC<SwitchProps> = ({
 	className,
 }) => {
 	return (
-		<button
+		<Button
 			id={id}
 			type="button"
+			variant="ghost"
 			role="switch"
 			aria-checked={checked}
 			disabled={disabled}
 			onClick={() => onCheckedChange?.(!checked)}
 			className={cn(
-				"relative inline-flex h-6 w-11 items-center rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
+				"relative inline-flex h-6 w-11 items-center rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 p-0",
 				checked ? "bg-primary" : "bg-input",
 				className,
 			)}
@@ -36,6 +38,6 @@ export const Switch: React.FC<SwitchProps> = ({
 					checked ? "translate-x-5" : "translate-x-0",
 				)}
 			/>
-		</button>
+		</Button>
 	);
 };

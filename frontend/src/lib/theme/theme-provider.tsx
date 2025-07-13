@@ -186,6 +186,7 @@ export function useSystemTheme(): ThemeMode {
 
 		const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
+		// eslint-disable-next-line no-undef
 		const handleChange = (e: MediaQueryListEvent) => {
 			const newTheme: ThemeMode = e.matches ? "dark" : "light";
 			setSystemTheme(newTheme);

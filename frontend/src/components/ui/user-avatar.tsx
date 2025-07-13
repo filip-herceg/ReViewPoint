@@ -5,6 +5,7 @@
  */
 
 import React from "react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import logger from "@/logger";
 
@@ -138,8 +139,9 @@ export function UserAvatar({
 	return (
 		<div className={cn("relative inline-flex", className)}>
 			{onClick ? (
-				<button
+				<Button
 					type="button"
+					variant="ghost"
 					className={cn(
 						"rounded-full flex items-center justify-center font-medium text-primary-foreground relative overflow-hidden border-0 p-0",
 						sizeClasses[size],
@@ -165,7 +167,7 @@ export function UserAvatar({
 					{!user?.avatar && (
 						<span className="text-sm font-medium">{initials}</span>
 					)}
-				</button>
+				</Button>
 			) : (
 				<div
 					className={cn(
@@ -258,8 +260,9 @@ export function AvatarGroup({
 			))}
 			{overflowCount > 0 &&
 				(onOverflowClick ? (
-					<button
+					<Button
 						type="button"
+						variant="ghost"
 						className={cn(
 							"rounded-full flex items-center justify-center font-medium text-muted-foreground bg-muted ring-2 ring-background",
 							sizeClasses[size],
@@ -269,7 +272,7 @@ export function AvatarGroup({
 						aria-label={`${overflowCount} more users`}
 					>
 						+{overflowCount}
-					</button>
+					</Button>
 				) : (
 					<div
 						className={cn(

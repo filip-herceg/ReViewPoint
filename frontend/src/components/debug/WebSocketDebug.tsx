@@ -1,5 +1,6 @@
 import type React from "react";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { useWebSocketStore } from "../../lib/store/webSocketStore";
 import { getWebSocketConfig } from "../../lib/websocket/config";
 import { useWebSocket } from "../../lib/websocket/hooks";
@@ -130,13 +131,14 @@ export const WebSocketDebug: React.FC = () => {
 				<h3 className="text-lg font-semibold text-foreground">
 					WebSocket Debug
 				</h3>
-				<button
+				<Button
 					type="button"
 					onClick={() => setShowLogs(!showLogs)}
-					className="text-sm px-2 py-1 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 transition-colors"
+					variant="secondary"
+					size="sm"
 				>
 					{showLogs ? "Hide Logs" : "Show Logs"}
-				</button>
+				</Button>
 			</div>
 
 			{/* Connection Status */}
@@ -178,24 +180,28 @@ export const WebSocketDebug: React.FC = () => {
 
 			{/* Connection Controls */}
 			<div className="flex gap-2 mb-4">
-				<button
+				<Button
 					type="button"
 					onClick={connect}
 					disabled={
 						connectionState === "connected" || connectionState === "connecting"
 					}
-					className="flex-1 px-3 py-1 text-sm bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+					variant="default"
+					size="sm"
+					className="flex-1"
 				>
 					Connect
-				</button>
-				<button
+				</Button>
+				<Button
 					type="button"
 					onClick={disconnect}
 					disabled={connectionState === "disconnected"}
-					className="flex-1 px-3 py-1 text-sm bg-destructive text-destructive-foreground rounded hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+					variant="destructive"
+					size="sm"
+					className="flex-1"
 				>
 					Disconnect
-				</button>
+				</Button>
 			</div>
 
 			{/* Test Message */}
@@ -215,14 +221,15 @@ export const WebSocketDebug: React.FC = () => {
 						className="flex-1 px-2 py-1 text-xs border border-input bg-background text-foreground rounded focus:outline-none focus:ring-2 focus:ring-ring"
 						placeholder="JSON message"
 					/>
-					<button
+					<Button
 						type="button"
 						onClick={handleSendTestMessage}
 						disabled={connectionState !== "connected"}
-						className="px-3 py-1 text-xs bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+						variant="secondary"
+						size="sm"
 					>
 						Send
-					</button>
+					</Button>
 				</div>
 			</div>
 			{/* Last Message */}
@@ -248,13 +255,15 @@ export const WebSocketDebug: React.FC = () => {
 						<h4 className="text-sm font-medium text-foreground">
 							Connection Logs
 						</h4>
-						<button
+						<Button
 							type="button"
 							onClick={() => setLogs([])}
-							className="text-xs px-2 py-1 text-muted-foreground hover:text-foreground transition-colors"
+							variant="ghost"
+							size="sm"
+							className="text-xs"
 						>
 							Clear
-						</button>
+						</Button>
 					</div>
 					<div className="max-h-48 overflow-y-auto space-y-1">
 						{logs.length === 0 ? (

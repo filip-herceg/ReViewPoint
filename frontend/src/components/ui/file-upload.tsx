@@ -326,11 +326,12 @@ export function FileUpload({
 	return (
 		<div className={cn("space-y-4", className)} data-testid={testId}>
 			{/* Dropzone */}
-			<button
+			<Button
 				type="button"
+				variant="ghost"
 				className={cn(
 					// Use only semantic Tailwind color classes
-					"border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer w-full",
+					"border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer w-full h-auto justify-center",
 					isDragging
 						? "border-primary bg-primary/5"
 						: "border-border hover:border-primary/50",
@@ -387,7 +388,7 @@ export function FileUpload({
 						<div>Max files: {mergedValidation.maxFiles}</div>
 					)}
 				</div>
-			</button>
+			</Button>
 
 			{/* File list */}
 			{showPreview && files.length > 0 && (

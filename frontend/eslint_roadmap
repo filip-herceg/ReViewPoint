@@ -1,0 +1,364 @@
+Alright, let's do a **strictly error-only** breakdown.
+I'm ignoring all warnings (`warning`) and only extracting the **errors**.
+Files are sorted by amount of errors (descending), grouped and formatted as requested.
+
+---
+
+### `src/components/ui/button` (not shown, but referenced a lot)
+
+**Not listed in your output, but most errors come from violating the "custom/no-raw-button" rule.**
+
+---
+
+### **Files with Most Errors**
+
+---
+
+#### `src/components/file-management/FileManagementDashboard.tsx` DONE
+
+```plaintext
+594:6  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+606:6  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+656:8  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+663:8  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+```
+
+---
+
+#### `src/components/debug/WebSocketDebug.tsx` DONE
+
+```plaintext
+133:5  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+181:5  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+191:5  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+218:6  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+251:7  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+```
+
+---
+
+#### `src/pages/reviews/ReviewDetailPage.tsx`
+
+```plaintext
+174:29  error  'isModuleSubscribed' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+1203:23  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+```
+
+---
+
+#### `src/components/ui/user-avatar.tsx`
+
+```plaintext
+141:5  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+261:6  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+```
+
+---
+
+#### `src/components/uploads/AdvancedFileUpload.tsx`
+
+```plaintext
+64:3   error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+400:4  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+```
+
+---
+
+#### `src/lib/api/types/auth.ts`
+
+```plaintext
+40:18   error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+46:18   error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+65:18   error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+80:18   error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+97:18   error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+103:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+```
+
+---
+
+#### `src/lib/monitoring/performanceMonitoring.ts`
+
+```plaintext
+38:21   error  'PerformanceObserver' is not defined        no-undef
+121:24  error  'PerformanceObserver' is not defined        no-undef
+124:42  error  'PerformanceResourceTiming' is not defined  no-undef
+177:38  error  'PerformanceResourceTiming' is not defined  no-undef
+```
+
+---
+
+#### `src/lib/websocket/webSocketService.ts`
+
+```plaintext
+66:14   error  'WebSocket' is not defined                no-undef
+248:18  error  'WebSocket' is not defined                no-undef
+557:61  error  'WebSocket' is not defined                no-undef
+```
+
+---
+
+#### `src/pages/settings/SettingsPage.tsx`
+
+```plaintext
+28:10  error  'user' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+```
+
+---
+
+#### `src/components/file-management/FileGrid.tsx`
+
+```plaintext
+141:6  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+```
+
+---
+
+#### `src/components/file-management/FileList.tsx`
+
+```plaintext
+117:6  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+```
+
+---
+
+#### `src/components/navigation/Navigation.tsx`
+
+```plaintext
+92:7  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+```
+
+---
+
+#### `src/components/ui/alert.tsx`
+
+```plaintext
+43:2  error  Headings must have content and the content must be accessible by a screen reader  jsx-a11y/heading-has-content
+```
+
+---
+
+#### `src/components/ui/file-upload.tsx`
+
+```plaintext
+329:4  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+```
+
+---
+
+#### `src/components/ui/switch.tsx`
+
+```plaintext
+20:3  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+```
+
+---
+
+#### `src/components/ui/tabs.tsx`
+
+```plaintext
+70:4  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+```
+
+---
+
+#### `src/components/ui/theme-toggle.tsx`
+
+```plaintext
+157:3  error  Use the standardized Button component from @/components/ui/button instead of raw <button> elements. See docs/development/BUTTON_STANDARDS.md for guidance  custom/no-raw-button
+```
+
+---
+
+#### `src/pages/auth/ForgotPasswordPage.tsx`
+
+```plaintext
+31:12  error  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+```
+
+---
+
+#### `src/pages/auth/ResetPasswordPage.tsx`
+
+```plaintext
+87:12  error  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+```
+
+---
+
+#### `src/lib/api/types/upload.ts`
+
+```plaintext
+59:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+```
+
+---
+
+#### `src/lib/api/types/user.ts`
+
+```plaintext
+90:18   error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+106:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+```
+
+---
+
+#### `src/lib/api/base.ts`
+
+```plaintext
+127:31  error  'CustomEvent' is not defined  no-undef
+```
+
+---
+
+#### `src/lib/config/featureFlags.ts`
+
+```plaintext
+11:42  error  'Window' is not defined  no-undef
+```
+
+---
+
+#### `src/lib/store/webSocketStore.ts`
+
+```plaintext
+117:33  error  'result' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+```
+
+---
+
+#### `src/lib/theme/theme-provider.tsx`
+
+```plaintext
+189:28  error  'MediaQueryListEvent' is not defined  no-undef
+```
+
+---
+
+#### `src/lib/utils/uploads/validationRules.ts`
+
+```plaintext
+670:20  error  'Image' is not defined              no-undef
+765:21  error  'Image' is not defined              no-undef
+785:13  error  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+```
+
+---
+
+#### `src/lib/utils/validationUtils.ts`
+
+```plaintext
+405:19  error  'Image' is not defined              no-undef
+455:11  error  '_error' is defined but never used  @typescript-eslint/no-unused-vars
+```
+
+---
+
+#### `src/logger.d.ts`
+
+```plaintext
+2:7  error  'LogLevel' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+```
+
+---
+
+#### `src/pages/DesignSystemPage.tsx`
+
+```plaintext
+82:28  error  'colors' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+```
+
+---
+
+#### `tests/lib/queryClient.test.ts`
+
+```plaintext
+84:11   error  Empty block statement  no-empty
+127:11  error  Empty block statement  no-empty
+137:11  error  Empty block statement  no-empty
+```
+
+---
+
+#### `tests/test-utils.ts`
+
+```plaintext
+124:17  error  'randomStatus' is already defined  no-redeclare
+127:17  error  'randomStatus' is already defined  no-redeclare
+```
+
+---
+
+#### `src/analytics.ts`
+
+```plaintext
+9:10  error  '_err' is defined but never used  @typescript-eslint/no-unused-vars
+```
+
+---
+
+#### `src/components/feedback/StatusBadge.tsx`
+
+```plaintext
+282:2  error  'tooltip' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+```
+
+---
+
+#### `src/hooks/useFileUpload.ts`
+
+```plaintext
+497:54  error  The ref value 'abortControllersRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'abortControllersRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+```
+
+---
+
+#### `src/hooks/uploads/useAdvancedFileUpload.ts`
+
+```plaintext
+207:3  error  React Hook useCallback has missing dependencies: 'uploadFileChunked' and 'uploadFileWhole'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+```
+
+---
+
+#### `src/lib/store/fileManagementStore.ts`
+
+```plaintext
+259:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+```
+
+---
+
+#### `src/lib/monitoring/errorMonitoring.ts`
+
+```plaintext
+258:34  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+```
+
+---
+
+#### `src/lib/monitoring/performanceMonitoring.ts`
+
+```plaintext
+325:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+327:16  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+```
+
+---
+
+### **Quick Summary Table**
+
+| File (top 10 by errors)                                    | Error Count |
+| ---------------------------------------------------------- | ----------- |
+| src/components/file-management/FileManagementDashboard.tsx | 4           |
+| src/components/debug/WebSocketDebug.tsx                    | 5           |
+| src/pages/reviews/ReviewDetailPage.tsx                     | 2           |
+| src/components/ui/user-avatar.tsx                          | 2           |
+| src/components/uploads/AdvancedFileUpload.tsx              | 2           |
+| src/lib/api/types/auth.ts                                  | 6           |
+| src/lib/monitoring/performanceMonitoring.ts                | 6           |
+| src/lib/websocket/webSocketService.ts                      | 3           |
+| src/pages/settings/SettingsPage.tsx                        | 1           |
+| src/components/file-management/FileGrid.tsx                | 1           |
+
+---

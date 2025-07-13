@@ -81,7 +81,9 @@ describe("queryClient error handling config", () => {
 		});
 		try {
 			await mutation.execute(undefined);
-		} catch {}
+		} catch {
+			// Expected error for testing error handling
+		}
 		unsubscribe();
 		// Check that we captured at least one error
 		expect(errors.length).toBeGreaterThan(0);
@@ -124,7 +126,9 @@ describe("queryClient error handling config", () => {
 		});
 		try {
 			await query.fetch();
-		} catch {}
+		} catch {
+			// Expected error for testing error handling
+		}
 
 		// Simulate a mutation error by building a mutation that throws
 		const mutation = queryClient.getMutationCache().build(queryClient, {
@@ -134,7 +138,9 @@ describe("queryClient error handling config", () => {
 		});
 		try {
 			await mutation.execute(undefined);
-		} catch {}
+		} catch {
+			// Expected error for testing error handling
+		}
 
 		unsubscribeQuery();
 		unsubscribeMutation();

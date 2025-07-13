@@ -171,7 +171,7 @@ const ReviewDetailPage: React.FC = () => {
 	const [typeFilter, setTypeFilter] = useState<"all" | string>("all");
 
 	// Get marketplace data for available modules
-	const { userSubscriptions, isModuleSubscribed, getUserSubscription } =
+	const { userSubscriptions, getUserSubscription } =
 		useMarketplace();
 
 	// TODO: Replace with actual data from API
@@ -1200,8 +1200,9 @@ const ReviewDetailPage: React.FC = () => {
 																					const originalIdx =
 																						result.issues.indexOf(issue);
 																					return (
-																						<button
+																						<Button
 																							type="button"
+																							variant="ghost"
 																							key={`issue-button-${originalIdx}-${issue.type || "unknown"}`}
 																							onClick={() =>
 																								setSelectedIssue(
@@ -1210,7 +1211,7 @@ const ReviewDetailPage: React.FC = () => {
 																										: originalIdx,
 																								)
 																							}
-																							className={`w-full text-left p-3 border-b hover:bg-white transition-colors ${
+																							className={`w-full text-left p-3 border-b hover:bg-white transition-colors justify-start h-auto ${
 																								selectedIssue === originalIdx
 																									? "bg-white border-l-4 border-l-blue-500"
 																									: ""
@@ -1254,7 +1255,7 @@ const ReviewDetailPage: React.FC = () => {
 																							<div className="text-xs text-gray-500 italic truncate mt-1">
 																								{issue.citation}
 																							</div>
-																						</button>
+																						</Button>
 																					);
 																				})}
 																		</div>

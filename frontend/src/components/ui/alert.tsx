@@ -39,14 +39,16 @@ Alert.displayName = "Alert";
 const AlertTitle = React.forwardRef<
 	HTMLHeadingElement,
 	React.HTMLAttributes<HTMLHeadingElement>
->(({ className = "", ...props }, ref) => (
+>(({ className = "", children, ...props }, ref) => (
 	<h5
 		ref={ref}
 		className={["mb-1 font-medium leading-none tracking-tight", className]
 			.filter(Boolean)
 			.join(" ")}
 		{...props}
-	/>
+	>
+		{children}
+	</h5>
 ));
 AlertTitle.displayName = "AlertTitle";
 

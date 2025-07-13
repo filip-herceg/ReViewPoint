@@ -48,7 +48,7 @@ export function getErrorMessage(error: unknown): string {
 				}
 				return errorString;
 			}
-		} catch (_e) {
+		} catch {
 			// If JSON stringify fails, continue to default
 		}
 

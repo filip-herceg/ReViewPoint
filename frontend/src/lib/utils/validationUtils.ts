@@ -402,6 +402,7 @@ async function validateImageFile(
 	warnings: string[],
 ): Promise<void> {
 	return new Promise((resolve) => {
+		// eslint-disable-next-line no-undef
 		const img = new Image();
 
 		img.onload = () => {
@@ -452,7 +453,7 @@ async function validatePdfFile(
 		if (!text.includes("%%EOF")) {
 			warnings.push("PDF may be incomplete: missing EOF marker");
 		}
-	} catch (_error) {
+	} catch {
 		warnings.push("Could not read PDF content for validation");
 	}
 }

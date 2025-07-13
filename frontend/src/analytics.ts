@@ -6,7 +6,7 @@ try {
 	const plausible = Plausible({ domain: "your-domain.com" });
 	plausible.enableAutoPageviews();
 	plausible.enableAutoOutboundTracking();
-} catch (_err) {
+} catch {
 	// Defensive: log analytics init error, do not break app
 	const _error = createTestError("Analytics initialization error");
 	// Optionally, send to logger or Sentry here

@@ -1,6 +1,4 @@
 declare module "@/logger" {
-	type LogLevel = "error" | "warn" | "info" | "debug" | "trace";
-
 	const logger: {
 		error: (...args: unknown[]) => void;
 		warn: (...args: unknown[]) => void;

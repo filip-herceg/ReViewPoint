@@ -61,9 +61,14 @@ const FileItem = ({
 }: FileItemProps) => (
 	<div className="flex items-center gap-2 border rounded p-2">
 		<span>{file.name}</span>
-		<button type="button" onClick={onRemove}>
+		<Button 
+			type="button" 
+			onClick={onRemove}
+			variant="destructive"
+			size="sm"
+		>
 			Remove
-		</button>
+		</Button>
 	</div>
 );
 
@@ -397,8 +402,9 @@ const AdvancedFileUpload: React.FC<AdvancedFileUploadProps> = (props) => {
 				disabled={disabled || loading}
 			/>
 			{/* Drop zone */}
-			<button
+			<Button
 				type="button"
+				variant="ghost"
 				className={getDropzoneClasses()}
 				onDragOver={handleDragOver}
 				onDragLeave={handleDragLeave}
@@ -444,7 +450,7 @@ const AdvancedFileUpload: React.FC<AdvancedFileUploadProps> = (props) => {
 						<Loader2 className="h-6 w-6 animate-spin text-primary" />
 					</div>
 				)}
-			</button>
+			</Button>
 
 			{/* Selected files list */}
 			{selectedFiles.length > 0 && (

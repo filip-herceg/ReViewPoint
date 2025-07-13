@@ -667,6 +667,7 @@ export class FileValidator {
 		file: File,
 	): Promise<{ width: number; height: number }> {
 		return new Promise((resolve, reject) => {
+			// eslint-disable-next-line no-undef
 			const img = new Image();
 			const url = URL.createObjectURL(file);
 
@@ -762,6 +763,7 @@ export const createFileTypeRules = {
 
 			// Add image-specific validation logic here
 			try {
+				// eslint-disable-next-line no-undef
 				const img = new Image();
 				const url = URL.createObjectURL(file);
 
@@ -782,7 +784,7 @@ export const createFileTypeRules = {
 				}
 
 				URL.revokeObjectURL(url);
-			} catch (_error) {
+			} catch {
 				// Non-critical error
 			}
 

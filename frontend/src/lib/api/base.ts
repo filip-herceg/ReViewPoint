@@ -124,6 +124,7 @@ apiClient.interceptors.response.use(
 				// You might want to redirect to login here
 				// Note: Don't import router directly to avoid circular dependencies
 				if (typeof window !== "undefined") {
+					// eslint-disable-next-line no-undef
 					window.dispatchEvent(new CustomEvent("auth:logout"));
 				}
 

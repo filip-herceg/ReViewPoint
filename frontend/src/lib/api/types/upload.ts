@@ -56,7 +56,7 @@ export interface FileListResponse {
 /**
  * Paginated file list response
  */
-export interface PaginatedFileListResponse extends PaginatedResponse<File> {}
+export type PaginatedFileListResponse = PaginatedResponse<File>;
 
 /**
  * Upload status types

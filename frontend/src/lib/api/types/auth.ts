@@ -37,13 +37,13 @@ export interface AuthLoginRequest {
  * Login response
  * Same as AuthTokens but semantically different
  */
-export interface AuthLoginResponse extends AuthTokens {}
+export type AuthLoginResponse = AuthTokens;
 
 /**
  * Logout response
  * Matches backend MessageResponse
  */
-export interface AuthLogoutResponse extends MessageResponse {}
+export type AuthLogoutResponse = MessageResponse;
 
 /**
  * User registration request
@@ -62,7 +62,7 @@ export interface AuthRegisterRequest {
  * User registration response
  * Matches backend AuthResponse schema
  */
-export interface AuthRegisterResponse extends AuthTokens {}
+export type AuthRegisterResponse = AuthTokens;
 
 /**
  * Password reset request
@@ -77,7 +77,7 @@ export interface AuthPasswordResetRequest {
  * Password reset response
  * Matches backend MessageResponse
  */
-export interface AuthPasswordResetResponse extends MessageResponse {}
+export type AuthPasswordResetResponse = MessageResponse;
 
 /**
  * Password reset confirmation request
@@ -94,13 +94,13 @@ export interface AuthPasswordResetConfirmRequest {
  * Password reset confirmation response
  * Matches backend MessageResponse
  */
-export interface AuthPasswordResetConfirmResponse extends MessageResponse {}
+export type AuthPasswordResetConfirmResponse = MessageResponse;
 
 /**
  * Token refresh response
  * Matches backend AuthResponse schema
  */
-export interface AuthTokenRefreshResponse extends AuthTokens {}
+export type AuthTokenRefreshResponse = AuthTokens;
 
 /**
  * JWT token payload structure

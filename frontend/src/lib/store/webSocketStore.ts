@@ -114,7 +114,7 @@ export const useWebSocketStore = create<WebSocketState>((set, get) => {
 
 		webSocketService.on("upload.completed", (data) => {
 			logger.info("[WebSocketStore] Upload completed", data);
-			const { upload_id: uploadId, result } = data;
+			const { upload_id: uploadId } = data;
 
 			set((state) => {
 				const newUploadProgress = new Map(state.uploadProgress);

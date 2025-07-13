@@ -63,6 +63,7 @@ interface RateLimitState {
 }
 
 class WebSocketService {
+	// eslint-disable-next-line no-undef
 	private ws: WebSocket | null = null;
 	private config: WSConfig;
 	private state: ConnectionState = "disconnected";
@@ -245,6 +246,7 @@ class WebSocketService {
 			});
 
 			// Create WebSocket with timeout
+			// eslint-disable-next-line no-undef
 			this.ws = new WebSocket(wsUrl);
 			this.setupWebSocketEventHandlers();
 
@@ -554,6 +556,7 @@ class WebSocketService {
 			id: crypto.randomUUID(),
 		};
 
+		// eslint-disable-next-line no-undef
 		if (this.state === "connected" && this.ws?.readyState === WebSocket.OPEN) {
 			try {
 				this.ws.send(JSON.stringify(message));

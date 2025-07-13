@@ -279,7 +279,7 @@ interface StatusBadgeWithTooltipProps extends StatusBadgeProps {
 }
 
 export function StatusBadgeWithTooltip({
-	tooltip,
+	tooltip: _tooltip,
 	...props
 }: StatusBadgeWithTooltipProps) {
 	// For now, just render the badge - tooltip integration would require tooltip component

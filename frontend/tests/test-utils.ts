@@ -120,13 +120,9 @@ export function randomInt(min: number, max: number): number {
 }
 
 // Utility: Pick a random upload status
-export function randomStatus(): "pending" | "completed" | "failed";
-export function randomStatus<T extends readonly string[]>(
-	options: T,
-): T[number];
 export function randomStatus<T extends readonly string[]>(
 	options?: T,
-): T[number] | "pending" | "completed" | "failed" {
+): T extends undefined ? "pending" | "completed" | "failed" : T[number] {
 	const defaultStatuses = ["pending", "completed", "failed"] as const;
 	const statuses = options || defaultStatuses;
 	const status = statuses[randomInt(0, statuses.length - 1)];
@@ -136,7 +132,7 @@ export function randomStatus<T extends readonly string[]>(
 	} else {
 		testLogger.debug("Picked random status:", status);
 	}
-	return status;
+	return status as any;
 }
 
 // Utility: Generate a random ISO date string

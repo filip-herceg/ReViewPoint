@@ -115,7 +115,7 @@ async function validateOpenAPISchema(): Promise<ValidationResult> {
 		// Check if file exists
 		try {
 			await fs.access(SCHEMA_PATH);
-		} catch (_error) {
+		} catch {
 			result.errors.push(`Schema file not found: ${SCHEMA_PATH}`);
 			result.isValid = false;
 			return result;

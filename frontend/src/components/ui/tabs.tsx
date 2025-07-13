@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface TabsContextType {
@@ -67,8 +68,9 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
 		const isActive = selectedValue === value;
 
 		return (
-			<button
+			<Button
 				ref={ref}
+				variant="ghost"
 				className={cn(
 					"inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 flex-1",
 					isActive
@@ -80,7 +82,7 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
 				{...props}
 			>
 				{children}
-			</button>
+			</Button>
 		);
 	},
 );

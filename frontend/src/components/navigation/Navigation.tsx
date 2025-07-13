@@ -1,6 +1,7 @@
 import * as Icons from "lucide-react";
 import type React from "react";
 import { Link, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -89,8 +90,9 @@ export function Navigation() {
 			{isAuthenticated ? (
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<button
+						<Button
 							type="button"
+							variant="ghost"
 							className="flex items-center space-x-2 px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200 hover:scale-105"
 						>
 							<Icons.User className="h-4 w-4" />
@@ -98,7 +100,7 @@ export function Navigation() {
 								{user?.name || user?.email}
 							</span>
 							<Icons.ChevronDown className="h-4 w-4" />
-						</button>
+						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end" className="w-56">
 						<DropdownMenuLabel>

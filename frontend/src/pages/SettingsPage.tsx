@@ -22,10 +22,9 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { useAuthStore } from "@/lib/store/authStore";
+import { useAuthStore as _useAuthStore } from "@/lib/store/authStore";
 
 const SettingsPage: React.FC = () => {
-	const { user } = useAuthStore();
 	const location = useLocation();
 	const [isLoading, setIsLoading] = useState(false);
 	const [activeTab, setActiveTab] = useState("notifications");
