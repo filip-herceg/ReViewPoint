@@ -58,7 +58,8 @@ async def test_registration_flow() -> None:
     async with httpx.AsyncClient(timeout=timeout_config) as client:
         try:
             # Log only non-sensitive information (password masked for security)
-            print(f"Testing registration with email: {test_data['email']}")
+            sanitized_email = f"test-*****{EMAIL_DOMAIN}"
+            print(f"Testing registration with email: {sanitized_email}")
             print("Using password: ***")  # Never log actual passwords
             response: httpx.Response = await client.post(
                 REGISTRATION_ENDPOINT,
