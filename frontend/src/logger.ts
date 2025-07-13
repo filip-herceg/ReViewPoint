@@ -10,8 +10,8 @@ const LOG_LEVELS: LogLevel[] = ["error", "warn", "info", "debug", "trace"];
 // Use window global or fallback to 'info'. Set window.LOG_LEVEL in index.html or via Vite define if needed.
 
 function getLogLevel(): LogLevel {
-	if (typeof window !== "undefined" && (window as any).LOG_LEVEL) {
-		return (window as any).LOG_LEVEL;
+	if (typeof window !== "undefined" && window.LOG_LEVEL) {
+		return window.LOG_LEVEL as LogLevel;
 	}
 	if (typeof globalThis !== "undefined" && (globalThis as any).LOG_LEVEL) {
 		return (globalThis as any).LOG_LEVEL;
@@ -47,15 +47,15 @@ function normalizeErrorArg(arg: unknown): unknown {
 }
 
 const logger = {
-	error: (...args: any[]) => {
+	error: (...args: unknown[]) => {
 		if (shouldLog("error"))
 			console.error("[ERROR]", ...args.map(normalizeErrorArg));
 	},
-	warn: (...args: any[]) => {
+	warn: (...args: unknown[]) => {
 		if (shouldLog("warn"))
 			console.warn("[WARN]", ...args.map(normalizeErrorArg));
 	},
-	info: (...args: any[]) => {
+	info: (...args: unknown[]) => {
 		if (shouldLog("info"))
 			console.info("[INFO]", ...args.map(normalizeErrorArg));
 	},
@@ -63,7 +63,7 @@ const logger = {
 		if (shouldLog("debug"))
 			console.debug("[DEBUG]", ...args.map(normalizeErrorArg));
 	},
-	trace: (...args: any[]) => {
+	trace: (...args: unknown[]) => {
 		if (shouldLog("trace"))
 			console.trace("[TRACE]", ...args.map(normalizeErrorArg));
 	},

@@ -63,7 +63,13 @@ export function useCreateUpload() {
 export function useUpdateUpload() {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: async ({ id, data }: { id: string; data: any }) => {
+		mutationFn: async ({
+			id: _id,
+			data: _data,
+		}: {
+			id: string;
+			data: unknown;
+		}) => {
 			throw createTestError(
 				"File updates are not supported. Please delete and re-upload the file.",
 			);

@@ -23,6 +23,7 @@ export function LoadingSpinner({
 				sizeClasses[size],
 				className,
 			)}
+			role="status"
 			aria-label="Loading"
 		/>
 	);

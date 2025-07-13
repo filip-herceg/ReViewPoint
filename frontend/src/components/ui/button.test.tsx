@@ -73,7 +73,7 @@ describe("Button Component - React.Children.only Fixes", () => {
 	it("handles asChild with invalid children gracefully", () => {
 		const invalidChild = "just a string";
 
-		const { container } = render(<Button asChild>{invalidChild}</Button>);
+		render(<Button asChild>{invalidChild}</Button>);
 
 		// Should handle gracefully without crashing
 		expect(mockConsoleWarn).toHaveBeenCalled();
@@ -166,11 +166,7 @@ describe("Button Component - React.Children.only Fixes", () => {
 
 	it("maintains accessibility attributes", () => {
 		render(
-			<Button
-				aria-label="Custom aria label"
-				data-testid="test-button"
-				role="button"
-			>
+			<Button aria-label="Custom aria label" data-testid="test-button">
 				Button
 			</Button>,
 		);

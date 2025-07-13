@@ -239,9 +239,9 @@ export function isAuthTokens(value: unknown): value is AuthTokens {
 		"access_token" in value &&
 		"refresh_token" in value &&
 		"token_type" in value &&
-		typeof (value as any).access_token === "string" &&
-		typeof (value as any).refresh_token === "string" &&
-		(value as any).token_type === "bearer"
+		typeof (value as Record<string, unknown>).access_token === "string" &&
+		typeof (value as Record<string, unknown>).refresh_token === "string" &&
+		(value as Record<string, unknown>).token_type === "bearer"
 	);
 }
 
@@ -254,7 +254,9 @@ export function isAuthError(error: unknown): error is AuthError {
 		error !== null &&
 		"type" in error &&
 		"message" in error &&
-		Object.values(AuthErrorType).includes((error as any).type)
+		Object.values(AuthErrorType).includes(
+			(error as Record<string, unknown>).type as AuthErrorType,
+		)
 	);
 }
 

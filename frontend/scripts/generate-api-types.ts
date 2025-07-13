@@ -74,7 +74,7 @@ const logger = new GenerationLogger();
 /**
  * Validate that the OpenAPI schema exists and is valid
  */
-async function validateSchema(): Promise<any> {
+async function validateSchema(): Promise<unknown> {
 	logger.info("🔍 Validating OpenAPI schema...");
 
 	try {
@@ -86,16 +86,20 @@ async function validateSchema(): Promise<any> {
 
 		logger.info("✅ OpenAPI schema validation successful");
 		logger.debug("Schema info:", {
-			title: (schema as any).info?.title,
-			version: (schema as any).info?.version,
-			pathsCount: Object.keys((schema as any).paths || {}).length,
-			schemasCount: Object.keys((schema as any).components?.schemas || {})
-				.length,
+			title: (schema as { info?: { title?: string } }).info?.title,
+			version: (schema as { info?: { version?: string } }).info?.version,
+			pathsCount: Object.keys(
+				(schema as { paths?: Record<string, unknown> }).paths || {},
+			).length,
+			schemasCount: Object.keys(
+				(schema as { components?: { schemas?: Record<string, unknown> } })
+					.components?.schemas || {},
+			).length,
 		});
 
 		return schema;
 	} catch (error) {
-		if ((error as any).code === "ENOENT") {
+		if ((error as { code?: string }).code === "ENOENT") {
 			logger.error("❌ OpenAPI schema file not found at:", SCHEMA_PATH);
 			logger.error(
 				'💡 Run "pnpm run generate:openapi-schema" first to export the schema from backend',

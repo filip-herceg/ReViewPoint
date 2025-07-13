@@ -12,7 +12,7 @@ interface ConnectionLog {
 	id: string;
 	timestamp: Date;
 	type: "connect" | "disconnect" | "message" | "error" | "heartbeat";
-	data: any;
+	data: unknown;
 }
 
 interface WebSocketSidebarDebugProps {
@@ -26,12 +26,12 @@ export const WebSocketSidebarDebug: React.FC<WebSocketSidebarDebugProps> = ({
 	const store = useWebSocketStore();
 	const [logs, setLogs] = useState<ConnectionLog[]>([]);
 	const [showDetails, setShowDetails] = useState(false);
-	const [lastMessage, setLastMessage] = useState<any>(null);
+	const [lastMessage, setLastMessage] = useState<unknown>(null);
 	const config = getWebSocketConfig();
 
 	// Log connection events
 	useEffect(() => {
-		const addLog = (type: ConnectionLog["type"], data: any) => {
+		const addLog = (type: ConnectionLog["type"], data: unknown) => {
 			const log: ConnectionLog = {
 				id: Date.now().toString(),
 				timestamp: new Date(),
@@ -49,12 +49,12 @@ export const WebSocketSidebarDebug: React.FC<WebSocketSidebarDebugProps> = ({
 
 		if (store.isConnected) {
 			// Listen to all events for debugging
-			const messageHandler = (event: any) => {
+			const messageHandler = (event: unknown) => {
 				setLastMessage(event);
 				addLog("message", event);
 			};
 
-			const errorHandler = (error: any) => {
+			const errorHandler = (error: unknown) => {
 				addLog("error", error);
 			};
 

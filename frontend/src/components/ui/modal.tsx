@@ -121,7 +121,7 @@ export function Modal({
 	onCancel,
 	confirmText = "Confirm",
 	cancelText = "Cancel",
-	confirmVariant = "default",
+	// confirmVariant = "default", // Currently unused - reserved for future button styling
 	confirmDisabled = false,
 	confirmLoading = false,
 	variant = "default",

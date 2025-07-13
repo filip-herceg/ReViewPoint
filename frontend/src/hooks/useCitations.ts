@@ -1,9 +1,13 @@
-import { useEffect, useState } from "react";
-import type { Citation, CitationsData } from "@/types/citations";
+import { useCallback, useEffect, useState } from "react";
+import type {
+	Citation,
+	CitationsData,
+	CitationsFilters,
+} from "@/types/citations";
 
 interface UseCitationsProps {
 	documentId: string;
-	filters?: any; // For backward compatibility
+	filters?: CitationsFilters; // For backward compatibility
 }
 
 interface UseCitationsReturn {
@@ -15,7 +19,7 @@ interface UseCitationsReturn {
 	hasMoreCitationsUsed: boolean;
 	loadMoreCitedBy?: () => void; // For backward compatibility
 	hasMoreCitedBy?: boolean; // For backward compatibility
-	updateFilters?: (filters: any) => void; // For backward compatibility
+	updateFilters?: (filters: CitationsFilters) => void; // For backward compatibility
 }
 
 // Generate realistic citation data based on paper type
@@ -36,7 +40,7 @@ const generateRealisticCitations = (documentId: string): CitationsData => {
 			citationTemplates[Math.floor(Math.random() * citationTemplates.length)];
 
 		// Realistic citation frequency: most sources cited 1-2 times, some 3-5 times, rarely more
-		let timesUsed;
+		let timesUsed: number;
 		const rand = Math.random();
 		if (rand < 0.5)
 			timesUsed = 1; // 50% cited once
@@ -64,10 +68,11 @@ const generateRealisticCitations = (documentId: string): CitationsData => {
 			line: Math.floor(Math.random() * 20) + 1,
 			citationStyle: ["APA", "MLA", "IEEE", "Chicago"][
 				Math.floor(Math.random() * 4)
-			] as any,
-			severity: ["info", "warning", "error"][
-				Math.floor(Math.random() * 3)
-			] as any,
+			] as "APA" | "MLA" | "IEEE" | "Chicago",
+			severity: ["info", "warning", "error"][Math.floor(Math.random() * 3)] as
+				| "info"
+				| "warning"
+				| "error",
 			type: template.type,
 			citationType: template.type, // For backward compatibility
 			citationInstances: timesUsed, // Store how many times this source is cited
@@ -301,7 +306,7 @@ export const useCitations = ({
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
-	const fetchCitations = async () => {
+	const fetchCitations = useCallback(async () => {
 		try {
 			setIsLoading(true);
 			setError(null);
@@ -318,7 +323,7 @@ export const useCitations = ({
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, [documentId]);
 
 	useEffect(() => {
 		fetchCitations();

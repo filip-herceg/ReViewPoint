@@ -24,7 +24,10 @@ import { cn } from "@/lib/utils";
 import { getErrorMessage } from "@/lib/utils/errorHandling";
 import logger from "@/logger";
 
-const _iconMap: Record<string, React.ComponentType<any>> = {
+const _iconMap: Record<
+	string,
+	React.ComponentType<React.SVGProps<SVGSVGElement>>
+> = {
 	Home: Icons.Home,
 	LayoutDashboard: Icons.LayoutDashboard,
 	Upload: Icons.Upload,
@@ -61,7 +64,7 @@ interface AppShellProps {
  */
 export function AppShell({ children }: AppShellProps) {
 	const _location = useLocation();
-	const { isAuthenticated, user, logout } = useAuth();
+	const { isAuthenticated } = useAuth();
 	const { sidebarOpen, setSidebarOpen } = useUIStore();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 

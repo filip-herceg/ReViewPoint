@@ -591,7 +591,10 @@ const ModuleDetailPage: React.FC = () => {
 							<CardContent>
 								<ul className="space-y-2">
 									{module.license.features.free.map((feature, index) => (
-										<li key={index} className="flex items-start gap-2">
+										<li
+											key={`free-${feature.slice(0, 20)}-${index}`}
+											className="flex items-start gap-2"
+										>
 											<CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
 											<span className="text-sm">{feature}</span>
 										</li>
@@ -612,7 +615,10 @@ const ModuleDetailPage: React.FC = () => {
 								<CardContent>
 									<ul className="space-y-2">
 										{module.license.features.premium.map((feature, index) => (
-											<li key={index} className="flex items-start gap-2">
+											<li
+												key={`premium-${feature.slice(0, 20)}-${index}`}
+												className="flex items-start gap-2"
+											>
 												<Crown className="h-4 w-4 text-yellow-500 mt-0.5" />
 												<span className="text-sm">{feature}</span>
 											</li>

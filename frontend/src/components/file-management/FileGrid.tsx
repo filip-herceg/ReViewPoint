@@ -106,16 +106,18 @@ export const FileGrid: React.FC<FileGridProps> = ({
 	if (loading) {
 		return (
 			<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 p-4">
-				{Array.from({ length: 12 }).map((_, index) => (
-					<div
-						key={index}
-						className="bg-background border border-border rounded-lg p-4 animate-pulse"
-					>
-						<div className="w-12 h-12 bg-muted rounded-lg mb-3 mx-auto" />
-						<div className="h-4 bg-muted rounded mb-2" />
-						<div className="h-3 bg-muted rounded w-16 mx-auto" />
-					</div>
-				))}
+				{Array.from({ length: 12 }, (_, index) => `skeleton-${index}`).map(
+					(skeletonKey) => (
+						<div
+							key={skeletonKey}
+							className="bg-background border border-border rounded-lg p-4 animate-pulse"
+						>
+							<div className="w-12 h-12 bg-muted rounded-lg mb-3 mx-auto" />
+							<div className="h-4 bg-muted rounded mb-2" />
+							<div className="h-3 bg-muted rounded w-16 mx-auto" />
+						</div>
+					),
+				)}
 			</div>
 		);
 	}
@@ -136,13 +138,15 @@ export const FileGrid: React.FC<FileGridProps> = ({
 				const isSelected = selectedFiles.includes(file.filename);
 
 				return (
-					<div
+					<button
 						key={file.filename}
 						className={cn(
-							"relative bg-background border border-border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer group",
+							"relative bg-background border border-border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer group w-full text-left",
 							isSelected && "ring-2 ring-info border-info",
 						)}
 						onClick={() => onPreview(file)}
+						type="button"
+						aria-label={`Preview ${file.filename}`}
 					>
 						{/* Selection checkbox */}
 						<div className="absolute top-2 left-2 z-10">
@@ -258,7 +262,7 @@ export const FileGrid: React.FC<FileGridProps> = ({
 								</span>
 							</div>
 						</div>
-					</div>
+					</button>
 				);
 			})}
 		</div>

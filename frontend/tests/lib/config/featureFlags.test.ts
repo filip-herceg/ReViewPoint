@@ -118,8 +118,10 @@ describe("Feature Flags System", () => {
 	});
 
 	describe("Feature Flag Checking", () => {
-		beforeEach(() => {
-			// Set up test feature flags
+		it("should correctly check enabled features", () => {
+			testLogger.info("Testing enabled feature checking");
+
+			// Set up specific test flags for this test
 			const testFlags = createFeatureFlags({
 				enablePasswordReset: true,
 				enableSocialLogin: false,
@@ -133,10 +135,6 @@ describe("Feature Flags System", () => {
 			};
 
 			resetFeatureFlags();
-		});
-
-		it("should correctly check enabled features", () => {
-			testLogger.info("Testing enabled feature checking");
 
 			expect(isFeatureEnabled("enablePasswordReset")).toBe(true);
 			expect(isFeatureEnabled("enableDarkMode")).toBe(true);
@@ -150,6 +148,21 @@ describe("Feature Flags System", () => {
 		it("should correctly check disabled features", () => {
 			testLogger.info("Testing disabled feature checking");
 
+			// Set up specific test flags for this test
+			const testFlags = createFeatureFlags({
+				enablePasswordReset: true,
+				enableSocialLogin: false,
+				enableDarkMode: true,
+				enableVirtualization: false,
+			});
+
+			// Mock the feature flags for testing
+			(global as any).window = {
+				FEATURE_FLAGS: testFlags,
+			};
+
+			resetFeatureFlags();
+
 			expect(isFeatureEnabled("enableSocialLogin")).toBe(false);
 			expect(isFeatureEnabled("enableVirtualization")).toBe(false);
 
@@ -161,6 +174,21 @@ describe("Feature Flags System", () => {
 
 		it("should return list of enabled features", () => {
 			testLogger.info("Testing enabled features list");
+
+			// Set up specific test flags for this test
+			const testFlags = createFeatureFlags({
+				enablePasswordReset: true,
+				enableSocialLogin: false,
+				enableDarkMode: true,
+				enableVirtualization: false,
+			});
+
+			// Mock the feature flags for testing
+			(global as any).window = {
+				FEATURE_FLAGS: testFlags,
+			};
+
+			resetFeatureFlags();
 
 			const enabledFeatures = getEnabledFeatures();
 

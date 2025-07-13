@@ -147,18 +147,35 @@ export async function request<T>(
 		const res = await apiClient.request<T>({ url, ...config });
 		logger.info("[API] request", { url, config, response: res.data });
 		return { data: res.data as T };
-	} catch (error: any) {
+	} catch (error: unknown) {
+		// Type guard for axios-like errors
+		const isAxiosError = (
+			err: unknown,
+		): err is { response?: { data?: Record<string, unknown> } } => {
+			return typeof err === "object" && err !== null && "response" in err;
+		};
+
 		// If the error has a response with data.error as a string, use that directly
 		if (
-			error?.response?.data &&
+			isAxiosError(error) &&
+			error.response?.data &&
 			(typeof error.response.data === "string" ||
-				typeof error.response.data.error === "string" ||
-				typeof error.response.data.message === "string")
+				(typeof error.response.data === "object" &&
+					error.response.data !== null &&
+					(typeof (error.response.data as Record<string, unknown>).error ===
+						"string" ||
+						typeof (error.response.data as Record<string, unknown>).message ===
+							"string")))
 		) {
+			const data = error.response.data;
 			const errorMessage =
-				typeof error.response.data === "string"
-					? error.response.data
-					: error.response.data.error || error.response.data.message;
+				typeof data === "string"
+					? data
+					: typeof (data as Record<string, unknown>).error === "string"
+						? ((data as Record<string, unknown>).error as string)
+						: typeof (data as Record<string, unknown>).message === "string"
+							? ((data as Record<string, unknown>).message as string)
+							: "Unknown error";
 			logger.error("[API] request ERROR", { url, config, error: errorMessage });
 			return { data: null, error: errorMessage };
 		}

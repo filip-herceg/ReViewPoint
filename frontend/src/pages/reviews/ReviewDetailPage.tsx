@@ -42,6 +42,17 @@ import {
 } from "@/components/ui/status-badge";
 import { useCitations } from "@/hooks/useCitations";
 import { useMarketplace } from "@/hooks/useMarketplace";
+import type { Module } from "@/types/marketplace";
+
+// Citation issue types
+interface CitationIssue {
+	type: string;
+	severity: "high" | "medium" | "low";
+	location: string;
+	citation: string;
+	issue: string;
+	recommendation: string;
+}
 
 // Citation issue sorting and filtering helpers
 const getSeverityWeight = (severity: string) => {
@@ -71,7 +82,7 @@ const parseLocation = (location: string) => {
 };
 
 const sortIssues = (
-	issues: any[],
+	issues: CitationIssue[],
 	sortBy: string,
 	direction: "asc" | "desc",
 ) => {
@@ -96,7 +107,7 @@ const sortIssues = (
 };
 
 const filterIssues = (
-	issues: any[],
+	issues: CitationIssue[],
 	severityFilter: string,
 	typeFilter: string,
 ) => {
@@ -108,14 +119,47 @@ const filterIssues = (
 	});
 };
 
+// Type for the module configuration sidebar
+type ModuleConfigData = {
+	id: string;
+	name: string;
+	version: string;
+	description: string;
+	configSchema?: Record<string, unknown>;
+	defaultConfig?: Record<string, unknown>;
+	userConfig?: Record<string, unknown>;
+} | null;
+
+// Module result types
+interface ModuleResult {
+	status: string;
+	score?: number;
+	findings?: number;
+	totalCitations?: number;
+	validCitations?: number;
+	totalSources?: number;
+	citationsAnalyzed?: number;
+	citedByDocuments?: number;
+	analysisDate?: string;
+	coveragePercentage?: number;
+	details?: string[];
+	issues?: CitationIssue[];
+	recommendations?: string[];
+	analysis?: string;
+	claims?: string[];
+	biases?: string[];
+}
+
 const ReviewDetailPage: React.FC = () => {
 	const { id } = useParams<{ id: string }>();
 	const navigate = useNavigate();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [configSidebarOpen, setConfigSidebarOpen] = useState(false);
-	const [selectedModule, setSelectedModule] = useState<any>(null);
+	const [selectedModule, setSelectedModule] = useState<ModuleConfigData>(null);
 	const [runningModules, setRunningModules] = useState<Set<string>>(new Set());
-	const [moduleResults, setModuleResults] = useState<Record<string, any>>({});
+	const [moduleResults, setModuleResults] = useState<
+		Record<string, ModuleResult>
+	>({});
 
 	// Citation Validator Pro UI state
 	const [selectedIssue, setSelectedIssue] = useState<number | null>(null);
@@ -322,7 +366,7 @@ const ReviewDetailPage: React.FC = () => {
 	};
 
 	// Generate simulated module results
-	const generateModuleResult = (module: any, _reviewDoc: any) => {
+	const generateModuleResult = (module: Module, _reviewDoc: unknown) => {
 		// Get realistic citation counts from actual citations data
 		const citationData = citationsData?.citationsUsed;
 		const totalCitations =
@@ -592,7 +636,7 @@ const ReviewDetailPage: React.FC = () => {
 				<div className="flex items-center gap-1">
 					{Array.from({ length: 5 }, (_, i) => (
 						<Button
-							key={i}
+							key={`rating-star-${i + 1}`}
 							type="button"
 							variant="icon-sm"
 							size="icon-sm"
@@ -730,7 +774,10 @@ const ReviewDetailPage: React.FC = () => {
 				<CardContent>
 					<ul className="space-y-2">
 						{review.reviewGuidelines.map((guideline, index) => (
-							<li key={index} className="flex items-start gap-2">
+							<li
+								key={`guideline-${guideline.slice(0, 20)}-${index}`}
+								className="flex items-start gap-2"
+							>
 								<CheckCircle className="h-4 w-4 text-success-foreground mt-0.5 flex-shrink-0" />
 								<span className="text-sm">{guideline}</span>
 							</li>
@@ -894,7 +941,7 @@ const ReviewDetailPage: React.FC = () => {
 																	{result.details.map(
 																		(detail: string, idx: number) => (
 																			<li
-																				key={idx}
+																				key={`detail-${idx}-${detail.slice(0, 15)}`}
 																				className="flex items-start gap-2"
 																			>
 																				<span className="w-1 h-1 bg-muted-foreground rounded-full mt-2 flex-shrink-0"></span>
@@ -916,7 +963,7 @@ const ReviewDetailPage: React.FC = () => {
 																		{result.issues.map(
 																			(issue: string, idx: number) => (
 																				<li
-																					key={idx}
+																					key={`issue-${idx}-${issue.slice(0, 15)}`}
 																					className="flex items-start gap-2"
 																				>
 																					<span className="w-1 h-1 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></span>
@@ -937,7 +984,7 @@ const ReviewDetailPage: React.FC = () => {
 																	{result.claims.map(
 																		(claim: any, idx: number) => (
 																			<div
-																				key={idx}
+																				key={`claim-${idx}-${claim.claim?.slice(0, 15) || idx}`}
 																				className="flex items-center gap-2 text-sm"
 																			>
 																				{claim.verified ? (
@@ -970,7 +1017,7 @@ const ReviewDetailPage: React.FC = () => {
 																	{result.biases.map(
 																		(bias: string, idx: number) => (
 																			<li
-																				key={idx}
+																				key={`bias-${idx}-${bias.slice(0, 15)}`}
 																				className="flex items-start gap-2"
 																			>
 																				<span className="w-1 h-1 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
@@ -1154,7 +1201,8 @@ const ReviewDetailPage: React.FC = () => {
 																						result.issues.indexOf(issue);
 																					return (
 																						<button
-																							key={originalIdx}
+																							type="button"
+																							key={`issue-button-${originalIdx}-${issue.type || "unknown"}`}
 																							onClick={() =>
 																								setSelectedIssue(
 																									selectedIssue === originalIdx
@@ -1327,7 +1375,7 @@ const ReviewDetailPage: React.FC = () => {
 																		{result.recommendations.map(
 																			(rec: string, idx: number) => (
 																				<li
-																					key={idx}
+																					key={`recommendation-${idx}-${rec.slice(0, 15)}`}
 																					className="flex items-start gap-2"
 																				>
 																					<CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
@@ -1426,9 +1474,9 @@ const ReviewDetailPage: React.FC = () => {
 						{/* Suggestions */}
 						<div className="space-y-2">
 							<div className="flex items-center justify-between">
-								<label className="text-sm font-medium">
+								<span className="text-sm font-medium">
 									Suggestions for Improvement
-								</label>
+								</span>
 								<Button
 									type="button"
 									variant="outline"
@@ -1440,7 +1488,10 @@ const ReviewDetailPage: React.FC = () => {
 							</div>
 							<div className="space-y-2">
 								{reviewData.suggestions.map((suggestion, index) => (
-									<div key={index} className="flex items-center gap-2">
+									<div
+										key={`suggestion-${index}-${suggestion.slice(0, 10)}`}
+										className="flex items-center gap-2"
+									>
 										<input
 											type="text"
 											placeholder={`Suggestion ${index + 1}...`}

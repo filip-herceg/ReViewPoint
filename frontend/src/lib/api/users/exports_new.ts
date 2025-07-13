@@ -23,7 +23,7 @@ export const usersExportsApi = {
 	exportUsersCsv: async (params?: UserExportParams): Promise<Blob> => {
 		logger.info("Exporting users as CSV", { params });
 		const queryParams = params
-			? new URLSearchParams(params as any).toString()
+			? new URLSearchParams(params as Record<string, string>).toString()
 			: "";
 		const url = queryParams ? `/users/export?${queryParams}` : "/users/export";
 
@@ -37,7 +37,10 @@ export const usersExportsApi = {
 		}
 
 		logger.info("Users CSV exported successfully");
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Export succeeded but no data returned");
+		}
+		return response.data;
 	},
 
 	// Export users as CSV (full)
@@ -53,7 +56,10 @@ export const usersExportsApi = {
 		}
 
 		logger.info("Users full CSV exported successfully");
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Full export succeeded but no data returned");
+		}
+		return response.data;
 	},
 
 	// Test endpoint for export router
@@ -67,7 +73,10 @@ export const usersExportsApi = {
 		}
 
 		logger.info("Export alive test successful");
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Export alive test succeeded but no data returned");
+		}
+		return response.data;
 	},
 
 	// Simple test endpoint for debugging
@@ -83,6 +92,9 @@ export const usersExportsApi = {
 		}
 
 		logger.info("Export simple test successful");
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Export simple test succeeded but no data returned");
+		}
+		return response.data;
 	},
 };

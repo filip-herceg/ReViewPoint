@@ -46,7 +46,10 @@ export const healthApi = {
 		}
 
 		logger.info("Health check completed", { status: response.data?.status });
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Health check failed - no data returned");
+		}
+		return response.data;
 	},
 
 	// Get Prometheus metrics
@@ -62,6 +65,9 @@ export const healthApi = {
 		}
 
 		logger.info("Metrics fetched successfully");
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Metrics fetch failed - no data returned");
+		}
+		return response.data;
 	},
 };

@@ -111,7 +111,10 @@ export const healthApi = {
 			logger.info("Health status retrieved successfully", {
 				status: response.data?.status,
 			});
-			return response.data!;
+			if (!response.data) {
+				throw new Error("Health check failed - no data returned");
+			}
+			return response.data;
 		} catch (error) {
 			logger.warn("Failed to get health status", { error });
 			throw error;
@@ -139,7 +142,10 @@ export const healthApi = {
 			}
 
 			logger.info("Metrics retrieved successfully");
-			return response.data!;
+			if (!response.data) {
+				throw new Error("Metrics retrieval failed - no data returned");
+			}
+			return response.data;
 		} catch (error) {
 			logger.warn("Failed to get metrics", { error });
 			throw error;

@@ -148,26 +148,28 @@ export function SkeletonLoader({
 							/>
 						</div>
 						{/* Table rows */}
-						{Array.from({ length: 5 }).map((_, rowIndex) => (
-							<div key={`row-${rowIndex}`} className="flex space-x-4">
-								<Skeleton
-									className={cn("h-3 bg-muted", animationClasses[animation])}
-									style={{ width: "20%" }}
-								/>
-								<Skeleton
-									className={cn("h-3 bg-muted", animationClasses[animation])}
-									style={{ width: "30%" }}
-								/>
-								<Skeleton
-									className={cn("h-3 bg-muted", animationClasses[animation])}
-									style={{ width: "25%" }}
-								/>
-								<Skeleton
-									className={cn("h-3 bg-muted", animationClasses[animation])}
-									style={{ width: "25%" }}
-								/>
-							</div>
-						))}
+						{Array.from({ length: 5 }, (_, i) => `skeleton-row-${i}`).map(
+							(key) => (
+								<div key={key} className="flex space-x-4">
+									<Skeleton
+										className={cn("h-3 bg-muted", animationClasses[animation])}
+										style={{ width: "20%" }}
+									/>
+									<Skeleton
+										className={cn("h-3 bg-muted", animationClasses[animation])}
+										style={{ width: "30%" }}
+									/>
+									<Skeleton
+										className={cn("h-3 bg-muted", animationClasses[animation])}
+										style={{ width: "25%" }}
+									/>
+									<Skeleton
+										className={cn("h-3 bg-muted", animationClasses[animation])}
+										style={{ width: "25%" }}
+									/>
+								</div>
+							),
+						)}
 					</div>
 				);
 
@@ -178,30 +180,35 @@ export function SkeletonLoader({
 						className={cn("space-y-3", className)}
 						data-testid={itemTestId}
 					>
-						{Array.from({ length: 3 }).map((_, itemIndex) => (
-							<div
-								key={`list-item-${itemIndex}`}
-								className="flex items-center space-x-3"
-							>
-								<Skeleton
-									className={cn(
-										"rounded-full bg-muted",
-										animationClasses[animation],
-									)}
-									style={{ height: "32px", width: "32px" }}
-								/>
-								<div className="space-y-2 flex-1">
+						{Array.from({ length: 3 }, (_, i) => `skeleton-list-item-${i}`).map(
+							(key) => (
+								<div key={key} className="flex items-center space-x-3">
 									<Skeleton
-										className={cn("h-3 bg-muted", animationClasses[animation])}
-										style={{ width: "70%" }}
+										className={cn(
+											"rounded-full bg-muted",
+											animationClasses[animation],
+										)}
+										style={{ height: "32px", width: "32px" }}
 									/>
-									<Skeleton
-										className={cn("h-2 bg-muted", animationClasses[animation])}
-										style={{ width: "50%" }}
-									/>
+									<div className="space-y-2 flex-1">
+										<Skeleton
+											className={cn(
+												"h-3 bg-muted",
+												animationClasses[animation],
+											)}
+											style={{ width: "70%" }}
+										/>
+										<Skeleton
+											className={cn(
+												"h-2 bg-muted",
+												animationClasses[animation],
+											)}
+											style={{ width: "50%" }}
+										/>
+									</div>
 								</div>
-							</div>
-						))}
+							),
+						)}
 					</div>
 				);
 			default:

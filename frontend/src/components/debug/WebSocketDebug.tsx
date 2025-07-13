@@ -9,7 +9,7 @@ interface ConnectionLog {
 	id: string;
 	timestamp: Date;
 	type: "connect" | "disconnect" | "message" | "error" | "heartbeat";
-	data: any;
+	data: unknown;
 }
 
 export const WebSocketDebug: React.FC = () => {
@@ -20,12 +20,12 @@ export const WebSocketDebug: React.FC = () => {
 	const [testMessage, setTestMessage] = useState(
 		'{"type": "ping", "data": "test"}',
 	);
-	const [lastMessage, setLastMessage] = useState<any>(null);
+	const [lastMessage, setLastMessage] = useState<unknown>(null);
 	const config = getWebSocketConfig();
 
 	// Log connection events
 	useEffect(() => {
-		const addLog = (type: ConnectionLog["type"], data: any) => {
+		const addLog = (type: ConnectionLog["type"], data: unknown) => {
 			const log: ConnectionLog = {
 				id: Date.now().toString(),
 				timestamp: new Date(),
@@ -43,12 +43,12 @@ export const WebSocketDebug: React.FC = () => {
 
 		if (store.isConnected) {
 			// Listen to all events for debugging
-			const messageHandler = (event: any) => {
+			const messageHandler = (event: unknown) => {
 				setLastMessage(event);
 				addLog("message", event);
 			};
 
-			const errorHandler = (error: any) => {
+			const errorHandler = (error: unknown) => {
 				addLog("error", error);
 			};
 
@@ -82,7 +82,7 @@ export const WebSocketDebug: React.FC = () => {
 		}
 	};
 
-	const addLog = (type: ConnectionLog["type"], data: any) => {
+	const addLog = (type: ConnectionLog["type"], data: unknown) => {
 		const log: ConnectionLog = {
 			id: Date.now().toString(),
 			timestamp: new Date(),
@@ -131,6 +131,7 @@ export const WebSocketDebug: React.FC = () => {
 					WebSocket Debug
 				</h3>
 				<button
+					type="button"
 					onClick={() => setShowLogs(!showLogs)}
 					className="text-sm px-2 py-1 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 transition-colors"
 				>
@@ -178,6 +179,7 @@ export const WebSocketDebug: React.FC = () => {
 			{/* Connection Controls */}
 			<div className="flex gap-2 mb-4">
 				<button
+					type="button"
 					onClick={connect}
 					disabled={
 						connectionState === "connected" || connectionState === "connecting"
@@ -187,6 +189,7 @@ export const WebSocketDebug: React.FC = () => {
 					Connect
 				</button>
 				<button
+					type="button"
 					onClick={disconnect}
 					disabled={connectionState === "disconnected"}
 					className="flex-1 px-3 py-1 text-sm bg-destructive text-destructive-foreground rounded hover:bg-destructive/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -197,11 +200,15 @@ export const WebSocketDebug: React.FC = () => {
 
 			{/* Test Message */}
 			<div className="mb-4">
-				<label className="block text-xs font-medium text-foreground mb-1">
+				<label
+					htmlFor="test-message-input"
+					className="block text-xs font-medium text-foreground mb-1"
+				>
 					Test Message:
 				</label>
 				<div className="flex gap-2">
 					<input
+						id="test-message-input"
 						type="text"
 						value={testMessage}
 						onChange={(e) => setTestMessage(e.target.value)}
@@ -209,6 +216,7 @@ export const WebSocketDebug: React.FC = () => {
 						placeholder="JSON message"
 					/>
 					<button
+						type="button"
 						onClick={handleSendTestMessage}
 						disabled={connectionState !== "connected"}
 						className="px-3 py-1 text-xs bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -217,16 +225,17 @@ export const WebSocketDebug: React.FC = () => {
 					</button>
 				</div>
 			</div>
-
 			{/* Last Message */}
 			{lastMessage && (
 				<div className="mb-4">
-					<label className="block text-xs font-medium text-foreground mb-1">
+					<div className="block text-xs font-medium text-foreground mb-1">
 						Last Message:
-					</label>
+					</div>
 					<div className="bg-muted rounded p-2 text-xs">
 						<pre className="text-muted-foreground whitespace-pre-wrap break-all">
-							{JSON.stringify(lastMessage, null, 2)}
+							{typeof lastMessage === "string"
+								? lastMessage
+								: JSON.stringify(lastMessage, null, 2)}
 						</pre>
 					</div>
 				</div>
@@ -240,6 +249,7 @@ export const WebSocketDebug: React.FC = () => {
 							Connection Logs
 						</h4>
 						<button
+							type="button"
 							onClick={() => setLogs([])}
 							className="text-xs px-2 py-1 text-muted-foreground hover:text-foreground transition-colors"
 						>

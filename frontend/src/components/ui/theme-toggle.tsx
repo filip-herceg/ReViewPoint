@@ -155,6 +155,7 @@ export function ThemeToggleCompact({ className }: { className?: string }) {
 
 	return (
 		<button
+			type="button"
 			onClick={toggleMode}
 			className={cn(
 				// Use only Tailwind semantic color classes for all states

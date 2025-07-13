@@ -20,14 +20,6 @@ interface FileListResponse {
 	total: number;
 }
 
-interface FileResponse {
-	filename: string;
-	url: string;
-	content_type?: string;
-	size?: number;
-	created_at?: string;
-}
-
 interface FileListParams {
 	offset?: number;
 	limit?: number;

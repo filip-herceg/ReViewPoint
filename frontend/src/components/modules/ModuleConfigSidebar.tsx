@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 interface ModuleConfig {
-	[key: string]: any;
+	[key: string]: unknown;
 }
 
 interface ModuleConfigSidebarProps {
@@ -35,7 +35,7 @@ interface ModuleConfigSidebarProps {
 		name: string;
 		version: string;
 		description: string;
-		configSchema?: any;
+		configSchema?: Record<string, unknown>;
 		defaultConfig?: ModuleConfig;
 		userConfig?: ModuleConfig;
 	} | null;
@@ -73,7 +73,7 @@ export const ModuleConfigSidebar: React.FC<ModuleConfigSidebarProps> = ({
 		}
 	}, [config, module]);
 
-	const handleConfigChange = (key: string, value: any) => {
+	const handleConfigChange = (key: string, value: unknown) => {
 		setConfig((prev) => ({
 			...prev,
 			[key]: value,
@@ -110,11 +110,30 @@ export const ModuleConfigSidebar: React.FC<ModuleConfigSidebarProps> = ({
 		}
 	};
 
-	const renderConfigField = (key: string, value: any, schema?: any) => {
-		const fieldSchema = schema?.properties?.[key];
-		const fieldType = fieldSchema?.type || typeof value;
-		const fieldDescription = fieldSchema?.description;
-		const fieldTitle = fieldSchema?.title || key;
+	const renderConfigField = (
+		key: string,
+		value: unknown,
+		schema?: Record<string, unknown>,
+	) => {
+		// Defensive: schema may be a JSON schema object
+		const properties =
+			schema &&
+			typeof schema === "object" &&
+			"properties" in schema &&
+			schema.properties &&
+			typeof schema.properties === "object"
+				? (schema.properties as Record<string, unknown>)
+				: undefined;
+		const fieldSchema = properties?.[key] ?? {};
+		const getFieldProp = <T,>(prop: string): T | undefined =>
+			typeof fieldSchema === "object" &&
+			fieldSchema !== null &&
+			prop in fieldSchema
+				? ((fieldSchema as Record<string, unknown>)[prop] as T)
+				: undefined;
+		const fieldType = getFieldProp<string>("type") || typeof value;
+		const fieldDescription = getFieldProp<string>("description");
+		const fieldTitle = getFieldProp<string>("title") || key;
 
 		switch (fieldType) {
 			case "boolean":
@@ -127,7 +146,7 @@ export const ModuleConfigSidebar: React.FC<ModuleConfigSidebarProps> = ({
 							<input
 								id={key}
 								type="checkbox"
-								checked={value || false}
+								checked={typeof value === "boolean" ? value : false}
 								onChange={(e) => handleConfigChange(key, e.target.checked)}
 								className="h-4 w-4 rounded border-input bg-background text-primary focus:ring-2 focus:ring-ring focus:ring-offset-2"
 							/>
@@ -149,12 +168,12 @@ export const ModuleConfigSidebar: React.FC<ModuleConfigSidebarProps> = ({
 						<Input
 							id={key}
 							type="number"
-							value={value || ""}
+							value={typeof value === "number" ? value : ""}
 							onChange={(e) =>
 								handleConfigChange(key, parseFloat(e.target.value) || 0)
 							}
-							min={fieldSchema?.minimum}
-							max={fieldSchema?.maximum}
+							min={getFieldProp<number>("minimum")}
+							max={getFieldProp<number>("maximum")}
 						/>
 						{fieldDescription && (
 							<p className="text-xs text-muted-foreground">
@@ -164,8 +183,9 @@ export const ModuleConfigSidebar: React.FC<ModuleConfigSidebarProps> = ({
 					</div>
 				);
 
-			case "string":
-				if (fieldSchema?.enum) {
+			case "string": {
+				const fieldEnum = getFieldProp<unknown[]>("enum");
+				if (Array.isArray(fieldEnum)) {
 					return (
 						<div key={key} className="space-y-2">
 							<Label htmlFor={key} className="text-sm font-medium">
@@ -173,13 +193,13 @@ export const ModuleConfigSidebar: React.FC<ModuleConfigSidebarProps> = ({
 							</Label>
 							<select
 								id={key}
-								value={value || ""}
+								value={typeof value === "string" ? value : ""}
 								onChange={(e) => handleConfigChange(key, e.target.value)}
 								className="w-full px-3 py-2 text-sm border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
 							>
-								{fieldSchema.enum.map((option: string) => (
-									<option key={option} value={option}>
-										{option}
+								{fieldEnum.map((option) => (
+									<option key={String(option)} value={String(option)}>
+										{String(option)}
 									</option>
 								))}
 							</select>
@@ -190,7 +210,7 @@ export const ModuleConfigSidebar: React.FC<ModuleConfigSidebarProps> = ({
 							)}
 						</div>
 					);
-				} else if (fieldSchema?.format === "textarea") {
+				} else if (getFieldProp<string>("format") === "textarea") {
 					return (
 						<div key={key} className="space-y-2">
 							<Label htmlFor={key} className="text-sm font-medium">
@@ -198,7 +218,7 @@ export const ModuleConfigSidebar: React.FC<ModuleConfigSidebarProps> = ({
 							</Label>
 							<Textarea
 								id={key}
-								value={value || ""}
+								value={typeof value === "string" ? value : ""}
 								onChange={(e) => handleConfigChange(key, e.target.value)}
 								rows={3}
 							/>
@@ -218,7 +238,7 @@ export const ModuleConfigSidebar: React.FC<ModuleConfigSidebarProps> = ({
 							<Input
 								id={key}
 								type="text"
-								value={value || ""}
+								value={typeof value === "string" ? value : ""}
 								onChange={(e) => handleConfigChange(key, e.target.value)}
 							/>
 							{fieldDescription && (
@@ -229,6 +249,7 @@ export const ModuleConfigSidebar: React.FC<ModuleConfigSidebarProps> = ({
 						</div>
 					);
 				}
+			}
 
 			default:
 				return (
@@ -239,7 +260,9 @@ export const ModuleConfigSidebar: React.FC<ModuleConfigSidebarProps> = ({
 						<Input
 							id={key}
 							type="text"
-							value={JSON.stringify(value) || ""}
+							value={
+								typeof value === "string" ? value : JSON.stringify(value) || ""
+							}
 							onChange={(e) => {
 								try {
 									const parsedValue = JSON.parse(e.target.value);
@@ -264,7 +287,18 @@ export const ModuleConfigSidebar: React.FC<ModuleConfigSidebarProps> = ({
 	return (
 		<>
 			{/* Backdrop */}
-			<div className="fixed inset-0 bg-black/20 z-40" onClick={onClose} />
+			<div
+				className="fixed inset-0 bg-black/20 z-40"
+				onClick={onClose}
+				onKeyDown={(e) => {
+					if (e.key === "Escape") {
+						onClose();
+					}
+				}}
+				role="button"
+				tabIndex={0}
+				aria-label="Close sidebar"
+			/>
 
 			{/* Sidebar */}
 			<div
@@ -340,7 +374,7 @@ export const ModuleConfigSidebar: React.FC<ModuleConfigSidebarProps> = ({
 									</div>
 
 									{/* Help Text */}
-									{module.configSchema?.description && (
+									{typeof module.configSchema?.description === "string" && (
 										<Card className="bg-blue-50/50 border-blue-200">
 											<CardContent className="p-4">
 												<div className="flex items-start space-x-2">

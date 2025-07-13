@@ -26,7 +26,7 @@ export interface UploadResult {
 	filename: string;
 	size?: number;
 	url?: string;
-	metadata?: Record<string, any>;
+	metadata?: Record<string, unknown>;
 	method?: "simple" | "chunked";
 	chunks?: number;
 }
@@ -87,7 +87,7 @@ interface ChunkInfo {
 export function useFileUpload(options: UseFileUploadOptions = {}) {
 	const {
 		validation = {},
-		options: uploadOptions = {},
+		options: _uploadOptions = {},
 		onProgress,
 		onComplete,
 		onError,
@@ -104,7 +104,7 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
 
 	const abortControllersRef = useRef<Map<string, AbortController>>(new Map());
 	const { addUpload, updateUpload } = useUploadStore();
-	const { isConnected } = useWebSocketStore();
+	const { isConnected: _isConnected } = useWebSocketStore();
 
 	// Calculate total progress across all uploads
 	const updateTotalProgress = useCallback(() => {
@@ -172,6 +172,7 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
 	);
 
 	// Upload a single file
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Circular dependency with uploadFileChunked/uploadFileSimple - requires architectural refactor
 	const uploadFile = useCallback(
 		async (file: File, uploadOptions: UploadOptions = {}): Promise<string> => {
 			const uploadId = generateUploadId();
@@ -287,8 +288,8 @@ export function useFileUpload(options: UseFileUploadOptions = {}) {
 			addUpload,
 			onComplete,
 			onError,
-			uploadFileChunked,
-			uploadFileSimple,
+			// Note: uploadFileChunked and uploadFileSimple create circular dependencies
+			// This structure should be refactored to avoid the issue
 		],
 	);
 

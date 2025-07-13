@@ -389,7 +389,7 @@ describe("useAuth Hook", () => {
 
 			const { result } = renderHook(() => useAuth());
 
-			let refreshResult;
+			let refreshResult: boolean = false;
 			await act(async () => {
 				refreshResult = await result.current.refreshSession();
 			});
@@ -410,7 +410,7 @@ describe("useAuth Hook", () => {
 
 			const { result } = renderHook(() => useAuth());
 
-			let refreshResult;
+			let refreshResult: boolean = false;
 			await act(async () => {
 				refreshResult = await result.current.refreshSession();
 			});
@@ -424,7 +424,7 @@ describe("useAuth Hook", () => {
 
 			const { result } = renderHook(() => useAuth());
 
-			let refreshResult;
+			let refreshResult: boolean = false;
 			await act(async () => {
 				refreshResult = await result.current.refreshSession();
 			});

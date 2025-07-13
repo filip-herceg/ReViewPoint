@@ -244,23 +244,33 @@ export const useFileManagementStore = create<FileManagementState>(
 					count: mappedFiles.length,
 					total: result.total,
 				});
-			} catch (error: any) {
+			} catch (error: unknown) {
 				logger.error("❌ Failed to fetch files", error);
+
+				// Type guard for error handling
+				const getErrorMessage = (err: unknown): string => {
+					if (err instanceof Error) return err.message;
+					if (typeof err === "string") return err;
+					return "Failed to load files";
+				};
+
+				const getErrorType = (err: unknown): FileManagementErrorType => {
+					if (typeof err === "object" && err !== null) {
+						const errorObj = err as Record<string, any>;
+						const status = errorObj.response?.status;
+						if (status === 404) return "not_found";
+						if (status === 401) return "unauthorized";
+						if (status === 403) return "forbidden";
+						if (errorObj.message?.includes?.("network")) return "network_error";
+					}
+					return "server_error";
+				};
 
 				set({
 					loading: false,
 					error: {
-						message: error.message || "Failed to load files",
-						type:
-							error.response?.status === 404
-								? "not_found"
-								: error.response?.status === 401
-									? "unauthorized"
-									: error.response?.status === 403
-										? "forbidden"
-										: error.message.includes("network")
-											? "network_error"
-											: "server_error",
+						message: getErrorMessage(error),
+						type: getErrorType(error),
 						details: error,
 					},
 				});
@@ -286,7 +296,7 @@ export const useFileManagementStore = create<FileManagementState>(
 				}));
 
 				logger.info("✅ File deleted successfully", { filename });
-			} catch (error: any) {
+			} catch (error: unknown) {
 				logger.error("❌ Failed to delete file", { filename, error });
 
 				throw error;
@@ -391,10 +401,9 @@ export const useFileManagementStore = create<FileManagementState>(
 					// Clean up
 					document.body.removeChild(a);
 					URL.revokeObjectURL(url);
-
 					logger.info("✅ Downloaded file", { filename });
 				}
-			} catch (error: any) {
+			} catch (error: unknown) {
 				logger.error("❌ Bulk download failed", error);
 				throw error;
 			}
@@ -427,7 +436,7 @@ export const useFileManagementStore = create<FileManagementState>(
 				});
 
 				return result;
-			} catch (error: any) {
+			} catch (error: unknown) {
 				logger.error("❌ Bulk delete failed", error);
 				throw error;
 			}

@@ -328,10 +328,10 @@ export function isUpload(value: unknown): value is Upload {
 		!("status" in value) ||
 		!("progress" in value) ||
 		!("createdAt" in value) ||
-		typeof (value as any).id !== "string" ||
-		typeof (value as any).name !== "string" ||
-		typeof (value as any).progress !== "number" ||
-		typeof (value as any).createdAt !== "string"
+		typeof (value as Record<string, unknown>).id !== "string" ||
+		typeof (value as Record<string, unknown>).name !== "string" ||
+		typeof (value as Record<string, unknown>).progress !== "number" ||
+		typeof (value as Record<string, unknown>).createdAt !== "string"
 	) {
 		return false;
 	}
@@ -344,7 +344,9 @@ export function isUpload(value: unknown): value is Upload {
 		"error",
 		"cancelled",
 	];
-	return validStatuses.includes((value as any).status);
+	return validStatuses.includes(
+		(value as Record<string, unknown>).status as UploadStatus,
+	);
 }
 
 /**
@@ -358,8 +360,8 @@ export function isFile(value: unknown): value is File {
 		"filename" in value &&
 		"content_type" in value &&
 		"user_id" in value &&
-		typeof (value as any).id === "number" &&
-		typeof (value as any).filename === "string"
+		typeof (value as Record<string, unknown>).id === "number" &&
+		typeof (value as Record<string, unknown>).filename === "string"
 	);
 }
 
@@ -372,7 +374,9 @@ export function isUploadError(error: unknown): error is UploadError {
 		error !== null &&
 		"type" in error &&
 		"message" in error &&
-		Object.values(UploadErrorType).includes((error as any).type)
+		Object.values(UploadErrorType).includes(
+			(error as Record<string, unknown>).type as UploadErrorType,
+		)
 	);
 }
 
@@ -777,7 +781,7 @@ export interface AdvancedUploadOptions {
 	/** Upload priority */
 	priority: number;
 	/** Custom metadata to attach */
-	metadata?: Record<string, any>;
+	metadata?: Record<string, unknown>;
 	/** Progress callback */
 	onProgress?: (progress: number, speed: number, eta: number) => void;
 	/** Chunk complete callback */

@@ -126,8 +126,11 @@ export const authApi = {
 		}
 
 		logger.info("User registered successfully", { email: userData.email });
+		if (!response.data) {
+			throw new Error("Registration failed - no data returned");
+		}
 		return {
-			...response.data!,
+			...response.data,
 			token_type: "bearer", // Ensure token_type is included
 		};
 	},
@@ -149,8 +152,11 @@ export const authApi = {
 		}
 
 		logger.info("User logged in successfully", { email: loginData.email });
+		if (!response.data) {
+			throw new Error("Login failed - no data returned");
+		}
 		return {
-			...response.data!,
+			...response.data,
 			token_type: "bearer", // Ensure token_type is included
 		};
 	},
@@ -168,7 +174,10 @@ export const authApi = {
 		}
 
 		logger.info("User logged out successfully");
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Logout failed - no data returned");
+		}
+		return response.data;
 	},
 
 	// Refresh JWT access token
@@ -190,8 +199,11 @@ export const authApi = {
 		}
 
 		logger.info("Token refreshed successfully");
+		if (!response.data) {
+			throw new Error("Token refresh failed - no data returned");
+		}
 		return {
-			...response.data!,
+			...response.data,
 			token_type: "bearer", // Ensure token_type is included
 		};
 	},
@@ -220,7 +232,10 @@ export const authApi = {
 		logger.info("Password reset requested successfully", {
 			email: resetRequest.email,
 		});
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Password reset request failed - no data returned");
+		}
+		return response.data;
 	},
 
 	// Request password reset (original method name)
@@ -249,7 +264,10 @@ export const authApi = {
 		}
 
 		logger.info("Password reset successfully");
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Password reset failed - no data returned");
+		}
+		return response.data;
 	},
 
 	// Get current user profile
@@ -265,6 +283,9 @@ export const authApi = {
 		}
 
 		logger.info("Current user profile retrieved successfully");
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Failed to get user profile - no data returned");
+		}
+		return response.data;
 	},
 };

@@ -85,8 +85,11 @@ function Button({
 			return null;
 		}
 
-		// Type the child as ReactElement with any props
-		const typedChild = firstChild as React.ReactElement<any>;
+		// Type the child as ReactElement with props interface
+		const typedChild = firstChild as React.ReactElement<{
+			className?: string;
+			[key: string]: unknown;
+		}>;
 
 		// Clone the first child element with merged props
 		return React.cloneElement(typedChild, {

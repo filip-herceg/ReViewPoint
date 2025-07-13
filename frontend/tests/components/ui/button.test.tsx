@@ -163,11 +163,7 @@ describe("Button Component - React.Children.only Fixes", () => {
 
 	it("maintains accessibility attributes", () => {
 		render(
-			<Button
-				aria-label="Custom aria label"
-				data-testid="test-button"
-				role="button"
-			>
+			<Button aria-label="Custom aria label" data-testid="test-button">
 				Button
 			</Button>,
 		);

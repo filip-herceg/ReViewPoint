@@ -17,7 +17,7 @@ export interface DataTableColumn<T> {
 	sortable?: boolean;
 	filterable?: boolean;
 	width?: string | number;
-	render?: (value: any, row: T, index: number) => React.ReactNode;
+	render?: (value: unknown, row: T, index: number) => React.ReactNode;
 	className?: string;
 }
 
@@ -64,7 +64,7 @@ const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 /**
  * Reusable DataTable component with comprehensive features
  */
-export function DataTable<T extends Record<string, any>>({
+export function DataTable<T extends Record<string, unknown>>({
 	data,
 	columns,
 	loading = false,
@@ -163,8 +163,11 @@ export function DataTable<T extends Record<string, any>>({
 				{filtering && <Skeleton className="h-10 w-64" />}
 				<div className="border border-border rounded-lg">
 					<div className="p-4 space-y-3">
-						{Array.from({ length: pagination?.pageSize || 10 }).map((_, i) => (
-							<Skeleton key={i} className="h-12 w-full" />
+						{Array.from(
+							{ length: pagination?.pageSize || 10 },
+							(_, i) => `skeleton-row-${i}`,
+						).map((key) => (
+							<Skeleton key={key} className="h-12 w-full" />
 						))}
 					</div>
 				</div>
@@ -297,10 +300,28 @@ export function DataTable<T extends Record<string, any>>({
 								const isSelectable =
 									!selection?.selectable || selection.selectable(row, index);
 								const isSelected = selection?.selectedRows.has(index) || false;
+								// Generate a more stable key using row data or fallback to index
+								const getRowId = (item: T): string => {
+									if (
+										"id" in item &&
+										(typeof item.id === "string" || typeof item.id === "number")
+									) {
+										return String(item.id);
+									}
+									if (
+										"key" in item &&
+										(typeof item.key === "string" ||
+											typeof item.key === "number")
+									) {
+										return String(item.key);
+									}
+									return `row-${index}`;
+								};
+								const rowKey = getRowId(row);
 
 								return (
 									<tr
-										key={index}
+										key={rowKey}
 										className={cn(
 											"border-t border-border hover:bg-muted/30 transition-colors",
 											isSelected && "bg-muted/50",

@@ -4,7 +4,7 @@
  */
 
 import type React from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -122,7 +122,58 @@ export function FileUpload({
 	const [files, setFiles] = useState<UploadFile[]>([]);
 	const [_dragCounter, setDragCounter] = useState(0);
 
-	const mergedValidation = { ...DEFAULT_VALIDATION, ...validation };
+	const mergedValidation = useMemo(
+		() => ({ ...DEFAULT_VALIDATION, ...validation }),
+		[validation],
+	);
+
+	// Handle upload
+	const handleUpload = useCallback(
+		async (filesToUpload = files) => {
+			if (!onUpload || filesToUpload.length === 0) return;
+
+			try {
+				// Update status to uploading
+				setFiles((prev) =>
+					prev.map((f) =>
+						filesToUpload.find((upload) => upload.id === f.id)
+							? { ...f, status: "uploading" as const, progress: 0 }
+							: f,
+					),
+				);
+
+				logger.info("Starting file upload", { count: filesToUpload.length });
+				await onUpload(filesToUpload);
+
+				// Update status to success (onUpload should handle progress updates)
+				setFiles((prev) =>
+					prev.map((f) =>
+						filesToUpload.find((upload) => upload.id === f.id)
+							? { ...f, status: "success" as const, progress: 100 }
+							: f,
+					),
+				);
+
+				logger.info("File upload completed", { count: filesToUpload.length });
+			} catch (err) {
+				logger.error("File upload failed", { error: err });
+
+				// Update status to error
+				setFiles((prev) =>
+					prev.map((f) =>
+						filesToUpload.find((upload) => upload.id === f.id)
+							? {
+									...f,
+									status: "error" as const,
+									error: err instanceof Error ? err.message : "Upload failed",
+								}
+							: f,
+					),
+				);
+			}
+		},
+		[files, onUpload],
+	);
 
 	// Handle file selection
 	const handleFiles = useCallback(
@@ -197,54 +248,6 @@ export function FileUpload({
 			onUpload,
 			handleUpload,
 		],
-	);
-
-	// Handle upload
-	const handleUpload = useCallback(
-		async (filesToUpload = files) => {
-			if (!onUpload || filesToUpload.length === 0) return;
-
-			try {
-				// Update status to uploading
-				setFiles((prev) =>
-					prev.map((f) =>
-						filesToUpload.find((upload) => upload.id === f.id)
-							? { ...f, status: "uploading" as const, progress: 0 }
-							: f,
-					),
-				);
-
-				logger.info("Starting file upload", { count: filesToUpload.length });
-				await onUpload(filesToUpload);
-
-				// Update status to success (onUpload should handle progress updates)
-				setFiles((prev) =>
-					prev.map((f) =>
-						filesToUpload.find((upload) => upload.id === f.id)
-							? { ...f, status: "success" as const, progress: 100 }
-							: f,
-					),
-				);
-
-				logger.info("File upload completed", { count: filesToUpload.length });
-			} catch (err) {
-				logger.error("File upload failed", { error: err });
-
-				// Update status to error
-				setFiles((prev) =>
-					prev.map((f) =>
-						filesToUpload.find((upload) => upload.id === f.id)
-							? {
-									...f,
-									status: "error" as const,
-									error: err instanceof Error ? err.message : "Upload failed",
-								}
-							: f,
-					),
-				);
-			}
-		},
-		[files, onUpload],
 	);
 
 	// Remove file
@@ -323,10 +326,11 @@ export function FileUpload({
 	return (
 		<div className={cn("space-y-4", className)} data-testid={testId}>
 			{/* Dropzone */}
-			<div
+			<button
+				type="button"
 				className={cn(
 					// Use only semantic Tailwind color classes
-					"border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer",
+					"border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer w-full",
 					isDragging
 						? "border-primary bg-primary/5"
 						: "border-border hover:border-primary/50",
@@ -340,6 +344,8 @@ export function FileUpload({
 				onClick={() =>
 					!disabled && document.getElementById(`file-input-${testId}`)?.click()
 				}
+				disabled={disabled}
+				aria-label="Click or drag to upload files"
 				data-testid={`${testId}-dropzone`}
 			>
 				<input
@@ -381,7 +387,7 @@ export function FileUpload({
 						<div>Max files: {mergedValidation.maxFiles}</div>
 					)}
 				</div>
-			</div>
+			</button>
 
 			{/* File list */}
 			{showPreview && files.length > 0 && (

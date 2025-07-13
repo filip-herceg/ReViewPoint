@@ -77,21 +77,23 @@ export const FileList: React.FC<FileListProps> = ({
 	if (loading) {
 		return (
 			<div className="space-y-2 p-4">
-				{Array.from({ length: 8 }).map((_, index) => (
-					<div
-						key={index}
-						className="flex items-center space-x-4 p-3 bg-background border border-border rounded-lg animate-pulse"
-					>
-						<div className="h-4 w-4 bg-muted rounded" />
-						<div className="h-5 w-5 bg-muted rounded" />
-						<div className="flex-1 space-y-2">
-							<div className="h-4 bg-muted rounded w-1/3" />
-							<div className="h-3 bg-muted rounded w-1/2" />
+				{Array.from({ length: 8 }, (_, index) => `skeleton-${index}`).map(
+					(skeletonKey) => (
+						<div
+							key={skeletonKey}
+							className="flex items-center space-x-4 p-3 bg-background border border-border rounded-lg animate-pulse"
+						>
+							<div className="h-4 w-4 bg-muted rounded" />
+							<div className="h-5 w-5 bg-muted rounded" />
+							<div className="flex-1 space-y-2">
+								<div className="h-4 bg-muted rounded w-1/3" />
+								<div className="h-3 bg-muted rounded w-1/2" />
+							</div>
+							<div className="h-6 w-16 bg-muted rounded-full" />
+							<div className="h-8 w-8 bg-muted rounded" />
 						</div>
-						<div className="h-6 w-16 bg-muted rounded-full" />
-						<div className="h-8 w-8 bg-muted rounded" />
-					</div>
-				))}
+					),
+				)}
 			</div>
 		);
 	}
@@ -112,13 +114,15 @@ export const FileList: React.FC<FileListProps> = ({
 				const isSelected = selectedFiles.includes(file.filename);
 
 				return (
-					<div
+					<button
 						key={file.filename}
 						className={cn(
-							"flex items-center space-x-4 p-3 bg-background border border-border rounded-lg hover:shadow-sm transition-shadow cursor-pointer group",
+							"flex items-center space-x-4 p-3 bg-background border border-border rounded-lg hover:shadow-sm transition-shadow cursor-pointer group w-full text-left",
 							isSelected && "ring-2 ring-info border-info",
 						)}
 						onClick={() => onPreview(file)}
+						type="button"
+						aria-label={`Preview ${file.filename}`}
 					>
 						{/* Selection checkbox */}
 						<input
@@ -241,7 +245,7 @@ export const FileList: React.FC<FileListProps> = ({
 								</div>
 							</div>
 						</div>
-					</div>
+					</button>
 				);
 			})}
 		</div>

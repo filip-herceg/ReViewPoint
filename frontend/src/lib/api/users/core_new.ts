@@ -55,14 +55,17 @@ export const usersCoreApi = {
 			id: response.data?.id,
 			email: response.data?.email,
 		});
-		return response.data!;
+		if (!response.data) {
+			throw new Error("User creation succeeded but no data returned");
+		}
+		return response.data;
 	},
 
 	// List users with optional filtering (admin only)
 	listUsers: async (params?: UserSearchParams): Promise<UserListResponse> => {
 		logger.info("Fetching users list", { params });
 		const queryParams = params
-			? new URLSearchParams(params as any).toString()
+			? new URLSearchParams(params as Record<string, string>).toString()
 			: "";
 		const url = queryParams ? `/users?${queryParams}` : "/users";
 
@@ -77,7 +80,10 @@ export const usersCoreApi = {
 			total: response.data?.total,
 			count: response.data?.users.length,
 		});
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Users fetch succeeded but no data returned");
+		}
+		return response.data;
 	},
 
 	// Get user by ID (admin only)
@@ -94,7 +100,10 @@ export const usersCoreApi = {
 			id: response.data?.id,
 			email: response.data?.email,
 		});
-		return response.data!;
+		if (!response.data) {
+			throw new Error("User fetch succeeded but no data returned");
+		}
+		return response.data;
 	},
 
 	// Update user information (admin only)
@@ -117,7 +126,10 @@ export const usersCoreApi = {
 			id: response.data?.id,
 			email: response.data?.email,
 		});
-		return response.data!;
+		if (!response.data) {
+			throw new Error("User update succeeded but no data returned");
+		}
+		return response.data;
 	},
 
 	// Delete user (admin only)

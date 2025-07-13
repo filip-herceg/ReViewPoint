@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import type {
+	FileMetadataExtract,
 	FileValidationError,
 	FileValidationResult,
 	FileValidationWarning,
@@ -172,7 +173,7 @@ const ValidationIssue: React.FC<ValidationIssueProps> = ({
  */
 interface FileMetadataProps {
 	file: File;
-	metadata?: Record<string, any>;
+	metadata?: Record<string, unknown> | FileMetadataExtract;
 	compact?: boolean;
 }
 
@@ -225,8 +226,8 @@ const FileMetadata: React.FC<FileMetadataProps> = ({
 	return (
 		<div className="space-y-3">
 			<div className="grid grid-cols-2 gap-3">
-				{basicInfo.map((info, index) => (
-					<div key={index} className="flex items-center gap-2">
+				{basicInfo.map((info) => (
+					<div key={info.label} className="flex items-center gap-2">
 						<div className="text-muted-foreground">{info.icon}</div>
 						<div className="min-w-0 flex-1">
 							<p className="text-xs text-muted-foreground">{info.label}</p>
@@ -369,7 +370,7 @@ export const FileValidationFeedback: React.FC<FileValidationFeedbackProps> = ({
 	file,
 	validation,
 	title,
-	showDetails = true,
+	showDetails: _showDetails = true,
 	showMetadata = true,
 	showProgress = false,
 	compact = false,
@@ -391,7 +392,7 @@ export const FileValidationFeedback: React.FC<FileValidationFeedbackProps> = ({
 
 		const groupBy = (
 			items: (FileValidationError | FileValidationWarning)[],
-			keyFn: (item: any) => string,
+			keyFn: (item: FileValidationError | FileValidationWarning) => string,
 		) => {
 			const groups = new Map();
 			items.forEach((item) => {
@@ -495,7 +496,7 @@ export const FileValidationFeedback: React.FC<FileValidationFeedbackProps> = ({
 					<div className="space-y-2">
 						{displayErrors.map((error, index) => (
 							<ValidationIssue
-								key={index}
+								key={`error-${error.code}-${error.field}-${index}`}
 								issue={error}
 								type="error"
 								index={index}
@@ -524,9 +525,12 @@ export const FileValidationFeedback: React.FC<FileValidationFeedbackProps> = ({
 					</h4>
 					<div className="space-y-2">
 						{displayWarnings.map((warning, index) => (
-							<div className="py-1">
+							<div
+								className="py-1"
+								key={`warning-${warning.code}-${warning.field}-${index}`}
+							>
 								<ValidationIssue
-									key={index}
+									key={`warning-item-${warning.code}-${warning.field}-${index}`}
 									issue={warning}
 									type="warning"
 									index={index}

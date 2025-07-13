@@ -287,16 +287,17 @@ export const CitationsSection: React.FC<CitationsSectionProps> = ({
 								</Badge>
 							)}
 						</TabsTrigger>
-					</TabsList>
-
+					</TabsList>{" "}
 					<TabsContent value="used" className="mt-6">
 						{isLoading && !data ? (
 							<div className="space-y-4">
-								{Array.from({ length: 3 }).map((_, i) => (
-									<div key={i} className="animate-pulse">
-										<div className="h-32 bg-muted rounded-lg"></div>
-									</div>
-								))}
+								{Array.from({ length: 3 }, (_, i) => `used-skeleton-${i}`).map(
+									(key) => (
+										<div key={key} className="animate-pulse">
+											<div className="h-32 bg-muted rounded-lg"></div>
+										</div>
+									),
+								)}
 							</div>
 						) : data?.citationsUsed.citations.length ? (
 							<div className="space-y-4">
@@ -333,13 +334,15 @@ export const CitationsSection: React.FC<CitationsSectionProps> = ({
 								<p>No citations found{searchTerm ? " for your search" : ""}.</p>
 							</div>
 						)}
-					</TabsContent>
-
+					</TabsContent>{" "}
 					<TabsContent value="citedBy" className="mt-6">
 						{isLoading && !data ? (
 							<div className="space-y-4">
-								{Array.from({ length: 3 }).map((_, i) => (
-									<div key={i} className="animate-pulse">
+								{Array.from(
+									{ length: 3 },
+									(_, i) => `cited-by-skeleton-${i}`,
+								).map((key) => (
+									<div key={key} className="animate-pulse">
 										<div className="h-32 bg-muted rounded-lg"></div>
 									</div>
 								))}

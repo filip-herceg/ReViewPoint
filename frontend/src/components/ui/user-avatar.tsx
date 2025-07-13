@@ -35,6 +35,11 @@ const statusSizeClasses = {
 	xl: "h-3.5 w-3.5",
 };
 
+const _statusColorClasses = {
+	online: "bg-green-500",
+	offline: "bg-gray-400",
+};
+
 /**
  * Generate initials from user name or email
  */
@@ -132,47 +137,63 @@ export function UserAvatar({
 
 	return (
 		<div className={cn("relative inline-flex", className)}>
-			<div
-				className={cn(
-					"rounded-full flex items-center justify-center font-medium text-primary-foreground relative overflow-hidden",
-					sizeClasses[size],
-					avatarColor,
-					onClick && "cursor-pointer hover:opacity-80 transition-opacity",
-					className,
-				)}
-				onClick={handleClick}
-				role={onClick ? "button" : undefined}
-				tabIndex={onClick ? 0 : undefined}
-				onKeyDown={
-					onClick
-						? (e) => {
-								if (e.key === "Enter" || e.key === " ") {
-									e.preventDefault();
-									handleClick();
-								}
-							}
-						: undefined
-				}
-				aria-label={user ? `${user.name || user.email} avatar` : "User avatar"}
-			>
-				{/* Profile image */}
-				{user?.avatar && (
-					<img
-						src={user.avatar}
-						alt={`${user.name || user.email} avatar`}
-						className="w-full h-full object-cover"
-						onError={handleImageError}
-					/>
-				)}
-
-				{/* Initials fallback */}
-				<span
-					data-testid="avatar-initials"
-					className="absolute inset-0 flex items-center justify-center"
+			{onClick ? (
+				<button
+					type="button"
+					className={cn(
+						"rounded-full flex items-center justify-center font-medium text-primary-foreground relative overflow-hidden border-0 p-0",
+						sizeClasses[size],
+						avatarColor,
+						"cursor-pointer hover:opacity-80 transition-opacity",
+					)}
+					onClick={handleClick}
+					aria-label={
+						user ? `${user.name || user.email} avatar` : "User avatar"
+					}
 				>
-					{initials}
-				</span>
-			</div>
+					{/* Profile image */}
+					{user?.avatar && (
+						<img
+							src={user.avatar}
+							alt={`${user.name || user.email} avatar`}
+							className="w-full h-full object-cover"
+							onError={handleImageError}
+						/>
+					)}
+
+					{/* Initials fallback */}
+					{!user?.avatar && (
+						<span className="text-sm font-medium">{initials}</span>
+					)}
+				</button>
+			) : (
+				<div
+					className={cn(
+						"rounded-full flex items-center justify-center font-medium text-primary-foreground relative overflow-hidden",
+						sizeClasses[size],
+						avatarColor,
+					)}
+					role="img"
+					aria-label={
+						user ? `${user.name || user.email} avatar` : "User avatar"
+					}
+				>
+					{/* Profile image */}
+					{user?.avatar && (
+						<img
+							src={user.avatar}
+							alt={`${user.name || user.email} avatar`}
+							className="w-full h-full object-cover"
+							onError={handleImageError}
+						/>
+					)}
+
+					{/* Initials fallback */}
+					{!user?.avatar && (
+						<span className="text-sm font-medium">{initials}</span>
+					)}
+				</div>
+			)}
 
 			{/* Online status indicator */}
 			{showOnlineStatus && (
@@ -181,8 +202,9 @@ export function UserAvatar({
 					className={cn(
 						"absolute -bottom-0.5 -right-0.5 rounded-full border-2 border-background",
 						statusSizeClasses[size],
-						isOnline ? "bg-success" : "bg-muted",
+						isOnline ? "bg-green-500" : "bg-gray-400",
 					)}
+					role="img"
 					aria-label={isOnline ? "Online" : "Offline"}
 				/>
 			)}
@@ -234,33 +256,32 @@ export function AvatarGroup({
 					className="ring-2 ring-background"
 				/>
 			))}
-
-			{overflowCount > 0 && (
-				<div
-					className={cn(
-						"rounded-full flex items-center justify-center font-medium text-muted-foreground bg-muted ring-2 ring-background",
-						sizeClasses[size],
-						onOverflowClick &&
+			{overflowCount > 0 &&
+				(onOverflowClick ? (
+					<button
+						type="button"
+						className={cn(
+							"rounded-full flex items-center justify-center font-medium text-muted-foreground bg-muted ring-2 ring-background",
+							sizeClasses[size],
 							"cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors",
-					)}
-					onClick={onOverflowClick}
-					role={onOverflowClick ? "button" : undefined}
-					tabIndex={onOverflowClick ? 0 : undefined}
-					onKeyDown={
-						onOverflowClick
-							? (e) => {
-									if (e.key === "Enter" || e.key === " ") {
-										e.preventDefault();
-										onOverflowClick();
-									}
-								}
-							: undefined
-					}
-					aria-label={`${overflowCount} more users`}
-				>
-					+{overflowCount}
-				</div>
-			)}
+						)}
+						onClick={onOverflowClick}
+						aria-label={`${overflowCount} more users`}
+					>
+						+{overflowCount}
+					</button>
+				) : (
+					<div
+						className={cn(
+							"rounded-full flex items-center justify-center font-medium text-muted-foreground bg-muted ring-2 ring-background",
+							sizeClasses[size],
+						)}
+						role="img"
+						aria-label={`${overflowCount} more users`}
+					>
+						+{overflowCount}
+					</div>
+				))}
 		</div>
 	);
 }

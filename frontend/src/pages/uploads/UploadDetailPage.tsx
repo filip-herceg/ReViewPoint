@@ -236,7 +236,10 @@ const UploadDetailPage: React.FC = () => {
 											<h5 className="font-medium mb-2">Suggestions:</h5>
 											<ul className="text-sm space-y-1">
 												{review.suggestions.map((suggestion, index) => (
-													<li key={index} className="flex items-start gap-2">
+													<li
+														key={`suggestion-${index}-${suggestion.slice(0, 20)}`}
+														className="flex items-start gap-2"
+													>
 														<span className="text-muted-foreground">•</span>
 														<span>{suggestion}</span>
 													</li>

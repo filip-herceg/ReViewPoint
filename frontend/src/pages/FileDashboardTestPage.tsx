@@ -18,8 +18,10 @@ export default function FileDashboardTestPage() {
 			setMessage(
 				`Successfully deleted ${result.deleted.length} files. Failed: ${result.failed.length}`,
 			);
-		} catch (error: any) {
-			setMessage(`Error: ${error.message || "Unknown error"}`);
+		} catch (error: unknown) {
+			const errorMessage =
+				error instanceof Error ? error.message : "Unknown error";
+			setMessage(`Error: ${errorMessage}`);
 		}
 	};
 

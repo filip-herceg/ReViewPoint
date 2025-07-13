@@ -70,7 +70,7 @@ export function AriaLiveRegion({
 				clearTimeout(timeoutRef.current);
 			}
 		};
-	}, [message, clearDelay]);
+	}, [message, clearDelay, politeness]);
 
 	return (
 		<div

@@ -39,13 +39,10 @@
  */
 
 import { useCallback, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { authApi } from "@/lib/api/auth";
 import type {
-	AuthError,
 	AuthLoginRequest,
 	AuthRegisterRequest,
-	AuthTokens,
 	AuthUser,
 } from "@/lib/api/types";
 import { extractUserFromToken } from "@/lib/api/types";
@@ -82,7 +79,6 @@ interface UseAuthReturn {
  * Custom hook for authentication operations
  */
 export function useAuth(): UseAuthReturn {
-	const navigate = useNavigate();
 	const {
 		user,
 		tokens,
@@ -94,7 +90,6 @@ export function useAuth(): UseAuthReturn {
 		setLoading,
 		setError,
 		clearError: storeClearError,
-		setTokens,
 		setRefreshing,
 	} = useAuthStore();
 
@@ -409,7 +404,7 @@ export function useAuth(): UseAuthReturn {
 			isAuthenticated,
 			hasUser: !!user,
 		});
-	}, []);
+	}, [isAuthenticated, user]);
 
 	return {
 		// State

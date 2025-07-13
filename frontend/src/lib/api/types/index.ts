@@ -186,14 +186,14 @@ export type PickRequired<T, K extends keyof T> = Required<Pick<T, K>>;
  * Create a type that represents the keys of T that are optional
  */
 export type OptionalKeys<T> = {
-	[K in keyof T]-?: {} extends Pick<T, K> ? K : never;
+	[K in keyof T]-?: Record<string, never> extends Pick<T, K> ? K : never;
 }[keyof T];
 
 /**
  * Create a type that represents the keys of T that are required
  */
 export type RequiredKeys<T> = {
-	[K in keyof T]-?: {} extends Pick<T, K> ? never : K;
+	[K in keyof T]-?: Record<string, never> extends Pick<T, K> ? never : K;
 }[keyof T];
 
 /**

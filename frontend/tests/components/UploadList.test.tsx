@@ -37,8 +37,6 @@ const globalAny: any = globalThis;
 describe("UploadList component", () => {
 	beforeEach(() => {
 		clearReactQueryCache();
-	});
-	beforeEach(() => {
 		testLogger.info("Resetting upload store and mocking fetch");
 		useUploadStore.setState({
 			uploads: [],

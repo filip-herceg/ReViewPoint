@@ -118,12 +118,14 @@ const ReviewsPage: React.FC = () => {
 	};
 
 	const getRatingStars = (rating: number) => {
-		return Array.from({ length: 5 }, (_, i) => (
-			<Star
-				key={i}
-				className={`h-4 w-4 ${i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
-			/>
-		));
+		return Array.from({ length: 5 }, (_, i) => `rating-star-${i}`).map(
+			(key, i) => (
+				<Star
+					key={key}
+					className={`h-4 w-4 ${i < rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
+				/>
+			),
+		);
 	};
 
 	const getStats = () => {

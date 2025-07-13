@@ -76,8 +76,8 @@ export interface ModuleConfiguration {
 		label: string;
 		description?: string;
 		required: boolean;
-		default?: any;
-		options?: Array<{ value: any; label: string }>;
+		default?: string | number | boolean;
+		options?: Array<{ value: string | number; label: string }>;
 		min?: number;
 		max?: number;
 	};
@@ -142,7 +142,7 @@ export interface UserModuleSubscription {
 	licenseType: "free" | "premium";
 	expiresAt?: string;
 	status: "active" | "expired" | "cancelled" | "trial";
-	configuration: Record<string, any>;
+	configuration: Record<string, unknown>;
 	usageStats: {
 		totalRuns: number;
 		lastUsed: string;
@@ -159,7 +159,7 @@ export interface ModuleExecutionResult {
 	status: "success" | "error" | "warning";
 	results: {
 		summary: string;
-		details: any;
+		details: Record<string, unknown>;
 		confidence: number; // 0-1
 		suggestions: string[];
 		warnings: string[];
@@ -205,7 +205,7 @@ export interface MarketplaceStats {
 export interface ModuleExecutionContext {
 	documentId: string;
 	userId: string;
-	configuration: Record<string, any>;
+	configuration: Record<string, unknown>;
 	metadata: {
 		fileName: string;
 		fileSize: number;

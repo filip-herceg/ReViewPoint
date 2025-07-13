@@ -35,7 +35,21 @@ export function handleApiError(error: unknown): HandledError {
 	// Check for Axios error first (both network and HTTP errors)
 	const isAxiosError =
 		typeof error === "object" && error !== null && "isAxiosError" in error;
-	const response = isAxiosError ? (error as any).response : undefined;
+
+	// Type guard for axios error with response
+	const getAxiosResponse = (
+		err: unknown,
+	): { status?: number; data?: unknown } | undefined => {
+		if (typeof err === "object" && err !== null && "response" in err) {
+			const response = (err as { response?: unknown }).response;
+			if (typeof response === "object" && response !== null) {
+				return response as { status?: number; data?: unknown };
+			}
+		}
+		return undefined;
+	};
+
+	const response = isAxiosError ? getAxiosResponse(error) : undefined;
 
 	// Axios network error (isAxiosError is true but no response)
 	if (isAxiosError && !response) {
@@ -85,15 +99,29 @@ export function handleApiError(error: unknown): HandledError {
 
 	// Handle plain objects that might contain error information
 	if (typeof error === "object" && error !== null && !Array.isArray(error)) {
+		// Type guards for error object properties
+		const hasErrorProperty = (obj: object): obj is { error: string } => {
+			return (
+				"error" in obj && typeof (obj as { error?: unknown }).error === "string"
+			);
+		};
+
+		const hasMessageProperty = (obj: object): obj is { message: string } => {
+			return (
+				"message" in obj &&
+				typeof (obj as { message?: unknown }).message === "string"
+			);
+		};
+
 		// Direct error/message property access for objects like { error: 'message' }
-		if ("error" in error && typeof (error as any).error === "string") {
-			const message = (error as any).error;
+		if (hasErrorProperty(error)) {
+			const message = error.error;
 			logger.warn("Object with error property:", message);
 			return { type: "unknown", message, original: error };
 		}
 
-		if ("message" in error && typeof (error as any).message === "string") {
-			const message = (error as any).message;
+		if (hasMessageProperty(error)) {
+			const message = error.message;
 			logger.warn("Object with message property:", message);
 			return { type: "unknown", message, original: error };
 		}

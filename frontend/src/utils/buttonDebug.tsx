@@ -53,13 +53,14 @@ export function debugButtonChildren(
 		console.log("Child props:", child.props);
 
 		// Check if child has its own children
-		if (child.props.children) {
-			const grandChildCount = React.Children.count(child.props.children);
+		const childProps = child.props as Record<string, unknown>;
+		if (childProps.children) {
+			const grandChildCount = React.Children.count(childProps.children);
 			console.log("Grand-child count:", grandChildCount);
 
 			if (grandChildCount > 0) {
 				console.log("Grand-children:");
-				React.Children.forEach(child.props.children, (grandChild, index) => {
+				React.Children.forEach(childProps.children, (grandChild, index) => {
 					console.log(`  [${index}]:`, grandChild);
 				});
 			}
@@ -82,8 +83,7 @@ export function DebugButton({
 	children: React.ReactNode;
 	asChild?: boolean;
 	debug?: boolean;
-	[key: string]: any;
-}) {
+} & Record<string, unknown>) {
 	if (debug && asChild) {
 		debugButtonChildren(children, "DebugButton");
 	}
@@ -163,8 +163,7 @@ export function SafeButtonAsChild({
 }: {
 	children: React.ReactNode;
 	fallback?: React.ReactNode;
-	[key: string]: any;
-}) {
+} & Record<string, unknown>) {
 	const validation = validateAsChildUsage(children);
 
 	if (!validation.isValid) {

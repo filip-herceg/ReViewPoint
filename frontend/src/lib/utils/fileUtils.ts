@@ -335,7 +335,7 @@ export function validateFilename(filename: string): FileValidationResult {
 		}
 
 		// Check for dangerous characters
-		const dangerousChars = /[<>:"/\\|?*\x00-\x1f]/;
+		const dangerousChars = /[<>:"/\\|?*\p{Cc}]/u;
 		if (dangerousChars.test(filename)) {
 			errors.push("Filename contains invalid characters");
 		}
@@ -356,7 +356,7 @@ export function validateFilename(filename: string): FileValidationResult {
 		}
 
 		// Check for unicode characters
-		const hasUnicode = /[^\x00-\x7F]/.test(filename);
+		const hasUnicode = /[^\p{ASCII}]/u.test(filename);
 		if (hasUnicode) {
 			warnings.push("Filename contains non-ASCII characters");
 		}
@@ -388,7 +388,7 @@ export function sanitizeFilename(filename: string): string {
 		let sanitized = filename;
 
 		// Replace dangerous characters
-		sanitized = sanitized.replace(/[<>:"/\\|?*\x00-\x1f]/g, "_");
+		sanitized = sanitized.replace(/[<>:"/\\|?*\p{Cc}]/gu, "_");
 
 		// Remove leading/trailing dots and spaces
 		sanitized = sanitized.replace(/^[.\s]+|[.\s]+$/g, "");

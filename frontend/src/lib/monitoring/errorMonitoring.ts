@@ -160,7 +160,7 @@ class ErrorMonitoringService {
 			debug: console.debug,
 		};
 
-		console.error = (...args: any[]) => {
+		console.error = (...args: unknown[]) => {
 			const message = args.join(" ");
 
 			// Don't capture expected warnings as errors, even if logged as errors
@@ -175,7 +175,7 @@ class ErrorMonitoringService {
 			originalError.apply(console, args);
 		};
 
-		console.warn = (...args: any[]) => {
+		console.warn = (...args: unknown[]) => {
 			const message = args.join(" ");
 
 			// Don't capture expected warnings as errors
@@ -398,19 +398,16 @@ class ErrorMonitoringService {
 		if (
 			config.reportToSentry &&
 			typeof window !== "undefined" &&
-			(window as any).Sentry
+			window.Sentry
 		) {
 			try {
-				(window as any).Sentry.captureException(
-					new Error(errorReport.message),
-					{
-						extra: errorReport.context,
-						tags: {
-							severity: errorReport.severity,
-							errorBoundary: errorReport.errorBoundary,
-						},
+				window.Sentry.captureException(new Error(errorReport.message), {
+					extra: errorReport.context,
+					tags: {
+						severity: errorReport.severity,
+						errorBoundary: errorReport.errorBoundary,
 					},
-				);
+				});
 			} catch (error) {
 				// Use original console to avoid recursion
 				if (this.originalConsole) {
@@ -544,6 +541,7 @@ export function createErrorFallback() {
 			React.createElement(
 				"button",
 				{
+					type: "button",
 					onClick: resetErrorBoundary,
 					className:
 						"px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors",

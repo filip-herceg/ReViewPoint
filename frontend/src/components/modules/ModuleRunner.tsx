@@ -30,6 +30,42 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useMarketplace } from "@/hooks/useMarketplace";
 import type { Module, ModuleExecutionResult } from "@/types/marketplace";
 
+// Mock result interfaces for simulation
+interface MockResultDetails {
+	totalCitations?: number;
+	validCitations?: number;
+	invalidCitations?: number;
+	missingInfo?: number;
+	formatIssues?: number;
+	duplicateCount?: number;
+	uniqueCount?: number;
+	sentimentScore?: number;
+	biasScore?: number;
+	totalIssues?: number;
+	criticalIssues?: number;
+	grammar?: number;
+	spelling?: number;
+	style?: number;
+	integrity?: number;
+	transparency?: number;
+	overallSimilarity?: number;
+	structureScore?: number;
+	suspiciousSegments?: number;
+	methodologyScore?: number;
+	checkedSources?: number;
+	clarityScore?: number;
+	evidenceScore?: number;
+}
+
+interface MockResult {
+	summary: string;
+	details: MockResultDetails;
+	confidence: number;
+	suggestions: string[];
+	warnings: string[];
+	errors: string[];
+}
+
 interface ModuleRunnerProps {
 	documentId: string;
 	documentName: string;
@@ -48,7 +84,7 @@ const mockExecuteModule = async (
 	);
 
 	// Mock results based on module type
-	const mockResults: Record<string, any> = {
+	const mockResults: Record<string, MockResult> = {
 		"citation-validator-pro": {
 			summary: "Found 12 citations, 2 require attention",
 			details: {
@@ -147,8 +183,8 @@ const getStatusColor = (status: string) => {
 
 const ModuleRunner: React.FC<ModuleRunnerProps> = ({
 	documentId,
-	documentName,
-	documentType,
+	documentName: _documentName,
+	documentType: _documentType,
 	compact = false,
 }) => {
 	const { userSubscriptions } = useMarketplace();
@@ -318,7 +354,11 @@ const ModuleRunner: React.FC<ModuleRunnerProps> = ({
 														{result.results.suggestions
 															.slice(0, 2)
 															.map((suggestion, index) => (
-																<li key={index}>{suggestion}</li>
+																<li
+																	key={`suggestion-${index}-${suggestion.slice(0, 20)}`}
+																>
+																	{suggestion}
+																</li>
 															))}
 													</ul>
 													{result.results.suggestions.length > 2 && (

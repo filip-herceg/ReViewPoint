@@ -13,7 +13,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { getRoleBasedNavigationRoutes } from "@/lib/router/routes";
 import { cn } from "@/lib/utils";
 
-const iconMap: Record<string, React.ComponentType<any>> = {
+const iconMap: Record<
+	string,
+	React.ComponentType<React.SVGProps<SVGSVGElement>>
+> = {
 	Home: Icons.Home,
 	LayoutDashboard: Icons.LayoutDashboard,
 	Upload: Icons.Upload,
@@ -86,7 +89,10 @@ export function Navigation() {
 			{isAuthenticated ? (
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<button className="flex items-center space-x-2 px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200 hover:scale-105">
+						<button
+							type="button"
+							className="flex items-center space-x-2 px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200 hover:scale-105"
+						>
 							<Icons.User className="h-4 w-4" />
 							<span className="hidden sm:block">
 								{user?.name || user?.email}

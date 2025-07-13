@@ -115,10 +115,6 @@ interface PromoteAdminResponse {
 	detail: string;
 }
 
-interface PromoteAdminRequest {
-	email: string;
-}
-
 export const usersTestOnlyApi = {
 	// Promote a user to admin by email (test mode only)
 	promoteUserToAdmin: async (email: string): Promise<PromoteAdminResponse> => {
@@ -140,6 +136,9 @@ export const usersTestOnlyApi = {
 		}
 
 		logger.info("User promoted to admin successfully", { email });
-		return response.data!;
+		if (!response.data) {
+			throw new Error("User promotion succeeded but no data returned");
+		}
+		return response.data;
 	},
 };

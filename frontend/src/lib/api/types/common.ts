@@ -131,7 +131,7 @@ export function isApiError(error: unknown): error is ApiError {
 		typeof error === "object" &&
 		error !== null &&
 		"message" in error &&
-		typeof (error as any).message === "string"
+		typeof (error as Record<string, unknown>).message === "string"
 	);
 }
 
@@ -145,7 +145,7 @@ export function isApiResponse<T>(
 		typeof response === "object" &&
 		response !== null &&
 		"data" in response &&
-		(response as any).data !== undefined
+		(response as Record<string, unknown>).data !== undefined
 	);
 }
 
@@ -160,7 +160,7 @@ export function isPaginatedResponse<T>(
 		response !== null &&
 		"items" in response &&
 		"total" in response &&
-		Array.isArray((response as any).items)
+		Array.isArray((response as Record<string, unknown>).items)
 	);
 }
 

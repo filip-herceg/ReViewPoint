@@ -216,11 +216,11 @@ export const FileSearchFilters: React.FC<FileSearchFiltersProps> = ({
 
 						{/* Size Filter */}
 						<div className="space-y-3">
-							<h3 className="text-sm font-medium text-foreground">File Size</h3>
+							<h3 className="text-sm font-medium text-foreground">File Size</h3>{" "}
 							<div className="space-y-2">
-								{SIZE_PRESETS.map((preset, index) => (
+								{SIZE_PRESETS.map((preset) => (
 									<label
-										key={index}
+										key={preset.label}
 										className="flex items-center space-x-2 cursor-pointer"
 									>
 										<input
@@ -263,11 +263,17 @@ export const FileSearchFilters: React.FC<FileSearchFiltersProps> = ({
 							<h3 className="text-sm font-medium text-foreground flex items-center">
 								<Calendar className="h-4 w-4 mr-2" />
 								Upload Date
-							</h3>
+							</h3>{" "}
 							<div className="space-y-2">
 								<div>
-									<label className="text-xs text-muted-foreground">From</label>
+									<label
+										htmlFor="date-from"
+										className="text-xs text-muted-foreground"
+									>
+										From
+									</label>
 									<Input
+										id="date-from"
 										type="date"
 										value={tempFilters.dateRange?.start || ""}
 										onChange={(e) =>
@@ -277,8 +283,14 @@ export const FileSearchFilters: React.FC<FileSearchFiltersProps> = ({
 									/>
 								</div>
 								<div>
-									<label className="text-xs text-muted-foreground">To</label>
+									<label
+										htmlFor="date-to"
+										className="text-xs text-muted-foreground"
+									>
+										To
+									</label>
 									<Input
+										id="date-to"
 										type="date"
 										value={tempFilters.dateRange?.end || ""}
 										onChange={(e) =>

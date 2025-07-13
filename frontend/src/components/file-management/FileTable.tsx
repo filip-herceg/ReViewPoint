@@ -132,20 +132,22 @@ export const FileTable: React.FC<FileTableProps> = ({
 					</thead>
 					<tbody className="bg-background divide-y divide-border">
 						{loading ? (
-							Array.from({ length: 5 }).map((_, index) => (
-								<tr key={index}>
-									<td colSpan={7} className="px-4 py-4">
-										<div className="flex items-center space-x-4">
-											<div className="h-4 w-4 bg-muted rounded animate-pulse" />
-											<div className="h-4 w-32 bg-muted rounded animate-pulse" />
-											<div className="h-4 w-16 bg-muted rounded animate-pulse" />
-											<div className="h-4 w-20 bg-muted rounded animate-pulse" />
-											<div className="h-4 w-24 bg-muted rounded animate-pulse" />
-											<div className="h-4 w-32 bg-muted rounded animate-pulse" />
-										</div>
-									</td>
-								</tr>
-							))
+							Array.from({ length: 5 }, (_, i) => `table-skeleton-${i}`).map(
+								(key) => (
+									<tr key={key}>
+										<td colSpan={7} className="px-4 py-4">
+											<div className="flex items-center space-x-4">
+												<div className="h-4 w-4 bg-muted rounded animate-pulse" />
+												<div className="h-4 w-32 bg-muted rounded animate-pulse" />
+												<div className="h-4 w-16 bg-muted rounded animate-pulse" />
+												<div className="h-4 w-20 bg-muted rounded animate-pulse" />
+												<div className="h-4 w-24 bg-muted rounded animate-pulse" />
+												<div className="h-4 w-32 bg-muted rounded animate-pulse" />
+											</div>
+										</td>
+									</tr>
+								),
+							)
 						) : files.length === 0 ? (
 							<tr>
 								<td

@@ -107,7 +107,9 @@ export function EmptyState({
 				stroke="currentColor"
 				viewBox="0 0 24 24"
 				xmlns="http://www.w3.org/2000/svg"
+				aria-label="Empty folder icon"
 			>
+				<title>Empty folder</title>
 				<path
 					strokeLinecap="round"
 					strokeLinejoin="round"

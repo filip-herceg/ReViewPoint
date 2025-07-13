@@ -99,7 +99,7 @@ const MALICIOUS_PATTERNS = {
 		/\.(exe|com|bat|cmd|scr|pif|vbs|js|jar|app|deb|pkg|dmg)$/i,
 		/\.(php|asp|jsp|py|rb|pl)$/i,
 		/\..*\.(exe|com|bat)$/i, // Double extension
-		/[\x00-\x1f\x7f-\x9f]/, // Control characters
+		/\p{Cc}|\p{Cf}/u, // Control and format characters
 	],
 	content: [
 		/<script[\s\S]*?>[\s\S]*?<\/script>/gi,

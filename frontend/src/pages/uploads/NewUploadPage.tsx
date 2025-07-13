@@ -171,10 +171,14 @@ const NewUploadPage: React.FC = () => {
 							</CardDescription>
 						</CardHeader>
 						<CardContent>
+							{/* biome-ignore lint/a11y/useSemanticElements: File drop zone requires div for drag-drop functionality with nested input */}
 							<div
 								className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center hover:border-muted-foreground/50 transition-colors"
 								onDrop={handleFileDrop}
 								onDragOver={handleDragOver}
+								role="button"
+								tabIndex={0}
+								aria-label="Drop files here or click to upload"
 							>
 								<Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
 								<div className="space-y-2">
@@ -209,7 +213,7 @@ const NewUploadPage: React.FC = () => {
 									<div className="space-y-2 max-h-48 overflow-y-auto">
 										{selectedFiles.map((file, index) => (
 											<div
-												key={index}
+												key={`file-${index}-${file.name.slice(0, 20)}`}
 												className="flex items-center justify-between p-3 border rounded-lg"
 											>
 												<div className="flex items-center gap-3">

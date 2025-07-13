@@ -16,8 +16,7 @@ import type { paths } from "./schema";
  * Configured with base URL from environment variables
  */
 export const generatedApiClient = createClient<paths>({
-	baseUrl:
-		(import.meta as any).env?.VITE_API_BASE_URL || "http://localhost:8000",
+	baseUrl: import.meta.env?.VITE_API_BASE_URL || "http://localhost:8000",
 	headers: {
 		"Content-Type": "application/json",
 	},
@@ -56,7 +55,7 @@ export function isApiError(
 		typeof error === "object" &&
 		error !== null &&
 		"message" in error &&
-		typeof (error as any).message === "string"
+		typeof (error as Record<string, unknown>).message === "string"
 	);
 }
 

@@ -43,7 +43,7 @@ export const uploadApiClient = {
 
 			// Use fetch directly for file uploads since openapi-fetch expects string for binary files
 			const baseUrl =
-				(import.meta as any).env?.VITE_API_BASE_URL || "http://localhost:8000";
+				import.meta.env?.VITE_API_BASE_URL || "http://localhost:8000";
 			const response = await fetch(`${baseUrl}/api/v1/uploads`, {
 				method: "POST",
 				body: formData,
@@ -171,7 +171,7 @@ export const uploadApiClient = {
 
 			// Use the dedicated download endpoint
 			const baseUrl =
-				(import.meta as any).env?.VITE_API_BASE_URL || "http://localhost:8000";
+				import.meta.env?.VITE_API_BASE_URL || "http://localhost:8000";
 			const response = await fetch(
 				`${baseUrl}/api/v1/uploads/${filename}/download`,
 				{
@@ -206,7 +206,7 @@ export const uploadApiClient = {
 		try {
 			logger.info("🗑️ Deleting file:", { filename });
 
-			const { data, error } = await generatedApiClient.DELETE(
+			const { error } = await generatedApiClient.DELETE(
 				"/api/v1/uploads/{filename}",
 				{
 					params: {
@@ -240,7 +240,7 @@ export const uploadApiClient = {
 			});
 
 			const baseUrl =
-				(import.meta as any).env?.VITE_API_BASE_URL || "http://localhost:8000";
+				import.meta.env?.VITE_API_BASE_URL || "http://localhost:8000";
 			const response = await fetch(`${baseUrl}/api/v1/uploads/bulk-delete`, {
 				method: "POST",
 				headers: {
@@ -291,8 +291,8 @@ export function isUploadResponse(data: unknown): data is UploadFileResponse {
 		data !== null &&
 		"filename" in data &&
 		"url" in data &&
-		typeof (data as any).filename === "string" &&
-		typeof (data as any).url === "string"
+		typeof (data as Record<string, unknown>).filename === "string" &&
+		typeof (data as Record<string, unknown>).url === "string"
 	);
 }
 
@@ -302,8 +302,8 @@ export function isFileListResponse(data: unknown): data is FileListResponse {
 		data !== null &&
 		"files" in data &&
 		"total" in data &&
-		Array.isArray((data as any).files) &&
-		typeof (data as any).total === "number"
+		Array.isArray((data as Record<string, unknown>).files) &&
+		typeof (data as Record<string, unknown>).total === "number"
 	);
 }
 
@@ -312,7 +312,7 @@ export function isValidationError(data: unknown): data is HTTPValidationError {
 		typeof data === "object" &&
 		data !== null &&
 		"detail" in data &&
-		Array.isArray((data as any).detail)
+		Array.isArray((data as Record<string, unknown>).detail)
 	);
 }
 

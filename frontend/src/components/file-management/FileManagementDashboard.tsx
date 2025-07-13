@@ -67,7 +67,6 @@ export const FileManagementDashboard: React.FC<
 		setViewMode,
 		setSearchQuery: storeSetSearchQuery,
 		setSort,
-		setPage,
 		setCurrentPage,
 		setItemsPerPage,
 	} = useFileManagementStore();
@@ -152,7 +151,7 @@ export const FileManagementDashboard: React.FC<
 
 		// Sort files
 		result.sort((a, b) => {
-			let aValue: any, bValue: any;
+			let aValue: string | number | Date, bValue: string | number | Date;
 
 			switch (sortField) {
 				case "filename":
@@ -369,16 +368,21 @@ export const FileManagementDashboard: React.FC<
 					<div className="sr-only" aria-live="polite">
 						Loading files...
 					</div>
-					{Array.from({ length: 5 }).map((_, i) => (
-						<div key={i} className="flex items-center space-x-4 animate-pulse">
-							<div className="h-10 w-10 bg-muted rounded" />
-							<div className="flex-1 space-y-2">
-								<div className="h-4 bg-muted rounded w-full" />
-								<div className="h-3 bg-muted rounded w-1/2" />
+					{Array.from({ length: 5 }, (_, i) => `loading-skeleton-${i}`).map(
+						(key) => (
+							<div
+								key={key}
+								className="flex items-center space-x-4 animate-pulse"
+							>
+								<div className="h-10 w-10 bg-muted rounded" />
+								<div className="flex-1 space-y-2">
+									<div className="h-4 bg-muted rounded w-full" />
+									<div className="h-3 bg-muted rounded w-1/2" />
+								</div>
+								<div className="h-8 w-20 bg-muted rounded" />
 							</div>
-							<div className="h-8 w-20 bg-muted rounded" />
-						</div>
-					))}
+						),
+					)}
 				</div>
 			</CardContent>
 		</Card>
@@ -568,61 +572,27 @@ export const FileManagementDashboard: React.FC<
 					<div className="flex items-center gap-2">
 						<span>Items per page:</span>
 						<div className="relative">
-							<button
-								onClick={(e) => {
-									e.preventDefault();
-									const menu = e.currentTarget
-										.nextElementSibling as HTMLElement;
-									if (menu) {
-										menu.classList.toggle("hidden");
-									}
-								}}
-								className="border border-border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-info bg-background min-w-[60px] text-left"
-								role="combobox"
+							{" "}
+							<select
+								value={config.pageSize ?? config.itemsPerPage ?? 25}
+								onChange={(e) => setItemsPerPage(Number(e.target.value))}
+								className="border border-border rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-info bg-background min-w-[60px]"
 								aria-label="Items per page"
-								aria-expanded="false"
-								aria-haspopup="listbox"
 							>
-								{config.pageSize ?? config.itemsPerPage ?? 25}
-							</button>
-							<div
-								className="hidden absolute left-0 mt-1 w-20 bg-background rounded-md shadow-lg border border-border z-10"
-								role="listbox"
-							>
-								<div className="py-1">
-									{[10, 20, 50, 100].map((size) => (
-										<button
-											key={size}
-											className={cn(
-												"flex items-center w-full px-3 py-2 text-sm hover:bg-muted",
-												(config.pageSize ?? config.itemsPerPage ?? 25) === size
-													? "text-info-foreground bg-info/10"
-													: "text-foreground",
-											)}
-											onClick={() => {
-												setItemsPerPage(size);
-												// Close the dropdown
-												const menu = document.querySelector(
-													'[role="listbox"]',
-												) as HTMLElement;
-												if (menu) menu.classList.add("hidden");
-											}}
-											role="option"
-											aria-selected={
-												(config.pageSize ?? config.itemsPerPage ?? 25) === size
-											}
-										>
-											{size}
-										</button>
-									))}
-								</div>
-							</div>
+								{[10, 20, 50, 100].map((size) => (
+									<option key={size} value={size}>
+										{size}
+									</option>
+								))}
+							</select>
 						</div>
 					</div>
 				</div>
 
 				<div className="flex items-center gap-2">
+					{" "}
 					<button
+						type="button"
 						onClick={() => setCurrentPage(currentPage - 1)}
 						disabled={currentPage === 1}
 						aria-label="Previous page"
@@ -630,12 +600,11 @@ export const FileManagementDashboard: React.FC<
 					>
 						<ChevronLeft className="h-4 w-4" />
 					</button>
-
 					<span className="px-3 py-1 text-sm text-muted-foreground">
 						Page {currentPage}
-					</span>
-
+					</span>{" "}
 					<button
+						type="button"
 						onClick={() => setCurrentPage(currentPage + 1)}
 						disabled={
 							currentPage >=
@@ -683,13 +652,16 @@ export const FileManagementDashboard: React.FC<
 							This action cannot be undone.
 						</p>
 						<div className="flex gap-3 justify-end">
+							{" "}
 							<button
+								type="button"
 								onClick={handleCancelDelete}
 								className="px-4 py-2 text-sm font-medium text-foreground bg-muted hover:bg-muted/70 rounded-md transition-colors"
 							>
 								Cancel
-							</button>
+							</button>{" "}
 							<button
+								type="button"
 								onClick={handleConfirmDelete}
 								className="px-4 py-2 text-sm font-medium rounded-md transition-colors bg-destructive text-destructive-foreground hover:bg-destructive/80"
 							>

@@ -40,6 +40,7 @@ export function renderWithErrorBoundary(
 type LogLevel = "debug" | "info" | "warn" | "error";
 const LOG_PREFIX = "[TEST-LOG]";
 
+// biome-ignore lint/suspicious/noExplicitAny: Test utility function needs flexible argument types
 function log(level: LogLevel, ...args: any[]) {
 	const time = new Date().toISOString();
 	switch (level) {
@@ -65,9 +66,13 @@ function log(level: LogLevel, ...args: any[]) {
 }
 
 export const testLogger = {
+	// biome-ignore lint/suspicious/noExplicitAny: Test logger needs flexible argument types
 	debug: (...args: any[]) => log("debug", ...args),
+	// biome-ignore lint/suspicious/noExplicitAny: Test logger needs flexible argument types  
 	info: (...args: any[]) => log("info", ...args),
+	// biome-ignore lint/suspicious/noExplicitAny: Test logger needs flexible argument types
 	warn: (...args: any[]) => log("warn", ...args),
+	// biome-ignore lint/suspicious/noExplicitAny: Test logger needs flexible argument types
 	error: (...args: any[]) => log("error", ...args),
 };
 

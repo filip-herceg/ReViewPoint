@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChunkProgress, UploadProgress } from "@/lib/api/types/upload";
 import logger from "@/logger";
 
@@ -59,11 +59,14 @@ export function useUploadProgress(config: Partial<UploadProgressConfig> = {}) {
 		isTracking: false,
 	});
 
-	const defaultConfig: UploadProgressConfig = {
-		updateInterval: config.updateInterval || 1000,
-		speedSamples: config.speedSamples || 10,
-		minTimeForEta: config.minTimeForEta || 3000,
-	};
+	const defaultConfig = useMemo(
+		(): UploadProgressConfig => ({
+			updateInterval: config.updateInterval || 1000,
+			speedSamples: config.speedSamples || 10,
+			minTimeForEta: config.minTimeForEta || 3000,
+		}),
+		[config.updateInterval, config.speedSamples, config.minTimeForEta],
+	);
 
 	const progressSamples = useRef<ProgressSample[]>([]);
 	const updateInterval = useRef<NodeJS.Timeout | null>(null);

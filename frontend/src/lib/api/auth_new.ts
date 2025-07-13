@@ -25,15 +25,6 @@ interface MessageResponse {
 	message: string;
 }
 
-interface PasswordResetRequest {
-	email: string;
-}
-
-interface PasswordResetConfirmRequest {
-	token: string;
-	new_password: string;
-}
-
 interface UserProfile {
 	id: number;
 	email: string;
@@ -42,10 +33,6 @@ interface UserProfile {
 	avatar_url?: string;
 	created_at?: string;
 	updated_at?: string;
-}
-
-interface RefreshTokenRequest {
-	refresh_token: string;
 }
 
 export const authApi = {
@@ -66,7 +53,10 @@ export const authApi = {
 		}
 
 		logger.info("User registered successfully", { email: userData.email });
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Registration successful but no data returned");
+		}
+		return response.data;
 	},
 
 	// User login
@@ -86,7 +76,10 @@ export const authApi = {
 		}
 
 		logger.info("User logged in successfully", { email: loginData.email });
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Login successful but no data returned");
+		}
+		return response.data;
 	},
 
 	// User logout
@@ -102,7 +95,10 @@ export const authApi = {
 		}
 
 		logger.info("User logged out successfully");
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Logout successful but no data returned");
+		}
+		return response.data;
 	},
 
 	// Refresh JWT access token
@@ -119,7 +115,10 @@ export const authApi = {
 		}
 
 		logger.info("Token refreshed successfully");
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Token refresh successful but no data returned");
+		}
+		return response.data;
 	},
 
 	// Request password reset
@@ -142,7 +141,10 @@ export const authApi = {
 		}
 
 		logger.info("Password reset requested successfully", { email });
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Password reset request successful but no data returned");
+		}
+		return response.data;
 	},
 
 	// Reset password with token
@@ -162,7 +164,10 @@ export const authApi = {
 		}
 
 		logger.info("Password reset successfully");
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Password reset successful but no data returned");
+		}
+		return response.data;
 	},
 
 	// Get current user profile
@@ -178,6 +183,9 @@ export const authApi = {
 		}
 
 		logger.info("Current user profile retrieved successfully");
-		return response.data!;
+		if (!response.data) {
+			throw new Error("User profile retrieval successful but no data returned");
+		}
+		return response.data;
 	},
 };

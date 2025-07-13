@@ -240,8 +240,8 @@ export function isUser(value: unknown): value is User {
 		value !== null &&
 		"id" in value &&
 		"email" in value &&
-		typeof (value as any).id === "number" &&
-		typeof (value as any).email === "string"
+		typeof (value as Record<string, unknown>).id === "number" &&
+		typeof (value as Record<string, unknown>).email === "string"
 	);
 }
 
@@ -252,8 +252,13 @@ export function isUserPreferences(value: unknown): value is UserPreferences {
 	return (
 		typeof value === "object" &&
 		value !== null &&
-		(!("theme" in value) || ["dark", "light"].includes((value as any).theme)) &&
-		(!("locale" in value) || typeof (value as any).locale === "string")
+		(!("theme" in value) ||
+			(typeof (value as Record<string, unknown>).theme === "string" &&
+				["dark", "light"].includes(
+					(value as Record<string, unknown>).theme as string,
+				))) &&
+		(!("locale" in value) ||
+			typeof (value as Record<string, unknown>).locale === "string")
 	);
 }
 

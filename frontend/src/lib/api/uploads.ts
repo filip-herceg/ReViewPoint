@@ -142,14 +142,6 @@ interface FileListResponse {
 	total: number;
 }
 
-interface FileResponse {
-	filename: string;
-	url: string;
-	content_type?: string;
-	size?: number;
-	created_at?: string;
-}
-
 interface FileListParams {
 	offset?: number;
 	limit?: number;
@@ -184,7 +176,10 @@ export const uploadsApi = {
 		}
 
 		logger.info("Root test successful");
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Root test succeeded but no data returned");
+		}
+		return response.data;
 	},
 
 	testAlive: async (): Promise<{ status: string }> => {
@@ -197,7 +192,10 @@ export const uploadsApi = {
 		}
 
 		logger.info("Test alive successful");
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Test alive succeeded but no data returned");
+		}
+		return response.data;
 	},
 
 	exportAlive: async (): Promise<{ status: string }> => {
@@ -210,7 +208,10 @@ export const uploadsApi = {
 		}
 
 		logger.info("Export alive successful");
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Export alive succeeded but no data returned");
+		}
+		return response.data;
 	},
 
 	exportTest: async (): Promise<{ status: string }> => {
@@ -223,14 +224,17 @@ export const uploadsApi = {
 		}
 
 		logger.info("Export test successful");
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Export test succeeded but no data returned");
+		}
+		return response.data;
 	},
 
 	// Export files as CSV
 	exportFiles: async (params?: FileExportParams): Promise<Blob> => {
 		logger.info("Exporting files as CSV", { params });
 		const queryParams = params
-			? new URLSearchParams(params as any).toString()
+			? new URLSearchParams(params as Record<string, string>).toString()
 			: "";
 		const url = queryParams
 			? `/uploads/export?${queryParams}`
@@ -248,7 +252,10 @@ export const uploadsApi = {
 		}
 
 		logger.info("Files exported successfully");
-		return response.data!;
+		if (!response.data) {
+			throw new Error("Files export succeeded but no data returned");
+		}
+		return response.data;
 	},
 
 	// Upload a file
@@ -277,14 +284,17 @@ export const uploadsApi = {
 			filename: response.data?.filename,
 			url: response.data?.url,
 		});
-		return response.data!;
+		if (!response.data) {
+			throw new Error("File upload succeeded but no data returned");
+		}
+		return response.data;
 	},
 
 	// List uploaded files
 	listFiles: async (params?: FileListParams): Promise<FileListResponse> => {
 		logger.info("Listing files", { params });
 		const queryParams = params
-			? new URLSearchParams(params as any).toString()
+			? new URLSearchParams(params as Record<string, string>).toString()
 			: "";
 		const url = queryParams ? `/uploads?${queryParams}` : "/uploads";
 
@@ -319,7 +329,10 @@ export const uploadsApi = {
 		}
 
 		logger.info("File retrieved successfully", { filename });
-		return response.data!;
+		if (!response.data) {
+			throw new Error("File retrieval succeeded but no data returned");
+		}
+		return response.data;
 	},
 
 	// Alias for backwards compatibility
@@ -338,14 +351,17 @@ export const uploadsApi = {
 		}
 
 		logger.info("File info fetched successfully", { filename });
-		return response.data!;
+		if (!response.data) {
+			throw new Error("File info fetch succeeded but no data returned");
+		}
+		return response.data;
 	},
 
 	// Alias for backwards compatibility
 	getFiles: async (params?: FileListParams): Promise<FileListResponse> => {
 		logger.info("Fetching files list", { params });
 		const queryParams = params
-			? new URLSearchParams(params as any).toString()
+			? new URLSearchParams(params as Record<string, string>).toString()
 			: "";
 		const url = queryParams ? `/uploads?${queryParams}` : "/uploads";
 

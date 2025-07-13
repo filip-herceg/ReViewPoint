@@ -7,6 +7,11 @@ import { z } from "zod";
 import { getEnvironmentConfig } from "@/lib/config/environment";
 import logger from "@/logger";
 
+// Window feature flags interface to avoid any types
+interface WindowWithFeatureFlags extends Window {
+	FEATURE_FLAGS?: Partial<FeatureFlags>;
+}
+
 // Feature flag schema
 const FeatureFlagsSchema = z.object({
 	// Authentication features
@@ -111,8 +116,11 @@ function loadFeatureFlags(): FeatureFlags {
 		});
 
 		// Check for environment-specific feature flags
-		if (typeof window !== "undefined" && (window as any).FEATURE_FLAGS) {
-			const windowFlags = (window as any).FEATURE_FLAGS;
+		const typedWindow = (typeof window !== "undefined" ? window : undefined) as
+			| WindowWithFeatureFlags
+			| undefined;
+		if (typedWindow?.FEATURE_FLAGS) {
+			const windowFlags = typedWindow.FEATURE_FLAGS;
 			logger.debug("Loading feature flags from window object", windowFlags);
 			Object.assign(envFlags, windowFlags);
 		}

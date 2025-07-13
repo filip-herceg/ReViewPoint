@@ -1,0 +1,371 @@
+
+> reviewpoint-frontend@0.1.0 lint D:\Development\github\ReViewPoint\frontend
+> biome check .
+
+src\lib\api\uploads.ts:379:10 lint/style/noNonNullAssertion ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Forbidden non-null assertion.
+  
+    377 Γöé 			count: response.data?.files.length,
+    378 Γöé 		});
+  > 379 Γöé 		return response.data!;
+        Γöé 		       ^^^^^^^^^^^^^^
+    380 Γöé 	},
+    381 Γöé 
+  
+
+src\lib\api\uploads_new.ts:57:10 lint/style/noNonNullAssertion ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Forbidden non-null assertion.
+  
+    56 Γöé 		logger.info("Root test successful");
+  > 57 Γöé 		return response.data!;
+       Γöé 		       ^^^^^^^^^^^^^^
+    58 Γöé 	},
+    59 Γöé 
+  
+
+src\lib\api\uploads_new.ts:70:10 lint/style/noNonNullAssertion ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Forbidden non-null assertion.
+  
+    69 Γöé 		logger.info("Test alive successful");
+  > 70 Γöé 		return response.data!;
+       Γöé 		       ^^^^^^^^^^^^^^
+    71 Γöé 	},
+    72 Γöé 
+  
+
+src\lib\api\uploads_new.ts:83:10 lint/style/noNonNullAssertion ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Forbidden non-null assertion.
+  
+    82 Γöé 		logger.info("Export alive test successful");
+  > 83 Γöé 		return response.data!;
+       Γöé 		       ^^^^^^^^^^^^^^
+    84 Γöé 	},
+    85 Γöé 
+  
+
+src\lib\api\uploads_new.ts:96:10 lint/style/noNonNullAssertion ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Forbidden non-null assertion.
+  
+    95 Γöé 		logger.info("Export test successful");
+  > 96 Γöé 		return response.data!;
+       Γöé 		       ^^^^^^^^^^^^^^
+    97 Γöé 	},
+    98 Γöé 
+  
+
+src\lib\api\uploads_new.ts:103:36 lint/suspicious/noExplicitAny ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Unexpected any. Specify a different type.
+  
+    101 Γöé 		logger.info("Exporting files as CSV", { params });
+    102 Γöé 		const queryParams = params
+  > 103 Γöé 			? new URLSearchParams(params as any).toString()
+        Γöé 			                                ^^^
+    104 Γöé 			: "";
+    105 Γöé 		const url = queryParams
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+src\lib\api\uploads_new.ts:119:10 lint/style/noNonNullAssertion ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Forbidden non-null assertion.
+  
+    118 Γöé 		logger.info("Files CSV exported successfully");
+  > 119 Γöé 		return response.data!;
+        Γöé 		       ^^^^^^^^^^^^^^
+    120 Γöé 	},
+    121 Γöé 
+  
+
+src\lib\api\uploads_new.ts:147:10 lint/style/noNonNullAssertion ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Forbidden non-null assertion.
+  
+    145 Γöé 			filename: response.data?.filename,
+    146 Γöé 		});
+  > 147 Γöé 		return response.data!;
+        Γöé 		       ^^^^^^^^^^^^^^
+    148 Γöé 	},
+    149 Γöé 
+  
+
+src\lib\api\uploads_new.ts:154:36 lint/suspicious/noExplicitAny ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Unexpected any. Specify a different type.
+  
+    152 Γöé 		logger.info("Listing files", { params });
+    153 Γöé 		const queryParams = params
+  > 154 Γöé 			? new URLSearchParams(params as any).toString()
+        Γöé 			                                ^^^
+    155 Γöé 			: "";
+    156 Γöé 		const url = queryParams ? `/uploads?${queryParams}` : "/uploads";
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+src\lib\api\uploads_new.ts:166:10 lint/style/noNonNullAssertion ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Forbidden non-null assertion.
+  
+    165 Γöé 		logger.info("Files listed successfully", { total: response.data?.total });
+  > 166 Γöé 		return response.data!;
+        Γöé 		       ^^^^^^^^^^^^^^
+    167 Γöé 	},
+    168 Γöé 
+  
+
+src\lib\api\uploads_new.ts:180:10 lint/style/noNonNullAssertion ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Forbidden non-null assertion.
+  
+    179 Γöé 		logger.info("File retrieved successfully", { filename });
+  > 180 Γöé 		return response.data!;
+        Γöé 		       ^^^^^^^^^^^^^^
+    181 Γöé 	},
+    182 Γöé 
+  
+
+tests\test-utils.ts:43:40 lint/suspicious/noExplicitAny ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Unexpected any. Specify a different type.
+  
+    41 Γöé const LOG_PREFIX = "[TEST-LOG]";
+    42 Γöé 
+  > 43 Γöé function log(level: LogLevel, ...args: any[]) {
+       Γöé                                        ^^^
+    44 Γöé 	const time = new Date().toISOString();
+    45 Γöé 	switch (level) {
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+tests\test-utils.ts:68:19 lint/suspicious/noExplicitAny ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Unexpected any. Specify a different type.
+  
+    67 Γöé export const testLogger = {
+  > 68 Γöé 	debug: (...args: any[]) => log("debug", ...args),
+       Γöé 	                 ^^^
+    69 Γöé 	info: (...args: any[]) => log("info", ...args),
+    70 Γöé 	warn: (...args: any[]) => log("warn", ...args),
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+tests\test-utils.ts:69:18 lint/suspicious/noExplicitAny ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Unexpected any. Specify a different type.
+  
+    67 Γöé export const testLogger = {
+    68 Γöé 	debug: (...args: any[]) => log("debug", ...args),
+  > 69 Γöé 	info: (...args: any[]) => log("info", ...args),
+       Γöé 	                ^^^
+    70 Γöé 	warn: (...args: any[]) => log("warn", ...args),
+    71 Γöé 	error: (...args: any[]) => log("error", ...args),
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+tests\test-utils.ts:70:18 lint/suspicious/noExplicitAny ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Unexpected any. Specify a different type.
+  
+    68 Γöé 	debug: (...args: any[]) => log("debug", ...args),
+    69 Γöé 	info: (...args: any[]) => log("info", ...args),
+  > 70 Γöé 	warn: (...args: any[]) => log("warn", ...args),
+       Γöé 	                ^^^
+    71 Γöé 	error: (...args: any[]) => log("error", ...args),
+    72 Γöé };
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+tests\test-utils.ts:71:19 lint/suspicious/noExplicitAny ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Unexpected any. Specify a different type.
+  
+    69 Γöé 	info: (...args: any[]) => log("info", ...args),
+    70 Γöé 	warn: (...args: any[]) => log("warn", ...args),
+  > 71 Γöé 	error: (...args: any[]) => log("error", ...args),
+       Γöé 	                 ^^^
+    72 Γöé };
+    73 Γöé 
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+src\hooks\uploads\useAdvancedFileUpload.ts:96:27 lint/correctness/useExhaustiveDependencies  FIXABLE  ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ├ù This hook does not specify its dependency on uploadFileChunked.
+  
+    94 Γöé 	 * Upload a single file with advanced options
+    95 Γöé 	 */
+  > 96 Γöé 	const uploadSingleFile = useCallback(
+       Γöé 	                         ^^^^^^^^^^^
+    97 Γöé 		async (
+    98 Γöé 			file: File,
+  
+  i This dependency is being used here, but is not specified in the hook dependency list.
+  
+    154 Γöé 					file.size > (mergedOptions.chunkSize || 1024 * 1024)
+    155 Γöé 				) {
+  > 156 Γöé 					result = await uploadFileChunked(queueItem, mergedOptions);
+        Γöé 					               ^^^^^^^^^^^^^^^^^
+    157 Γöé 				} else {
+    158 Γöé 					result = await uploadFileWhole(queueItem, mergedOptions);
+  
+  i Unsafe fix: Add the missing dependency to the list.
+  
+    205 205 Γöé   		},
+    206 206 Γöé   		[
+    207     Γöé - ΓåÆ ΓåÆ ΓåÆ mergedDefaultOptions,
+    208     Γöé - ΓåÆ ΓåÆ ΓåÆ addToQueue,
+    209     Γöé - ΓåÆ ΓåÆ ΓåÆ updateQueueItem,
+    210     Γöé - ΓåÆ ΓåÆ ΓåÆ getQueueItem,
+    211     Γöé - ΓåÆ ΓåÆ ΓåÆ validateFile,
+        207 Γöé + ΓåÆ ΓåÆ ΓåÆ mergedDefaultOptions,┬╖
+        208 Γöé + ΓåÆ ΓåÆ ΓåÆ addToQueue,┬╖
+        209 Γöé + ΓåÆ ΓåÆ ΓåÆ updateQueueItem,┬╖
+        210 Γöé + ΓåÆ ΓåÆ ΓåÆ getQueueItem,┬╖
+        211 Γöé + ΓåÆ ΓåÆ ΓåÆ validateFile,┬╖uploadFileChunked
+    212 212 Γöé   			// Note: uploadFileChunked and uploadFileWhole create circular dependencies
+    213 213 Γöé   			// They are defined later and this useCallback should be refactored
+  
+
+src\hooks\uploads\useAdvancedFileUpload.ts:96:27 lint/correctness/useExhaustiveDependencies  FIXABLE  ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ├ù This hook does not specify its dependency on uploadFileWhole.
+  
+    94 Γöé 	 * Upload a single file with advanced options
+    95 Γöé 	 */
+  > 96 Γöé 	const uploadSingleFile = useCallback(
+       Γöé 	                         ^^^^^^^^^^^
+    97 Γöé 		async (
+    98 Γöé 			file: File,
+  
+  i This dependency is being used here, but is not specified in the hook dependency list.
+  
+    156 Γöé 					result = await uploadFileChunked(queueItem, mergedOptions);
+    157 Γöé 				} else {
+  > 158 Γöé 					result = await uploadFileWhole(queueItem, mergedOptions);
+        Γöé 					               ^^^^^^^^^^^^^^^
+    159 Γöé 				}
+    160 Γöé 
+  
+  i Unsafe fix: Add the missing dependency to the list.
+  
+    205 205 Γöé   		},
+    206 206 Γöé   		[
+    207     Γöé - ΓåÆ ΓåÆ ΓåÆ mergedDefaultOptions,
+    208     Γöé - ΓåÆ ΓåÆ ΓåÆ addToQueue,
+    209     Γöé - ΓåÆ ΓåÆ ΓåÆ updateQueueItem,
+    210     Γöé - ΓåÆ ΓåÆ ΓåÆ getQueueItem,
+    211     Γöé - ΓåÆ ΓåÆ ΓåÆ validateFile,
+        207 Γöé + ΓåÆ ΓåÆ ΓåÆ mergedDefaultOptions,┬╖
+        208 Γöé + ΓåÆ ΓåÆ ΓåÆ addToQueue,┬╖
+        209 Γöé + ΓåÆ ΓåÆ ΓåÆ updateQueueItem,┬╖
+        210 Γöé + ΓåÆ ΓåÆ ΓåÆ getQueueItem,┬╖
+        211 Γöé + ΓåÆ ΓåÆ ΓåÆ validateFile,┬╖uploadFileWhole
+    212 212 Γöé   			// Note: uploadFileChunked and uploadFileWhole create circular dependencies
+    213 213 Γöé   			// They are defined later and this useCallback should be refactored
+  
+
+src\hooks\useFileUpload.ts:175:21 lint/correctness/useExhaustiveDependencies  FIXABLE  ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ├ù This hook does not specify its dependency on uploadFileChunked.
+  
+    174 Γöé 	// Upload a single file
+  > 175 Γöé 	const uploadFile = useCallback(
+        Γöé 	                   ^^^^^^^^^^^
+    176 Γöé 		async (file: File, uploadOptions: UploadOptions = {}): Promise<string> => {
+    177 Γöé 			const uploadId = generateUploadId();
+  
+  i This dependency is being used here, but is not specified in the hook dependency list.
+  
+    230 Γöé 				// Choose upload method based on file size and options
+    231 Γöé 				if (enableChunked && file.size > chunkSize) {
+  > 232 Γöé 					result = await uploadFileChunked(uploadId, file, {
+        Γöé 					               ^^^^^^^^^^^^^^^^^
+    233 Γöé 						...uploadOptions,
+    234 Γöé 						signal: abortController.signal,
+  
+  i Unsafe fix: Add the missing dependency to the list.
+  
+    281 281 Γöé   		},
+    282 282 Γöé   		[
+    283     Γöé - ΓåÆ ΓåÆ ΓåÆ validation,
+    284     Γöé - ΓåÆ ΓåÆ ΓåÆ enableChunked,
+    285     Γöé - ΓåÆ ΓåÆ ΓåÆ chunkSize,
+    286     Γöé - ΓåÆ ΓåÆ ΓåÆ updateUploadProgress,
+    287     Γöé - ΓåÆ ΓåÆ ΓåÆ addUpload,
+    288     Γöé - ΓåÆ ΓåÆ ΓåÆ onComplete,
+    289     Γöé - ΓåÆ ΓåÆ ΓåÆ onError,
+        283 Γöé + ΓåÆ ΓåÆ ΓåÆ validation,┬╖
+        284 Γöé + ΓåÆ ΓåÆ ΓåÆ enableChunked,┬╖
+        285 Γöé + ΓåÆ ΓåÆ ΓåÆ chunkSize,┬╖
+        286 Γöé + ΓåÆ ΓåÆ ΓåÆ updateUploadProgress,┬╖
+        287 Γöé + ΓåÆ ΓåÆ ΓåÆ addUpload,┬╖
+        288 Γöé + ΓåÆ ΓåÆ ΓåÆ onComplete,┬╖
+        289 Γöé + ΓåÆ ΓåÆ ΓåÆ onError,┬╖uploadFileChunked
+    290 290 Γöé   			// Note: uploadFileChunked and uploadFileSimple create circular dependencies
+    291 291 Γöé   			// This structure should be refactored to avoid the issue
+  
+
+src\hooks\useFileUpload.ts:175:21 lint/correctness/useExhaustiveDependencies  FIXABLE  ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ├ù This hook does not specify its dependency on uploadFileSimple.
+  
+    174 Γöé 	// Upload a single file
+  > 175 Γöé 	const uploadFile = useCallback(
+        Γöé 	                   ^^^^^^^^^^^
+    176 Γöé 		async (file: File, uploadOptions: UploadOptions = {}): Promise<string> => {
+    177 Γöé 			const uploadId = generateUploadId();
+  
+  i This dependency is being used here, but is not specified in the hook dependency list.
+  
+    235 Γöé 					});
+    236 Γöé 				} else {
+  > 237 Γöé 					result = await uploadFileSimple(uploadId, file, {
+        Γöé 					               ^^^^^^^^^^^^^^^^
+    238 Γöé 						...uploadOptions,
+    239 Γöé 						signal: abortController.signal,
+  
+  i Unsafe fix: Add the missing dependency to the list.
+  
+    281 281 Γöé   		},
+    282 282 Γöé   		[
+    283     Γöé - ΓåÆ ΓåÆ ΓåÆ validation,
+    284     Γöé - ΓåÆ ΓåÆ ΓåÆ enableChunked,
+    285     Γöé - ΓåÆ ΓåÆ ΓåÆ chunkSize,
+    286     Γöé - ΓåÆ ΓåÆ ΓåÆ updateUploadProgress,
+    287     Γöé - ΓåÆ ΓåÆ ΓåÆ addUpload,
+    288     Γöé - ΓåÆ ΓåÆ ΓåÆ onComplete,
+    289     Γöé - ΓåÆ ΓåÆ ΓåÆ onError,
+        283 Γöé + ΓåÆ ΓåÆ ΓåÆ validation,┬╖
+        284 Γöé + ΓåÆ ΓåÆ ΓåÆ enableChunked,┬╖
+        285 Γöé + ΓåÆ ΓåÆ ΓåÆ chunkSize,┬╖
+        286 Γöé + ΓåÆ ΓåÆ ΓåÆ updateUploadProgress,┬╖
+        287 Γöé + ΓåÆ ΓåÆ ΓåÆ addUpload,┬╖
+        288 Γöé + ΓåÆ ΓåÆ ΓåÆ onComplete,┬╖
+        289 Γöé + ΓåÆ ΓåÆ ΓåÆ onError,┬╖uploadFileSimple
+    290 290 Γöé   			// Note: uploadFileChunked and uploadFileSimple create circular dependencies
+    291 291 Γöé   			// This structure should be refactored to avoid the issue
+  
+
+The number of diagnostics exceeds the limit allowed. Use --max-diagnostics to increase it.
+Diagnostics not shown: 189.
+Checked 269 files in 64ms. No fixes applied.
+Found 7 errors.
+Found 202 warnings.
+check ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ├ù Some errors were emitted while running checks.
+  
+
+ΓÇëELIFECYCLEΓÇë Command failed with exit code 1.

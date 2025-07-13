@@ -422,7 +422,7 @@ export function useMarketplace() {
 
 			if (filters.rating) {
 				filtered = filtered.filter(
-					(module) => module.rating.average >= filters.rating!,
+					(module) => module.rating.average >= (filters.rating ?? 0),
 				);
 			}
 
@@ -545,7 +545,7 @@ export function useMarketplace() {
 
 	const updateModuleConfiguration = async (
 		moduleId: string,
-		configuration: Record<string, any>,
+		configuration: Record<string, unknown>,
 	) => {
 		setUserSubscriptions((prev) =>
 			prev.map((sub) =>

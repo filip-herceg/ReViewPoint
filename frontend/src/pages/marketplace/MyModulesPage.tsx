@@ -32,15 +32,31 @@ import {
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Progress } from "@/components/ui/progress";
 import { useMarketplace } from "@/hooks/useMarketplace";
+import type { Module, UserModuleSubscription } from "@/types/marketplace";
+
+// Configuration data type for the sidebar
+interface ModuleConfigData {
+	id: string;
+	name: string;
+	version: string;
+	description: string;
+	configSchema: Record<string, unknown>;
+	userConfig: Record<string, unknown>;
+	defaultConfig: Record<string, unknown>;
+}
 
 const MyModulesPage: React.FC = () => {
 	const { userSubscriptions, loading, unsubscribeFromModule } =
 		useMarketplace();
-
 	const [configSidebarOpen, setConfigSidebarOpen] = useState(false);
-	const [selectedModule, setSelectedModule] = useState<any>(null);
+	const [selectedModule, setSelectedModule] = useState<ModuleConfigData | null>(
+		null,
+	);
 
-	const openConfigSidebar = (module: any, subscription: any) => {
+	const openConfigSidebar = (
+		module: Module,
+		subscription: UserModuleSubscription,
+	) => {
 		// Combine module and subscription data for configuration
 		setSelectedModule({
 			id: module.id,
@@ -54,19 +70,17 @@ const MyModulesPage: React.FC = () => {
 					acc[key] = module.configuration?.[key].default;
 					return acc;
 				},
-				{} as any,
+				{} as Record<string, unknown>,
 			),
 		});
 		setConfigSidebarOpen(true);
 	};
 
-	const handleSaveConfig = async (config: any) => {
+	const handleSaveConfig = async (config: Record<string, unknown>) => {
 		// TODO: Implement API call to save configuration
 		console.log("Saving config for module:", selectedModule?.id, config);
-
 		// Simulate API call
 		await new Promise((resolve) => setTimeout(resolve, 1000));
-
 		// Update local state or refetch data
 		console.log("Configuration saved successfully");
 	};

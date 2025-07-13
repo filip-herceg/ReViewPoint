@@ -58,7 +58,9 @@ describe("WebSocket Hooks", () => {
 		vi.clearAllMocks();
 
 		// Setup default mock store implementation
-		(useWebSocketStore as any).mockReturnValue(mockStore);
+		(useWebSocketStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue(
+			mockStore,
+		);
 
 		testLogger.debug("WebSocket hooks test setup complete");
 	});
@@ -86,7 +88,9 @@ describe("WebSocket Hooks", () => {
 		});
 
 		it("should not connect if already connected", () => {
-			(useWebSocketStore as any).mockReturnValue({
+			(
+				useWebSocketStore as unknown as ReturnType<typeof vi.fn>
+			).mockReturnValue({
 				...mockStore,
 				connectionState: "connected",
 			});
@@ -140,7 +144,9 @@ describe("WebSocket Hooks", () => {
 
 	describe("useWebSocketConnection", () => {
 		it("should return connection information", () => {
-			(useWebSocketStore as any).mockReturnValue({
+			(
+				useWebSocketStore as unknown as ReturnType<typeof vi.fn>
+			).mockReturnValue({
 				...mockStore,
 				connectionState: "connected",
 				isConnected: true,
@@ -168,7 +174,9 @@ describe("WebSocket Hooks", () => {
 		});
 
 		it("should handle connection error state", () => {
-			(useWebSocketStore as any).mockReturnValue({
+			(
+				useWebSocketStore as unknown as ReturnType<typeof vi.fn>
+			).mockReturnValue({
 				...mockStore,
 				connectionState: "error",
 				isConnected: false,
@@ -191,7 +199,9 @@ describe("WebSocket Hooks", () => {
 				createTestNotification({ read: false }),
 			];
 
-			(useWebSocketStore as any).mockReturnValue({
+			(
+				useWebSocketStore as unknown as ReturnType<typeof vi.fn>
+			).mockReturnValue({
 				...mockStore,
 				notifications,
 			});
@@ -210,7 +220,9 @@ describe("WebSocket Hooks", () => {
 				createTestNotification({ read: true }),
 			];
 
-			(useWebSocketStore as any).mockReturnValue({
+			(
+				useWebSocketStore as unknown as ReturnType<typeof vi.fn>
+			).mockReturnValue({
 				...mockStore,
 				notifications,
 			});
@@ -227,7 +239,9 @@ describe("WebSocket Hooks", () => {
 			const notifications = [notification1, notification2];
 			const mockMarkNotificationRead = vi.fn();
 
-			(useWebSocketStore as any).mockReturnValue({
+			(
+				useWebSocketStore as unknown as ReturnType<typeof vi.fn>
+			).mockReturnValue({
 				...mockStore,
 				notifications,
 				markNotificationRead: mockMarkNotificationRead,
@@ -257,7 +271,9 @@ describe("WebSocket Hooks", () => {
 			const notifications = [notification1, notification2, notification3];
 			const mockRemoveNotification = vi.fn();
 
-			(useWebSocketStore as any).mockReturnValue({
+			(
+				useWebSocketStore as unknown as ReturnType<typeof vi.fn>
+			).mockReturnValue({
 				...mockStore,
 				notifications,
 				removeNotification: mockRemoveNotification,
@@ -285,7 +301,9 @@ describe("WebSocket Hooks", () => {
 			});
 
 			const mockGetUploadProgress = vi.fn().mockReturnValue(progressData);
-			(useWebSocketStore as any).mockReturnValue({
+			(
+				useWebSocketStore as unknown as ReturnType<typeof vi.fn>
+			).mockReturnValue({
 				...mockStore,
 				getUploadProgress: mockGetUploadProgress,
 			});
@@ -301,7 +319,9 @@ describe("WebSocket Hooks", () => {
 		it("should return null for non-existent upload", () => {
 			const uploadId = "non-existent-upload";
 
-			(useWebSocketStore as any).mockReturnValue({
+			(
+				useWebSocketStore as unknown as ReturnType<typeof vi.fn>
+			).mockReturnValue({
 				...mockStore,
 				getUploadProgress: vi.fn().mockReturnValue(null),
 			});
@@ -318,9 +338,13 @@ describe("WebSocket Hooks", () => {
 
 			// Mock webSocketService.on
 			const mockUnsubscribe = vi.fn();
-			(webSocketService as any).on = vi.fn().mockReturnValue(mockUnsubscribe);
+			(webSocketService as unknown as Record<string, unknown>).on = vi
+				.fn()
+				.mockReturnValue(mockUnsubscribe);
 
-			(useWebSocketStore as any).mockReturnValue({
+			(
+				useWebSocketStore as unknown as ReturnType<typeof vi.fn>
+			).mockReturnValue({
 				...mockStore,
 				isConnected: true,
 			});
@@ -348,14 +372,18 @@ describe("WebSocket Hooks", () => {
 			const mockHandler = vi.fn();
 			const event = "upload.progress";
 
-			(useWebSocketStore as any).mockReturnValue({
+			(
+				useWebSocketStore as unknown as ReturnType<typeof vi.fn>
+			).mockReturnValue({
 				...mockStore,
 				isConnected: true,
 			});
 
 			// Mock webSocketService.on
 			const mockUnsubscribe = vi.fn();
-			(webSocketService as any).on = vi.fn().mockReturnValue(mockUnsubscribe);
+			(webSocketService as unknown as Record<string, unknown>).on = vi
+				.fn()
+				.mockReturnValue(mockUnsubscribe);
 
 			renderHook(() => useWebSocketEvent(event, mockHandler));
 
@@ -366,12 +394,14 @@ describe("WebSocket Hooks", () => {
 			const mockHandler = vi.fn();
 			const event = "upload.progress";
 
-			(useWebSocketStore as any).mockReturnValue({
+			(
+				useWebSocketStore as unknown as ReturnType<typeof vi.fn>
+			).mockReturnValue({
 				...mockStore,
 				isConnected: false,
 			});
 
-			(webSocketService as any).on = vi.fn();
+			(webSocketService as unknown as Record<string, unknown>).on = vi.fn();
 
 			renderHook(() => useWebSocketEvent(event, mockHandler));
 
@@ -383,12 +413,16 @@ describe("WebSocket Hooks", () => {
 			const event = "upload.progress";
 			const mockUnsubscribe = vi.fn();
 
-			(useWebSocketStore as any).mockReturnValue({
+			(
+				useWebSocketStore as unknown as ReturnType<typeof vi.fn>
+			).mockReturnValue({
 				...mockStore,
 				isConnected: true,
 			});
 
-			(webSocketService as any).on = vi.fn().mockReturnValue(mockUnsubscribe);
+			(webSocketService as unknown as Record<string, unknown>).on = vi
+				.fn()
+				.mockReturnValue(mockUnsubscribe);
 
 			const { unmount } = renderHook(() =>
 				useWebSocketEvent(event, mockHandler),
@@ -402,7 +436,9 @@ describe("WebSocket Hooks", () => {
 
 	describe("error handling", () => {
 		it("should handle hook errors gracefully", () => {
-			(useWebSocketStore as any).mockImplementation(() => {
+			(
+				useWebSocketStore as unknown as ReturnType<typeof vi.fn>
+			).mockImplementation(() => {
 				throw new Error("Store error");
 			});
 
@@ -412,7 +448,9 @@ describe("WebSocket Hooks", () => {
 		});
 
 		it("should handle missing store methods", () => {
-			(useWebSocketStore as any).mockReturnValue({
+			(
+				useWebSocketStore as unknown as ReturnType<typeof vi.fn>
+			).mockReturnValue({
 				connectionState: "disconnected",
 				isConnected: false,
 				lastError: null,
@@ -432,7 +470,9 @@ describe("WebSocket Hooks", () => {
 			const notifications = [createTestNotification()];
 			const uploadProgress = createTestUploadProgress();
 
-			(useWebSocketStore as any).mockReturnValue({
+			(
+				useWebSocketStore as unknown as ReturnType<typeof vi.fn>
+			).mockReturnValue({
 				...mockStore,
 				connectionState: "connected",
 				isConnected: true,

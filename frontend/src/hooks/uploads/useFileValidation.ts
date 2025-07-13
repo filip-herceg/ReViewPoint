@@ -42,9 +42,9 @@ export function useFileValidation(config: Partial<FileValidationConfig> = {}) {
 	const [validationCache] = useState(new Map<string, FileValidationResult>());
 
 	const defaultConfig: FileValidationConfig = {
-		maxSize: config.maxSize || DEFAULT_UPLOAD_CONFIG.maxSize!,
-		allowedTypes: config.allowedTypes || DEFAULT_UPLOAD_CONFIG.accept!,
-		maxFiles: config.maxFiles || DEFAULT_UPLOAD_CONFIG.maxFiles!,
+		maxSize: config.maxSize ?? DEFAULT_UPLOAD_CONFIG.maxSize,
+		allowedTypes: config.allowedTypes ?? DEFAULT_UPLOAD_CONFIG.accept,
+		maxFiles: config.maxFiles ?? DEFAULT_UPLOAD_CONFIG.maxFiles,
 		enableContentValidation: config.enableContentValidation ?? true,
 		enableSecurityScan: config.enableSecurityScan ?? true,
 		customValidators: config.customValidators || [],
@@ -161,9 +161,13 @@ export function useFileValidation(config: Partial<FileValidationConfig> = {}) {
 			return errors;
 		}
 
-		// Check for suspicious characters
-		const suspiciousChars = /[<>:"|?*\x00-\x1f]/;
-		if (suspiciousChars.test(file.name)) {
+		// Check for suspicious characters (split into separate checks to avoid control character warnings)
+		const basicSuspiciousChars = /[<>:"|?*]/;
+		const hasControlChars = file.name
+			.split("")
+			.some((char) => char.charCodeAt(0) < 32);
+
+		if (basicSuspiciousChars.test(file.name) || hasControlChars) {
 			errors.push({
 				code: "INVALID_FILENAME_CHARS",
 				message: "File name contains invalid characters",
@@ -442,12 +446,15 @@ export function useFileValidation(config: Partial<FileValidationConfig> = {}) {
 	const validateFile = useCallback(
 		async (file: File): Promise<FileValidationResult> => {
 			const cacheKey = getCacheKey(file);
-
 			// Check cache first
 			if (validationCache.has(cacheKey)) {
-				const cached = validationCache.get(cacheKey)!;
-				logger.debug("Using cached validation result", { filename: file.name });
-				return cached;
+				const cached = validationCache.get(cacheKey);
+				if (cached) {
+					logger.debug("Using cached validation result", {
+						filename: file.name,
+					});
+					return cached;
+				}
 			}
 
 			logger.info("Starting file validation", {

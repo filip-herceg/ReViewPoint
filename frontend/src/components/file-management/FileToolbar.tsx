@@ -71,14 +71,12 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({
 						role="searchbox"
 						aria-label="Search files"
 					/>
-				</div>
-
+				</div>{" "}
 				<Button
 					variant="outline"
 					size="sm"
 					onClick={onShowFilters}
 					className="whitespace-nowrap"
-					role="button"
 					aria-label="Open filters"
 				>
 					<Filter className="h-4 w-4 mr-2" />
@@ -113,7 +111,6 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({
 							}
 						}}
 						className="whitespace-nowrap"
-						role="combobox"
 						aria-label="Sort by"
 						aria-expanded="false"
 						aria-haspopup="listbox"
@@ -125,10 +122,7 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({
 						)}
 						Sort
 					</Button>
-					<div
-						className="hidden absolute right-0 mt-2 w-48 bg-background rounded-md shadow-lg border border-border z-10"
-						role="listbox"
-					>
+					<div className="hidden absolute right-0 mt-2 w-48 bg-background rounded-md shadow-lg border border-border z-10">
 						<div className="py-1">
 							{[
 								{ field: "filename" as SortField, label: "Name" },
@@ -147,7 +141,6 @@ export const FileToolbar: React.FC<FileToolbarProps> = ({
 											: "text-foreground",
 									)}
 									onClick={() => handleSortClick(field)}
-									role="option"
 									aria-selected={sortField === field}
 								>
 									<span className="flex-1 text-left">{label}</span>

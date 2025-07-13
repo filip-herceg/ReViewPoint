@@ -4,7 +4,7 @@
  * OpenAPI Schema Validation Script
  *
  * This script validates the exported OpenAPI schema for completeness
- * and ensures it has all the required components for type generation.
+ * and ensure		const components = (typedSchema as Record<string, unknown>).components; it has all the required components for type generation.
  *
  * Usage:
  *   pnpm run validate:api-schema
@@ -123,75 +123,83 @@ async function validateOpenAPISchema(): Promise<ValidationResult> {
 
 		// Parse and validate schema
 		const schema = await SwaggerParser.validate(SCHEMA_PATH);
-		const typedSchema = schema as any;
+		const typedSchema = schema as unknown;
 
 		logger.info("📊 Analyzing schema structure...");
 
 		// Basic structure validation
-		if (!typedSchema.openapi) {
-			result.errors.push("Missing openapi version field");
-			result.isValid = false;
-		}
-
-		if (!typedSchema.info) {
-			result.errors.push("Missing info section");
-			result.isValid = false;
-		}
-
-		if (!typedSchema.paths) {
-			result.errors.push("Missing paths section");
-			result.isValid = false;
-		}
-
-		if (!typedSchema.components?.schemas) {
-			result.errors.push("Missing components.schemas section");
-			result.isValid = false;
-		}
-
-		// Count schemas and paths
-		const schemas = typedSchema.components?.schemas || {};
-		const paths = typedSchema.paths || {};
-
-		result.stats.schemasCount = Object.keys(schemas).length;
-		result.stats.pathsCount = Object.keys(paths).length;
-
-		// Check for expected schemas
-		for (const expectedSchema of EXPECTED_SCHEMAS) {
-			if (!schemas[expectedSchema]) {
-				result.stats.missingSchemas.push(expectedSchema);
-				result.warnings.push(`Missing expected schema: ${expectedSchema}`);
+		if (typeof typedSchema === "object" && typedSchema !== null) {
+			const openapi = (typedSchema as Record<string, unknown>).openapi;
+			if (!openapi) {
+				result.errors.push("Missing openapi version field");
+				result.isValid = false;
 			}
-		}
-
-		// Check for expected endpoints
-		for (const expectedEndpoint of EXPECTED_ENDPOINTS) {
-			if (!paths[expectedEndpoint]) {
-				result.stats.missingEndpoints.push(expectedEndpoint);
-				result.warnings.push(`Missing expected endpoint: ${expectedEndpoint}`);
+			const info = (typedSchema as Record<string, unknown>).info;
+			if (!info) {
+				result.errors.push("Missing info section");
+				result.isValid = false;
 			}
-		}
-
-		// Additional validation checks
-		if (result.stats.schemasCount === 0) {
-			result.errors.push("No schemas found in OpenAPI specification");
-			result.isValid = false;
-		}
-
-		if (result.stats.pathsCount === 0) {
-			result.errors.push("No paths found in OpenAPI specification");
-			result.isValid = false;
-		}
-
-		// Check schema quality
-		for (const [schemaName, schemaSpec] of Object.entries(schemas)) {
-			const typedSchemaSpec = schemaSpec as any;
-
-			if (
-				!typedSchemaSpec.type &&
-				!typedSchemaSpec.properties &&
-				!typedSchemaSpec.allOf
-			) {
-				result.warnings.push(`Schema ${schemaName} appears to be incomplete`);
+			const paths = (typedSchema as Record<string, unknown>).paths;
+			if (!paths) {
+				result.errors.push("Missing paths section");
+				result.isValid = false;
+			}
+			const components = (typedSchema as Record<string, unknown>).components;
+			const schemas =
+				components && typeof components === "object"
+					? (components as Record<string, unknown>).schemas
+					: undefined;
+			if (!schemas) {
+				result.errors.push("Missing components.schemas section");
+				result.isValid = false;
+			}
+			// Count schemas and paths
+			const schemasObj =
+				schemas && typeof schemas === "object"
+					? (schemas as Record<string, unknown>)
+					: {};
+			const pathsObj =
+				paths && typeof paths === "object"
+					? (paths as Record<string, unknown>)
+					: {};
+			result.stats.schemasCount = Object.keys(schemasObj).length;
+			result.stats.pathsCount = Object.keys(pathsObj).length;
+			// Check for expected schemas
+			for (const expectedSchema of EXPECTED_SCHEMAS) {
+				if (!schemasObj[expectedSchema]) {
+					result.stats.missingSchemas.push(expectedSchema);
+					result.warnings.push(`Missing expected schema: ${expectedSchema}`);
+				}
+			}
+			// Check for expected endpoints
+			for (const expectedEndpoint of EXPECTED_ENDPOINTS) {
+				if (!pathsObj[expectedEndpoint]) {
+					result.stats.missingEndpoints.push(expectedEndpoint);
+					result.warnings.push(
+						`Missing expected endpoint: ${expectedEndpoint}`,
+					);
+				}
+			}
+			// Additional validation checks
+			if (result.stats.schemasCount === 0) {
+				result.errors.push("No schemas found in OpenAPI specification");
+				result.isValid = false;
+			}
+			if (result.stats.pathsCount === 0) {
+				result.errors.push("No paths found in OpenAPI specification");
+				result.isValid = false;
+			}
+			// Check schema quality
+			for (const [schemaName, schemaSpec] of Object.entries(schemasObj)) {
+				if (
+					typeof schemaSpec === "object" &&
+					schemaSpec !== null &&
+					!("type" in schemaSpec) &&
+					!("properties" in schemaSpec) &&
+					!("allOf" in schemaSpec)
+				) {
+					result.warnings.push(`Schema ${schemaName} appears to be incomplete`);
+				}
 			}
 		}
 

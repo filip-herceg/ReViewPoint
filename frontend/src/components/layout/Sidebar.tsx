@@ -7,7 +7,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { routes } from "@/lib/router/routes";
 import { cn } from "@/lib/utils";
 
-const iconMap: Record<string, React.ComponentType<any>> = {
+const iconMap: Record<
+	string,
+	React.ComponentType<React.SVGProps<SVGSVGElement>>
+> = {
 	Home: Icons.Home,
 	LayoutDashboard: Icons.LayoutDashboard,
 	Upload: Icons.Upload,

@@ -11,6 +11,35 @@ import type { WebSocketEventType } from "@/lib/websocket/config";
 import { webSocketService } from "@/lib/websocket/webSocketService";
 import logger from "@/logger";
 
+// WebSocket event data types
+interface UploadProgressData {
+	upload_id: string;
+	progress: number;
+	status?: string;
+}
+
+interface UploadCompletedData {
+	upload_id: string;
+	result?: unknown;
+}
+
+interface UploadErrorData {
+	upload_id: string;
+	error: string;
+}
+
+interface SystemNotificationData {
+	message: string;
+	type?: string;
+	severity?: string;
+}
+
+interface ReviewUpdateData {
+	review_id: string;
+	status?: string;
+	data?: unknown;
+}
+
 /**
  * Hook for WebSocket connection management
  */
@@ -49,10 +78,10 @@ export function useWebSocket() {
 /**
  * Hook for subscribing to specific WebSocket events
  */
-export function useWebSocketEvent<T = any>(
+export function useWebSocketEvent<T = unknown>(
 	event: WebSocketEventType,
 	handler: (data: T) => void,
-	dependencies: any[] = [],
+	dependencies: unknown[] = [],
 ) {
 	const { isConnected } = useWebSocketStore();
 
@@ -210,10 +239,10 @@ export function useWebSocketUpload(uploadId: string) {
 	}, [uploadId, getUploadProgress]);
 
 	// Subscribe to upload events for this specific upload
-	useWebSocketEvent(
+	useWebSocketEvent<UploadProgressData>(
 		"upload.progress",
 		useCallback(
-			(data: any) => {
+			(data) => {
 				if (data.upload_id === uploadId) {
 					logger.debug("[useWebSocketUpload] Progress update", {
 						uploadId,
@@ -226,10 +255,10 @@ export function useWebSocketUpload(uploadId: string) {
 		[uploadId],
 	);
 
-	useWebSocketEvent(
+	useWebSocketEvent<UploadCompletedData>(
 		"upload.completed",
 		useCallback(
-			(data: any) => {
+			(data) => {
 				if (data.upload_id === uploadId) {
 					logger.info("[useWebSocketUpload] Upload completed", { uploadId });
 				}
@@ -239,10 +268,10 @@ export function useWebSocketUpload(uploadId: string) {
 		[uploadId],
 	);
 
-	useWebSocketEvent(
+	useWebSocketEvent<UploadErrorData>(
 		"upload.error",
 		useCallback(
-			(data: any) => {
+			(data) => {
 				if (data.upload_id === uploadId) {
 					logger.error("[useWebSocketUpload] Upload error", {
 						uploadId,
@@ -277,18 +306,18 @@ export function useWebSocketSystem() {
 	}, [subscribe]);
 
 	// Handle system notifications
-	useWebSocketEvent(
+	useWebSocketEvent<SystemNotificationData>(
 		"system.notification",
-		useCallback((data: any) => {
+		useCallback((data) => {
 			logger.info("[useWebSocketSystem] System notification received", data);
 		}, []),
 		[],
 	);
 
 	// Handle review updates
-	useWebSocketEvent(
+	useWebSocketEvent<ReviewUpdateData>(
 		"review.updated",
-		useCallback((data: any) => {
+		useCallback((data) => {
 			logger.info("[useWebSocketSystem] Review update received", data);
 		}, []),
 		[],

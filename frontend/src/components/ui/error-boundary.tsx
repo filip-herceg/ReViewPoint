@@ -104,7 +104,9 @@ export class ErrorBoundary extends Component<
 							stroke="currentColor"
 							viewBox="0 0 24 24"
 							xmlns="http://www.w3.org/2000/svg"
+							aria-label="Error warning icon"
 						>
+							<title>Error warning</title>
 							<path
 								strokeLinecap="round"
 								strokeLinejoin="round"

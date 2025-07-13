@@ -63,13 +63,13 @@ interface FileProgressProps {
 }
 
 const FileProgress: React.FC<FileProgressProps> = ({
-	fileId,
+	fileId: _fileId,
 	fileName,
 	progress,
 	compact = false,
 	showMetrics = true,
 }) => {
-	const { formatBytes, formatSpeed, formatDuration } = useUploadProgress();
+	const { formatBytes, formatDuration } = useUploadProgress();
 
 	const isComplete = progress.isComplete;
 	const hasError = progress.percentage === 0 && progress.endTime !== null;
@@ -166,8 +166,8 @@ const ProgressMetrics: React.FC<ProgressMetricsProps> = ({
 	if (compact) {
 		return (
 			<div className="flex items-center gap-4 text-xs text-muted-foreground">
-				{metrics.map((metric, index) => (
-					<div key={index} className="flex items-center gap-1">
+				{metrics.map((metric) => (
+					<div key={metric.label} className="flex items-center gap-1">
 						{metric.icon}
 						<span>{metric.value}</span>
 					</div>
@@ -178,8 +178,8 @@ const ProgressMetrics: React.FC<ProgressMetricsProps> = ({
 
 	return (
 		<div className="grid grid-cols-2 gap-4">
-			{metrics.map((metric, index) => (
-				<div key={index} className="flex items-center gap-2">
+			{metrics.map((metric) => (
+				<div key={metric.label} className="flex items-center gap-2">
 					<div className={cn("p-2 rounded-full bg-muted", metric.color)}>
 						{metric.icon}
 					</div>
@@ -369,9 +369,9 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
 						</div>
 
 						<div className="space-y-2 max-h-40 overflow-y-auto">
-							{allFileProgress.map(({ fileId, progress }, index) => (
+							{allFileProgress.map(({ fileId, progress }) => (
 								<FileProgress
-									key={index}
+									key={fileId}
 									fileId={fileId}
 									fileName={fileId.split("-")[0]} // Extract filename from fileId
 									progress={progress}

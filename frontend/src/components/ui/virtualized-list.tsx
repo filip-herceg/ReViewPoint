@@ -208,7 +208,7 @@ export function useVirtualizedList<T>(
 	const {
 		itemHeight = 50,
 		containerHeight = 400,
-		overscan = 5,
+		// overscan = 5, // Currently unused but kept for future implementation
 	} = options || {};
 
 	const [scrollTop, setScrollTop] = useState(0);

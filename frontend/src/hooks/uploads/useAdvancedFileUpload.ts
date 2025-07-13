@@ -1,20 +1,20 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 // Fallback logger if '@/lib/logger' is missing
 const logger = {
-	info: (...args: any[]) => {
+	info: (...args: unknown[]) => {
 		if (process.env.NODE_ENV !== "production")
 			console.info("[upload]", ...args);
 	},
-	warn: (...args: any[]) => {
+	warn: (...args: unknown[]) => {
 		if (process.env.NODE_ENV !== "production")
 			console.warn("[upload]", ...args);
 	},
-	error: (...args: any[]) => {
+	error: (...args: unknown[]) => {
 		if (process.env.NODE_ENV !== "production")
 			console.error("[upload]", ...args);
 	},
-	debug: (...args: any[]) => {
+	debug: (...args: unknown[]) => {
 		if (process.env.NODE_ENV !== "production")
 			console.debug("[upload]", ...args);
 	},
@@ -33,7 +33,7 @@ import { useUploadQueue } from "./useUploadQueue";
 
 // Fallback uploadFile if not exported from '@/lib/api/uploads'
 // Replace with actual import if available
-const uploadFile = async (file: File, _opts?: any) => {
+const uploadFile = async (file: File, _opts?: Record<string, unknown>) => {
 	// Simulate upload
 	await new Promise((resolve) => setTimeout(resolve, 500));
 	return { filename: file.name, url: `/uploads/mock/${file.name}` };
@@ -53,7 +53,10 @@ export function useAdvancedFileUpload(
 		enableBackground: false,
 		priority: 5,
 	};
-	const mergedDefaultOptions = { ...defaultOptions, ...options };
+	const mergedDefaultOptions = useMemo(
+		() => ({ ...defaultOptions, ...options }),
+		[options],
+	);
 	const [isUploading, setIsUploading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const abortControllerRef = useRef<AbortController | null>(null);
@@ -76,14 +79,21 @@ export function useAdvancedFileUpload(
 	// Provide simple progress helpers
 	const _calculateProgress = (uploaded: number, total: number) =>
 		total > 0 ? Math.round((uploaded / total) * 100) : 0;
-	const calculateETA = (total: number, uploaded: number, speed: number) =>
-		speed > 0 ? Math.round((total - uploaded) / speed) : null;
-	const calculateSpeed = (uploaded: number, elapsedMs: number) =>
-		elapsedMs > 0 ? Math.round(uploaded / (elapsedMs / 1000)) : 0;
+	const calculateETA = useCallback(
+		(total: number, uploaded: number, speed: number) =>
+			speed > 0 ? Math.round((total - uploaded) / speed) : null,
+		[],
+	);
+	const calculateSpeed = useCallback(
+		(uploaded: number, elapsedMs: number) =>
+			elapsedMs > 0 ? Math.round(uploaded / (elapsedMs / 1000)) : 0,
+		[],
+	);
 
 	/**
 	 * Upload a single file with advanced options
 	 */
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Circular dependency with uploadFileChunked/uploadFileWhole - requires architectural refactor
 	const uploadSingleFile = useCallback(
 		async (
 			file: File,
@@ -135,13 +145,11 @@ export function useAdvancedFileUpload(
 				};
 
 				// Add to queue
-				addToQueue(queueItem);
-
-				// Start upload
+				addToQueue(queueItem); // Start upload
 				setIsUploading(true);
 				setError(null);
 
-				let result;
+				let result: { filename: string; url: string };
 				if (
 					mergedOptions.enableChunked &&
 					file.size > (mergedOptions.chunkSize || 1024 * 1024)
@@ -169,7 +177,7 @@ export function useAdvancedFileUpload(
 					uploadId: queueItem.id,
 				});
 
-				return getQueueItem(queueItem.id)!;
+				return getQueueItem(queueItem.id) || queueItem;
 			} catch (uploadError) {
 				const errorMessage =
 					uploadError instanceof Error ? uploadError.message : "Upload failed";
@@ -202,8 +210,8 @@ export function useAdvancedFileUpload(
 			updateQueueItem,
 			getQueueItem,
 			validateFile,
-			uploadFileChunked,
-			uploadFileWhole,
+			// Note: uploadFileChunked and uploadFileWhole create circular dependencies
+			// They are defined later and this useCallback should be refactored
 		],
 	);
 
