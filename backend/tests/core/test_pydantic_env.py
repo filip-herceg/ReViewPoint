@@ -125,12 +125,12 @@ def test_pydantic_env_loading() -> None:
             REVIEWPOINT_FEATURE_AUTH_REGISTER,
             NOT_SET_VALUE,
         )
-        auth_register_message: str = (
+        auth_register_backend_message: str = (
             "Sensitive data is set"
             if auth_register_raw != NOT_SET_VALUE
             else "Sensitive data is not set"
         )
-        print(f"  Auth Register (os.getenv): {auth_register_message}")
+        print(f"  Auth Register (os.getenv): {auth_register_backend_message}")
 
     except (ImportError, AttributeError, OSError) as e:
         print(f"Backend config test failed: {e}")
