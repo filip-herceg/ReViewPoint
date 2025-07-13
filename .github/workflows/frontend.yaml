@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   test:
-    name: Lint, Format Check & Tests
+    name: Biome Check & Tests
     # Skip duplicate workflow runs for PRs from the same repository
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
@@ -66,16 +66,6 @@ jobs:
         run: |
           cd frontend
           pnpm run lint
-
-      - name: Run ESLint
-        run: |
-          cd frontend
-          pnpm run lint:eslint
-
-      - name: Run Prettier Check
-        run: |
-          cd frontend
-          pnpm run format:check
 
       - name: Run Vitest (Tests)
         run: |
