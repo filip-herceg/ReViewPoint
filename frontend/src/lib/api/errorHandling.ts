@@ -12,6 +12,24 @@ export interface HandledError {
 	original?: unknown;
 }
 
+/**
+ * Extract error message from response data
+ */
+function extractErrorMessage(data: unknown): string {
+	if (typeof data === "string") {
+		return data;
+	}
+	if (typeof data === "object" && data !== null) {
+		if ("error" in data && typeof data.error === "string") {
+			return data.error;
+		}
+		if ("message" in data && typeof data.message === "string") {
+			return data.message;
+		}
+	}
+	return "HTTP error";
+}
+
 export function handleApiError(error: unknown): HandledError {
 	if (!error) {
 		logger.error("Unknown error: no error object");
@@ -61,21 +79,7 @@ export function handleApiError(error: unknown): HandledError {
 	// Axios HTTP error (isAxiosError is true and has response)
 	if (isAxiosError && response) {
 		const status = response?.status;
-		let message = "HTTP error";
-
-		// Get error message from response data
-		const data = response?.data;
-		if (data) {
-			if (typeof data === "string") {
-				message = data;
-			} else if (typeof data === "object" && data !== null) {
-				if ("error" in data && typeof data.error === "string") {
-					message = data.error;
-				} else if ("message" in data && typeof data.message === "string") {
-					message = data.message;
-				}
-			}
-		}
+		const message = extractErrorMessage(response?.data);
 
 		if (status && status >= 400 && status < 500) {
 			logger.warn(`4xx error (${status}):`, message, error);
@@ -99,35 +103,14 @@ export function handleApiError(error: unknown): HandledError {
 
 	// Handle plain objects that might contain error information
 	if (typeof error === "object" && error !== null && !Array.isArray(error)) {
-		// Type guards for error object properties
-		const hasErrorProperty = (obj: object): obj is { error: string } => {
-			return (
-				"error" in obj && typeof (obj as { error?: unknown }).error === "string"
-			);
-		};
-
-		const hasMessageProperty = (obj: object): obj is { message: string } => {
-			return (
-				"message" in obj &&
-				typeof (obj as { message?: unknown }).message === "string"
-			);
-		};
-
-		// Direct error/message property access for objects like { error: 'message' }
-		if (hasErrorProperty(error)) {
-			const message = error.error;
-			logger.warn("Object with error property:", message);
+		// Use the same extraction logic for consistency
+		const message = extractErrorMessage(error);
+		if (message !== "HTTP error") {
+			// Successfully extracted a meaningful error message
+			logger.warn("Object with error/message property:", message);
 			return { type: "unknown", message, original: error };
 		}
-
-		if (hasMessageProperty(error)) {
-			const message = error.message;
-			logger.warn("Object with message property:", message);
-			return { type: "unknown", message, original: error };
-		}
-
-		// Handle other object types without error/message properties
-		// Fall through to the final fallback
+		// Fall through to final fallback if no meaningful message found
 	}
 
 	// Fallback for any other type
