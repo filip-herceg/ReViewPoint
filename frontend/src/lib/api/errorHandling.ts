@@ -127,36 +127,7 @@ export function handleApiError(error: unknown): HandledError {
 		}
 
 		// Handle other object types without error/message properties
-		// This will fall through to the final fallback
-	}
-
-	// Axios HTTP error
-	if (isAxiosError && response) {
-		const status = response?.status;
-		let message = "HTTP error";
-
-		// Get error message from response data
-		const data = response?.data;
-		if (data) {
-			if (typeof data === "string") {
-				message = data;
-			} else if (typeof data === "object" && data !== null) {
-				if ("error" in data && typeof data.error === "string") {
-					message = data.error;
-				} else if ("message" in data && typeof data.message === "string") {
-					message = data.message;
-				}
-			}
-		}
-
-		if (status && status >= 400 && status < 500) {
-			logger.warn(`4xx error (${status}):`, message, error);
-			return { type: "4xx", status, message, original: error };
-		}
-		if (status && status >= 500) {
-			logger.error(`5xx error (${status}):`, message, error);
-			return { type: "5xx", status, message, original: error };
-		}
+		// Fall through to the final fallback
 	}
 
 	// Fallback for any other type
