@@ -159,7 +159,7 @@
             "command": "node",
             "args": [
                 "scripts/run-backend-tests-with-auto-setup.js",
-                "scripts/run-fast-tests.py"
+                "testing/scripts/run-fast-tests.py"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

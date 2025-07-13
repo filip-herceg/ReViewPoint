@@ -91,7 +91,7 @@ describe("handleApiError (logger and edge cases)", () => {
 	it("calls logger.error for unknown error type", () => {
 		handleApiError(unknownError);
 		expect(logger.warn).toHaveBeenCalledWith(
-			"Object with message property:",
+			"Object with error/message property:",
 			"Something went wrong",
 		);
 	});

@@ -104,7 +104,7 @@ export const uploadApiClient = {
 			if (error) {
 				logger.error("❌ Failed to fetch file list:", error);
 				const handledError = handleApiError(error);
-				throw handledError;
+				throw new Error(handledError.message);
 			}
 
 			if (!data) {
@@ -143,7 +143,7 @@ export const uploadApiClient = {
 			if (error) {
 				logger.error("❌ Failed to fetch file info:", error);
 				const handledError = handleApiError(error);
-				throw handledError;
+				throw new Error(handledError.message);
 			}
 
 			if (!data) {
@@ -220,7 +220,7 @@ export const uploadApiClient = {
 			if (error) {
 				logger.error("❌ Failed to delete file:", error);
 				const handledError = handleApiError(error);
-				throw handledError;
+				throw new Error(handledError.message);
 			}
 
 			logger.info("✅ File deleted successfully:", { filename });
