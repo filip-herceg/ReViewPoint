@@ -102,9 +102,9 @@ const MALICIOUS_PATTERNS = {
 		/\p{Cc}|\p{Cf}/u, // Control and format characters
 	],
 	content: [
-		// Enhanced script tag detection - properly handles all whitespace variations including tabs and newlines  
+		// Enhanced script tag detection - properly handles all whitespace variations including tabs and newlines
 		/<script[\s\S]*?>[\s\S]*?<\/script[\s\S]*?>/gi,
-		// Enhanced iframe tag detection - handles whitespace in closing tags  
+		// Enhanced iframe tag detection - handles whitespace in closing tags
 		/<iframe[\s\S]*?>[\s\S]*?<\/iframe[\s\S]*?>/gi,
 		// Enhanced object tag detection - handles whitespace in closing tags
 		/<object[\s\S]*?>[\s\S]*?<\/object[\s\S]*?>/gi,
