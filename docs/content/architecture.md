@@ -17,30 +17,132 @@ flowchart TD
     ROOT --> UPLOADS[📁 uploads/ - File Upload Storage]:::uploads
     ROOT --> CONFIG[📄 Root Configuration Files]:::config
     
-    %% Backend structure
+    %% Backend structure - detailed based on actual analysis
     BACKEND --> B_SRC[📁 src/ - Backend Source Code]:::backend
-    BACKEND --> B_TESTS[📁 tests/ - Backend Unit & Integration Tests]:::backend
+    BACKEND --> B_TESTS[📁 tests/ - Backend Unit & Integration Tests (135+ files)]:::backend
     BACKEND --> B_CONFIG[📁 config/ - Backend Configuration]:::backend
     BACKEND --> B_DEPLOY[📁 deployment/ - Docker & Deployment Config]:::backend
     BACKEND --> B_DOCS[📁 docs/ - Backend API Documentation]:::backend
-    BACKEND --> B_HTMLCOV[📁 htmlcov/ - Test Coverage Reports]:::backend
+    BACKEND --> B_TESTING[📁 testing/ - Testing Utilities & Helpers]:::backend
+    BACKEND --> B_UPLOADS[📁 uploads/ - File Upload Storage]:::backend
+    BACKEND --> B_HTMLCOV[📁 htmlcov/ - Test Coverage Reports (86%+)]:::backend
     
-    B_SRC --> B_API[📁 api/ - REST API Endpoints & Routing]:::backend
-    B_SRC --> B_CORE[📁 core/ - Core Configuration & Setup]:::backend
+    %% Backend source structure - accurate to actual implementation
+    B_SRC --> B_API[📁 api/ - Versioned REST API Endpoints]:::backend
+    B_SRC --> B_CORE[📁 core/ - Core Configuration & Infrastructure]:::backend
     B_SRC --> B_MODELS[📁 models/ - SQLAlchemy ORM Models]:::backend
     B_SRC --> B_SERVICES[📁 services/ - Business Logic Layer]:::backend
-    B_SRC --> B_REPOS[📁 repositories/ - Data Access Layer]:::backend
+    B_SRC --> B_REPOS[📁 repositories/ - Data Access Layer with Repository Pattern]:::backend
     B_SRC --> B_SCHEMAS[📁 schemas/ - Pydantic Validation Schemas]:::backend
     B_SRC --> B_UTILS[📁 utils/ - Utility Functions & Helpers]:::backend
     B_SRC --> B_MIDDLEWARE[📁 middlewares/ - Custom FastAPI Middleware]:::backend
-    B_SRC --> B_MIGRATIONS[📁 alembic_migrations/ - Database Migrations]:::backend
+    B_SRC --> B_MIGRATIONS[📁 alembic_migrations/ - Database Schema Migrations]:::backend
+    B_SRC --> B_STATIC[📁 static/ - Static Files & Assets]:::backend
     B_SRC --> B_MAIN[📄 main.py - FastAPI Application Entry Point]:::backend
-    B_SRC --> B_ABOUT[📄 __about__.py - Package Metadata]:::backend
+    B_SRC --> B_ABOUT[📄 __about__.py - Package Metadata & Version]:::backend
+    B_SRC --> B_CONTRIB[📄 CONTRIBUTING.md - Backend Development Guidelines]:::backend
     
-    %% Frontend structure
+    %% API layer detail
+    B_API --> B_API_V1[📁 v1/ - Version 1 API Endpoints]:::backend
+    B_API --> B_API_DEPS[📄 deps.py - Dependency Injection & Auth]:::backend
+    B_API_V1 --> B_API_AUTH[📄 auth.py - Authentication & JWT Management]:::backend
+    B_API_V1 --> B_API_HEALTH[📄 health.py - Health Check Endpoints]:::backend
+    B_API_V1 --> B_API_UPLOADS[📄 uploads.py - File Upload Management]:::backend
+    B_API_V1 --> B_API_WS[📄 websocket.py - Real-time Communication]:::backend
+    B_API_V1 --> B_API_USERS[📁 users/ - User Management Submodule]:::backend
+    B_API_USERS --> B_API_USERS_CORE[📄 core.py - Profile Operations]:::backend
+    B_API_USERS --> B_API_USERS_EXPORT[📄 exports.py - Data Export Endpoints]:::backend
+    B_API_USERS --> B_API_USERS_TEST[📄 test_only_router.py - Development Endpoints]:::backend
+    
+    %% Core infrastructure detail
+    B_CORE --> B_CORE_CONFIG[📄 config.py - Environment Configuration]:::backend
+    B_CORE --> B_CORE_DB[📄 database.py - Async Database Engine & Pooling]:::backend
+    B_CORE --> B_CORE_SECURITY[📄 security.py - JWT & Authentication]:::backend
+    B_CORE --> B_CORE_LOGGING[📄 logging.py - Structured Logging]:::backend
+    B_CORE --> B_CORE_EVENTS[📄 events.py - Application Lifecycle Events]:::backend
+    B_CORE --> B_CORE_OPENAPI[📄 openapi.py - API Documentation Generation]:::backend
+    B_CORE --> B_CORE_FEATURES[📄 feature_flags.py - Feature Flag Management]:::backend
+    B_CORE --> B_CORE_SYNC_DB[📄 sync_database.py - Synchronous DB Utils]:::backend
+    B_CORE --> B_CORE_DOCS[📄 documentation.py - Documentation Utilities]:::backend
+    B_CORE --> B_CORE_TYPINGS[📁 typings/ - TypeScript-style Type Definitions]:::backend
+    B_CORE_TYPINGS --> B_CORE_JOSE[📄 jose.pyi - Python-Jose JWT Library Types]:::backend
+    
+    %% Models detail
+    B_MODELS --> B_MODEL_BASE[📄 base.py - Base Model with Timestamps]:::backend
+    B_MODELS --> B_MODEL_USER[📄 user.py - User Accounts & Authentication]:::backend
+    B_MODELS --> B_MODEL_FILE[📄 file.py - File Uploads with Metadata]:::backend
+    B_MODELS --> B_MODEL_BLACKLIST[📄 blacklisted_token.py - JWT Token Blacklist]:::backend
+    B_MODELS --> B_MODEL_PWD_RESET[📄 used_password_reset_token.py - Single-use Reset Tokens]:::backend
+    
+    %% Services detail
+    B_SERVICES --> B_SERVICE_USER[📄 user.py - User Management & Registration]:::backend
+    B_SERVICES --> B_SERVICE_UPLOAD[📄 upload.py - File Processing & Validation]:::backend
+    
+    %% Repositories detail
+    B_REPOS --> B_REPO_USER[📄 user.py - User CRUD with Caching & Rate Limiting]:::backend
+    B_REPOS --> B_REPO_FILE[📄 file.py - File Operations with Async DB]:::backend
+    B_REPOS --> B_REPO_BLACKLIST[📄 blacklisted_token.py - Token Blacklist Management]:::backend
+    
+    %% Schemas detail
+    B_SCHEMAS --> B_SCHEMA_AUTH[📄 auth.py - Authentication Request/Response]:::backend
+    B_SCHEMAS --> B_SCHEMA_USER[📄 user.py - User Data Validation]:::backend
+    B_SCHEMAS --> B_SCHEMA_FILE[📄 file.py - File Upload Validation]:::backend
+    B_SCHEMAS --> B_SCHEMA_TOKEN[📄 token.py - JWT Token Structures]:::backend
+    B_SCHEMAS --> B_SCHEMA_BLACKLIST[📄 blacklisted_token.py - Token Blacklist Schemas]:::backend
+    
+    %% Utils detail - comprehensive utilities
+    B_UTILS --> B_UTIL_HASH[📄 hashing.py - Password Hashing with bcrypt]:::backend
+    B_UTILS --> B_UTIL_VALID[📄 validation.py - Email/Password Validation]:::backend
+    B_UTILS --> B_UTIL_CACHE[📄 cache.py - Async In-Memory Caching]:::backend
+    B_UTILS --> B_UTIL_DATETIME[📄 datetime.py - Timezone-aware Date Handling]:::backend
+    B_UTILS --> B_UTIL_FILE[📄 file.py - File Processing & Validation]:::backend
+    B_UTILS --> B_UTIL_RATE[📄 rate_limit.py - API Rate Limiting]:::backend
+    B_UTILS --> B_UTIL_ERRORS[📄 errors.py - Custom Exception Classes]:::backend
+    B_UTILS --> B_UTIL_HTTP[📄 http_error.py - HTTP Error Handling]:::backend
+    B_UTILS --> B_UTIL_FILTERS[📄 filters.py - Data Filtering Utilities]:::backend
+    B_UTILS --> B_UTIL_ENV[📄 environment.py - Environment Variable Management]:::backend
+    
+    %% Middleware detail
+    B_MIDDLEWARE --> B_MW_LOGGING[📄 logging.py - Request/Response Logging with Request IDs]:::backend
+    
+    %% Migrations detail
+    B_MIGRATIONS --> B_MIG_ENV[📄 env.py - Migration Environment Setup]:::backend
+    B_MIGRATIONS --> B_MIG_TEMPLATE[📄 script.py.mako - Migration Script Template]:::backend
+    B_MIGRATIONS --> B_MIG_README[📄 README - Migration Documentation]:::backend
+    B_MIGRATIONS --> B_MIG_VERSIONS[📁 versions/ - Individual Migration Files]:::backend
+    B_MIG_VERSIONS --> B_MIG_INIT[📄 f140e6f46727_initial_migration.py - Initial Database Schema]:::backend
+    B_MIG_VERSIONS --> B_MIG_PWD_RESET[📄 20250605_add_used_password_reset_tokens.py - Single-use Reset Tokens]:::backend
+    B_MIG_VERSIONS --> B_MIG_FILE_SIZE[📄 31eb30e5f037_add_file_size_field.py - File Size Field Addition]:::backend
+    
+    %% Backend tests structure - comprehensive coverage
+    B_TESTS --> B_TEST_API[📁 api/ - API Endpoint Tests]:::backend
+    B_TESTS --> B_TEST_CORE[📁 core/ - Core Functionality Tests]:::backend
+    B_TESTS --> B_TEST_MODELS[📁 models/ - Database Model Tests]:::backend
+    B_TESTS --> B_TEST_REPOS[📁 repositories/ - Data Access Layer Tests]:::backend
+    B_TESTS --> B_TEST_SERVICES[📁 services/ - Business Logic Tests]:::backend
+    B_TESTS --> B_TEST_SCHEMAS[📁 schemas/ - Validation Schema Tests]:::backend
+    B_TESTS --> B_TEST_UTILS[📁 utils/ - Utility Function Tests]:::backend
+    B_TESTS --> B_TEST_MW[📁 middlewares/ - Middleware Tests]:::backend
+    B_TESTS --> B_TEST_PERF[📁 performance/ - Database Performance Tests]:::backend
+    B_TESTS --> B_TEST_MIG[📁 alembic_migrations/ - Migration Tests]:::backend
+    B_TESTS --> B_TEST_PLUGINS[📁 pytest_plugins/ - Custom Pytest Plugins]:::backend
+    B_TESTS --> B_TEST_UPLOADS[📁 uploads/ - Upload Functionality Tests]:::backend
+    B_TESTS --> B_TEST_CONFTEST[📄 conftest.py - Pytest Configuration & Fixtures]:::backend
+    B_TESTS --> B_TEST_CONFTEST_BAK[📄 conftest.py.backup - Backup Configuration]:::backend
+    B_TESTS --> B_TEST_FACTORIES[📄 factories.py - Test Data Generation]:::backend
+    B_TESTS --> B_TEST_ISOLATION[📄 test_isolation_utils.py - Test Isolation Utilities]:::backend
+    B_TESTS --> B_TEST_MAIN[📄 test_main.py - Main Application Tests]:::backend
+    B_TESTS --> B_TEST_MARKERS[📄 test_markers.py - Custom Pytest Markers]:::backend
+    B_TESTS --> B_TEST_TEMPLATES[📄 test_templates.py - Test Template Utilities]:::backend
+    B_TESTS --> B_TEST_DATA_GEN[📄 test_data_generators.py - Advanced Test Data Generation]:::backend
+    B_TESTS --> B_TEST_FAST_SETUP[📄 test_fast_setup.py - Fast Test Configuration]:::backend
+    B_TESTS --> B_TEST_README[📄 README.md - Testing Documentation]:::backend
+    B_TESTS --> B_TEST_UPLOADS_DOC[📄 test_uploads.md - Upload Test Documentation]:::backend
+    
+    %% Frontend structure - maintained from original
     FRONTEND --> F_SRC[📁 src/ - Frontend Source Code]:::frontend
     FRONTEND --> F_PUBLIC[📁 public/ - Static Assets & Index HTML]:::frontend
-    FRONTEND --> F_TESTS[📁 tests/ - Frontend Unit Tests]:::frontend
+    FRONTEND --> F_TESTS[📁 tests/ - Frontend Unit Tests (129+ files)]:::frontend
     FRONTEND --> F_E2E[📁 e2e/ - End-to-End Tests with Playwright]:::frontend
     FRONTEND --> F_DOCS[📁 docs/ - Frontend Documentation]:::frontend
     FRONTEND --> F_SCRIPTS[📁 scripts/ - Frontend Build & Dev Scripts]:::frontend
@@ -48,14 +150,59 @@ flowchart TD
     
     F_SRC --> F_COMPONENTS[📁 components/ - Reusable React Components]:::frontend
     F_SRC --> F_PAGES[📁 pages/ - Page-Level Components]:::frontend
+    F_SRC --> F_HOOKS[📁 hooks/ - Custom React Hooks]:::frontend
+    F_SRC --> F_LIB[📁 lib/ - Core Library & Business Logic]:::frontend
     F_SRC --> F_UTILS[📁 utils/ - Frontend Utility Functions]:::frontend
     F_SRC --> F_STYLES[📁 styles/ - CSS & Styling Files]:::frontend
-    F_SRC --> F_HOOKS[📁 hooks/ - Custom React Hooks]:::frontend
-    F_SRC --> F_SERVICES[📁 services/ - API Client & External Services]:::frontend
     F_SRC --> F_TYPES[📁 types/ - TypeScript Type Definitions]:::frontend
     F_SRC --> F_ASSETS[📁 assets/ - Images, Icons & Media Files]:::frontend
+    F_SRC --> F_MAIN[📄 main.tsx - React Application Entry Point]:::frontend
+    F_SRC --> F_APP[📄 App.tsx - Root Application Component]:::frontend
     
-    %% Docs structure
+    %% Frontend lib structure - core business logic
+    F_LIB --> F_LIB_API[📁 api/ - Type-Safe API Client & Generated Types]:::frontend
+    F_LIB --> F_LIB_STORE[📁 store/ - Zustand State Management]:::frontend
+    F_LIB --> F_LIB_AUTH[📁 auth/ - Authentication & Token Management]:::frontend
+    F_LIB --> F_LIB_WEBSOCKET[📁 websocket/ - Real-time Communication]:::frontend
+    F_LIB --> F_LIB_UTILS[📁 utils/ - Core Utility Functions]:::frontend
+    
+    %% API client detail
+    F_LIB_API --> F_API_GENERATED[📁 generated/ - Auto-generated API Types & Client]:::frontend
+    F_LIB_API --> F_API_CLIENTS[📁 clients/ - Specialized API Clients]:::frontend
+    F_LIB_API --> F_API_BASE[📄 base.ts - Axios Base Configuration]:::frontend
+    F_LIB_API --> F_API_UPLOADS[📄 uploads.ts - Upload API Client]:::frontend
+    
+    %% Store management detail
+    F_LIB_STORE --> F_STORE_AUTH[📄 authStore.ts - Authentication State]:::frontend
+    F_LIB_STORE --> F_STORE_UPLOAD[📄 uploadStore.ts - Upload Management State]:::frontend
+    F_LIB_STORE --> F_STORE_UI[📄 uiStore.ts - UI State & Theme Management]:::frontend
+    F_LIB_STORE --> F_STORE_WEBSOCKET[📄 webSocketStore.ts - WebSocket State]:::frontend
+    F_LIB_STORE --> F_STORE_FILE_MGT[📄 fileManagementStore.ts - File Management State]:::frontend
+    
+    %% Components detail - organized by category
+    F_COMPONENTS --> F_COMP_AUTH[📁 auth/ - Authentication Components]:::frontend
+    F_COMPONENTS --> F_COMP_UI[📁 ui/ - Reusable UI Components]:::frontend
+    F_COMPONENTS --> F_COMP_LAYOUT[📁 layout/ - Layout Components]:::frontend
+    F_COMPONENTS --> F_COMP_UPLOADS[📁 uploads/ - Upload Components]:::frontend
+    F_COMPONENTS --> F_COMP_FILE_MGT[📁 file-management/ - File Management Components]:::frontend
+    F_COMPONENTS --> F_COMP_NAVIGATION[📁 navigation/ - Navigation Components]:::frontend
+    F_COMPONENTS --> F_COMP_FEEDBACK[📁 feedback/ - Feedback Components]:::frontend
+    F_COMPONENTS --> F_COMP_WEBSOCKET[📁 websocket/ - WebSocket Components]:::frontend
+    
+    %% Pages detail - organized by feature
+    F_PAGES --> F_PAGES_AUTH[📁 auth/ - Authentication Pages]:::frontend
+    F_PAGES --> F_PAGES_DASHBOARD[📁 dashboard/ - Dashboard Pages]:::frontend
+    F_PAGES --> F_PAGES_UPLOADS[📁 uploads/ - Upload Management Pages]:::frontend
+    F_PAGES --> F_PAGES_ADMIN[📁 admin/ - Admin Panel Pages]:::frontend
+    F_PAGES --> F_PAGES_REVIEWS[📁 reviews/ - Review Management Pages]:::frontend
+    F_PAGES --> F_PAGES_MODERATION[📁 moderation/ - Moderation Pages]:::frontend
+    
+    %% Hooks detail - organized by feature
+    F_HOOKS --> F_HOOKS_UPLOADS[📁 uploads/ - Upload-specific Hooks]:::frontend
+    F_HOOKS --> F_HOOKS_AUTH[📄 useAuth.ts - Authentication Hook]:::frontend
+    F_HOOKS --> F_HOOKS_FILEUPLOAD[📄 useFileUpload.ts - File Upload Hook]:::frontend
+    
+    %% Docs structure - maintained from original
     DOCS --> D_CONTENT[📁 content/ - Documentation Content]:::docs
     DOCS --> D_BACKEND_DOCS[📁 content/backend/ - Backend Documentation]:::docs
     DOCS --> D_FRONTEND_DOCS[📁 content/frontend/ - Frontend Documentation]:::docs
@@ -67,7 +214,7 @@ flowchart TD
     DOCS --> D_SCRIPTS_DOCS[📁 scripts/ - Documentation Build Scripts]:::docs
     DOCS --> D_MKDOCS[📄 mkdocs.yml - MkDocs Configuration]:::docs
     
-    %% Styling with detailed color coding
+    %% Styling with enhanced detail for backend
     classDef root fill:#fff2cc,stroke:#d6b656,stroke-width:4px,color:#000;
     classDef backend fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000;
     classDef frontend fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,color:#000;
@@ -132,9 +279,9 @@ flowchart TD
 
     | File | Description |
     |------|-------------|
-    | [20250605_add_used_password_reset_tokens.py](backend/src/alembic_migrations/versions/20250605_add_used_password_reset_tokens.md) | Adds table for single-use password reset tokens. |
-    | [9fc3acc47815_initial_migration_users_and_files_tables.py](backend/src/alembic_migrations/versions/9fc3acc47815_initial_migration_users_and_files_tables.md) | Initial migration: users & files tables. |
     | [f140e6f46727_initial_migration.py](backend/src/alembic_migrations/versions/f140e6f46727_initial_migration.md) | Initial database schema migration. |
+    | [20250605_add_used_password_reset_tokens.py](backend/src/alembic_migrations/versions/20250605_add_used_password_reset_tokens.md) | Adds table for single-use password reset tokens. |
+    | [31eb30e5f037_add_file_size_field.py](backend/src/alembic_migrations/versions/31eb30e5f037_add_file_size_field.md) | Adds file size field to the file model. |
 
 ??? info "backend/src/api/"
 
@@ -274,9 +421,11 @@ Complete coverage of every Python file in `backend/src/` and `backend/tests/` wi
 
 ### 📁 Frontend Documentation (129+ files)  
 Complete coverage of every TypeScript/JavaScript file in `frontend/src/` and `frontend/tests/` with detailed documentation for:
-- **Source Files**: Components, pages, hooks, services, utilities, stores, and application setup
+- **Source Files**: Components, pages, hooks, and application setup
 - **Test Files**: Component tests, hook tests, integration tests, and test utilities
 - **Configuration**: Build configuration, type definitions, and development tools
+
+**Note**: Some directories shown in the architecture diagram (lib/, types/, styles/, assets/, utils/) represent planned frontend structure and are not yet implemented. Current documentation covers all existing files.
 
 *All links are organized below by logical sections and component categories for easy navigation.*
 
@@ -296,6 +445,7 @@ Complete coverage of every TypeScript/JavaScript file in `frontend/src/` and `fr
 - [Main Application (main.py)](backend/src/main.py.md) - FastAPI application entry point and startup configuration
 - [Package Info (__about__.py)](backend/src/__about__.py.md) - Project metadata, version, and package information
 - [Source Init (__init__.py)](backend/src/__init__.py.md) - Source module initialization and package setup
+- [Contributing Guidelines (CONTRIBUTING.md)](backend/src/CONTRIBUTING.md) - Backend development guidelines and best practices
 
 #### API Layer
 - [API Dependencies (deps.py)](backend/src/api/deps.py.md) - Dependency injection for authentication and database sessions
@@ -327,6 +477,7 @@ Complete coverage of every TypeScript/JavaScript file in `frontend/src/` and `fr
 - [Base Model (base.py)](backend/src/models/base.py.md) - Base SQLAlchemy model with common fields and functionality
 - [File Model (file.py)](backend/src/models/file.py.md) - File metadata and upload tracking model
 - [User Model (user.py)](backend/src/models/user.py.md) - User account and profile data model
+- [Blacklisted Token Model (blacklisted_token.py)](backend/src/models/blacklisted_token.py.md) - JWT token blacklist tracking model
 - [Password Reset Token Model (used_password_reset_token.py)](backend/src/models/used_password_reset_token.py.md) - Single-use password reset token tracking
 - [Models Init (__init__.py)](backend/src/models/__init__.py.md) - Models module initialization and exports
 
@@ -350,7 +501,7 @@ Complete coverage of every TypeScript/JavaScript file in `frontend/src/` and `fr
 - [Schemas Init (__init__.py)](backend/src/schemas/__init__.py.md) - Schemas module initialization and exports
 
 #### Utility Functions
-- [Cache Utils (cache.py)](backend/src/utils/cache.py.md) - Caching utilities and Redis integration
+- [Cache Utils (cache.py)](backend/src/utils/cache.py.md) - Asynchronous in-memory cache implementation with TTL support
 - [DateTime Utils (datetime.py)](backend/src/utils/datetime.py.md) - Date and time handling utilities with timezone awareness
 - [Environment Utils (environment.py)](backend/src/utils/environment.py.md) - Environment variable management and configuration
 - [Error Utils (errors.py)](backend/src/utils/errors.py.md) - Custom exception classes and error handling utilities
@@ -369,9 +520,11 @@ Complete coverage of every TypeScript/JavaScript file in `frontend/src/` and `fr
 #### Database Migrations
 - [Migration Environment (env.py)](backend/src/alembic_migrations/env.py.md) - Alembic migration environment setup and database connection
 - [Migration Script Template (script.py.mako)](backend/src/alembic_migrations/script.py.mako.md) - Template for generating new migration scripts
-- [Migration Configuration (alembic.ini)](backend/src/alembic_migrations/alembic.ini.md) - Alembic configuration file
+- [Migration README (README)](backend/src/alembic_migrations/README.md) - Alembic migrations documentation and guidance
 - [Migrations Init (__init__.py)](backend/src/alembic_migrations/__init__.py.md) - Migrations module initialization
-- [Migration Versions](backend/src/alembic_migrations/versions/initial_migration.md) - All database migration files
+- [Initial Migration (f140e6f46727_initial_migration.py)](backend/src/alembic_migrations/versions/f140e6f46727_initial_migration.md) - Initial database schema migration
+- [Password Reset Tokens (20250605_add_used_password_reset_tokens.py)](backend/src/alembic_migrations/versions/20250605_add_used_password_reset_tokens.md) - Single-use password reset tokens migration
+- [File Size Field (31eb30e5f037_add_file_size_field.py)](backend/src/alembic_migrations/versions/31eb30e5f037_add_file_size_field.md) - File size field addition migration
 
 ### Backend Test Documentation
 - [Test Overview (README.md)](backend/tests/README.md) - Overview of backend testing strategy and organization
@@ -398,7 +551,7 @@ Complete coverage of every TypeScript/JavaScript file in `frontend/src/` and `fr
 - [Test Auth API](backend/tests/api/v1/test_auth.py.md) - Authentication API tests
 - [Test Health API](backend/tests/api/v1/test_health.py.md) - Health check API tests
 - [Test Uploads API](backend/tests/api/v1/test_uploads.py.md) - Upload API tests
-- [Test Users API](tests/api/v1/test_users.py.md) - Users API tests
+- [Test Users API](backend/tests/api/v1/test_users.py.md) - Users API tests
 - [Users API Tests Init](backend/tests/api/v1/users/__init__.py.md) - Users API tests initialization
 - [Users API Test Config](backend/tests/api/v1/users/conftest.py.md) - Users API test configuration
 - [Test Users Core API](backend/tests/api/v1/users/test_core.py.md) - Core users API tests
@@ -425,7 +578,6 @@ Complete coverage of every TypeScript/JavaScript file in `frontend/src/` and `fr
 - [Test Blacklisted Token Model](backend/tests/models/test_blacklisted_token.py.md) - Blacklisted token model tests
 - [Test File Model](backend/tests/models/test_file.py.md) - File model tests
 - [Test User Model](backend/tests/models/test_user.py.md) - User model tests
-- [Test User Repository](backend/tests/repositories/test_user.py.md) - User repository tests
 - [Test Used Password Reset Token Model](backend/tests/models/test_used_password_reset_token.py.md) - Used password reset token model tests
 
 ### Performance Tests
@@ -478,6 +630,8 @@ Complete coverage of every TypeScript/JavaScript file in `frontend/src/` and `fr
 - [Analytics](frontend/src/analytics.ts.md) - Analytics tracking utilities
 - [Logger](frontend/src/logger.ts.md) - Frontend logging utilities
 - [Logger Types](frontend/src/logger.d.ts.md) - Logger TypeScript definitions
+- [Vite Environment Types](frontend/src/vite-env.d.ts.md) - Vite environment type definitions
+- [Index CSS](frontend/src/index.css.md) - Main CSS entry point and global styles
 
 #### Components
 - [Component Template](frontend/src/components/COMPONENT_TEMPLATE.md) - Component development template
@@ -595,14 +749,9 @@ Complete coverage of every TypeScript/JavaScript file in `frontend/src/` and `fr
 - [Upload Detail Page](frontend/src/pages/uploads/UploadDetailPage.tsx.md) - Upload detail page
 - [Uploads Page](frontend/src/pages/uploads/UploadsPage.tsx.md) - Uploads listing page
 
-#### Styles
-- [Styles Template](frontend/src/styles/STYLES_TEMPLATE.md) - Styles development template
-
-#### Utils
-- [Utils Template](frontend/src/utils/UTIL_TEMPLATE.md) - Utils development template
-
 ### Scripts Documentation
-- [Generate Types Script](frontend/scripts/generate-types-simple.js.md) - API types generation script
+- [Generate API Types Script](frontend/scripts/generate-api-types.ts.md) - TypeScript API types generation script
+- [Validate OpenAPI Script](frontend/scripts/validate-openapi.ts.md) - OpenAPI schema validation script
 
 ### Test Documentation
 - [Frontend Tests README](frontend/tests/README.md) - Frontend testing overview
@@ -621,6 +770,12 @@ Complete coverage of every TypeScript/JavaScript file in `frontend/src/` and `fr
 #### Component Tests
 - [Upload Form Test](frontend/tests/components/UploadForm.test.tsx.md) - Upload form tests
 - [Upload List Test](frontend/tests/components/UploadList.test.tsx.md) - Upload list tests
+
+#### Authentication Component Tests
+- [Auth Guard Test](frontend/tests/components/auth/AuthGuard.test.tsx.md) - Authentication guard tests
+
+#### File Management Component Tests
+- [File Management Dashboard Test](frontend/tests/components/file-management/FileManagementDashboard.test.tsx.md) - File management dashboard tests
 
 #### UI Component Tests
 - [ARIA Live Region Test](frontend/tests/components/ui/aria-live-region.test.tsx.md) - ARIA live region tests
@@ -663,12 +818,15 @@ The ReViewPoint project has comprehensive documentation coverage for all source 
 - **Test Files**: Complete coverage of all test files in `frontend/tests/`
 - **Configuration Files**: Complete coverage of all frontend configuration files
 
+**Note**: Some architectural components in the mermaid diagram represent planned features not yet implemented.
+
 ### Overall Project Coverage
 - ✅ Every Python file in `backend/src/` and `backend/tests/`
 - ✅ Every TypeScript/JavaScript file in `frontend/src/` and `frontend/tests/`
 - ✅ Additional documentation for project structure and guidelines
 - ✅ Comprehensive API reference and architectural overviews
 - ✅ Template files and development guides
+- 📋 Architecture diagram includes both current and planned frontend structure
 
 ---
 
