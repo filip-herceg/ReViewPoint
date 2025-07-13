@@ -13,9 +13,13 @@ frontend/playwright-report/
 frontend/test-results/
 # Local dev server logs (if any)
 frontend/*.log
-# IDE/editor config
-frontend/.env.local
-frontend/.env.*.local
+# IDE/editor config and environment files
+# Exclude all environment files except examples and templates
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+!frontend/.env.*.example
+!frontend/.env.template
 # Node modules (already covered globally, but explicit for clarity)
 frontend/node_modules/
 # Misc cache
@@ -171,10 +175,19 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
-# Python environments
+# Python environments and configuration files
+# Exclude all environment files except examples and templates
 .env
 .env.*
+!.env.example
+!.env.*.example
 !.env.template
+# Frontend environment files (more specific rules)
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+!frontend/.env.*.example
+!frontend/.env.template
 .venv
 .venv*/
 venv/

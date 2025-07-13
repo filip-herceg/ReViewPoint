@@ -62,6 +62,11 @@ jobs:
           cd frontend
           rm -rf node_modules/.cache dist .vite
 
+      - name: Set up test environment
+        run: |
+          cd frontend
+          cp .env.test .env.local
+
       - name: Run Biome (Lint & Format Check)
         run: |
           cd frontend

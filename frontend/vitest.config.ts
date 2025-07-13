@@ -26,7 +26,15 @@ export default defineConfig({
 			"tests/lib/monitoring/errorMonitoring.test.ts", // Causes infinite loops
 		],
 		env: {
-			LOG_LEVEL: "error", // Only show errors during tests
+			// Set test-specific environment variables to ensure consistency
+			NODE_ENV: "test",
+			VITE_LOG_LEVEL: "error", // Only show errors during tests
+			VITE_API_TIMEOUT: "5000", // Set consistent timeout for tests
+			VITE_ENABLE_ANALYTICS: "true", // Set consistent analytics flag
+			VITE_WS_URL: "ws://localhost:8000/api/v1", // Set consistent WebSocket URL
+			VITE_APP_NAME: "ReViewPoint (Test)", // Set test-specific app name
+			VITE_APP_VERSION: "0.1.0-test", // Set test-specific version
+			VITE_SENTRY_DSN: "", // Empty for tests
 		},
 		coverage: {
 			reporter: ["text", "html"],

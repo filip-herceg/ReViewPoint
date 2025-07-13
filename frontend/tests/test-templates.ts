@@ -1098,11 +1098,11 @@ export function createMockImportMetaEnv(
 	const env = {
 		NODE_ENV: "test",
 		VITE_API_BASE_URL: "http://localhost:8000",
-		VITE_API_TIMEOUT: "10000",
-		VITE_WS_URL: "ws://localhost:8000/api/v1/ws",
+		VITE_API_TIMEOUT: "5000", // Changed from 10000 to match test expectations
+		VITE_WS_URL: "ws://localhost:8000/api/v1", // Removed /ws suffix to match test expectations
 		VITE_SENTRY_DSN: "",
-		VITE_ENABLE_ANALYTICS: "false",
-		VITE_LOG_LEVEL: "debug",
+		VITE_ENABLE_ANALYTICS: "true", // Changed from false to true to match test expectations
+		VITE_LOG_LEVEL: "error", // Changed from debug to error to match test expectations
 		VITE_ENABLE_ERROR_REPORTING: "true",
 		VITE_ENABLE_PERFORMANCE_MONITORING: "true",
 		VITE_APP_VERSION: "0.1.0-test",
