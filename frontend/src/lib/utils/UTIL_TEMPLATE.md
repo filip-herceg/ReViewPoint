@@ -16,10 +16,10 @@ import { handleApiError } from "@/lib/api/errorHandling";
 import { getErrorMessage } from "@/lib/utils/errorHandling";
 
 try {
-  // ...
+	// ...
 } catch (err) {
-  const handled = handleApiError(err);
-  // handled.type, handled.status, handled.message
+	const handled = handleApiError(err);
+	// handled.type, handled.status, handled.message
 }
 
 const msg = getErrorMessage(err);
