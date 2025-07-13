@@ -68,7 +68,7 @@ function log(level: LogLevel, ...args: any[]) {
 export const testLogger = {
 	// biome-ignore lint/suspicious/noExplicitAny: Test logger needs flexible argument types
 	debug: (...args: any[]) => log("debug", ...args),
-	// biome-ignore lint/suspicious/noExplicitAny: Test logger needs flexible argument types  
+	// biome-ignore lint/suspicious/noExplicitAny: Test logger needs flexible argument types
 	info: (...args: any[]) => log("info", ...args),
 	// biome-ignore lint/suspicious/noExplicitAny: Test logger needs flexible argument types
 	warn: (...args: any[]) => log("warn", ...args),
