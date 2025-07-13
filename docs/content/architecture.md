@@ -1,6 +1,17 @@
 # ReViewPoint System Architecture
 
-Welcome to the technical architecture overview for ReViewPoint—a modular, scalable, and LLM-powered platform for scientific paper review. This document provides a visual and narrative guide to the system's structure, data flow, and extensibility.
+Welcome to the technical architecture overview for ReViewPoint—a modular, scalable, and LLM-powered platform for scientific paper review. This document provides a comprehensive visual and narrative guide to the system's structure, data flow, and extensibility.
+
+## Overview
+
+ReViewPoint is built as a modern full-stack application with:
+
+- **Backend**: FastAPI with Python 3.11+, PostgreSQL, and async operations
+- **Frontend**: React 18+ with TypeScript, Vite, and modern tooling
+- **Architecture**: Layered design with clear separation of concerns
+- **Scalability**: Microservices-ready with Docker containerization
+- **Testing**: Comprehensive test coverage (135+ backend tests, 672+ frontend tests)
+- **Documentation**: Complete coverage of all source files and components
 
 ## Document Structure
 
@@ -12,8 +23,9 @@ This architecture document is organized into the following sections:
 4. **[Architecture Patterns](#key-architecture-patterns)** - Core design principles
 5. **[Backend Structure](#backend-structure)** - Backend architecture and communication patterns
 6. **[Frontend Structure](#frontend-structure)** - Frontend architecture and component organization  
-7. **[Data Flow](#frontend-data-flow)** - System-wide data flow patterns
-8. **[Documentation Index](#complete-documentation-index)** - Links to all documentation files
+7. **[Data Flow](#data-flow)** - System-wide data flow patterns
+8. **[Scalability](#system-scalability--extensibility)** - System scalability and extensibility features
+9. **[Documentation Index](#complete-documentation-index)** - Links to all documentation files
 
 **Note**: Frontend components in this document represent both current implementation and planned features. The frontend is not yet fully implemented in this branch.
 
@@ -21,61 +33,58 @@ This architecture document is organized into the following sections:
 
 ```mermaid
 flowchart TD
-    ROOT[📁 ReViewPoint - Scientific Paper Review Platform]:::root
-    
-    %% Main directories
-    ROOT --> BACKEND[📁 backend/ - FastAPI Backend Services]:::backend
-    ROOT --> FRONTEND[📁 frontend/ - React Frontend Application]:::frontend
-    ROOT --> DOCS[📁 docs/ - MkDocs Documentation]:::docs
-    ROOT --> SCRIPTS[📁 scripts/ - Development and Deployment Scripts]:::scripts
-    ROOT --> TESTS[📁 tests/ - Cross-Project Integration Tests]:::tests
-    ROOT --> UPLOADS[📁 uploads/ - File Upload Storage]:::uploads
-    ROOT --> CONFIG[📄 Root Configuration Files]:::config
-    
-    %% Backend high-level structure
-    BACKEND --> B_SRC[📁 src/ - Backend Source Code]:::backend
-    BACKEND --> B_TESTS[📁 tests/ - Backend Unit & Integration Tests (135+ files)]:::backend
-    BACKEND --> B_CONFIG[📁 config/ - Backend Configuration]:::backend
-    BACKEND --> B_DEPLOY[📁 deployment/ - Docker & Deployment Config]:::backend
-    
-    %% Backend source key components
-    B_SRC --> B_API[📁 api/ - REST API Endpoints]:::backend
-    B_SRC --> B_CORE[📁 core/ - Core Infrastructure]:::backend
-    B_SRC --> B_MODELS[📁 models/ - Database Models]:::backend
-    B_SRC --> B_SERVICES[📁 services/ - Business Logic]:::backend
-    B_SRC --> B_REPOS[📁 repositories/ - Data Access]:::backend
-    B_SRC --> B_SCHEMAS[📁 schemas/ - Validation]:::backend
-    B_SRC --> B_UTILS[📁 utils/ - Utilities]:::backend
-    B_SRC --> B_MAIN[📄 main.py - App Entry Point]:::backend
-    
-    %% Frontend high-level structure (planned)
-    FRONTEND --> F_SRC[ src/ - Frontend Source Code]:::frontend
-    FRONTEND --> F_TESTS[� tests/ - Frontend Tests]:::frontend
-    FRONTEND --> F_DOCS[📁 docs/ - Frontend Documentation]:::frontend
-    
-    %% Frontend source key components 
-    F_SRC --> F_COMPONENTS[📁 components/ - React Components]:::frontend
-    F_SRC --> F_PAGES[📁 pages/ - Page Components]:::frontend
-    F_SRC --> F_LIB[📁 lib/ - Core Libraries]:::frontend
-    F_SRC --> F_HOOKS[📁 hooks/ - Custom Hooks]:::frontend
-    F_SRC --> F_APP[📄 App.tsx - Root Component]:::frontend
-    
-    %% Documentation structure
-    DOCS --> D_CONTENT[📁 content/ - Documentation Content]:::docs
-    DOCS --> D_BACKEND[📁 content/backend/ - Backend Docs]:::docs
-    DOCS --> D_FRONTEND[📁 content/frontend/ - Frontend Docs]:::docs
-    DOCS --> D_MKDOCS[📄 mkdocs.yml - Configuration]:::docs
-    
-    %% Styling
-    classDef root fill:#fff2cc,stroke:#d6b656,stroke-width:4px,color:#000
-    classDef backend fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000
-    classDef frontend fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,color:#000
-    classDef docs fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
-    classDef scripts fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
-    classDef tests fill:#fff8e1,stroke:#f57f17,stroke-width:2px,color:#000
-    classDef uploads fill:#fafafa,stroke:#616161,stroke-width:2px,color:#000
-    classDef config fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#000
+    ROOT[ReViewPoint Platform]
+    ROOT --> BACKEND[backend/]
+    ROOT --> FRONTEND[frontend/]
+    ROOT --> DOCS[docs/]
+    ROOT --> SCRIPTS[scripts/]
+    ROOT --> TESTS[tests/]
+    ROOT --> UPLOADS[uploads/]
+    ROOT --> CONFIG[config/]
 ```
+
+**Expanded Structure:**
+
+```mermaid
+flowchart TD
+    BACKEND[backend/] --> B_SRC[src/]
+    BACKEND --> B_TESTS[tests/]
+    BACKEND --> B_CONFIG[config/]
+    BACKEND --> B_DEPLOY[deployment/]
+
+    FRONTEND[frontend/] --> F_SRC[src/]
+    FRONTEND --> F_TESTS[tests/]
+    FRONTEND --> F_DOCS[docs/]
+
+    DOCS[docs/] --> D_CONTENT[content/]
+    DOCS --> D_BACKEND[content/backend/]
+    DOCS --> D_FRONTEND[content/frontend/]
+    DOCS --> D_MKDOCS[mkdocs.yml]
+```
+
+**Backend Source Structure:**
+
+```mermaid
+flowchart TD
+    B_SRC[backend/src/] --> B_API[api/]
+    B_SRC --> B_CORE[core/]
+    B_SRC --> B_MODELS[models/]
+    B_SRC --> B_SERVICES[services/]
+    B_SRC --> B_REPOS[repositories/]
+    B_SRC --> B_SCHEMAS[schemas/]
+    B_SRC --> B_UTILS[utils/]
+    B_SRC --> B_MAIN[main.py]
+```
+
+**Frontend Source Structure:**
+
+```mermaid
+flowchart TD
+    F_SRC[frontend/src/] --> F_COMPONENTS[components/]
+    F_SRC --> F_PAGES[pages/]
+    F_SRC --> F_LIB[lib/]
+    F_SRC --> F_HOOKS[hooks/]
+    F_SRC --> F_APP[App.tsx]
 ```
 
 ## Directory Structure Legend
@@ -342,84 +351,50 @@ flowchart LR
 ```
 
 ### Backend Technology Stack
-
 ```mermaid
-graph TB
+graph LR
     subgraph "Framework & Runtime"
-        FASTAPI[FastAPI]
-        PYTHON[Python 3.11+]
-        UVICORN[Uvicorn ASGI Server]
+        PYTHON[Python 3.11+] --> FASTAPI[FastAPI]
+        FASTAPI --> UVICORN[Uvicorn]
+        FASTAPI --> PYDANTIC[Pydantic v2]
+        PYDANTIC --> OPENAPI[OpenAPI 3.0]
     end
     
     subgraph "Database & ORM"
-        POSTGRES[PostgreSQL]
-        SQLITE[SQLite]
-        SQLALCHEMY[SQLAlchemy 2.0]
-        ALEMBIC[Alembic Migrations]
-    end
-    
-    subgraph "Validation & Serialization"
-        PYDANTIC[Pydantic v2]
-        SCHEMAS[Schema Validation]
-        OPENAPI[OpenAPI 3.0]
+        POSTGRES[(PostgreSQL)] --> SQLALCHEMY[SQLAlchemy 2.0]
+        SQLITE[(SQLite)] --> SQLALCHEMY
+        SQLALCHEMY --> ALEMBIC[Alembic]
     end
     
     subgraph "Authentication & Security"
-        JWT[JWT Tokens]
-        BCRYPT[bcrypt Hashing]
-        OAUTH2[OAuth2 Bearer]
+        BCRYPT[bcrypt] --> JWT[JWT Tokens]
+        JWT --> OAUTH2[OAuth2 Bearer]
     end
     
     subgraph "Testing & Quality"
-        PYTEST[Pytest]
-        RUFF[Ruff Linter]
-        MYPY[MyPy Type Checking]
+        PYTEST[Pytest] --> RUFF[Ruff]
+        RUFF --> MYPY[MyPy]
     end
     
     subgraph "Infrastructure"
-        DOCKER[Docker]
-        REDIS[Redis Cache]
-        MINIO[MinIO/S3 Storage]
+        DOCKER[Docker] --> REDIS[(Redis)]
+        REDIS --> MINIO[(MinIO/S3)]
     end
-
-    %% Framework connections
-    FASTAPI --> PYTHON
-    PYTHON --> UVICORN
-    FASTAPI --> PYDANTIC
-
-    %% Database connections
-    SQLALCHEMY --> POSTGRES
-    SQLALCHEMY --> SQLITE
-    ALEMBIC --> SQLALCHEMY
-
-    %% Validation connections
-    PYDANTIC --> SCHEMAS
-    SCHEMAS --> OPENAPI
-
-    %% Security connections
-    JWT --> BCRYPT
-    BCRYPT --> OAUTH2
-
-    %% Testing connections
-    PYTEST --> RUFF
-    RUFF --> MYPY
-
-    %% Infrastructure connections
-    DOCKER --> REDIS
-    REDIS --> MINIO
-
-    classDef framework fill:#fff2cc,stroke:#333,stroke-width:2px
-    classDef database fill:#d5e8d4,stroke:#333,stroke-width:2px
-    classDef validation fill:#dae8fc,stroke:#333,stroke-width:2px
-    classDef security fill:#f8cecc,stroke:#333,stroke-width:2px
-    classDef testing fill:#e1d5e7,stroke:#333,stroke-width:2px
-    classDef infra fill:#ffd6cc,stroke:#333,stroke-width:2px
-
-    class FASTAPI,PYTHON,UVICORN framework
-    class POSTGRES,SQLITE,SQLALCHEMY,ALEMBIC database
-    class PYDANTIC,SCHEMAS,OPENAPI validation
-    class JWT,BCRYPT,OAUTH2 security
-    class PYTEST,RUFF,MYPY testing
+    
+    %% Cross-connections
+    SQLALCHEMY --> FASTAPI
+    JWT --> FASTAPI
+    
+    classDef core fill:#e8f4fd,stroke:#1e88e5,stroke-width:2px
+    classDef db fill:#e8f5e8,stroke:#4caf50,stroke-width:2px
+    classDef security fill:#fce4ec,stroke:#e91e63,stroke-width:2px
+    classDef quality fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
+    classDef infra fill:#fff3e0,stroke:#ff9800,stroke-width:2px
+    
+    class PYTHON,FASTAPI,UVICORN,PYDANTIC,OPENAPI core
+    class POSTGRES,SQLITE,SQLALCHEMY,ALEMBIC db
+    class BCRYPT,JWT,OAUTH2 security
+    class PYTEST,RUFF,MYPY quality
     class DOCKER,REDIS,MINIO infra
 ```
 
@@ -711,78 +686,38 @@ flowchart LR
 
 ```mermaid
 graph TB
-    subgraph "Build & Development"
-        VITE[Vite 5+]
-        BIOME[Biome Linter]
-        TS[TypeScript 5+]
-    end
+    %% Core Foundation
+    REACT[React 18+]
+    TS[TypeScript 5+]
+    VITE[Vite 5+]
     
-    subgraph "UI Framework"
-        REACT[React 18+]
-        ROUTER[React Router v7]
-        SUSPENSE[React Suspense]
-    end
+    %% Essential Libraries
+    ROUTER[React Router v7]
+    ZUSTAND[Zustand Store]
+    TAILWIND[TailwindCSS]
     
-    subgraph "Styling & Design"
-        TAILWIND[TailwindCSS v4]
-        SHADCN[shadcn/ui]
-        TOKENS[Design Tokens]
-    end
+    %% Development Tools
+    VITEST[Vitest Testing]
+    PLAYWRIGHT[E2E Testing]
     
-    subgraph "State Management"
-        ZUSTAND[Zustand]
-        TANSTACK[TanStack Query v5]
-        LOCALSTORAGE[localStorage]
-    end
-    
-    subgraph "Testing"
-        VITEST[Vitest]
-        RTL[React Testing Library]
-        PLAYWRIGHT[Playwright E2E]
-    end
-    
-    subgraph "Real-time"
-        WEBSOCKET[WebSocket API]
-        SSE[Server-Sent Events]
-    end
-
-    %% Build connections
+    %% Core Dependencies
     VITE --> REACT
     TS --> REACT
-    BIOME --> TS
-
-    %% UI Framework connections
     REACT --> ROUTER
-    REACT --> SUSPENSE
+    REACT --> ZUSTAND
+    REACT --> TAILWIND
+    
+    %% Testing Dependencies
+    VITEST --> REACT
+    PLAYWRIGHT --> VITEST
 
-    %% Styling connections
-    TAILWIND --> SHADCN
-    SHADCN --> TOKENS
+    classDef core fill:#d5e8d4,stroke:#333,stroke-width:2px
+    classDef tools fill:#dae8fc,stroke:#333,stroke-width:2px
+    classDef test fill:#f8cecc,stroke:#333,stroke-width:2px
 
-    %% State Management connections
-    ZUSTAND --> TANSTACK
-    TANSTACK --> LOCALSTORAGE
-
-    %% Testing connections
-    VITEST --> RTL
-    RTL --> PLAYWRIGHT
-
-    %% Real-time connections
-    WEBSOCKET --> SSE
-
-    classDef build fill:#fff2cc,stroke:#333,stroke-width:2px
-    classDef ui fill:#d5e8d4,stroke:#333,stroke-width:2px
-    classDef style fill:#dae8fc,stroke:#333,stroke-width:2px
-    classDef state fill:#f8cecc,stroke:#333,stroke-width:2px
-    classDef test fill:#e1d5e7,stroke:#333,stroke-width:2px
-    classDef realtime fill:#ffd6cc,stroke:#333,stroke-width:2px
-
-    class VITE,BIOME,TS build
-    class REACT,ROUTER,SUSPENSE ui
-    class TAILWIND,SHADCN,TOKENS style
-    class ZUSTAND,TANSTACK,LOCALSTORAGE state
-    class VITEST,RTL,PLAYWRIGHT test
-    class WEBSOCKET,SSE realtime
+    class REACT,TS,VITE core
+    class ROUTER,ZUSTAND,TAILWIND tools
+    class VITEST,PLAYWRIGHT test
 ```
 
 ---
@@ -830,8 +765,13 @@ The ReViewPoint frontend is a **modern React SPA** built with cutting-edge 2025 
 - **Bundle Analysis**: Rollup visualizer for optimization
 - **Performance Monitoring**: Web Vitals tracking
 
+---
 
-### Frontend Data Flow
+## Data Flow
+
+The ReViewPoint system follows a comprehensive data flow pattern from frontend user interactions through backend processing to external service integration.
+
+### System Data Flow Overview
 
 ```mermaid
 graph TD
@@ -888,9 +828,8 @@ graph TD
     class MODS,LLM external
     class DB,STORAGE storage
 ```
----
 
-### Sequence: Complete User Journey with Frontend
+### Complete User Journey Sequence
 
 ```mermaid
 sequenceDiagram
@@ -960,7 +899,7 @@ sequenceDiagram
 | **Alembic Migrations** | Schema Management | Database schema evolution | Version control for database changes |
 | **Middleware Stack** | Cross-cutting | Logging, error handling, CORS | Request/response processing, monitoring |
 
-### Key Backend Data Patterns
+### Key Data Flow Patterns
 
 - **Request Flow**: HTTP → Router → Dependencies → Service → Repository → Database
 - **Response Flow**: Database → Repository → Service → Schema → Router → HTTP
@@ -968,6 +907,49 @@ sequenceDiagram
 - **Transaction Management**: Repository layer handles database transactions and rollbacks
 - **Caching Strategy**: Repository layer implements async in-memory caching with TTL
 - **Real-time Updates**: WebSocket connections managed at API layer with event broadcasting
+
+---
+
+## System Scalability & Extensibility
+
+ReViewPoint is designed with modularity and scalability as core principles, enabling horizontal scaling and easy integration of new features.
+
+### Scalability Features
+
+- **Modular Architecture**: Each analysis module is a Dockerized REST service, independently deployable and testable
+- **Parallel Processing**: Backend can dispatch multiple modules in parallel for faster analysis
+- **Async Operations**: Full async/await implementation throughout the backend for high concurrency
+- **Connection Pooling**: Database connection pooling with configurable limits for optimal resource usage
+- **Caching Strategy**: Multi-layer caching (repository level, application level) with TTL management
+
+### Extensibility Features
+
+- **Plug-and-Play LLM Providers**: Easily switch between OpenAI, vLLM, or future providers
+- **Versioned API**: V1 API structure allows safe evolution and backward compatibility
+- **Decoupled CI/CD**: Modules and core backend have separate CI pipelines for independent development
+- **Event-Driven Hooks**: Application lifecycle events for custom integrations
+- **Feature Flags**: Runtime feature toggling for gradual rollouts
+
+### Monitoring & Observability
+
+- **Health Checks**: Application and database health monitoring endpoints
+- **Structured Logging**: JSON logging with correlation IDs for request tracing
+- **Performance Metrics**: Query timing and performance monitoring
+- **Optional Integrations**: Prometheus/Grafana support for advanced monitoring
+
+### Standard Module Output Format
+
+Analysis modules follow a standardized output format for consistent integration:
+
+```json
+{
+  "module_name": "structure_validator",
+  "score": 78,
+  "status": "warning",
+  "feedback": ["Missing conclusion section.", "Introduction too short."],
+  "version": "1.0.0"
+}
+```
 
 ---
 
@@ -1392,29 +1374,4 @@ The ReViewPoint project has comprehensive documentation coverage for all source 
 
 ---
 
-## Scalability & Extensibility Features
-
-- **Modular Microservices**: Each analysis module is a Dockerized REST service, independently deployable and testable.
-- **Parallel Evaluation**: Backend can dispatch multiple modules in parallel for faster analysis.
-- **Plug-and-Play LLM Providers**: Easily switch between OpenAI, vLLM, or future providers.
-- **Decoupled CI/CD**: Modules and core backend have separate CI pipelines for independent development.
-- **Observability**: Optional Prometheus/Grafana integration for monitoring and metrics.
-- **Extensible API**: Versioned API structure allows safe evolution of endpoints.
-
----
-
-## Standard Module Output Example
-
-```json
-{
-  "module_name": "structure_validator",
-  "score": 78,
-  "status": "warning",
-  "feedback": ["Missing conclusion section.", "Introduction too short."],
-  "version": "1.0.0"
-}
-```
-
----
-
-For more details on each segment, see the [Backend Source Guide](backend-source-guide.md), [Module Guide](module-guide.md), and [Frontend Overview](frontend/overview.md)
+For more details on each segment, see the sections above and the [Complete Documentation Index](#complete-documentation-index) for links to all detailed documentation files.
