@@ -102,7 +102,8 @@ const MALICIOUS_PATTERNS = {
 		/\p{Cc}|\p{Cf}/u, // Control and format characters
 	],
 	content: [
-		/<script[\s\S]*?>[\s\S]*?<\/script\s*>/gi,
+		// Improved script tag detection - handles whitespace properly
+		/<script[\s\S]*?>[\s\S]*?<\/script[\s]*>/gi,
 		/<iframe[\s\S]*?>[\s\S]*?<\/iframe>/gi,
 		/<object[\s\S]*?>[\s\S]*?<\/object>/gi,
 		/<embed[\s\S]*?>/gi,

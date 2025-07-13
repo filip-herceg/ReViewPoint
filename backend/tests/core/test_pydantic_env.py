@@ -81,13 +81,15 @@ def test_pydantic_env_loading() -> None:
         )
         print(f"  DB URL: {db_url_display}")
 
-        # Mask Auth Register if it looks like a secret, otherwise print as is
+        # Always mask auth register value for security
         auth_register_display: str = (
-            MASKED_SECRET if settings.reviewpoint_feature_auth_register and "secret" in (settings.reviewpoint_feature_auth_register.lower()) else settings.reviewpoint_feature_auth_register or NONE_DISPLAY
+            MASKED_SECRET
+            if settings.reviewpoint_feature_auth_register
+            else NONE_DISPLAY
         )
         print(f"  Auth Register: {auth_register_display}")
 
-        # Format JWT secret display
+        # Always mask JWT secret for security - never log actual secret values
         jwt_secret_display: str = (
             MASKED_SECRET if settings.reviewpoint_jwt_secret_key else NONE_DISPLAY
         )
@@ -120,11 +122,15 @@ def test_pydantic_env_loading() -> None:
 
         # Test if individual feature flag variables are accessible
         # Note: These might not be directly on settings object
-        auth_register: str = os.getenv(
+        # Always mask the auth register value for security
+        auth_register_raw: str = os.getenv(
             REVIEWPOINT_FEATURE_AUTH_REGISTER,
             NOT_SET_VALUE,
         )
-        print(f"  Auth Register (os.getenv): {auth_register}")
+        auth_register_masked: str = (
+            MASKED_SECRET if auth_register_raw != NOT_SET_VALUE else NOT_SET_VALUE
+        )
+        print(f"  Auth Register (os.getenv): {auth_register_masked}")
 
     except (ImportError, AttributeError, OSError) as e:
         print(f"Backend config test failed: {e}")
