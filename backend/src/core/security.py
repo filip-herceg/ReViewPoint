@@ -1,5 +1,4 @@
-"""
-JWT creation and validation utilities for authentication.
+"""JWT creation and validation utilities for authentication.
 """
 
 import uuid
@@ -21,9 +20,9 @@ from src.core.config import get_settings
 
 __all__: Sequence[str] = (
     "create_access_token",
-    "verify_access_token",
-    "decode_access_token",
     "create_refresh_token",
+    "decode_access_token",
+    "verify_access_token",
 )
 
 
@@ -38,8 +37,7 @@ class JWTPayload(TypedDict, total=False):
 
 
 def create_access_token(data: Mapping[str, str | int | bool]) -> str:
-    """
-    Create a JWT access token with the given data payload.
+    """Create a JWT access token with the given data payload.
     Uses config-driven secret, expiry, and algorithm.
     Never log or expose the token.
     Adds a unique jti for blacklisting support.
@@ -48,11 +46,12 @@ def create_access_token(data: Mapping[str, str | int | bool]) -> str:
         ValueError: If the JWT secret key is not configured.
         JWTError: If JWT encoding fails.
         RuntimeError: If token creation fails for unknown reasons.
+
     """
     to_encode: MutableMapping[str, str | int | bool | datetime] = dict(data)
     settings = get_settings()
     expire: datetime = datetime.now(UTC) + timedelta(
-        minutes=settings.jwt_expire_minutes
+        minutes=settings.jwt_expire_minutes,
     )
     to_encode["exp"] = expire
     to_encode["iat"] = int(datetime.now(UTC).timestamp())
@@ -82,8 +81,7 @@ def create_access_token(data: Mapping[str, str | int | bool]) -> str:
 
 
 def verify_access_token(token: str) -> JWTPayload:
-    """
-    Validate a JWT access token and return the decoded payload.
+    """Validate a JWT access token and return the decoded payload.
     If authentication is disabled, return a default admin payload.
 
     Raises:
@@ -91,11 +89,12 @@ def verify_access_token(token: str) -> JWTPayload:
         ValueError: If the JWT secret key is not configured.
         TypeError: If the decoded payload is not a dictionary.
         RuntimeError: If verification fails for unknown reasons.
+
     """
     settings = get_settings()
     if not settings.auth_enabled:
         logger.warning(
-            "Authentication is DISABLED! Bypassing token verification and returning default admin payload."
+            "Authentication is DISABLED! Bypassing token verification and returning default admin payload.",
         )
         now: datetime = datetime.now(UTC)
         return JWTPayload(
@@ -127,7 +126,7 @@ def verify_access_token(token: str) -> JWTPayload:
             {k: v for k, v in payload.items() if k != "exp"},
         )
         # Cast to JWTPayload for type safety
-        return cast(JWTPayload, payload)
+        return cast("JWTPayload", payload)
     except JWTError as e:
         logger.warning("JWT access token validation failed: {}", str(e))
         raise
@@ -138,8 +137,7 @@ def verify_access_token(token: str) -> JWTPayload:
 
 
 def decode_access_token(token: str) -> JWTPayload:
-    """
-    Alias for verify_access_token for backward compatibility.
+    """Alias for verify_access_token for backward compatibility.
     Decode and validate a JWT access token and return the payload.
 
     Args:
@@ -153,13 +151,13 @@ def decode_access_token(token: str) -> JWTPayload:
         ValueError: If the JWT secret key is not configured.
         TypeError: If the decoded payload is not a dictionary.
         RuntimeError: If verification fails for unknown reasons.
+
     """
     return verify_access_token(token)
 
 
 def create_refresh_token(data: Mapping[str, str | int | bool]) -> str:
-    """
-    Create a JWT refresh token with the given data payload.
+    """Create a JWT refresh token with the given data payload.
     Uses config-driven secret, expiry, and algorithm.
     Refresh tokens typically have a longer expiry than access tokens.
     Adds a unique jti for blacklisting support.
@@ -168,6 +166,7 @@ def create_refresh_token(data: Mapping[str, str | int | bool]) -> str:
         ValueError: If the JWT secret key is not configured.
         JWTError: If JWT encoding fails.
         RuntimeError: If token creation fails for unknown reasons.
+
     """
     settings = get_settings()
     to_encode: MutableMapping[str, str | int | bool | datetime] = dict(data)
@@ -199,14 +198,14 @@ def create_refresh_token(data: Mapping[str, str | int | bool]) -> str:
 
 
 def verify_refresh_token(token: str) -> JWTPayload:
-    """
-    Validate a JWT refresh token and return the decoded payload.
+    """Validate a JWT refresh token and return the decoded payload.
     Uses the same secret and algorithm as create_refresh_token.
 
     Raises:
         JWTError: If the token is invalid or cannot be decoded.
         ValueError: If the JWT secret key is not configured or required claims are missing/expired.
         TypeError: If the decoded payload is not a dictionary.
+
     """
     settings = get_settings()
     if not settings.jwt_secret_key:
@@ -231,7 +230,7 @@ def verify_refresh_token(token: str) -> JWTPayload:
         )
         if exp_val < int(datetime.now(UTC).timestamp()):
             raise ValueError("Refresh token is expired")
-        return cast(JWTPayload, payload)
+        return cast("JWTPayload", payload)
     except JWTError as e:
         logger.error("JWT refresh token verification failed: %s", str(e))
         raise ValueError("Invalid or expired refresh token") from e
