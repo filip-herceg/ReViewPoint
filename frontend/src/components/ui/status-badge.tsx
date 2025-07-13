@@ -1,13 +1,13 @@
-import { 
+import {
 	AlertCircle,
-	CheckCircle, 
-	Clock, 
-	Eye, 
-	FileText, 
+	CheckCircle,
+	Clock,
+	Eye,
+	FileText,
 	Pause,
 	RefreshCw,
 	Upload,
-	XCircle 
+	XCircle,
 } from "lucide-react";
 import React from "react";
 import { Badge } from "@/components/ui/badge";

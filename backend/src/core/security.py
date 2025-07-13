@@ -1,5 +1,4 @@
-"""JWT creation and validation utilities for authentication.
-"""
+"""JWT creation and validation utilities for authentication."""
 
 import uuid
 from collections.abc import Mapping, MutableMapping, Sequence
