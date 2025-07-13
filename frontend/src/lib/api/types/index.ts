@@ -151,8 +151,9 @@ export type ExtractApiData<T> = T extends ApiResponse<infer U> ? U : never;
 /**
  * Extract the item type from a paginated response
  */
-export type ExtractPaginatedItem<T> =
-	T extends PaginatedResponse<infer U> ? U : never;
+export type ExtractPaginatedItem<T> = T extends PaginatedResponse<infer U>
+	? U
+	: never;
 
 /**
  * Extract the item type from a list response

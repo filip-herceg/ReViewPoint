@@ -1223,7 +1223,7 @@ const ReviewDetailPage: React.FC = () => {
 																											issue.severity === "high"
 																												? "destructive"
 																												: issue.severity ===
-																													  "medium"
+																														"medium"
 																													? "warning"
 																													: "secondary"
 																										}
@@ -1278,7 +1278,7 @@ const ReviewDetailPage: React.FC = () => {
 																										? "destructive"
 																										: result.issues[
 																													selectedIssue
-																											  ].severity === "medium"
+																												].severity === "medium"
 																											? "warning"
 																											: "secondary"
 																								}
