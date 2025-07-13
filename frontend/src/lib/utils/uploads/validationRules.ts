@@ -103,13 +103,13 @@ const MALICIOUS_PATTERNS = {
 	],
 	content: [
 		// Enhanced script tag detection - properly handles all whitespace variations including tabs and newlines  
-		/<script[\s\S]*?>[\s\S]*?<\/script[\s>]/gi,
+		/<script[\s\S]*?>[\s\S]*?<\/script[\s\S]*?>/gi,
 		// Enhanced iframe tag detection - handles whitespace in closing tags  
-		/<iframe[\s\S]*?>[\s\S]*?<\/iframe[\s>]/gi,
+		/<iframe[\s\S]*?>[\s\S]*?<\/iframe[\s\S]*?>/gi,
 		// Enhanced object tag detection - handles whitespace in closing tags
-		/<object[\s\S]*?>[\s\S]*?<\/object[\s>]/gi,
+		/<object[\s\S]*?>[\s\S]*?<\/object[\s\S]*?>/gi,
 		// Enhanced embed tag detection - handles whitespace and malformed tags
-		/<embed[\s\S]*?[\s>]/gi,
+		/<embed[\s\S]*?[\s\S]*?>/gi,
 	],
 };
 

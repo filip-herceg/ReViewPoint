@@ -81,7 +81,7 @@ def test_pydantic_env_loading() -> None:
         )
         print(f"  DB URL: {db_url_display}")
 
-        # Always mask auth register value for security
+        # Always mask auth register value for security - never log actual values
         auth_register_display: str = (
             MASKED_SECRET
             if settings.reviewpoint_feature_auth_register
