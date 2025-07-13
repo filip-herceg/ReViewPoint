@@ -91,12 +91,17 @@ export function customRender(ui: ReactElement, options = {}) {
 	return result;
 }
 
-// Utility: Generate a random string of given length
+// Utility: Generate a cryptographically secure random string of given length
 export function randomString(length: number): string {
 	const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
 	let result = "";
+
+	// Use crypto.getRandomValues for cryptographically secure randomness
+	const array = new Uint8Array(length);
+	crypto.getRandomValues(array);
+
 	for (let i = 0; i < length; i++) {
-		result += chars.charAt(Math.floor(Math.random() * chars.length));
+		result += chars.charAt(array[i] % chars.length);
 	}
 	if (length < 4) {
 		testLogger.warn("Generated very short random string:", result);
@@ -106,12 +111,23 @@ export function randomString(length: number): string {
 	return result;
 }
 
-// Utility: Generate a random integer between min and max (inclusive)
+// Utility: Generate a cryptographically secure random integer between min and max (inclusive)
 export function randomInt(min: number, max: number): number {
-	const value = Math.floor(Math.random() * (max - min + 1)) + min;
 	if (min > max) {
 		testLogger.error("randomInt called with min > max", { min, max });
-	} else if (max - min > 1000000) {
+		return min;
+	}
+
+	const range = max - min + 1;
+
+	// Use crypto.getRandomValues for cryptographically secure randomness
+	const array = new Uint32Array(1);
+	crypto.getRandomValues(array);
+
+	// Use modulo with the range to get a value within bounds
+	const value = (array[0] % range) + min;
+
+	if (max - min > 1000000) {
 		testLogger.warn("randomInt called with very large range", { min, max });
 	} else {
 		testLogger.debug(`Generated random int between ${min} and ${max}:`, value);
