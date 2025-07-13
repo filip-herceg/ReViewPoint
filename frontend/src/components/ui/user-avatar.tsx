@@ -116,6 +116,7 @@ export function UserAvatar({
 	isOnline = false,
 	onClick,
 }: UserAvatarProps) {
+	const [imageError, setImageError] = React.useState(false);
 	const initials = getInitials(user?.name, user?.email);
 	const identifier = user?.email || user?.name || "unknown";
 	const avatarColor = getAvatarColor(identifier);
@@ -132,12 +133,13 @@ export function UserAvatar({
 			src: event.currentTarget.src,
 			user: user?.email,
 		});
-		// Hide the image and show initials fallback
-		event.currentTarget.style.display = "none";
+		setImageError(true);
 	};
 
+	const showImage = user?.avatar && !imageError;
+
 	return (
-		<div className={cn("relative inline-flex", className)}>
+		<div className="relative inline-flex">
 			{onClick ? (
 				<Button
 					type="button"
@@ -147,6 +149,7 @@ export function UserAvatar({
 						sizeClasses[size],
 						avatarColor,
 						"cursor-pointer hover:opacity-80 transition-opacity",
+						className,
 					)}
 					onClick={handleClick}
 					aria-label={
@@ -154,7 +157,7 @@ export function UserAvatar({
 					}
 				>
 					{/* Profile image */}
-					{user?.avatar && (
+					{showImage && (
 						<img
 							src={user.avatar}
 							alt={`${user.name || user.email} avatar`}
@@ -164,8 +167,10 @@ export function UserAvatar({
 					)}
 
 					{/* Initials fallback */}
-					{!user?.avatar && (
-						<span className="text-sm font-medium">{initials}</span>
+					{!showImage && (
+						<span className="text-sm font-medium" data-testid="avatar-initials">
+							{initials}
+						</span>
 					)}
 				</Button>
 			) : (
@@ -174,14 +179,19 @@ export function UserAvatar({
 						"rounded-full flex items-center justify-center font-medium text-primary-foreground relative overflow-hidden",
 						sizeClasses[size],
 						avatarColor,
+						className,
 					)}
-					role="img"
-					aria-label={
-						user ? `${user.name || user.email} avatar` : "User avatar"
-					}
+					{...(user?.avatar
+						? {}
+						: {
+								role: "img",
+								"aria-label": user
+									? `${user.name || user.email} avatar`
+									: "User avatar",
+							})}
 				>
 					{/* Profile image */}
-					{user?.avatar && (
+					{showImage && (
 						<img
 							src={user.avatar}
 							alt={`${user.name || user.email} avatar`}
@@ -191,8 +201,10 @@ export function UserAvatar({
 					)}
 
 					{/* Initials fallback */}
-					{!user?.avatar && (
-						<span className="text-sm font-medium">{initials}</span>
+					{!showImage && (
+						<span className="text-sm font-medium" data-testid="avatar-initials">
+							{initials}
+						</span>
 					)}
 				</div>
 			)}

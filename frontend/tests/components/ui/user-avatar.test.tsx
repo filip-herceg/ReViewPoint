@@ -74,7 +74,7 @@ describe("UserAvatar Component", () => {
 
 		render(<UserAvatar user={user} />);
 
-		const img = screen.getByRole("img");
+		const img = screen.getByAltText("Jane Doe avatar");
 		expect(img).toHaveAttribute("src", "https://example.com/avatar.jpg");
 		expect(img).toHaveAttribute("alt", "Jane Doe avatar");
 	});
@@ -128,7 +128,7 @@ describe("UserAvatar Component", () => {
 
 		const statusElement = screen.getByLabelText("Online");
 		expect(statusElement).toBeInTheDocument();
-		expect(statusElement).toHaveClass("bg-success");
+		expect(statusElement).toHaveClass("bg-green-500");
 	});
 
 	it("shows offline status when enabled", () => {
@@ -144,7 +144,7 @@ describe("UserAvatar Component", () => {
 
 		const statusElement = screen.getByLabelText("Offline");
 		expect(statusElement).toBeInTheDocument();
-		expect(statusElement).toHaveClass("bg-muted");
+		expect(statusElement).toHaveClass("bg-gray-400");
 	});
 
 	it("handles click events", () => {

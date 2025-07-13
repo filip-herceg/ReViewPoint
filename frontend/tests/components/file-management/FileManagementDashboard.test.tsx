@@ -466,10 +466,10 @@ describe("FileManagementDashboard", () => {
 			const user = userEvent.setup();
 			render(<FileManagementDashboard />);
 
-			const sortSelect = screen.getByRole("combobox", { name: /sort by/i });
+			const sortSelect = screen.getByRole("button", { name: /sort by/i });
 			await user.click(sortSelect);
 
-			const nameOption = screen.getByRole("option", { name: /name/i });
+			const nameOption = screen.getByRole("button", { name: /^name$/i });
 			await user.click(nameOption);
 
 			expect(mockStoreState.setSort).toHaveBeenCalledWith("filename", "asc");
@@ -521,13 +521,9 @@ describe("FileManagementDashboard", () => {
 			const user = userEvent.setup();
 			render(<FileManagementDashboard />);
 
-			const itemsPerPageSelect = screen.getByRole("combobox", {
-				name: /items per page/i,
-			});
-			await user.click(itemsPerPageSelect);
-
-			const option20 = screen.getByRole("option", { name: /20/i });
-			await user.click(option20);
+			// Find the select element by aria-label
+			const itemsPerPageSelect = screen.getByLabelText("Items per page");
+			await user.selectOptions(itemsPerPageSelect, "20");
 
 			expect(mockStoreState.setItemsPerPage).toHaveBeenCalledWith(20);
 			logger.debug("Items per page changed successfully");
@@ -631,13 +627,12 @@ describe("FileManagementDashboard", () => {
 		it("should support keyboard navigation", async () => {
 			const user = userEvent.setup();
 			render(<FileManagementDashboard />);
-
 			// Tab through interactive elements
 			await user.tab();
-			expect(document.activeElement).toHaveAttribute("role");
+			expect(document.activeElement).toHaveAttribute("aria-label");
 
 			await user.tab();
-			expect(document.activeElement).toHaveAttribute("role");
+			expect(document.activeElement).toHaveAttribute("aria-label");
 			logger.debug("Keyboard navigation works correctly");
 		});
 

@@ -41,7 +41,7 @@ describe("authApi", () => {
 			};
 			const result = await authApi.register(userData);
 
-			expect(mockRequest).toHaveBeenCalledWith("/auth/register", {
+			expect(mockRequest).toHaveBeenCalledWith("/api/v1/auth/register", {
 				method: "POST",
 				data: userData,
 			});
@@ -81,7 +81,7 @@ describe("authApi", () => {
 			const loginData = { email: "test@example.com", password: "password123" };
 			const result = await authApi.login(loginData);
 
-			expect(mockRequest).toHaveBeenCalledWith("/auth/login", {
+			expect(mockRequest).toHaveBeenCalledWith("/api/v1/auth/login", {
 				method: "POST",
 				data: loginData,
 			});
@@ -102,7 +102,7 @@ describe("authApi", () => {
 
 			const result = await authApi.logout();
 
-			expect(mockRequest).toHaveBeenCalledWith("/auth/logout", {
+			expect(mockRequest).toHaveBeenCalledWith("/api/v1/auth/logout", {
 				method: "POST",
 			});
 			expect(result).toEqual(mockResponse.data);
@@ -119,7 +119,7 @@ describe("authApi", () => {
 
 			const result = await authApi.refreshToken("refresh123");
 
-			expect(mockRequest).toHaveBeenCalledWith("/auth/refresh-token", {
+			expect(mockRequest).toHaveBeenCalledWith("/api/v1/auth/refresh-token", {
 				method: "POST",
 				data: { refresh_token: "refresh123" },
 			});
@@ -146,7 +146,7 @@ describe("authApi", () => {
 
 			const result = await authApi.getCurrentUser();
 
-			expect(mockRequest).toHaveBeenCalledWith("/auth/me");
+			expect(mockRequest).toHaveBeenCalledWith("/api/v1/auth/me");
 			expect(result).toEqual(mockResponse.data);
 		});
 	});

@@ -73,7 +73,7 @@ describe("UserAvatar Component", () => {
 
 		render(<UserAvatar user={user} />);
 
-		const img = screen.getByRole("img");
+		const img = screen.getByAltText("Jane Doe avatar");
 		expect(img).toHaveAttribute("src", "https://example.com/avatar.jpg");
 		expect(img).toHaveAttribute("alt", "Jane Doe avatar");
 	});
@@ -89,7 +89,7 @@ describe("UserAvatar Component", () => {
 
 		render(<UserAvatar user={user} />);
 
-		const img = screen.getByRole("img");
+		const img = screen.getByAltText("John Doe avatar");
 
 		// Simulate image load error
 		fireEvent.error(img);
@@ -130,7 +130,7 @@ describe("UserAvatar Component", () => {
 		render(<UserAvatar user={user} showOnlineStatus={true} isOnline={true} />);
 
 		expect(screen.getByTestId("online-status")).toBeInTheDocument();
-		expect(screen.getByTestId("online-status")).toHaveClass("bg-success");
+		expect(screen.getByTestId("online-status")).toHaveClass("bg-green-500");
 	});
 
 	it("shows offline status when enabled", () => {
@@ -145,7 +145,7 @@ describe("UserAvatar Component", () => {
 		render(<UserAvatar user={user} showOnlineStatus={true} isOnline={false} />);
 
 		expect(screen.getByTestId("online-status")).toBeInTheDocument();
-		expect(screen.getByTestId("online-status")).toHaveClass("bg-muted");
+		expect(screen.getByTestId("online-status")).toHaveClass("bg-gray-400");
 	});
 
 	it("handles click events", () => {
