@@ -81,7 +81,11 @@ def test_pydantic_env_loading() -> None:
         )
         print(f"  DB URL: {db_url_display}")
 
-        print(f"  Auth Register: {settings.reviewpoint_feature_auth_register}")
+        # Mask Auth Register if it looks like a secret, otherwise print as is
+        auth_register_display: str = (
+            MASKED_SECRET if settings.reviewpoint_feature_auth_register and "secret" in (settings.reviewpoint_feature_auth_register.lower()) else settings.reviewpoint_feature_auth_register or NONE_DISPLAY
+        )
+        print(f"  Auth Register: {auth_register_display}")
 
         # Format JWT secret display
         jwt_secret_display: str = (
