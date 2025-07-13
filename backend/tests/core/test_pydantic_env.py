@@ -82,18 +82,16 @@ def test_pydantic_env_loading() -> None:
         print(f"  DB URL: {db_url_display}")
 
         # Always mask auth register value for security - never log actual values
-        auth_register_display: str = (
-            MASKED_SECRET
+        auth_register_message: str = (
+            "Sensitive data is set"
             if settings.reviewpoint_feature_auth_register
-            else NONE_DISPLAY
+            else "Sensitive data is not set"
         )
-        print(f"  Auth Register: {auth_register_display}")
+        print(f"  Auth Register: {auth_register_message}")
 
         # Always mask JWT secret for security - never log actual secret values
-        jwt_secret_display: str = (
-            MASKED_SECRET if settings.reviewpoint_jwt_secret_key else NONE_DISPLAY
-        )
-        print(f"  JWT Secret: {jwt_secret_display}")
+        # Securely handle JWT secret without logging its value
+        print("  JWT Secret: [SECURE]")
 
     except (ImportError, OSError, ValueError) as e:
         print(f"Direct pydantic test failed: {e}")
@@ -127,10 +125,12 @@ def test_pydantic_env_loading() -> None:
             REVIEWPOINT_FEATURE_AUTH_REGISTER,
             NOT_SET_VALUE,
         )
-        auth_register_masked: str = (
-            MASKED_SECRET if auth_register_raw != NOT_SET_VALUE else NOT_SET_VALUE
+        auth_register_message: str = (
+            "Sensitive data is set"
+            if auth_register_raw != NOT_SET_VALUE
+            else "Sensitive data is not set"
         )
-        print(f"  Auth Register (os.getenv): {auth_register_masked}")
+        print(f"  Auth Register (os.getenv): {auth_register_message}")
 
     except (ImportError, AttributeError, OSError) as e:
         print(f"Backend config test failed: {e}")
