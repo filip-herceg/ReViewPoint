@@ -2,6 +2,21 @@
 
 Welcome to the technical architecture overview for ReViewPoint—a modular, scalable, and LLM-powered platform for scientific paper review. This document provides a visual and narrative guide to the system's structure, data flow, and extensibility.
 
+## Document Structure
+
+This architecture document is organized into the following sections:
+
+1. **[Project Structure](#project-file-structure-visualization)** - High-level project organization
+2. **[Directory Legend](#directory-structure-legend)** - Component purposes and technologies  
+3. **[Detailed Structure](#detailed-structure-overview)** - File-by-file breakdown with documentation links
+4. **[Architecture Patterns](#key-architecture-patterns)** - Core design principles
+5. **[Backend Structure](#backend-structure)** - Backend architecture and communication patterns
+6. **[Frontend Structure](#frontend-structure)** - Frontend architecture and component organization  
+7. **[Data Flow](#frontend-data-flow)** - System-wide data flow patterns
+8. **[Documentation Index](#complete-documentation-index)** - Links to all documentation files
+
+**Note**: Frontend components in this document represent both current implementation and planned features. The frontend is not yet fully implemented in this branch.
+
 ## Project File Structure Visualization
 
 ```mermaid
@@ -17,212 +32,50 @@ flowchart TD
     ROOT --> UPLOADS[📁 uploads/ - File Upload Storage]:::uploads
     ROOT --> CONFIG[📄 Root Configuration Files]:::config
     
-    %% Backend structure - detailed based on actual analysis
+    %% Backend high-level structure
     BACKEND --> B_SRC[📁 src/ - Backend Source Code]:::backend
     BACKEND --> B_TESTS[📁 tests/ - Backend Unit & Integration Tests (135+ files)]:::backend
     BACKEND --> B_CONFIG[📁 config/ - Backend Configuration]:::backend
     BACKEND --> B_DEPLOY[📁 deployment/ - Docker & Deployment Config]:::backend
-    BACKEND --> B_DOCS[📁 docs/ - Backend API Documentation]:::backend
-    BACKEND --> B_TESTING[📁 testing/ - Testing Utilities & Helpers]:::backend
-    BACKEND --> B_UPLOADS[📁 uploads/ - File Upload Storage]:::backend
-    BACKEND --> B_HTMLCOV[📁 htmlcov/ - Test Coverage Reports (86%+)]:::backend
     
-    %% Backend source structure - accurate to actual implementation
-    B_SRC --> B_API[📁 api/ - Versioned REST API Endpoints]:::backend
-    B_SRC --> B_CORE[📁 core/ - Core Configuration & Infrastructure]:::backend
-    B_SRC --> B_MODELS[📁 models/ - SQLAlchemy ORM Models]:::backend
-    B_SRC --> B_SERVICES[📁 services/ - Business Logic Layer]:::backend
-    B_SRC --> B_REPOS[📁 repositories/ - Data Access Layer with Repository Pattern]:::backend
-    B_SRC --> B_SCHEMAS[📁 schemas/ - Pydantic Validation Schemas]:::backend
-    B_SRC --> B_UTILS[📁 utils/ - Utility Functions & Helpers]:::backend
-    B_SRC --> B_MIDDLEWARE[📁 middlewares/ - Custom FastAPI Middleware]:::backend
-    B_SRC --> B_MIGRATIONS[📁 alembic_migrations/ - Database Schema Migrations]:::backend
-    B_SRC --> B_STATIC[📁 static/ - Static Files & Assets]:::backend
-    B_SRC --> B_MAIN[📄 main.py - FastAPI Application Entry Point]:::backend
-    B_SRC --> B_ABOUT[📄 __about__.py - Package Metadata & Version]:::backend
-    B_SRC --> B_CONTRIB[📄 CONTRIBUTING.md - Backend Development Guidelines]:::backend
+    %% Backend source key components
+    B_SRC --> B_API[📁 api/ - REST API Endpoints]:::backend
+    B_SRC --> B_CORE[📁 core/ - Core Infrastructure]:::backend
+    B_SRC --> B_MODELS[📁 models/ - Database Models]:::backend
+    B_SRC --> B_SERVICES[📁 services/ - Business Logic]:::backend
+    B_SRC --> B_REPOS[📁 repositories/ - Data Access]:::backend
+    B_SRC --> B_SCHEMAS[📁 schemas/ - Validation]:::backend
+    B_SRC --> B_UTILS[📁 utils/ - Utilities]:::backend
+    B_SRC --> B_MAIN[📄 main.py - App Entry Point]:::backend
     
-    %% API layer detail
-    B_API --> B_API_V1[📁 v1/ - Version 1 API Endpoints]:::backend
-    B_API --> B_API_DEPS[📄 deps.py - Dependency Injection & Auth]:::backend
-    B_API_V1 --> B_API_AUTH[📄 auth.py - Authentication & JWT Management]:::backend
-    B_API_V1 --> B_API_HEALTH[📄 health.py - Health Check Endpoints]:::backend
-    B_API_V1 --> B_API_UPLOADS[📄 uploads.py - File Upload Management]:::backend
-    B_API_V1 --> B_API_WS[📄 websocket.py - Real-time Communication]:::backend
-    B_API_V1 --> B_API_USERS[📁 users/ - User Management Submodule]:::backend
-    B_API_USERS --> B_API_USERS_CORE[📄 core.py - Profile Operations]:::backend
-    B_API_USERS --> B_API_USERS_EXPORT[📄 exports.py - Data Export Endpoints]:::backend
-    B_API_USERS --> B_API_USERS_TEST[📄 test_only_router.py - Development Endpoints]:::backend
-    
-    %% Core infrastructure detail
-    B_CORE --> B_CORE_CONFIG[📄 config.py - Environment Configuration]:::backend
-    B_CORE --> B_CORE_DB[📄 database.py - Async Database Engine & Pooling]:::backend
-    B_CORE --> B_CORE_SECURITY[📄 security.py - JWT & Authentication]:::backend
-    B_CORE --> B_CORE_LOGGING[📄 logging.py - Structured Logging]:::backend
-    B_CORE --> B_CORE_EVENTS[📄 events.py - Application Lifecycle Events]:::backend
-    B_CORE --> B_CORE_OPENAPI[📄 openapi.py - API Documentation Generation]:::backend
-    B_CORE --> B_CORE_FEATURES[📄 feature_flags.py - Feature Flag Management]:::backend
-    B_CORE --> B_CORE_SYNC_DB[📄 sync_database.py - Synchronous DB Utils]:::backend
-    B_CORE --> B_CORE_DOCS[📄 documentation.py - Documentation Utilities]:::backend
-    B_CORE --> B_CORE_TYPINGS[📁 typings/ - TypeScript-style Type Definitions]:::backend
-    B_CORE_TYPINGS --> B_CORE_JOSE[📄 jose.pyi - Python-Jose JWT Library Types]:::backend
-    
-    %% Models detail
-    B_MODELS --> B_MODEL_BASE[📄 base.py - Base Model with Timestamps]:::backend
-    B_MODELS --> B_MODEL_USER[📄 user.py - User Accounts & Authentication]:::backend
-    B_MODELS --> B_MODEL_FILE[📄 file.py - File Uploads with Metadata]:::backend
-    B_MODELS --> B_MODEL_BLACKLIST[📄 blacklisted_token.py - JWT Token Blacklist]:::backend
-    B_MODELS --> B_MODEL_PWD_RESET[📄 used_password_reset_token.py - Single-use Reset Tokens]:::backend
-    
-    %% Services detail
-    B_SERVICES --> B_SERVICE_USER[📄 user.py - User Management & Registration]:::backend
-    B_SERVICES --> B_SERVICE_UPLOAD[📄 upload.py - File Processing & Validation]:::backend
-    
-    %% Repositories detail
-    B_REPOS --> B_REPO_USER[📄 user.py - User CRUD with Caching & Rate Limiting]:::backend
-    B_REPOS --> B_REPO_FILE[📄 file.py - File Operations with Async DB]:::backend
-    B_REPOS --> B_REPO_BLACKLIST[📄 blacklisted_token.py - Token Blacklist Management]:::backend
-    
-    %% Schemas detail
-    B_SCHEMAS --> B_SCHEMA_AUTH[📄 auth.py - Authentication Request/Response]:::backend
-    B_SCHEMAS --> B_SCHEMA_USER[📄 user.py - User Data Validation]:::backend
-    B_SCHEMAS --> B_SCHEMA_FILE[📄 file.py - File Upload Validation]:::backend
-    B_SCHEMAS --> B_SCHEMA_TOKEN[📄 token.py - JWT Token Structures]:::backend
-    B_SCHEMAS --> B_SCHEMA_BLACKLIST[📄 blacklisted_token.py - Token Blacklist Schemas]:::backend
-    
-    %% Utils detail - comprehensive utilities
-    B_UTILS --> B_UTIL_HASH[📄 hashing.py - Password Hashing with bcrypt]:::backend
-    B_UTILS --> B_UTIL_VALID[📄 validation.py - Email/Password Validation]:::backend
-    B_UTILS --> B_UTIL_CACHE[📄 cache.py - Async In-Memory Caching]:::backend
-    B_UTILS --> B_UTIL_DATETIME[📄 datetime.py - Timezone-aware Date Handling]:::backend
-    B_UTILS --> B_UTIL_FILE[📄 file.py - File Processing & Validation]:::backend
-    B_UTILS --> B_UTIL_RATE[📄 rate_limit.py - API Rate Limiting]:::backend
-    B_UTILS --> B_UTIL_ERRORS[📄 errors.py - Custom Exception Classes]:::backend
-    B_UTILS --> B_UTIL_HTTP[📄 http_error.py - HTTP Error Handling]:::backend
-    B_UTILS --> B_UTIL_FILTERS[📄 filters.py - Data Filtering Utilities]:::backend
-    B_UTILS --> B_UTIL_ENV[📄 environment.py - Environment Variable Management]:::backend
-    
-    %% Middleware detail
-    B_MIDDLEWARE --> B_MW_LOGGING[📄 logging.py - Request/Response Logging with Request IDs]:::backend
-    
-    %% Migrations detail
-    B_MIGRATIONS --> B_MIG_ENV[📄 env.py - Migration Environment Setup]:::backend
-    B_MIGRATIONS --> B_MIG_TEMPLATE[📄 script.py.mako - Migration Script Template]:::backend
-    B_MIGRATIONS --> B_MIG_README[📄 README - Migration Documentation]:::backend
-    B_MIGRATIONS --> B_MIG_VERSIONS[📁 versions/ - Individual Migration Files]:::backend
-    B_MIG_VERSIONS --> B_MIG_INIT[📄 f140e6f46727_initial_migration.py - Initial Database Schema]:::backend
-    B_MIG_VERSIONS --> B_MIG_PWD_RESET[📄 20250605_add_used_password_reset_tokens.py - Single-use Reset Tokens]:::backend
-    B_MIG_VERSIONS --> B_MIG_FILE_SIZE[📄 31eb30e5f037_add_file_size_field.py - File Size Field Addition]:::backend
-    
-    %% Backend tests structure - comprehensive coverage
-    B_TESTS --> B_TEST_API[📁 api/ - API Endpoint Tests]:::backend
-    B_TESTS --> B_TEST_CORE[📁 core/ - Core Functionality Tests]:::backend
-    B_TESTS --> B_TEST_MODELS[📁 models/ - Database Model Tests]:::backend
-    B_TESTS --> B_TEST_REPOS[📁 repositories/ - Data Access Layer Tests]:::backend
-    B_TESTS --> B_TEST_SERVICES[📁 services/ - Business Logic Tests]:::backend
-    B_TESTS --> B_TEST_SCHEMAS[📁 schemas/ - Validation Schema Tests]:::backend
-    B_TESTS --> B_TEST_UTILS[📁 utils/ - Utility Function Tests]:::backend
-    B_TESTS --> B_TEST_MW[📁 middlewares/ - Middleware Tests]:::backend
-    B_TESTS --> B_TEST_PERF[📁 performance/ - Database Performance Tests]:::backend
-    B_TESTS --> B_TEST_MIG[📁 alembic_migrations/ - Migration Tests]:::backend
-    B_TESTS --> B_TEST_PLUGINS[📁 pytest_plugins/ - Custom Pytest Plugins]:::backend
-    B_TESTS --> B_TEST_UPLOADS[📁 uploads/ - Upload Functionality Tests]:::backend
-    B_TESTS --> B_TEST_CONFTEST[📄 conftest.py - Pytest Configuration & Fixtures]:::backend
-    B_TESTS --> B_TEST_CONFTEST_BAK[📄 conftest.py.backup - Backup Configuration]:::backend
-    B_TESTS --> B_TEST_FACTORIES[📄 factories.py - Test Data Generation]:::backend
-    B_TESTS --> B_TEST_ISOLATION[📄 test_isolation_utils.py - Test Isolation Utilities]:::backend
-    B_TESTS --> B_TEST_MAIN[📄 test_main.py - Main Application Tests]:::backend
-    B_TESTS --> B_TEST_MARKERS[📄 test_markers.py - Custom Pytest Markers]:::backend
-    B_TESTS --> B_TEST_TEMPLATES[📄 test_templates.py - Test Template Utilities]:::backend
-    B_TESTS --> B_TEST_DATA_GEN[📄 test_data_generators.py - Advanced Test Data Generation]:::backend
-    B_TESTS --> B_TEST_FAST_SETUP[📄 test_fast_setup.py - Fast Test Configuration]:::backend
-    B_TESTS --> B_TEST_README[📄 README.md - Testing Documentation]:::backend
-    B_TESTS --> B_TEST_UPLOADS_DOC[📄 test_uploads.md - Upload Test Documentation]:::backend
-    
-    %% Frontend structure - maintained from original
-    FRONTEND --> F_SRC[📁 src/ - Frontend Source Code]:::frontend
-    FRONTEND --> F_PUBLIC[📁 public/ - Static Assets & Index HTML]:::frontend
-    FRONTEND --> F_TESTS[📁 tests/ - Frontend Unit Tests (129+ files)]:::frontend
-    FRONTEND --> F_E2E[📁 e2e/ - End-to-End Tests with Playwright]:::frontend
+    %% Frontend high-level structure (planned)
+    FRONTEND --> F_SRC[ src/ - Frontend Source Code]:::frontend
+    FRONTEND --> F_TESTS[� tests/ - Frontend Tests]:::frontend
     FRONTEND --> F_DOCS[📁 docs/ - Frontend Documentation]:::frontend
-    FRONTEND --> F_SCRIPTS[📁 scripts/ - Frontend Build & Dev Scripts]:::frontend
-    FRONTEND --> F_CONFIG[📄 Frontend Configuration Files]:::frontend
     
-    F_SRC --> F_COMPONENTS[📁 components/ - Reusable React Components]:::frontend
-    F_SRC --> F_PAGES[📁 pages/ - Page-Level Components]:::frontend
-    F_SRC --> F_HOOKS[📁 hooks/ - Custom React Hooks]:::frontend
-    F_SRC --> F_LIB[📁 lib/ - Core Library & Business Logic]:::frontend
-    F_SRC --> F_UTILS[📁 utils/ - Frontend Utility Functions]:::frontend
-    F_SRC --> F_STYLES[📁 styles/ - CSS & Styling Files]:::frontend
-    F_SRC --> F_TYPES[📁 types/ - TypeScript Type Definitions]:::frontend
-    F_SRC --> F_ASSETS[📁 assets/ - Images, Icons & Media Files]:::frontend
-    F_SRC --> F_MAIN[📄 main.tsx - React Application Entry Point]:::frontend
-    F_SRC --> F_APP[📄 App.tsx - Root Application Component]:::frontend
+    %% Frontend source key components 
+    F_SRC --> F_COMPONENTS[📁 components/ - React Components]:::frontend
+    F_SRC --> F_PAGES[📁 pages/ - Page Components]:::frontend
+    F_SRC --> F_LIB[📁 lib/ - Core Libraries]:::frontend
+    F_SRC --> F_HOOKS[📁 hooks/ - Custom Hooks]:::frontend
+    F_SRC --> F_APP[📄 App.tsx - Root Component]:::frontend
     
-    %% Frontend lib structure - core business logic
-    F_LIB --> F_LIB_API[📁 api/ - Type-Safe API Client & Generated Types]:::frontend
-    F_LIB --> F_LIB_STORE[📁 store/ - Zustand State Management]:::frontend
-    F_LIB --> F_LIB_AUTH[📁 auth/ - Authentication & Token Management]:::frontend
-    F_LIB --> F_LIB_WEBSOCKET[📁 websocket/ - Real-time Communication]:::frontend
-    F_LIB --> F_LIB_UTILS[📁 utils/ - Core Utility Functions]:::frontend
-    
-    %% API client detail
-    F_LIB_API --> F_API_GENERATED[📁 generated/ - Auto-generated API Types & Client]:::frontend
-    F_LIB_API --> F_API_CLIENTS[📁 clients/ - Specialized API Clients]:::frontend
-    F_LIB_API --> F_API_BASE[📄 base.ts - Axios Base Configuration]:::frontend
-    F_LIB_API --> F_API_UPLOADS[📄 uploads.ts - Upload API Client]:::frontend
-    
-    %% Store management detail
-    F_LIB_STORE --> F_STORE_AUTH[📄 authStore.ts - Authentication State]:::frontend
-    F_LIB_STORE --> F_STORE_UPLOAD[📄 uploadStore.ts - Upload Management State]:::frontend
-    F_LIB_STORE --> F_STORE_UI[📄 uiStore.ts - UI State & Theme Management]:::frontend
-    F_LIB_STORE --> F_STORE_WEBSOCKET[📄 webSocketStore.ts - WebSocket State]:::frontend
-    F_LIB_STORE --> F_STORE_FILE_MGT[📄 fileManagementStore.ts - File Management State]:::frontend
-    
-    %% Components detail - organized by category
-    F_COMPONENTS --> F_COMP_AUTH[📁 auth/ - Authentication Components]:::frontend
-    F_COMPONENTS --> F_COMP_UI[📁 ui/ - Reusable UI Components]:::frontend
-    F_COMPONENTS --> F_COMP_LAYOUT[📁 layout/ - Layout Components]:::frontend
-    F_COMPONENTS --> F_COMP_UPLOADS[📁 uploads/ - Upload Components]:::frontend
-    F_COMPONENTS --> F_COMP_FILE_MGT[📁 file-management/ - File Management Components]:::frontend
-    F_COMPONENTS --> F_COMP_NAVIGATION[📁 navigation/ - Navigation Components]:::frontend
-    F_COMPONENTS --> F_COMP_FEEDBACK[📁 feedback/ - Feedback Components]:::frontend
-    F_COMPONENTS --> F_COMP_WEBSOCKET[📁 websocket/ - WebSocket Components]:::frontend
-    
-    %% Pages detail - organized by feature
-    F_PAGES --> F_PAGES_AUTH[📁 auth/ - Authentication Pages]:::frontend
-    F_PAGES --> F_PAGES_DASHBOARD[📁 dashboard/ - Dashboard Pages]:::frontend
-    F_PAGES --> F_PAGES_UPLOADS[📁 uploads/ - Upload Management Pages]:::frontend
-    F_PAGES --> F_PAGES_ADMIN[📁 admin/ - Admin Panel Pages]:::frontend
-    F_PAGES --> F_PAGES_REVIEWS[📁 reviews/ - Review Management Pages]:::frontend
-    F_PAGES --> F_PAGES_MODERATION[📁 moderation/ - Moderation Pages]:::frontend
-    
-    %% Hooks detail - organized by feature
-    F_HOOKS --> F_HOOKS_UPLOADS[📁 uploads/ - Upload-specific Hooks]:::frontend
-    F_HOOKS --> F_HOOKS_AUTH[📄 useAuth.ts - Authentication Hook]:::frontend
-    F_HOOKS --> F_HOOKS_FILEUPLOAD[📄 useFileUpload.ts - File Upload Hook]:::frontend
-    
-    %% Docs structure - maintained from original
+    %% Documentation structure
     DOCS --> D_CONTENT[📁 content/ - Documentation Content]:::docs
-    DOCS --> D_BACKEND_DOCS[📁 content/backend/ - Backend Documentation]:::docs
-    DOCS --> D_FRONTEND_DOCS[📁 content/frontend/ - Frontend Documentation]:::docs
-    DOCS --> D_IMAGES[📁 content/images/ - Documentation Images]:::docs
-    DOCS --> D_SRC_DOCS[📁 content/src/ - Source Code Documentation]:::docs
-    DOCS --> D_TESTS_DOCS[📁 content/tests/ - Test Documentation]:::docs
-    DOCS --> D_OVERRIDES[📁 overrides/ - MkDocs Theme Customizations]:::docs
-    DOCS --> D_SITE[📁 site/ - Generated Static Documentation]:::docs
-    DOCS --> D_SCRIPTS_DOCS[📁 scripts/ - Documentation Build Scripts]:::docs
-    DOCS --> D_MKDOCS[📄 mkdocs.yml - MkDocs Configuration]:::docs
+    DOCS --> D_BACKEND[📁 content/backend/ - Backend Docs]:::docs
+    DOCS --> D_FRONTEND[📁 content/frontend/ - Frontend Docs]:::docs
+    DOCS --> D_MKDOCS[📄 mkdocs.yml - Configuration]:::docs
     
-    %% Styling with enhanced detail for backend
-    classDef root fill:#fff2cc,stroke:#d6b656,stroke-width:4px,color:#000;
-    classDef backend fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000;
-    classDef frontend fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,color:#000;
-    classDef docs fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000;
-    classDef scripts fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000;
-    classDef tests fill:#fff8e1,stroke:#f57f17,stroke-width:2px,color:#000;
-    classDef uploads fill:#fafafa,stroke:#616161,stroke-width:2px,color:#000;
-    classDef config fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#000;
+    %% Styling
+    classDef root fill:#fff2cc,stroke:#d6b656,stroke-width:4px,color:#000
+    classDef backend fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000
+    classDef frontend fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef docs fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef scripts fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+    classDef tests fill:#fff8e1,stroke:#f57f17,stroke-width:2px,color:#000
+    classDef uploads fill:#fafafa,stroke:#616161,stroke-width:2px,color:#000
+    classDef config fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#000
+```
 ```
 
 ## Directory Structure Legend
@@ -406,6 +259,715 @@ flowchart TD
 - **Modular Frontend**: Component-based architecture with reusable UI elements
 - **Type Safety**: Full TypeScript coverage in frontend with generated API types
 - **Configuration Management**: Environment-based configuration with sensible defaults
+
+---
+
+## Backend Structure
+
+The ReViewPoint backend follows a layered architecture pattern with clear separation of concerns.
+
+### Backend `src/` Communication Overview
+
+```mermaid
+flowchart LR
+    %% Core Application Entry
+    MAIN[main.py]
+    CORE[core/]
+    
+    %% API Layer
+    API[api/]
+    MIDDLEWARE[middlewares/]
+    SCHEMAS[schemas/]
+    
+    %% Business Logic Layer
+    SERVICES[services/]
+    REPOS[repositories/]
+    
+    %% Data Layer
+    MODELS[models/]
+    MIGRATIONS[alembic_migrations/]
+    
+    %% Utilities
+    UTILS[utils/]
+
+    %% Application Flow
+    MAIN --> CORE
+    MAIN --> API
+    MAIN --> MIDDLEWARE
+
+    %% API Layer Interactions
+    API --> SCHEMAS
+    API --> SERVICES
+    API --> CORE
+    API --> UTILS
+
+    %% Middleware Dependencies
+    MIDDLEWARE --> CORE
+    MIDDLEWARE --> UTILS
+
+    %% Business Logic Flow
+    SERVICES --> REPOS
+    SERVICES --> SCHEMAS
+    SERVICES --> UTILS
+    SERVICES --> MODELS
+
+    %% Repository Dependencies
+    REPOS --> MODELS
+    REPOS --> CORE
+    REPOS --> UTILS
+
+    %% Schema Dependencies
+    SCHEMAS --> MODELS
+    SCHEMAS --> UTILS
+
+    %% Model Dependencies
+    MODELS --> CORE
+
+    %% Migration Dependencies
+    MIGRATIONS --> MODELS
+    MIGRATIONS --> CORE
+
+    %% Styling
+    classDef entry fill:#fff2cc,stroke:#333,stroke-width:2px
+    classDef api fill:#f8cecc,stroke:#333,stroke-width:2px
+    classDef business fill:#dae8fc,stroke:#333,stroke-width:2px
+    classDef data fill:#d5e8d4,stroke:#333,stroke-width:2px
+    classDef utils fill:#e1d5e7,stroke:#333,stroke-width:2px
+
+    class MAIN,CORE entry
+    class API,MIDDLEWARE,SCHEMAS api
+    class SERVICES,REPOS business
+    class MODELS,MIGRATIONS data
+    class UTILS utils
+```
+
+### Backend Technology Stack
+
+```mermaid
+graph TB
+    subgraph "Framework & Runtime"
+        FASTAPI[FastAPI]
+        PYTHON[Python 3.11+]
+        UVICORN[Uvicorn ASGI Server]
+    end
+    
+    subgraph "Database & ORM"
+        POSTGRES[PostgreSQL]
+        SQLITE[SQLite]
+        SQLALCHEMY[SQLAlchemy 2.0]
+        ALEMBIC[Alembic Migrations]
+    end
+    
+    subgraph "Validation & Serialization"
+        PYDANTIC[Pydantic v2]
+        SCHEMAS[Schema Validation]
+        OPENAPI[OpenAPI 3.0]
+    end
+    
+    subgraph "Authentication & Security"
+        JWT[JWT Tokens]
+        BCRYPT[bcrypt Hashing]
+        OAUTH2[OAuth2 Bearer]
+    end
+    
+    subgraph "Testing & Quality"
+        PYTEST[Pytest]
+        RUFF[Ruff Linter]
+        MYPY[MyPy Type Checking]
+    end
+    
+    subgraph "Infrastructure"
+        DOCKER[Docker]
+        REDIS[Redis Cache]
+        MINIO[MinIO/S3 Storage]
+    end
+
+    %% Framework connections
+    FASTAPI --> PYTHON
+    PYTHON --> UVICORN
+    FASTAPI --> PYDANTIC
+
+    %% Database connections
+    SQLALCHEMY --> POSTGRES
+    SQLALCHEMY --> SQLITE
+    ALEMBIC --> SQLALCHEMY
+
+    %% Validation connections
+    PYDANTIC --> SCHEMAS
+    SCHEMAS --> OPENAPI
+
+    %% Security connections
+    JWT --> BCRYPT
+    BCRYPT --> OAUTH2
+
+    %% Testing connections
+    PYTEST --> RUFF
+    RUFF --> MYPY
+
+    %% Infrastructure connections
+    DOCKER --> REDIS
+    REDIS --> MINIO
+
+    classDef framework fill:#fff2cc,stroke:#333,stroke-width:2px
+    classDef database fill:#d5e8d4,stroke:#333,stroke-width:2px
+    classDef validation fill:#dae8fc,stroke:#333,stroke-width:2px
+    classDef security fill:#f8cecc,stroke:#333,stroke-width:2px
+    classDef testing fill:#e1d5e7,stroke:#333,stroke-width:2px
+    classDef infra fill:#ffd6cc,stroke:#333,stroke-width:2px
+
+    class FASTAPI,PYTHON,UVICORN framework
+    class POSTGRES,SQLITE,SQLALCHEMY,ALEMBIC database
+    class PYDANTIC,SCHEMAS,OPENAPI validation
+    class JWT,BCRYPT,OAUTH2 security
+    class PYTEST,RUFF,MYPY testing
+    class DOCKER,REDIS,MINIO infra
+```
+
+---
+
+## Backend Details
+
+### Architecture Overview
+
+The ReViewPoint backend is a **modern FastAPI application** built with enterprise-grade 2025 Python practices, featuring:
+
+- **Framework**: FastAPI with Python 3.11+ for high-performance async APIs
+- **Database**: PostgreSQL + SQLAlchemy 2.0 with async support and connection pooling
+- **Migration**: Alembic for automated database schema evolution
+- **Validation**: Pydantic v2 for comprehensive request/response validation
+- **Authentication**: JWT tokens with OAuth2 Bearer and bcrypt password hashing
+- **Testing**: Pytest with 135+ test files achieving 86%+ coverage
+- **Code Quality**: Ruff (linting) + MyPy (type checking) for zero-error codebase
+
+### Core Architecture
+
+- **Entry Point**: `main.py` (FastAPI app factory with lifecycle management)
+- **Layered Design**: Clear separation of API → Services → Repositories → Models
+- **Dependency Injection**: FastAPI's DI system for database sessions and authentication
+- **Repository Pattern**: Abstracted data access with caching and rate limiting
+- **Event System**: Application startup/shutdown hooks with health checks
+- **Middleware Stack**: Request logging, CORS, error handling with unique request IDs
+- **Schema Validation**: 100% Pydantic coverage for type-safe API contracts
+
+### Key Features
+
+- ✅ **Authentication System**: Registration, login, JWT refresh, password reset
+- ✅ **File Management**: Async upload processing with MinIO/S3 storage
+- ✅ **User Management**: Profile operations, data exports, admin capabilities
+- ✅ **Database Optimization**: Connection pooling, query optimization, migrations
+- ✅ **Real-time Communication**: WebSocket support for live notifications
+- ✅ **Security**: Rate limiting, token blacklisting, input sanitization
+- ✅ **Monitoring**: Structured logging, health checks, performance metrics
+
+### Development Experience
+
+- **Hot Reload**: Uvicorn auto-reload for instant development feedback
+- **Type Safety**: 100% MyPy coverage with strict type checking
+- **API Documentation**: Auto-generated OpenAPI 3.0 with interactive docs
+- **Database Migrations**: Alembic with auto-generation and version control
+- **Test Isolation**: Comprehensive test fixtures with database rollback
+- **Performance Monitoring**: Query logging and async operation tracking
+
+### Production Ready
+
+- **Scalability**: Async/await throughout for high concurrency
+- **Reliability**: Comprehensive error handling and graceful degradation
+- **Security**: OWASP best practices with secure defaults
+- **Observability**: Structured JSON logging with correlation IDs
+- **Deployment**: Docker containerization with health checks
+- **Database**: Production-grade PostgreSQL with backup strategies
+
+---
+
+## Frontend Structure
+
+The ReViewPoint frontend follows modern React patterns with component-based architecture.
+
+### Frontend `src/` Communication Overview
+
+```mermaid
+flowchart LR
+    %% Core Components
+    MAIN[App.tsx]
+    ROUTER[lib/router/]
+    PAGES[pages/]
+    COMPONENTS[components/]
+    
+    %% State Management
+    STORE[lib/store/]
+    HOOKS[hooks/]
+    
+    %% Data & Types
+    API[lib/api/]
+    TYPES[types/]
+    
+    %% Core Libraries
+    LIB[lib/]
+    ASSETS[assets/]
+
+    %% Application Flow
+    MAIN --> ROUTER
+    MAIN --> STORE
+    MAIN --> COMPONENTS
+
+    %% Router Dependencies
+    ROUTER --> PAGES
+    ROUTER --> COMPONENTS
+
+    %% Page Dependencies
+    PAGES --> COMPONENTS
+    PAGES --> HOOKS
+    PAGES --> STORE
+    PAGES --> API
+
+    %% Component Dependencies
+    COMPONENTS --> HOOKS
+    COMPONENTS --> STORE
+    COMPONENTS --> TYPES
+    COMPONENTS --> LIB
+
+    %% Hook Dependencies
+    HOOKS --> API
+    HOOKS --> STORE
+    HOOKS --> TYPES
+
+    %% Store Dependencies
+    STORE --> API
+    STORE --> TYPES
+
+    %% API Dependencies
+    API --> TYPES
+    API --> LIB
+
+    %% Library Dependencies
+    LIB --> TYPES
+    LIB --> ASSETS
+
+    %% Styling
+    classDef entry fill:#fff2cc,stroke:#333,stroke-width:2px
+    classDef presentation fill:#d5e8d4,stroke:#333,stroke-width:2px
+    classDef state fill:#dae8fc,stroke:#333,stroke-width:2px
+    classDef data fill:#f8cecc,stroke:#333,stroke-width:2px
+    classDef core fill:#e1d5e7,stroke:#333,stroke-width:2px
+
+    class MAIN,ROUTER entry
+    class PAGES,COMPONENTS presentation
+    class STORE,HOOKS state
+    class API,TYPES data
+    class LIB,ASSETS core
+```
+
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable MD046 -->
+??? info "frontend/src/"
+
+    | File/Folder | Description |
+    |-------------|-------------|
+    | [components/](#frontend-components) | Reusable UI components with design system integration. |
+    | [pages/](#frontend-pages) | Route-based page components for different application views. |
+    | [lib/](#frontend-lib) | Core utilities, configuration, and business logic. |
+    | [hooks/](#frontend-hooks) | Custom React hooks for shared logic and state management. |
+    | [types/](#frontend-types) | TypeScript type definitions and interfaces. |
+    | [assets/](#frontend-assets) | Static assets including images, icons, and logos. |
+    | [App.tsx](frontend/src/App.tsx.md) | Main application component with routing and providers. |
+    | [main.tsx](frontend/src/main.tsx.md) | Application entry point with React DOM rendering. |
+    | [index.css](frontend/src/index.css.md) | Global styles with design tokens and CSS custom properties. |
+
+??? info "components/"
+
+    | File/Folder | Description |
+    |-------------|-------------|
+    | [ui/](#frontend-components-ui) | Base design system components (Button, Input, Dialog, etc.). |
+    | [forms/](#frontend-components-forms) | Form components with validation and submission handling. |
+    | [layout/](#frontend-components-layout) | Layout components (AppShell, Sidebar, Header, etc.). |
+    | [feedback/](#frontend-components-feedback) | User feedback components (StatusBadge, LoadingSpinner, etc.). |
+    | [navigation/](#frontend-components-navigation) | Navigation components (Breadcrumbs, NavLink, etc.). |
+    | [websocket/](#frontend-components-websocket) | Real-time WebSocket communication components. |
+
+??? info "components/ui/"
+
+    | Component | Description |
+    |-----------|-------------|
+    | [Button.tsx](frontend/src/components/ui/Button.tsx.md) | Primary button component with variants and states. |
+    | [Input.tsx](frontend/src/components/ui/Input.tsx.md) | Text input with validation and accessibility features. |
+    | [Dialog.tsx](frontend/src/components/ui/Dialog.tsx.md) | Modal dialog with focus management and animations. |
+    | [Card.tsx](frontend/src/components/ui/Card.tsx.md) | Content container with header, body, and footer sections. |
+    | [Badge.tsx](frontend/src/components/ui/Badge.tsx.md) | Status indicator with color variants. |
+    | [Select.tsx](frontend/src/components/ui/Select.tsx.md) | Dropdown selection with search and keyboard navigation. |
+    | [Toast.tsx](frontend/src/components/ui/Toast.tsx.md) | Notification system with auto-dismiss and actions. |
+    | [Progress.tsx](frontend/src/components/ui/Progress.tsx.md) | Progress indicator for loading states and file uploads. |
+    | [Tabs.tsx](frontend/src/components/ui/Tabs.tsx.md) | Tab navigation with keyboard accessibility. |
+    | [Table.tsx](frontend/src/components/ui/Table.tsx.md) | Data table with sorting, filtering, and virtualization. |
+
+??? info "components/forms/"
+
+    | Component | Description |
+    |-----------|-------------|
+    | [LoginForm.tsx](frontend/src/components/forms/LoginForm.tsx.md) | User authentication form with validation. |
+    | [RegisterForm.tsx](frontend/src/components/forms/RegisterForm.tsx.md) | User registration form with password confirmation. |
+    | [UploadForm.tsx](frontend/src/components/forms/UploadForm.tsx.md) | File upload form with drag-and-drop and progress tracking. |
+    | [ProfileForm.tsx](frontend/src/components/forms/ProfileForm.tsx.md) | User profile editing form with image upload. |
+
+??? info "components/layout/"
+
+    | Component | Description |
+    |-----------|-------------|
+    | [AppLayout.tsx](frontend/src/components/layout/AppLayout.tsx.md) | Main authenticated application layout with navigation. |
+    | [AuthLayout.tsx](frontend/src/components/layout/AuthLayout.tsx.md) | Public layout for authentication pages. |
+    | [AppShell.tsx](frontend/src/components/layout/AppShell.tsx.md) | Core shell with sidebar, header, and responsive behavior. |
+    | [Sidebar.tsx](frontend/src/components/layout/Sidebar.tsx.md) | Collapsible navigation sidebar with user context. |
+    | [Header.tsx](frontend/src/components/layout/Header.tsx.md) | Application header with user menu and notifications. |
+
+??? info "pages/"
+
+    | Page | Description |
+    |------|-------------|
+    | [auth/](#frontend-pages-auth) | Authentication-related pages (login, register, reset). |
+    | [dashboard/](#frontend-pages-dashboard) | Main dashboard and overview pages. |
+    | [uploads/](#frontend-pages-uploads) | File management and upload pages. |
+    | [DesignSystemPage.tsx](frontend/src/pages/DesignSystemPage.tsx.md) | Component showcase and design system documentation. |
+
+??? info "pages/auth/"
+
+    | Page | Description |
+    |------|-------------|
+    | [LoginPage.tsx](frontend/src/pages/auth/LoginPage.tsx.md) | User login page with form validation and error handling. |
+    | [RegisterPage.tsx](frontend/src/pages/auth/RegisterPage.tsx.md) | User registration page with terms acceptance. |
+    | [ResetPasswordPage.tsx](frontend/src/pages/auth/ResetPasswordPage.tsx.md) | Password reset request and confirmation pages. |
+
+??? info "pages/dashboard/"
+
+    | Page | Description |
+    |------|-------------|
+    | [DashboardPage.tsx](frontend/src/pages/dashboard/DashboardPage.tsx.md) | Main dashboard with user statistics and recent activity. |
+    | [OverviewPage.tsx](frontend/src/pages/dashboard/OverviewPage.tsx.md) | System overview with charts and metrics. |
+
+??? info "pages/uploads/"
+
+    | Page | Description |
+    |------|-------------|
+    | [UploadsPage.tsx](frontend/src/pages/uploads/UploadsPage.tsx.md) | File management interface with upload and download. |
+    | [UploadDetailPage.tsx](frontend/src/pages/uploads/UploadDetailPage.tsx.md) | Individual file details with preview and analysis results. |
+
+??? info "lib/"
+
+    | Module | Description |
+    |--------|-------------|
+    | [api/](#frontend-lib-api) | API client with 1:1 backend mapping and error handling. |
+    | [auth/](#frontend-lib-auth) | Authentication logic and token management. |
+    | [store/](#frontend-lib-store) | Zustand stores for state management. |
+    | [router/](#frontend-lib-router) | React Router v7 configuration and route definitions. |
+    | [config/](#frontend-lib-config) | Environment configuration and feature flags. |
+    | [utils/](#frontend-lib-utils) | Utility functions and helper modules. |
+
+??? info "lib/api/"
+
+    | Module | Description |
+    |--------|-------------|
+    | [client.ts](frontend/src/lib/api/client.ts.md) | Base API client with request/response interceptors. |
+    | [auth.ts](frontend/src/lib/api/auth.ts.md) | Authentication API endpoints (login, register, refresh). |
+    | [uploads.ts](frontend/src/lib/api/uploads.ts.md) | File upload and management API endpoints. |
+    | [users.ts](frontend/src/lib/api/users.ts.md) | User management API endpoints (profile, settings). |
+    | [health.ts](frontend/src/lib/api/health.ts.md) | System health and status API endpoints. |
+
+??? info "lib/store/"
+
+    | Store | Description |
+    |-------|-------------|
+    | [authStore.ts](frontend/src/lib/store/authStore.ts.md) | User authentication and session state management. |
+    | [uiStore.ts](frontend/src/lib/store/uiStore.ts.md) | UI state (theme, sidebar, notifications, modals). |
+    | [uploadStore.ts](frontend/src/lib/store/uploadStore.ts.md) | File upload progress and management state. |
+
+??? info "lib/router/"
+
+    | Module | Description |
+    |--------|-------------|
+    | [index.ts](frontend/src/lib/router/index.ts.md) | Main router configuration with route definitions. |
+    | [ProtectedRoute.tsx](frontend/src/lib/router/ProtectedRoute.tsx.md) | Authentication guard for protected routes. |
+    | [layouts.tsx](frontend/src/lib/router/layouts.tsx.md) | Layout components for different route groups. |
+
+??? info "hooks/"
+
+    | Hook | Description |
+    |------|-------------|
+    | [useAuth.ts](frontend/src/hooks/useAuth.ts.md) | Authentication state and actions hook. |
+    | [useApi.ts](frontend/src/hooks/useApi.ts.md) | API call wrapper with loading states and error handling. |
+    | [useWebSocket.ts](frontend/src/hooks/useWebSocket.ts.md) | WebSocket connection management and real-time updates. |
+    | [useLocalStorage.ts](frontend/src/hooks/useLocalStorage.ts.md) | Local storage persistence with type safety. |
+    | [useTheme.ts](frontend/src/hooks/useTheme.ts.md) | Theme management (light/dark mode) hook. |
+
+??? info "types/"
+
+    | Module | Description |
+    |--------|-------------|
+    | [api.ts](frontend/src/types/api.ts.md) | API request and response type definitions. |
+    | [auth.ts](frontend/src/types/auth.ts.md) | Authentication-related type definitions. |
+    | [upload.ts](frontend/src/types/upload.ts.md) | File upload and management type definitions. |
+    | [ui.ts](frontend/src/types/ui.ts.md) | UI component and state type definitions. |
+<!-- markdownlint-enable MD046 -->
+<!-- prettier-ignore-end -->
+
+### Frontend Technology Stack
+
+```mermaid
+graph TB
+    subgraph "Build & Development"
+        VITE[Vite 5+]
+        BIOME[Biome Linter]
+        TS[TypeScript 5+]
+    end
+    
+    subgraph "UI Framework"
+        REACT[React 18+]
+        ROUTER[React Router v7]
+        SUSPENSE[React Suspense]
+    end
+    
+    subgraph "Styling & Design"
+        TAILWIND[TailwindCSS v4]
+        SHADCN[shadcn/ui]
+        TOKENS[Design Tokens]
+    end
+    
+    subgraph "State Management"
+        ZUSTAND[Zustand]
+        TANSTACK[TanStack Query v5]
+        LOCALSTORAGE[localStorage]
+    end
+    
+    subgraph "Testing"
+        VITEST[Vitest]
+        RTL[React Testing Library]
+        PLAYWRIGHT[Playwright E2E]
+    end
+    
+    subgraph "Real-time"
+        WEBSOCKET[WebSocket API]
+        SSE[Server-Sent Events]
+    end
+
+    %% Build connections
+    VITE --> REACT
+    TS --> REACT
+    BIOME --> TS
+
+    %% UI Framework connections
+    REACT --> ROUTER
+    REACT --> SUSPENSE
+
+    %% Styling connections
+    TAILWIND --> SHADCN
+    SHADCN --> TOKENS
+
+    %% State Management connections
+    ZUSTAND --> TANSTACK
+    TANSTACK --> LOCALSTORAGE
+
+    %% Testing connections
+    VITEST --> RTL
+    RTL --> PLAYWRIGHT
+
+    %% Real-time connections
+    WEBSOCKET --> SSE
+
+    classDef build fill:#fff2cc,stroke:#333,stroke-width:2px
+    classDef ui fill:#d5e8d4,stroke:#333,stroke-width:2px
+    classDef style fill:#dae8fc,stroke:#333,stroke-width:2px
+    classDef state fill:#f8cecc,stroke:#333,stroke-width:2px
+    classDef test fill:#e1d5e7,stroke:#333,stroke-width:2px
+    classDef realtime fill:#ffd6cc,stroke:#333,stroke-width:2px
+
+    class VITE,BIOME,TS build
+    class REACT,ROUTER,SUSPENSE ui
+    class TAILWIND,SHADCN,TOKENS style
+    class ZUSTAND,TANSTACK,LOCALSTORAGE state
+    class VITEST,RTL,PLAYWRIGHT test
+    class WEBSOCKET,SSE realtime
+```
+
+---
+
+## Frontend Details
+
+### Architecture Overview
+
+The ReViewPoint frontend is a **modern React SPA** built with cutting-edge 2025 technologies, featuring:
+
+- **Framework**: React 18+ with TypeScript 5+ for type safety
+- **Build Tool**: Vite 5+ with hot module replacement and fast builds
+- **Styling**: TailwindCSS v4 + shadcn/ui components for consistent design
+- **State Management**: Zustand + TanStack Query v5 for efficient state handling
+- **Routing**: React Router v7 with code splitting and protected routes
+- **Testing**: Vitest + React Testing Library + Playwright (672+ tests, 99.7% passing)
+- **Development**: Biome (ESLint + Prettier replacement) for code quality
+
+### Core Components
+
+- **Entry Points**: `App.tsx` (main app), `main.tsx` (React DOM entry)
+- **Routing System**: Protected routes, layout management, type-safe navigation
+- **Design System**: 24+ UI components with full accessibility (WCAG 2.1 AA)
+- **State Stores**: Authentication, UI state, upload management
+- **API Integration**: 1:1 backend mapping with comprehensive error handling
+- **Real-time Features**: WebSocket integration for live updates
+- **Performance**: Code splitting, lazy loading, virtualization for large datasets
+
+### Key Features
+
+- ✅ **Authentication Flow**: Login, register, logout, token refresh
+- ✅ **File Management**: Upload with drag-and-drop, progress tracking, preview
+- ✅ **Responsive Design**: Mobile-first with consistent breakpoints
+- ✅ **Accessibility**: Complete WCAG 2.1 AA compliance
+- ✅ **Theme System**: Dark/light modes with system preference detection
+- ✅ **Error Handling**: Comprehensive error boundaries and user feedback
+- ✅ **Type Safety**: Full TypeScript coverage with zero type errors
+
+### Development Experience
+
+- **Hot Reload**: Instant feedback with Vite's HMR
+- **Code Quality**: Biome for linting and formatting
+- **Path Aliases**: Clean imports with `@/` prefix
+- **Environment Management**: Multiple configs (dev/staging/prod/test)
+- **Bundle Analysis**: Rollup visualizer for optimization
+- **Performance Monitoring**: Web Vitals tracking
+
+
+### Frontend Data Flow
+
+```mermaid
+graph TD
+    subgraph "Frontend Layer"
+        UPLOAD[File Upload UI]
+        DASHBOARD[Dashboard]
+        RESULTS[Results Display]
+        AUTH[Authentication]
+    end
+    
+    subgraph "Backend API"
+        API[FastAPI Router]
+        SERVICES[Service Layer]
+        REPOS[Repository Layer]
+    end
+    
+    subgraph "External Services"
+        MODS[Analysis Modules]
+        LLM[LLM Adapter]
+    end
+    
+    subgraph "Data Storage"
+        DB[(PostgreSQL)]
+        STORAGE[(MinIO/S3)]
+    end
+
+    %% Frontend to Backend
+    UPLOAD -->|HTTP POST| API
+    AUTH -->|JWT Tokens| API
+    
+    %% Backend Internal Flow
+    API --> SERVICES
+    SERVICES --> REPOS
+    REPOS --> DB
+    API --> STORAGE
+    
+    %% External Service Integration
+    API -->|Dispatch| MODS
+    MODS -->|Results| API
+    API -->|Prompt| LLM
+    LLM -->|Summary| API
+    
+    %% Backend to Frontend
+    API -->|JSON Response| DASHBOARD
+    API -->|WebSocket| RESULTS
+
+    classDef frontend fill:#d5e8d4,stroke:#333,stroke-width:2px
+    classDef backend fill:#f8cecc,stroke:#333,stroke-width:2px
+    classDef external fill:#dae8fc,stroke:#333,stroke-width:2px
+    classDef storage fill:#e1d5e7,stroke:#333,stroke-width:2px
+
+    class UPLOAD,DASHBOARD,RESULTS,AUTH frontend
+    class API,SERVICES,REPOS backend
+    class MODS,LLM external
+    class DB,STORAGE storage
+```
+---
+
+### Sequence: Complete User Journey with Frontend
+
+```mermaid
+sequenceDiagram
+
+    participant USER as User
+    participant FE as Frontend (React)
+    participant STORE as Zustand Store
+    participant API as FastAPI Backend
+    participant MOD as Module Service(s)
+    participant LLM as LLM Adapter
+    participant DB as Database
+    participant STORAGE as MinIO/S3
+    participant WS as WebSocket
+
+    USER->>FE: Login to application
+    FE->>API: POST /auth/login
+    API->>DB: Verify credentials
+    API-->>FE: JWT tokens
+    FE->>STORE: Save auth state
+
+    USER->>FE: Upload PDF file
+    FE->>STORE: Update upload progress
+    FE->>API: POST /uploads with file
+    API->>STORAGE: Store PDF file
+    API->>DB: Save file metadata
+    API-->>FE: Upload confirmation
+
+    FE->>WS: Connect to real-time updates
+    API->>MOD: Dispatch analysis request(s)
+    API->>WS: Notify analysis started
+    WS-->>FE: Real-time status update
+    FE->>STORE: Update analysis status
+
+    MOD-->>API: Module results
+    API->>LLM: Generate summary/feedback
+    LLM-->>API: LLM response
+    API->>DB: Store complete results
+    API->>WS: Notify analysis complete
+    WS-->>FE: Final results notification
+    FE->>STORE: Update with final results
+    FE-->>USER: Display results dashboard
+```
+
+### Data Flow Summary
+
+| Step | Component | Description |
+| ---- | --------- | ----------- |
+| 1 | Frontend | User authenticates and uploads PDF via React UI |
+| 2 | Zustand Store | Frontend state updates with upload progress |
+| 3 | FastAPI Backend | Receives file, stores in MinIO/S3, saves metadata |
+| 4 | Module Services | Backend dispatches analysis modules in parallel |
+| 5 | WebSocket | Real-time status updates sent to frontend |
+| 6 | LLM Adapter | Backend aggregates results and generates summary |
+| 7 | Database | Complete analysis results stored in PostgreSQL |
+| 8 | Frontend | Results displayed in dashboard with real-time updates |
+
+### Backend Data Flow Details
+
+| Component | Layer | Responsibility | Data Processing |
+|-----------|-------|---------------|-----------------|
+| **FastAPI Router** | API Layer | Route requests to appropriate handlers | HTTP request validation, JWT authentication |
+| **API Dependencies** | Middleware | Inject database sessions and auth context | Session management, user context extraction |
+| **Pydantic Schemas** | Validation | Request/response data validation | Type checking, field validation, serialization |
+| **Service Layer** | Business Logic | Orchestrate business operations | File processing, user management, analysis coordination |
+| **Repository Layer** | Data Access | Database CRUD operations | Query execution, transaction management, caching |
+| **SQLAlchemy Models** | ORM | Database entity mapping | Row-to-object mapping, relationship handling |
+| **Alembic Migrations** | Schema Management | Database schema evolution | Version control for database changes |
+| **Middleware Stack** | Cross-cutting | Logging, error handling, CORS | Request/response processing, monitoring |
+
+### Key Backend Data Patterns
+
+- **Request Flow**: HTTP → Router → Dependencies → Service → Repository → Database
+- **Response Flow**: Database → Repository → Service → Schema → Router → HTTP
+- **Error Handling**: Exceptions bubble up through layers with proper HTTP status codes
+- **Transaction Management**: Repository layer handles database transactions and rollbacks
+- **Caching Strategy**: Repository layer implements async in-memory caching with TTL
+- **Real-time Updates**: WebSocket connections managed at API layer with event broadcasting
 
 ---
 
@@ -826,7 +1388,7 @@ The ReViewPoint project has comprehensive documentation coverage for all source 
 - ✅ Additional documentation for project structure and guidelines
 - ✅ Comprehensive API reference and architectural overviews
 - ✅ Template files and development guides
-- 📋 Architecture diagram includes both current and planned frontend structure
+- 📋 Architecture diagram includes frontend structure
 
 ---
 
