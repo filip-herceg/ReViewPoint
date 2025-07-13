@@ -54,7 +54,12 @@ export const uploadsApi = {
 		}
 
 		logger.info("Root test successful");
-		return response.data!;
+
+		if (!response.data) {
+			throw new Error("No data received from test endpoint");
+		}
+
+		return response.data;
 	},
 
 	testAlive: async (): Promise<{ status: string }> => {
@@ -67,7 +72,12 @@ export const uploadsApi = {
 		}
 
 		logger.info("Test alive successful");
-		return response.data!;
+
+		if (!response.data) {
+			throw new Error("No data received from test-alive endpoint");
+		}
+
+		return response.data;
 	},
 
 	exportAlive: async (): Promise<{ status: string }> => {
@@ -80,7 +90,12 @@ export const uploadsApi = {
 		}
 
 		logger.info("Export alive test successful");
-		return response.data!;
+
+		if (!response.data) {
+			throw new Error("No data received from export-alive endpoint");
+		}
+
+		return response.data;
 	},
 
 	exportTest: async (): Promise<{ status: string }> => {
@@ -93,14 +108,19 @@ export const uploadsApi = {
 		}
 
 		logger.info("Export test successful");
-		return response.data!;
+
+		if (!response.data) {
+			throw new Error("No data received from export-test endpoint");
+		}
+
+		return response.data;
 	},
 
 	// Export files as CSV
 	exportFiles: async (params?: FileExportParams): Promise<Blob> => {
 		logger.info("Exporting files as CSV", { params });
 		const queryParams = params
-			? new URLSearchParams(params as any).toString()
+			? new URLSearchParams(params as Record<string, string>).toString()
 			: "";
 		const url = queryParams
 			? `/uploads/export?${queryParams}`
@@ -116,7 +136,12 @@ export const uploadsApi = {
 		}
 
 		logger.info("Files CSV exported successfully");
-		return response.data!;
+
+		if (!response.data) {
+			throw new Error("No blob data received from export endpoint");
+		}
+
+		return response.data;
 	},
 
 	// Upload a file
@@ -144,14 +169,19 @@ export const uploadsApi = {
 		logger.info("File uploaded successfully", {
 			filename: response.data?.filename,
 		});
-		return response.data!;
+
+		if (!response.data) {
+			throw new Error("No upload response data received");
+		}
+
+		return response.data;
 	},
 
 	// List uploaded files
 	listFiles: async (params?: FileListParams): Promise<FileListResponse> => {
 		logger.info("Listing files", { params });
 		const queryParams = params
-			? new URLSearchParams(params as any).toString()
+			? new URLSearchParams(params as Record<string, string>).toString()
 			: "";
 		const url = queryParams ? `/uploads?${queryParams}` : "/uploads";
 
@@ -163,7 +193,12 @@ export const uploadsApi = {
 		}
 
 		logger.info("Files listed successfully", { total: response.data?.total });
-		return response.data!;
+
+		if (!response.data) {
+			throw new Error("No file list data received");
+		}
+
+		return response.data;
 	},
 
 	// Get file by filename
@@ -177,7 +212,12 @@ export const uploadsApi = {
 		}
 
 		logger.info("File retrieved successfully", { filename });
-		return response.data!;
+
+		if (!response.data) {
+			throw new Error("No file data received");
+		}
+
+		return response.data;
 	},
 
 	// Delete file by filename

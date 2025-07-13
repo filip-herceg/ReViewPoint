@@ -20,7 +20,9 @@ vi.mock("@tanstack/react-query", () => ({
 		getQueryData: vi.fn(),
 		setQueryData: vi.fn(),
 	})),
-	QueryClientProvider: ({ children }: any) => <div>{children}</div>,
+	QueryClientProvider: ({ children }: { children: React.ReactNode }) => (
+		<div>{children}</div>
+	),
 }));
 
 const mockLoggerInfo = vi.fn();

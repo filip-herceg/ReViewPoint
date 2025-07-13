@@ -16,7 +16,7 @@ export function getErrorMessage(error: unknown): string {
 	// Handle plain objects with error info
 	if (typeof error === "object" && !Array.isArray(error)) {
 		// Check for common error properties
-		const errorObj = error as Record<string, any>;
+		const errorObj = error as Record<string, unknown>;
 
 		// Look for error message in common properties
 		if (errorObj.message && typeof errorObj.message === "string") {
@@ -29,11 +29,9 @@ export function getErrorMessage(error: unknown): string {
 			}
 			// Handle nested error objects
 			if (typeof errorObj.error === "object" && errorObj.error !== null) {
-				if (
-					errorObj.error.message &&
-					typeof errorObj.error.message === "string"
-				) {
-					return errorObj.error.message;
+				const nestedError = errorObj.error as Record<string, unknown>;
+				if (nestedError.message && typeof nestedError.message === "string") {
+					return nestedError.message;
 				}
 			}
 		}

@@ -336,9 +336,17 @@ class PerformanceMonitoringService {
 	 */
 	private reportMetricToAnalytics(metric: PerformanceMetric): void {
 		// This could be sent to Google Analytics, Plausible, or other services
-		if (typeof window !== "undefined" && (window as any).plausible) {
+		interface PlausibleWindow {
+			plausible?: (
+				event: string,
+				options: { props: Record<string, unknown> },
+			) => void;
+		}
+
+		const windowWithPlausible = window as unknown as PlausibleWindow;
+		if (typeof window !== "undefined" && windowWithPlausible.plausible) {
 			try {
-				(window as any).plausible("Performance Metric", {
+				windowWithPlausible.plausible("Performance Metric", {
 					props: {
 						metric_name: metric.name,
 						metric_value: metric.value,

@@ -1,9 +1,9 @@
 import js from "@eslint/js";
 import typescript from "@typescript-eslint/eslint-plugin";
 import typescriptParser from "@typescript-eslint/parser";
-import reactHooks from "eslint-plugin-react-hooks";
 import jsxA11y from "eslint-plugin-jsx-a11y";
 import react from "eslint-plugin-react";
+import reactHooks from "eslint-plugin-react-hooks";
 import noRawButton from "./scripts/eslint-rules/no-raw-button.js";
 
 export default [
@@ -54,7 +54,7 @@ export default [
 				btoa: "readonly",
 				atob: "readonly",
 				performance: "readonly",
-				
+
 				// HTML Element types
 				HTMLElement: "readonly",
 				HTMLDivElement: "readonly",
@@ -72,7 +72,7 @@ export default [
 				HTMLAudioElement: "readonly",
 				SVGElement: "readonly",
 				SVGSVGElement: "readonly",
-				
+
 				// Event types
 				Event: "readonly",
 				MouseEvent: "readonly",
@@ -82,12 +82,12 @@ export default [
 				ChangeEvent: "readonly",
 				FormEvent: "readonly",
 				DragEvent: "readonly",
-				
+
 				// Other browser types
 				NodeJS: "readonly",
 				React: "readonly",
 				Console: "readonly",
-				
+
 				// Node.js globals (for build scripts)
 				__dirname: "readonly",
 				__filename: "readonly",
@@ -114,11 +114,14 @@ export default [
 			"custom/no-raw-button": "error",
 			// Additional rules
 			"no-unused-vars": "off",
-			"@typescript-eslint/no-unused-vars": ["error", { 
-				argsIgnorePattern: "^_", 
-				varsIgnorePattern: "^_",
-				destructuredArrayIgnorePattern: "^_"
-			}],
+			"@typescript-eslint/no-unused-vars": [
+				"error",
+				{
+					argsIgnorePattern: "^_",
+					varsIgnorePattern: "^_",
+					destructuredArrayIgnorePattern: "^_",
+				},
+			],
 			"@typescript-eslint/no-explicit-any": "warn",
 			"@typescript-eslint/explicit-function-return-type": "off",
 			"@typescript-eslint/explicit-module-boundary-types": "off",
@@ -137,7 +140,12 @@ export default [
 	},
 	// Test files configuration
 	{
-		files: ["**/*.test.{js,jsx,ts,tsx}", "**/*.spec.{js,jsx,ts,tsx}", "**/tests/**/*.{js,jsx,ts,tsx}", "**/e2e/**/*.{js,jsx,ts,tsx}"],
+		files: [
+			"**/*.test.{js,jsx,ts,tsx}",
+			"**/*.spec.{js,jsx,ts,tsx}",
+			"**/tests/**/*.{js,jsx,ts,tsx}",
+			"**/e2e/**/*.{js,jsx,ts,tsx}",
+		],
 		languageOptions: {
 			globals: {
 				// Vitest globals
@@ -161,9 +169,12 @@ export default [
 			"@typescript-eslint/no-unused-vars": "off", // More lenient in tests
 		},
 	},
-	// Mock files configuration  
+	// Mock files configuration
 	{
-		files: ["**/__mocks__/**/*.{js,jsx,ts,tsx}", "**/mocks/**/*.{js,jsx,ts,tsx}"],
+		files: [
+			"**/__mocks__/**/*.{js,jsx,ts,tsx}",
+			"**/mocks/**/*.{js,jsx,ts,tsx}",
+		],
 		languageOptions: {
 			globals: {
 				jest: "readonly",
@@ -176,13 +187,24 @@ export default [
 	},
 	// Build and config files
 	{
-		files: ["**/*.config.{js,ts}", "**/*.setup.{js,ts}", "**/scripts/**/*.{js,ts}"],
+		files: [
+			"**/*.config.{js,ts}",
+			"**/*.setup.{js,ts}",
+			"**/scripts/**/*.{js,ts}",
+		],
 		rules: {
 			"@typescript-eslint/no-require-imports": "off",
 			"no-undef": "off", // These files may use Node.js requires
 		},
 	},
 	{
-		ignores: ["dist/**", "node_modules/**", ".eslintrc.cjs", "vite.config.ts", "build/**", "coverage/**"],
+		ignores: [
+			"dist/**",
+			"node_modules/**",
+			".eslintrc.cjs",
+			"vite.config.ts",
+			"build/**",
+			"coverage/**",
+		],
 	},
 ];

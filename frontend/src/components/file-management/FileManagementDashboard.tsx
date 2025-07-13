@@ -646,16 +646,10 @@ export const FileManagementDashboard: React.FC<
 							This action cannot be undone.
 						</p>
 						<div className="flex gap-3 justify-end">
-							<Button
-								variant="outline"
-								onClick={handleCancelDelete}
-							>
+							<Button variant="outline" onClick={handleCancelDelete}>
 								Cancel
 							</Button>
-							<Button
-								variant="destructive"
-								onClick={handleConfirmDelete}
-							>
+							<Button variant="destructive" onClick={handleConfirmDelete}>
 								Confirm
 							</Button>
 						</div>

@@ -50,7 +50,9 @@ describe("WebSocketStatus", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		(useWebSocketConnection as any).mockReturnValue(mockConnectionData);
+		(useWebSocketConnection as ReturnType<typeof vi.fn>).mockReturnValue(
+			mockConnectionData,
+		);
 	});
 
 	describe("connection states", () => {

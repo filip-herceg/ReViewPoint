@@ -13,8 +13,11 @@ function getLogLevel(): LogLevel {
 	if (typeof window !== "undefined" && window.LOG_LEVEL) {
 		return window.LOG_LEVEL as LogLevel;
 	}
-	if (typeof globalThis !== "undefined" && (globalThis as any).LOG_LEVEL) {
-		return (globalThis as any).LOG_LEVEL;
+	if (
+		typeof globalThis !== "undefined" &&
+		(globalThis as Record<string, unknown>).LOG_LEVEL
+	) {
+		return (globalThis as Record<string, unknown>).LOG_LEVEL as LogLevel;
 	}
 	// Check for environment variable (works in both Node.js and Vite)
 	if (typeof process !== "undefined" && process.env?.LOG_LEVEL) {
@@ -59,7 +62,7 @@ const logger = {
 		if (shouldLog("info"))
 			console.info("[INFO]", ...args.map(normalizeErrorArg));
 	},
-	debug: (...args: any[]) => {
+	debug: (...args: unknown[]) => {
 		if (shouldLog("debug"))
 			console.debug("[DEBUG]", ...args.map(normalizeErrorArg));
 	},

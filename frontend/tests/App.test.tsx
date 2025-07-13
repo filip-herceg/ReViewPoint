@@ -23,8 +23,8 @@ describe("App", () => {
 
 		// Mock console.error to capture the actual error
 		const originalError = console.error;
-		const errors: any[] = [];
-		console.error = (...args: any[]) => {
+		const errors: unknown[] = [];
+		console.error = (...args: unknown[]) => {
 			errors.push(args);
 			originalError(...args);
 		};
@@ -51,8 +51,8 @@ describe("App", () => {
 	it("renders main UI when no error", () => {
 		// Mock console.error to capture any errors
 		const originalError = console.error;
-		const errors: any[] = [];
-		console.error = (...args: any[]) => {
+		const errors: unknown[] = [];
+		console.error = (...args: unknown[]) => {
 			errors.push(args);
 			originalError(...args);
 		};

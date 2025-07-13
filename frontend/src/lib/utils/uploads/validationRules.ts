@@ -114,8 +114,9 @@ const MALICIOUS_PATTERNS = {
  */
 const DEFAULT_VALIDATION_CONFIG: ValidationConfig = {
 	basic: {
-		maxSize: DEFAULT_UPLOAD_CONFIG.maxSize!,
-		allowedTypes: DEFAULT_UPLOAD_CONFIG.accept!,
+		maxSize: DEFAULT_UPLOAD_CONFIG.maxSize ?? 10 * 1024 * 1024, // 10MB fallback
+		allowedTypes:
+			DEFAULT_UPLOAD_CONFIG.accept ?? Object.values(SUPPORTED_FILE_TYPES),
 		allowedExtensions: Object.keys(SUPPORTED_FILE_TYPES).map((k) =>
 			k.toLowerCase(),
 		),

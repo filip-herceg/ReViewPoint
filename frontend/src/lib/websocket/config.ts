@@ -169,7 +169,7 @@ export type WebSocketIncomingMessage = z.infer<
 export interface WebSocketError {
 	code: string;
 	message: string;
-	details?: any;
+	details?: unknown;
 	timestamp: Date;
 	retryable: boolean;
 }

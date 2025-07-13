@@ -3,6 +3,7 @@ import type {
 	UploadQueueItem,
 	UploadStatus,
 } from "@/lib/api/types/upload";
+import { UploadErrorType } from "@/lib/api/types/upload";
 import logger from "@/logger";
 
 /**
@@ -172,7 +173,7 @@ export class UploadQueue {
 
 		if (error && item) {
 			updates.error = {
-				type: "UPLOAD_FAILED" as any, // Using any temporarily since UploadErrorType may not have this value
+				type: UploadErrorType.UPLOAD_FAILED,
 				message: error.message,
 				filename: item.file.name,
 				details: {

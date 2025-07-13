@@ -283,9 +283,9 @@ describe("upload.queries", () => {
 					data: { status: "completed", progress: 100 },
 				});
 				expect.fail("Should have thrown an error");
-			} catch (error: any) {
+			} catch (error: unknown) {
 				testLogger.debug("updateUpload mutation error", error);
-				expect(error.message).toBe(
+				expect((error as Error).message).toBe(
 					"File updates are not supported. Please delete and re-upload the file.",
 				);
 			}

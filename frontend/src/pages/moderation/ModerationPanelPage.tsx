@@ -85,7 +85,10 @@ function getStatusBadge(status: string) {
 		config[status as keyof typeof config] || config.pending;
 
 	return (
-		<Badge variant={variant as any} className="flex items-center gap-1">
+		<Badge
+			variant={variant as "default" | "secondary" | "destructive" | "outline"}
+			className="flex items-center gap-1"
+		>
 			<Icon className="h-3 w-3" />
 			{status.replace("_", " ")}
 		</Badge>

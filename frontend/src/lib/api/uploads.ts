@@ -376,7 +376,12 @@ export const uploadsApi = {
 			total: response.data?.total,
 			count: response.data?.files.length,
 		});
-		return response.data!;
+
+		if (!response.data) {
+			throw new Error("No data received from server");
+		}
+
+		return response.data;
 	},
 
 	// Delete file by filename
@@ -441,13 +446,18 @@ export const uploadsApi = {
 			id: response.data?.id,
 			filename: file.name,
 		});
-		return response.data!;
+
+		if (!response.data) {
+			throw new Error("No upload data received from server");
+		}
+
+		return response.data;
 	},
 
 	// Patch an existing file (v2)
 	patchFile: async (
 		id: string,
-		updates: Record<string, any>,
+		updates: Record<string, unknown>,
 	): Promise<void> => {
 		logger.info("Patching file", { id, updates });
 		const response = await request<void>(`${API_BASE_URL}/${id}`, {

@@ -61,12 +61,7 @@ const FileItem = ({
 }: FileItemProps) => (
 	<div className="flex items-center gap-2 border rounded p-2">
 		<span>{file.name}</span>
-		<Button 
-			type="button" 
-			onClick={onRemove}
-			variant="destructive"
-			size="sm"
-		>
+		<Button type="button" onClick={onRemove} variant="destructive" size="sm">
 			Remove
 		</Button>
 	</div>

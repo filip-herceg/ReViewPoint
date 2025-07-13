@@ -171,8 +171,7 @@ const ReviewDetailPage: React.FC = () => {
 	const [typeFilter, setTypeFilter] = useState<"all" | string>("all");
 
 	// Get marketplace data for available modules
-	const { userSubscriptions, getUserSubscription } =
-		useMarketplace();
+	const { userSubscriptions, getUserSubscription } = useMarketplace();
 
 	// TODO: Replace with actual data from API
 	const review = {

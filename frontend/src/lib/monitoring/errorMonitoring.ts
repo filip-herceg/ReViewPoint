@@ -255,7 +255,7 @@ class ErrorMonitoringService {
 	/**
 	 * Check if error is related to source maps
 	 */
-	private isSourceMapError(error: any): boolean {
+	private isSourceMapError(error: unknown): boolean {
 		if (!error) return false;
 
 		const errorString = typeof error === "string" ? error : error.toString();

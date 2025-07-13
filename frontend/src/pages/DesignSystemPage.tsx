@@ -109,7 +109,12 @@ export default function DesignSystemPage() {
 		});
 	};
 
-	const _handleFormSubmit = (data: any) => {
+	const _handleFormSubmit = (data: {
+		name: string;
+		email: string;
+		type: string;
+		description: string;
+	}) => {
 		logger.info("Demo form submitted", data);
 		setFormData(data);
 		addNotification({

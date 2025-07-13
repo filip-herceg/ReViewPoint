@@ -132,7 +132,9 @@ export function randomStatus<T extends readonly string[]>(
 	} else {
 		testLogger.debug("Picked random status:", status);
 	}
-	return status as any;
+	return status as T extends undefined
+		? "pending" | "completed" | "failed"
+		: T[number];
 }
 
 // Utility: Generate a random ISO date string

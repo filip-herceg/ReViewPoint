@@ -76,7 +76,7 @@ export type FileManagementErrorType =
 export interface FileManagementError {
 	message: string;
 	type: FileManagementErrorType;
-	details?: any;
+	details?: unknown;
 }
 
 // File Management Store State
@@ -256,12 +256,16 @@ export const useFileManagementStore = create<FileManagementState>(
 
 				const getErrorType = (err: unknown): FileManagementErrorType => {
 					if (typeof err === "object" && err !== null) {
-						const errorObj = err as Record<string, any>;
-						const status = errorObj.response?.status;
+						const errorObj = err as Record<string, unknown>;
+						const response = errorObj.response as
+							| { status?: number }
+							| undefined;
+						const status = response?.status;
 						if (status === 404) return "not_found";
 						if (status === 401) return "unauthorized";
 						if (status === 403) return "forbidden";
-						if (errorObj.message?.includes?.("network")) return "network_error";
+						const message = errorObj.message as string | undefined;
+						if (message?.includes?.("network")) return "network_error";
 					}
 					return "server_error";
 				};

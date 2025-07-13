@@ -25,7 +25,9 @@ const LoginPage: React.FC = () => {
 	const [showPassword, setShowPassword] = useState(false);
 
 	// Get the intended destination from location state
-	const from = (location.state as any)?.from?.pathname || "/dashboard";
+	const from =
+		(location.state as { from?: { pathname: string } } | null)?.from
+			?.pathname || "/dashboard";
 
 	const {
 		register,

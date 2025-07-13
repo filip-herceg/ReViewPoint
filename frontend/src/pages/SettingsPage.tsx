@@ -22,7 +22,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { useAuthStore as _useAuthStore } from "@/lib/store/authStore";
 
 const SettingsPage: React.FC = () => {
 	const location = useLocation();
@@ -82,7 +81,7 @@ const SettingsPage: React.FC = () => {
 		}));
 	};
 
-	const updatePrivacySetting = (key: string, value: any) => {
+	const updatePrivacySetting = (key: string, value: string | boolean) => {
 		setSettings((prev) => ({
 			...prev,
 			privacy: {
@@ -92,7 +91,7 @@ const SettingsPage: React.FC = () => {
 		}));
 	};
 
-	const updateAppearanceSetting = (key: string, value: any) => {
+	const updateAppearanceSetting = (key: string, value: string) => {
 		setSettings((prev) => ({
 			...prev,
 			appearance: {
@@ -102,7 +101,7 @@ const SettingsPage: React.FC = () => {
 		}));
 	};
 
-	const updateSecuritySetting = (key: string, value: any) => {
+	const updateSecuritySetting = (key: string, value: boolean | string) => {
 		setSettings((prev) => ({
 			...prev,
 			security: {
