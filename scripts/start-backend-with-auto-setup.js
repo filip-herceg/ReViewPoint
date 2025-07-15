@@ -59,7 +59,7 @@ async function startBackendWithAutoSetup() {
         }
 
         // Start backend
-        const backend = spawn('python', ['-m', 'uvicorn', 'src.main:app', '--reload', '--host', '0.0.0.0', '--port', '8000'], {
+        const backend = spawn('python', ['-m', 'uvicorn', 'src.main:app', '--reload', '--host', 'localhost', '--port', '8000'], {
             cwd: join(rootDir, 'backend'),
             env: backendEnv,
             stdio: 'inherit'
