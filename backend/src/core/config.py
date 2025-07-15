@@ -281,6 +281,9 @@ class Settings(BaseSettings):
         if isinstance(v, int):
             return v
         if isinstance(v, str):
+            # Handle empty strings as None
+            if v.strip() == "":
+                return None
             try:
                 return int(v)
             except ValueError as err:
