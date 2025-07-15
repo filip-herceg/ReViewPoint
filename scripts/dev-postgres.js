@@ -39,8 +39,31 @@ async function main() {
             REVIEWPOINT_FEATURE_HEALTH_READ: 'true'
         };
 
+        // Run database migrations first
+        logger.info('Running database migrations...');
+        const migration = spawn('hatch', ['run', 'python', '-m', 'alembic', 'upgrade', 'head'], {
+            cwd: join(rootDir, 'backend'),
+            env: postgresEnv,
+            stdio: 'inherit'
+        });
+
+        await new Promise((resolve, reject) => {
+            migration.on('close', (code) => {
+                if (code === 0) {
+                    logger.success('Database migrations completed successfully!');
+                    resolve();
+                } else {
+                    reject(new Error(`Migrations failed with exit code ${code}`));
+                }
+            });
+
+            migration.on('error', (error) => {
+                reject(new Error(`Migration process error: ${error.message}`));
+            });
+        });
+
         // Start backend with PostgreSQL environment
-        const backend = spawn('python', ['-m', 'uvicorn', 'src.main:app', '--reload', '--host', 'localhost', '--port', '8000'], {
+        const backend = spawn('hatch', ['run', 'python', '-m', 'uvicorn', 'src.main:app', '--reload', '--host', 'localhost', '--port', '8000'], {
             cwd: join(rootDir, 'backend'),
             env: postgresEnv,
             shell: true

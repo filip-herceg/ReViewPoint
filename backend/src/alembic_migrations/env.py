@@ -13,8 +13,6 @@ from alembic.config import Config
 from sqlalchemy import engine_from_config
 from sqlalchemy.engine import Engine
 
-from src.models.base import Base
-
 LOGGER_NAME: Final[str] = "alembic.env"
 LOG_LEVEL: Final[int] = logging.INFO
 
@@ -25,7 +23,10 @@ logger.propagate = True
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 # Add this to ensure Alembic sees all models for autogenerate
 
-target_metadata: Final[sqlalchemy.MetaData] = Base.metadata
+# For initial migrations, disable model imports to prevent table conflicts
+# Once migrations are applied, you can re-enable this for autogenerate functionality
+target_metadata: sqlalchemy.MetaData | None = None
+print("[ALEMBIC DEBUG] Using target_metadata = None to avoid table conflicts")
 
 
 # Alembic Config object - accessed lazily to avoid issues in test environments
@@ -40,15 +41,22 @@ def get_config() -> Config:
 def get_url() -> str | None:
     """Get database URL, converting from async to sync format if needed."""
     url: str | None = os.getenv("REVIEWPOINT_DB_URL")
+    print(f"[ALEMBIC DEBUG] Environment variable REVIEWPOINT_DB_URL: {url}")
     if url:
+        original_url = url
         # Convert async URL to sync for Alembic
         url = url.replace("postgresql+asyncpg://", "postgresql://")
+        print(f"[ALEMBIC DEBUG] Original URL: {original_url}")
+        print(f"[ALEMBIC DEBUG] Converted URL: {url}")
+        print(f"[ALEMBIC DEBUG] Running with environment variable: {original_url}")
         logger.info(f"Using database URL from environment: {url}")
         return url
 
     # Fall back to alembic.ini
     config = get_config()
     url = config.get_main_option("sqlalchemy.url")
+    print(f"[ALEMBIC DEBUG] Fallback URL from alembic.ini: {url}")
+    print(f"[ALEMBIC DEBUG] No environment variable found, using alembic.ini")
     logger.info(f"Using database URL from alembic.ini: {url}")
     return url
 

@@ -69,7 +69,7 @@ async function runBackendTestsWithAutoSetup(testArgs = []) {
 
         // Run tests
         const testCommand = testArgs.length > 0 ? testArgs : ['-m', 'pytest', '-v'];
-        const tests = spawn('python', testCommand, {
+        const tests = spawn('hatch', ['run', 'python', ...testCommand], {
             cwd: join(rootDir, 'backend'),
             env: testEnv,
             stdio: 'inherit'
