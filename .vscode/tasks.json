@@ -304,9 +304,9 @@
         {
             "label": "ReViewPoint: Lint Backend",
             "type": "shell",
-            "command": "python",
+            "command": "hatch",
             "args": [
-                "-m",
+                "run",
                 "ruff",
                 "check",
                 ".",
@@ -330,9 +330,9 @@
         {
             "label": "ReViewPoint: Format Backend",
             "type": "shell",
-            "command": "python",
+            "command": "hatch",
             "args": [
-                "-m",
+                "run",
                 "ruff",
                 "format",
                 "."
@@ -471,8 +471,10 @@
         {
             "label": "ReViewPoint: Export Backend Schema",
             "type": "shell",
-            "command": "python",
+            "command": "hatch",
             "args": [
+                "run",
+                "python",
                 "scripts/export-backend-schema.py"
             ],
             "options": {
@@ -675,7 +677,7 @@
                 "--prefix-colors",
                 "yellow,blue,green",
                 "pnpm install",
-                "cd backend && pip install -e .",
+                "cd backend && hatch env create",
                 "cd frontend && pnpm install"
             ],
             "options": {
@@ -691,7 +693,7 @@
                 "clear": true
             },
             "problemMatcher": [],
-            "detail": "Install all dependencies for the entire project"
+            "detail": "Install all dependencies for the entire project using proper environment managers (pnpm + hatch)"
         },
         {
             "label": "ReViewPoint: Clean All",
@@ -733,7 +735,7 @@
                 "--prefix-colors",
                 "green,blue",
                 "\"cd frontend && pnpm audit\"",
-                "\"cd backend && pip-audit\""
+                "\"cd backend && hatch run pip-audit\""
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
