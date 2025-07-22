@@ -1,59 +1,59 @@
-# MkDocs-Dokumentationsarchitektur: Analyse und Neustrukturierungsplan
+# MkDocs Documentation Architecture: Analysis and Restructuring Plan
 
-**Projekt:** ReViewPoint  
-**Datum:** 22. Juli 2025  
-**Zweck:** Detaillierte Analyse der bestehenden MkDocs-Dokumentation und Planung einer optimierten Architektur
+**Project:** ReViewPoint  
+**Date:** July 22, 2025  
+**Purpose:** Detailed analysis of the existing MkDocs documentation and planning of an optimized architecture
 
 ---
 
-## 1. Analyse der aktuellen Dokumentationsstruktur
+## 1. Analysis of the Current Documentation Structure
 
-### 1.1 Identifizierte Schwächen und Inkonsistenzen
+### 1.1 Identified Weaknesses and Inconsistencies
 
-#### **Navigation und Struktur**
+#### **Navigation and Structure**
 
-- **Unklare Hierarchie:** Die aktuelle Navigation vermischt verschiedene Abstraktionsebenen (Quickstart, Development, Backend, Modules, Frontend, Resources)
-- **Redundante Inhalte:** Mehrfache Verlinkung ähnlicher Inhalte (z.B. `api-reference.md` und `backend/api-reference.md`)
-- **Fehlende Vision/Mission-Sektion:** Keine dedizierte Seite für Projektvision und -ziele
-- **Unstrukturierte Homepage:** Die aktuelle `index.md` ist überladen und enthält zu viele Details für eine Übersichtsseite
+- **Unclear Hierarchy:** The current navigation mixes different levels of abstraction (Quickstart, Development, Backend, Modules, Frontend, Resources)
+- **Redundant Content:** Multiple links to similar content (e.g., `api-reference.md` and `backend/api-reference.md`)
+- **Missing Vision/Mission Section:** No dedicated page for project vision and goals
+- **Unstructured Homepage:** The current `index.md` is overloaded and contains too many details for an overview page
 
-#### **Developer-spezifische Probleme**
+#### **Developer-Specific Issues**
 
-- **Inkonsistente Backend-Dokumentation:** Jede Quellcodedatei hat eine entsprechende .md-Datei, aber diese sind tief in der Navigation versteckt
-- **Fehlende Frontend-Architektur:** Nur oberflächliche Frontend-Dokumentation vorhanden
-- **Unklare Installation:** Setup-Guide ist nicht optimal für absolute Neulinge strukturiert
+- **Inconsistent Backend Documentation:** Each source code file has a corresponding .md file, but these are deeply buried in the navigation
+- **Missing Frontend Architecture:** Only superficial frontend documentation exists
+- **Unclear Installation:** Setup guide is not optimally structured for absolute beginners
 
-#### **Inhaltliche Schwächen**
+#### **Content Weaknesses**
 
-- **Vermischung von Status und Zielen:** Aktueller Stand und zukünftige Pläne sind nicht klar getrennt
-- **Überladene Einzelseiten:** Viele Seiten enthalten zu viele verschiedene Informationen
-- **Fehlende User-Journey:** Keine klare Führung für verschiedene Nutzertypen
+- **Mixing of Status and Goals:** Current state and future plans are not clearly separated
+- **Overloaded Individual Pages:** Many pages contain too much diverse information
+- **Missing User Journey:** No clear guidance for different user types
 
-### 1.2 Aktuelle Ordnerstruktur (analysiert)
+### 1.2 Current Folder Structure (Analyzed)
 
 ```
 docs/
 ├── content/
-│   ├── index.md (Homepage - überladen)
-│   ├── setup.md (Installation - gut strukturiert)
-│   ├── architecture.md (System-Architektur)
-│   ├── backend-source-guide.md (Backend-Übersicht)
-│   ├── dev-guidelines.md (Entwicklungsrichtlinien)
+│   ├── index.md (Homepage - overloaded)
+│   ├── setup.md (Installation - well-structured)
+│   ├── architecture.md (System Architecture)
+│   ├── backend-source-guide.md (Backend Overview)
+│   ├── dev-guidelines.md (Development Guidelines)
 │   ├── backend/
 │   │   ├── api-reference.md
-│   │   ├── src/ (Detaillierte Quellcode-Dokumentation)
-│   │   │   ├── Alle .py.md Dateien für jede Quellcodedatei
+│   │   ├── src/ (Detailed Source Code Documentation)
+│   │   │   ├── All .py.md files for each source code file
 │   │   └── tests/
 │   ├── frontend/
 │   │   ├── overview.md
 │   │   ├── roadmap.md
-│   │   ├── src/ (Minimal dokumentiert)
+│   │   ├── src/ (Minimally documented)
 │   │   └── tests/
-│   └── [weitere Dateien...]
-└── mkdocs.yml (Konfiguration)
+│   └── [other files...]
+└── mkdocs.yml (Configuration)
 ```
 
-### 1.3 Backend Source-Code Struktur (vollständig erfasst)
+### 1.3 Backend Source Code Structure (Fully Captured)
 
 ```
 backend/src/
@@ -87,84 +87,84 @@ backend/src/
 │   ├── __init__.py, logging.py
 └── alembic_migrations/
     ├── __init__.py, alembic.ini, env.py, script.py.mako
-    └── versions/ (Migration-Dateien)
+    └── versions/ (Migration Files)
 ```
 
-### 1.4 Frontend Source-Code Struktur (vollständig erfasst)
+### 1.4 Frontend Source Code Structure (Fully Captured)
 
 ```
 frontend/src/
 ├── main.tsx, App.tsx, analytics.ts
 ├── lib/
-│   ├── api/ (API-Client-Layer)
+│   ├── api/ (API Client Layer)
 │   ├── store/ (Zustand State Management)
 │   ├── router/ (React Router Setup)
 │   ├── theme/ (Styling System)
-│   ├── config/ (Konfiguration)
-│   ├── auth/ (Authentifizierung)
-│   ├── utils/ (Hilfsfunktionen)
-│   ├── validation/ (Validierungslogik)
+│   ├── config/ (Configuration)
+│   ├── auth/ (Authentication)
+│   ├── utils/ (Helper Functions)
+│   ├── validation/ (Validation Logic)
 │   ├── websocket/ (WebSocket Services)
 │   └── monitoring/ (Performance & Error Monitoring)
 ├── components/
-│   ├── ui/ (Wiederverwendbare UI-Komponenten)
-│   ├── layout/ (Layout-Komponenten)
-│   ├── uploads/ (Upload-Funktionalität)
-│   ├── file-management/ (Dateiverwaltung)
-│   ├── auth/ (Authentifizierungs-Komponenten)
-│   ├── citations/ (Zitations-Features)
-│   ├── debug/ (Debug-Tools)
-│   ├── feedback/ (Feedback-Komponenten)
-│   ├── modules/ (Modul-System)
+│   ├── ui/ (Reusable UI Components)
+│   ├── layout/ (Layout Components)
+│   ├── uploads/ (Upload Functionality)
+│   ├── file-management/ (File Management)
+│   ├── auth/ (Authentication Components)
+│   ├── citations/ (Citation Features)
+│   ├── debug/ (Debug Tools)
+│   ├── feedback/ (Feedback Components)
+│   ├── modules/ (Module System)
 │   ├── navigation/ (Navigation)
-│   └── websocket/ (WebSocket-UI)
-├── pages/ (Route-Komponenten)
+│   └── websocket/ (WebSocket UI)
+├── pages/ (Route Components)
 ├── hooks/ (Custom React Hooks)
-├── types/ (TypeScript-Definitionen)
-└── utils/ (Frontend-spezifische Utilities)
+├── types/ (TypeScript Definitions)
+└── utils/ (Frontend-Specific Utilities)
 ```
 
 ---
 
-## 2. Geplante neue Dokumentationsstruktur
+## 2. Planned New Documentation Structure
 
-### 2.1 Zusammenfassung der neuen Struktur
+### 2.1 Summary of the New Structure
 
-Die neue Architektur folgt einem **baumartigen, user-zentrierten Ansatz** mit klaren Abstraktionsebenen. Die Oberste Ebene bietet schnellen Zugang zu den wichtigsten Informationen, während tiefere Ebenen sukzessive detailliertere technische Dokumentation bereitstellen. Die Struktur unterscheidet klar zwischen allgemeinen Nutzern und Entwicklern und trennt explizit den aktuellen Stand von zukünftigen Zielen.
+The new architecture follows a **tree-like, user-centered approach** with clear levels of abstraction. The top level provides quick access to the most important information, while deeper levels successively offer more detailed technical documentation. The structure clearly distinguishes between general users and developers and explicitly separates the current state from future goals.
 
-Die Navigation wird in vier Hauptbereiche unterteilt: **Projekt-Übersicht** (Vision, Status, Ziele), **Installation & Erste Schritte**, **Developer Documentation** (mit vollständiger Architektur-Spiegelung), und **Ressourcen & Referenzen**. Jede Source-Code-Datei erhält exakt eine korrespondierende Markdown-Datei, die ausschließlich diese spezifische Datei dokumentiert.
+The navigation is divided into four main areas: **Project Overview** (Vision, Status, Goals), **Installation & Getting Started**, **Developer Documentation** (with complete architecture mirroring), and **Resources & References**. Each source code file will have exactly one corresponding Markdown file that exclusively documents that specific file.
 
-### 2.2 Vollständige neue Baumstruktur
+### 2.2 Complete New Tree Structure
 
 ```
 ReViewPoint Documentation
 │
 ├── 🏠 Home (index.md)
-│   ├── Quicklinks zu: Vision/Mission/Ziele
-│   ├── Quicklinks zu: Aktueller Stand
-│   ├── Quicklinks zu: Nächste Schritte
-│   ├── Quicklinks zu: Installation
-│   └── Quicklinks zu: Developer Documentation
+│   ├── Quicklinks to: Vision/Mission/Goals
+│   ├── Quicklinks to: Current Status
+│   ├── Quicklinks to: Next Steps
+│   ├── Quicklinks to: Installation
+│   └── Quicklinks to: Developer Documentation
 │
-├── 📋 Projekt-Übersicht
-│   ├── Vision, Mission & Ziele (vision-mission-goals.md)
-│   ├── Aktueller Stand (current-status.md)
-│   └── Zukünftige Ziele (future-goals.md)
+├── 📋 Project Overview
+│   ├── Vision, Mission & Goals (vision-mission-goals.md)
+│   ├── Current Status (current-status.md)
+│   └── Future Goals (future-goals.md)
 │
 ├── 🚀 Installation & Setup
 │   └── Installation (installation.md)
-│       ├── Systemvoraussetzungen
-│       ├── Schritt-für-Schritt mit VS Code Tasks
-│       ├── Erstmalige Initialisierung
-│       └── Projektstart
+│       ├── System Requirements
+│       ├── Step-by-Step with VS Code Tasks
+│       ├── Initial Setup
+│       └── Project Start
 │
 ├── 👨‍💻 Developer Documentation
 │   ├── Developer Overview (developer-overview.md)
 │   │   ├── Guidelines & Best Practices (Links)
 │   │   ├── Testing & CI/CD (Links)
-│   │   └── Architektur-Links
+│   │   └── Architecture Links
 │   │
-│   └── 🏗️ Architektur
+│   └── 🏗️ Architecture
 │       ├── Backend Architecture (backend/README.md)
 │       │   ├── src/
 │       │   │   ├── __init__.py.md
@@ -203,7 +203,7 @@ ReViewPoint Documentation
 │       │   │   │   ├── user.py.md
 │       │   │   │   ├── file.py.md
 │       │   │   │   ├── blacklisted_token.py.md
-│       │   │   │   └── used_password_reset_token.py.md
+│       │   │   │   └── used_password_reset_token.md
 │       │   │   ├── services/
 │       │   │   │   ├── __init__.py.md
 │       │   │   │   ├── user.py.md
@@ -241,8 +241,8 @@ ReViewPoint Documentation
 │       │   │       ├── env.py.md
 │       │   │       ├── script.py.mako.md
 │       │   │       └── versions/
-│       │   │           └── [Migration-Dateien].py.md
-│       │   └── tests/ (Verweis auf Backend-Tests)
+│       │   │           └── [Migration Files].py.md
+│       │   └── tests/ (Reference to Backend Tests)
 │       │
 │       └── Frontend Architecture (frontend/README.md)
 │           ├── src/
@@ -251,59 +251,59 @@ ReViewPoint Documentation
 │           │   ├── analytics.ts.md
 │           │   ├── lib/
 │           │   │   ├── api/
-│           │   │   │   ├── [Alle API-Dateien].ts.md
+│           │   │   │   ├── [All API Files].ts.md
 │           │   │   ├── store/
-│           │   │   │   ├── [Alle Store-Dateien].ts.md
+│           │   │   │   ├── [All Store Files].ts.md
 │           │   │   ├── router/
-│           │   │   │   ├── [Alle Router-Dateien].tsx.md
+│           │   │   │   ├── [All Router Files].tsx.md
 │           │   │   ├── theme/
-│           │   │   │   ├── [Alle Theme-Dateien].ts.md
+│           │   │   │   ├── [All Theme Files].ts.md
 │           │   │   ├── config/
-│           │   │   │   ├── [Alle Config-Dateien].ts.md
+│           │   │   │   ├── [All Config Files].ts.md
 │           │   │   ├── auth/
-│           │   │   │   ├── [Alle Auth-Dateien].ts.md
+│           │   │   │   ├── [All Auth Files].ts.md
 │           │   │   ├── utils/
-│           │   │   │   ├── [Alle Utils-Dateien].ts.md
+│           │   │   │   ├── [All Utils Files].ts.md
 │           │   │   ├── validation/
-│           │   │   │   ├── [Alle Validation-Dateien].ts.md
+│           │   │   │   ├── [All Validation Files].ts.md
 │           │   │   ├── websocket/
-│           │   │   │   ├── [Alle WebSocket-Dateien].ts.md
+│           │   │   │   ├── [All WebSocket Files].ts.md
 │           │   │   └── monitoring/
-│           │   │       ├── [Alle Monitoring-Dateien].ts.md
+│           │   │       ├── [All Monitoring Files].ts.md
 │           │   ├── components/
 │           │   │   ├── ui/
-│           │   │   │   ├── [Alle UI-Komponenten].tsx.md
+│           │   │   │   ├── [All UI Components].tsx.md
 │           │   │   ├── layout/
-│           │   │   │   ├── [Alle Layout-Komponenten].tsx.md
+│           │   │   │   ├── [All Layout Components].tsx.md
 │           │   │   ├── uploads/
-│           │   │   │   ├── [Alle Upload-Komponenten].tsx.md
+│           │   │   │   ├── [All Upload Components].tsx.md
 │           │   │   ├── file-management/
-│           │   │   │   ├── [Alle File-Management-Komponenten].tsx.md
+│           │   │   │   ├── [All File Management Components].tsx.md
 │           │   │   ├── auth/
-│           │   │   │   ├── [Alle Auth-Komponenten].tsx.md
+│           │   │   │   ├── [All Auth Components].tsx.md
 │           │   │   ├── citations/
-│           │   │   │   ├── [Alle Citation-Komponenten].tsx.md
+│           │   │   │   ├── [All Citation Components].tsx.md
 │           │   │   ├── debug/
-│           │   │   │   ├── [Alle Debug-Komponenten].tsx.md
+│           │   │   │   ├── [All Debug Components].tsx.md
 │           │   │   ├── feedback/
-│           │   │   │   ├── [Alle Feedback-Komponenten].tsx.md
+│           │   │   │   ├── [All Feedback Components].tsx.md
 │           │   │   ├── modules/
-│           │   │   │   ├── [Alle Module-Komponenten].tsx.md
+│           │   │   │   ├── [All Module Components].tsx.md
 │           │   │   ├── navigation/
-│           │   │   │   ├── [Alle Navigation-Komponenten].tsx.md
+│           │   │   │   ├── [All Navigation Components].tsx.md
 │           │   │   └── websocket/
-│           │   │       ├── [Alle WebSocket-Komponenten].tsx.md
+│           │   │       ├── [All WebSocket Components].tsx.md
 │           │   ├── pages/
-│           │   │   ├── [Alle Page-Komponenten].tsx.md
+│           │   │   ├── [All Page Components].tsx.md
 │           │   ├── hooks/
-│           │   │   ├── [Alle Custom Hooks].ts.md
+│           │   │   ├── [All Custom Hooks].ts.md
 │           │   ├── types/
-│           │   │   ├── [Alle Type-Definitionen].ts.md
+│           │   │   ├── [All Type Definitions].ts.md
 │           │   └── utils/
-│           │       ├── [Alle Frontend-Utils].ts.md
-│           └── tests/ (Verweis auf Frontend-Tests)
+│           │       ├── [All Frontend Utils].ts.md
+│           └── tests/ (Reference to Frontend Tests)
 │
-└── 📚 Ressourcen & Referenzen
+└── 📚 Resources & References
     ├── API Reference (api-reference.md)
     ├── FAQ (faq.md)
     ├── Guidelines & Best Practices (guidelines.md)
@@ -314,97 +314,97 @@ ReViewPoint Documentation
 
 ---
 
-## 3. Detaillierte Entscheidungen und Begründungen
+## 3. Detailed Decisions and Justifications
 
-### 3.1 Struktur-Entscheidungen
+### 3.1 Structure Decisions
 
 #### **Homepage (index.md)**
 
-- **Entscheidung:** Minimalistisch mit nur 5 Quicklinks
-- **Begründung:** Eliminiert Überladung, bietet klaren Einstiegspunkt für verschiedene Nutzertypen
-- **Inhalt:** Nur essential Links ohne detaillierte Projektbeschreibung
+- **Decision:** Minimalistic with only 5 Quicklinks
+- **Justification:** Eliminates overload, provides a clear starting point for different user types
+- **Content:** Only essential links without detailed project description
 
-#### **Trennung Vision/Status/Ziele**
+#### **Separation of Vision/Status/Goals**
 
-- **Entscheidung:** Drei separate Seiten statt einer gemischten Übersicht
-- **Begründung:** Klare Unterscheidung zwischen dem was ist, was angestrebt wird, und was geplant ist
-- **Vorteil:** Nutzer finden gezielt die Information, die sie suchen
+- **Decision:** Three separate pages instead of a mixed overview
+- **Justification:** Clear distinction between what is, what is aspired, and what is planned
+- **Advantage:** Users can find the information they are looking for
 
-#### **Installation als eigenständiger Bereich**
+#### **Installation as a Standalone Area**
 
-- **Entscheidung:** Fokus auf VS Code Tasks und Step-by-Step für Neulinge
-- **Begründung:** Installation ist der kritischste Punkt für neue Nutzer
-- **Besonderheit:** Explizite Erwähnung der "Install Dependencies" Task
+- **Decision:** Focus on VS Code Tasks and Step-by-Step for beginners
+- **Justification:** Installation is the most critical point for new users
+- **Special Feature:** Explicit mention of the "Install Dependencies" task
 
-### 3.2 Developer Documentation-Konzept
+### 3.2 Developer Documentation Concept
 
-#### **Zweistufige Struktur**
+#### **Two-Level Structure**
 
-- **Ebene 1:** Developer Overview mit Verlinkungen zu Guidelines
-- **Ebene 2:** Vollständige Architektur-Spiegelung der Quellcode-Struktur
-- **Begründung:** Trennt Übersicht von Detail-Dokumentation
+- **Level 1:** Developer Overview with links to Guidelines
+- **Level 2:** Complete architecture mirroring of the source code structure
+- **Justification:** Separates overview from detailed documentation
 
-#### **1:1 Source-Code-Mapping**
+#### **1:1 Source Code Mapping**
 
-- **Entscheidung:** Jede .py/.ts/.tsx Datei erhält exakt eine .md Datei
-- **Benennung:** Identischer Name mit .md Suffix (z.B. `main.py` → `main.py.md`)
-- **Inhalt:** Ausschließlich Dokumentation der spezifischen Datei
-- **Begründung:** Maximale Klarheit und Nachvollziehbarkeit für Entwickler
+- **Decision:** Each .py/.ts/.tsx file gets exactly one .md file
+- **Naming:** Identical name with .md suffix (e.g., `main.py` → `main.py.md`)
+- **Content:** Documentation of the specific file only
+- **Justification:** Maximum clarity and traceability for developers
 
-### 3.3 Navigation und UX-Optimierungen
+### 3.3 Navigation and UX Optimizations
 
-#### **Breadcrumb-Navigation**
+#### **Breadcrumb Navigation**
 
-- **Implementierung:** Durch MkDocs Material Theme automatisch verfügbar
-- **Vorteil:** Nutzer verstehen immer ihre Position in der Hierarchie
+- **Implementation:** Automatically available through MkDocs Material Theme
+- **Advantage:** Users always understand their position in the hierarchy
 
-#### **Search-Optimierung**
+#### **Search Optimization**
 
-- **Konfiguration:** Bereits in mkdocs.yml aktiviert (`search.suggest`, `search.highlight`)
-- **Erwartung:** Bessere Auffindbarkeit durch strukturierte Benennung
+- **Configuration:** Already enabled in mkdocs.yml (`search.suggest`, `search.highlight`)
+- **Expectation:** Better findability through structured naming
 
 #### **Mobile-First Design**
 
-- **Basis:** Material Theme ist responsive
-- **Optimierung:** Kurze, prägnante Seitentitel für mobile Navigation
+- **Basis:** Material Theme is responsive
+- **Optimization:** Short, concise page titles for mobile navigation
 
 ---
 
-## 4. Optimierungen der Nutzerführung
+## 4. User Guidance Optimizations
 
-### 4.1 User Journey für Neue Nutzer
+### 4.1 User Journey for New Users
 
 1. **Homepage** → Quicklink "Installation"
-2. **Installation** → Step-by-Step mit VS Code Tasks
-3. **Nach Installation** → Quicklink "Developer Overview"
-4. **Developer Overview** → Guidelines & Architektur
+2. **Installation** → Step-by-Step with VS Code Tasks
+3. **After Installation** → Quicklink "Developer Overview"
+4. **Developer Overview** → Guidelines & Architecture
 
-### 4.2 User Journey für Entwickler
+### 4.2 User Journey for Developers
 
 1. **Homepage** → Quicklink "Developer Documentation"
-2. **Developer Overview** → Links zu Guidelines/Best Practices
-3. **Architektur** → Navigation durch Ordnerstruktur
-4. **Spezifische Datei** → Präzise Dokumentation ohne Ablenkung
+2. **Developer Overview** → Links to Guidelines/Best Practices
+3. **Architecture** → Navigation through folder structure
+4. **Specific File** → Precise documentation without distraction
 
-### 4.3 User Journey für Projektverständnis
+### 4.3 User Journey for Project Understanding
 
-1. **Homepage** → Quicklink "Vision/Mission/Ziele"
-2. **Vision** → Verständnis der Projektziele
-3. **Aktueller Stand** → Was bereits funktioniert
-4. **Zukünftige Ziele** → Roadmap und Entwicklungsrichtung
+1. **Homepage** → Quicklink "Vision/Mission/Goals"
+2. **Vision** → Understanding of project goals
+3. **Current Status** → What is already working
+4. **Future Goals** → Roadmap and development direction
 
-### 4.4 Suchoptimierung
+### 4.4 Search Optimization
 
-- **Konsistente Benennung:** Alle .md Dateien folgen dem Schema [Originaldatei].md
-- **Klare Kategorisierung:** Jede Kategorie hat eindeutige Keywords
-- **Hierarchische Tags:** Backend/Frontend klar getrennt
-- **Kontextuelle Verlinkung:** Verwandte Dateien sind miteinander verlinkt
+- **Consistent Naming:** All .md files follow the schema [OriginalFile].md
+- **Clear Categorization:** Each category has unique keywords
+- **Hierarchical Tags:** Backend/Frontend clearly separated
+- **Contextual Linking:** Related files are linked to each other
 
 ---
 
-## 5. Implementierungsrichtlinien
+## 5. Implementation Guidelines
 
-### 5.1 Inhaltliche Standards
+### 5.1 Content Standards
 
 #### **Homepage (index.md)**
 
@@ -422,31 +422,31 @@ Modular, scalable, and LLM-powered platform for scientific paper review.
 - [Developer Documentation](developer-overview.md)
 
 ## Project Overview
-[Kurze, 2-3 Sätze Beschreibung]
+[Short, 2-3 sentence description]
 ```
 
-#### **Source-Code Dokumentation Template**
+#### **Source Code Documentation Template**
 
 ```markdown
-# [Dateiname] - [Kurze Beschreibung]
+# [File Name] - [Short Description]
 
 ## Purpose
-[Was macht diese Datei]
+[What this file does]
 
 ## Key Components
-[Hauptklassen/Funktionen]
+[Main classes/functions]
 
 ## Dependencies
-[Wichtige Imports/Abhängigkeiten]
+[Important imports/dependencies]
 
 ## Usage Examples
-[Wo möglich, Nutzungsbeispiele]
+[Where possible, usage examples]
 
 ## Related Files
-[Links zu verwandten Dateien]
+[Links to related files]
 ```
 
-### 5.2 mkdocs.yml Anpassungen
+### 5.2 mkdocs.yml Adjustments
 
 #### **Navigation Structure**
 
@@ -470,9 +470,9 @@ nav:
       - Contributing: contributing.md
 ```
 
-### 5.3 Ordnerstruktur Migration
+### 5.3 Folder Structure Migration
 
-#### **Neue Verzeichnisstruktur**
+#### **New Directory Structure**
 
 ```
 docs/content/
@@ -485,11 +485,11 @@ docs/content/
 ├── backend/
 │   ├── README.md
 │   └── src/
-│       └── [Spiegelung der backend/src Struktur]
+│       └── [Mirroring of backend/src Structure]
 ├── frontend/
 │   ├── README.md
 │   └── src/
-│       └── [Spiegelung der frontend/src Struktur]
+│       └── [Mirroring of frontend/src Structure]
 └── resources/
     ├── api-reference.md
     ├── faq.md
@@ -500,109 +500,109 @@ docs/content/
 
 ---
 
-## 6. Qualitätssicherung und Wartung
+## 6. Quality Assurance and Maintenance
 
-### 6.1 Konsistenz-Checks
+### 6.1 Consistency Checks
 
-- **Automatisierte Überprüfung:** Jede Source-Code-Datei muss eine entsprechende .md Datei haben
-- **Link-Validierung:** Alle internen Links müssen funktional sein
-- **Navigation-Test:** Jede Seite muss über die Navigation erreichbar sein
+- **Automated Verification:** Each source code file must have a corresponding .md file
+- **Link Validation:** All internal links must be functional
+- **Navigation Test:** Every page must be reachable through navigation
 
-### 6.2 Content-Standards
+### 6.2 Content Standards
 
-- **Maximale Seitenlänge:** Keine Seite sollte mehr als 200 Zeilen haben
-- **Minimaler Inhalt:** Jede .md Datei muss mindestens Purpose und Key Components enthalten
-- **Verlinkung:** Verwandte Dateien müssen miteinander verlinkt sein
+- **Maximum Page Length:** No page should have more than 200 lines
+- **Minimum Content:** Each .md file must contain at least Purpose and Key Components
+- **Linking:** Related files must be linked to each other
 
-### 6.3 Update-Strategie
+### 6.3 Update Strategy
 
-- **Source-Code Änderungen:** Bei neuen .py/.ts/.tsx Dateien automatisch entsprechende .md erstellen
-- **Dokumentations-Reviews:** Bei Pull Requests auch Dokumentation überprüfen
-- **Periodische Audits:** Vierteljährliche Überprüfung der Dokumentationsqualität
-
----
-
-## 7. Erfolgsmetriken
-
-### 7.1 Nutzererfahrung
-
-- **Time-to-First-Success:** Neue Entwickler können das Projekt in < 30 Minuten installieren
-- **Navigation-Effizienz:** Jede Information ist in ≤ 3 Klicks erreichbar
-- **Search-Erfolg:** 90%+ der Suchen führen zum gewünschten Ergebnis
-
-### 7.2 Dokumentationsqualität
-
-- **Vollständigkeit:** 100% der Source-Code-Dateien sind dokumentiert
-- **Aktualität:** Dokumentation ist niemals > 1 Version hinter dem Code
-- **Konsistenz:** Alle Seiten folgen den definierten Templates
+- **Source Code Changes:** Automatically create corresponding .md files for new .py/.ts/.tsx files
+- **Documentation Reviews:** Check documentation during Pull Requests
+- **Periodic Audits:** Quarterly review of documentation quality
 
 ---
 
-## 8. Fazit und nächste Schritte
+## 7. Success Metrics
 
-Die geplante Neustrukturierung löst die identifizierten Probleme der aktuellen Dokumentation durch:
+### 7.1 User Experience
 
-1. **Klare Hierarchie** mit baumartig organisierten Informationen
-2. **User-zentrierte Navigation** für verschiedene Nutzertypen
-3. **Vollständige Architektur-Spiegelung** für maximale Entwickler-Freundlichkeit
-4. **Strikte Trennung** von Übersicht und Detail-Information
-5. **Konsistente Standards** für alle Dokumentationsinhalte
+- **Time-to-First-Success:** New developers can install the project in < 30 minutes
+- **Navigation Efficiency:** Every piece of information is reachable in ≤ 3 clicks
+- **Search Success:** 90%+ of searches lead to the desired result
 
-Die neue Struktur ermöglicht intuitiven Zugang zu Informationen, eliminiert Redundanzen und schafft eine skalierbare Basis für zukünftige Projektentwicklung.
+### 7.2 Documentation Quality
 
-**Dieses Dokument dient als Blueprint für die Implementierung der neuen MkDocs-Architektur und sollte vor jeder Änderung konsultiert werden.**
+- **Completeness:** 100% of source code files are documented
+- **Timeliness:** Documentation is never > 1 version behind the code
+- **Consistency:** All pages follow the defined templates
 
 ---
 
-## 9. Vollständiger Inhaltskatalog für Migration
+## 8. Conclusion and Next Steps
 
-### 9.1 Bestehende Inhalte zur Übernahme
+The planned restructuring solves the identified problems of the current documentation by:
 
-#### **Projekt-Vision & Mission (zu erstellen aus vorhandenen Informationen)**
+1. **Clear Hierarchy** with tree-like organized information
+2. **User-centered Navigation** for different user types
+3. **Complete architecture mirroring** for maximum developer friendliness
+4. **Strict separation** of overview and detail information
+5. **Consistent standards** for all documentation content
 
-**Quelle: README.md, index.md**
+The new structure enables intuitive access to information, eliminates redundancies, and creates a scalable basis for future project development.
+
+**This document serves as a blueprint for implementing the new MkDocs architecture and should be consulted before any changes.**
+
+---
+
+## 9. Complete Content Catalog for Migration
+
+### 9.1 Existing Content to be Adopted
+
+#### **Project Vision & Mission (to be created from existing information)**
+
+**Source: README.md, index.md**
 
 - **Vision**: Modular, scalable, and LLM-powered platform for scientific paper review
 - **Mission**: Streamline and enhance the scientific paper review process through advanced automation and AI integration
-- **Ziele**:
+- **Goals**:
   - Automated evaluation of scientific papers using LLMs and rule-based algorithms
   - Modular, plug-and-play analysis modules
   - Secure user management and file uploads
   - Extensible LLM adapters (OpenAI, vLLM, etc.)
   - Production-grade backend with CI/CD and test infrastructure
 
-#### **Aktueller Stand (current-status.md)**
+#### **Current Status (current-status.md)**
 
-**Quellen: README.md, architecture.md, index.md**
+**Sources: README.md, architecture.md, index.md**
 
-**Backend (✅ Vollständig implementiert):**
+**Backend (✅ Fully Implemented):**
 
-- FastAPI-basierte REST API mit Python 3.11+
-- SQLAlchemy 2.0+ mit async support
+- FastAPI-based REST API with Python 3.11+
+- SQLAlchemy 2.0+ with async support
 - PostgreSQL (production) / SQLite (development)
-- Alembic Migrationen für Schema-Management
-- Umfassende Authentifizierung mit JWT
-- File Upload und PDF-Verarbeitung
-- 86%+ Test Coverage mit 135+ Tests
-- Rate Limiting und Sicherheitsfeatures
+- Alembic migrations for schema management
+- Comprehensive authentication with JWT
+- File upload and PDF processing
+- 86%+ test coverage with 135+ tests
+- Rate limiting and security features
 
-**Frontend (✅ Vollständig implementiert):**
+**Frontend (✅ Fully Implemented):**
 
-- React 18+ mit TypeScript
-- Vite Build-System mit Hot-Reload
-- Tailwind CSS für Styling
-- Zustand State Management
-- Umfassendes Component-System
-- 80%+ Test Coverage mit 672+ Tests
-- End-to-End Tests mit Playwright
+- React 18+ with TypeScript
+- Vite build system with hot-reload
+- Tailwind CSS for styling
+- Zustand state management
+- Comprehensive component system
+- 80%+ test coverage with 672+ tests
+- End-to-end tests with Playwright
 
-**Infrastruktur (✅ Production-ready):**
+**Infrastructure (✅ Production-ready):**
 
-- Docker Containerization
-- GitHub Actions CI/CD Pipeline
-- Comprehensive Documentation mit MkDocs
-- VS Code Tasks für Development Workflow
-- Automated Quality Checks (Ruff, Black, Mypy)
+- Docker containerization
+- GitHub Actions CI/CD pipeline
+- Comprehensive documentation with MkDocs
+- VS Code tasks for development workflow
+- Automated quality checks (Ruff, Black, Mypy)
 
 #### **Technology Stack Details**
 
@@ -611,109 +611,110 @@ Die neue Struktur ermöglicht intuitiven Zugang zu Informationen, eliminiert Red
 - FastAPI, SQLAlchemy, PostgreSQL, Alembic, PyJWT, Pydantic
 - Async operations throughout
 - Layered architecture (API, Service, Repository, Model)
-- Comprehensive error handling und logging
+- Comprehensive error handling and logging
 
 **Frontend Stack:**
 
 - React, TypeScript, Tailwind CSS, Vite, Zustand
 - Modern component architecture
 - Real-time WebSocket communication
-- File upload mit drag-and-drop
-- Responsive design mit mobile-first approach
+- File upload with drag-and-drop
+- Responsive design with mobile-first approach
 
 **Development Tools:**
 
-- VS Code mit integrierten Tasks
-- PNPM für Package Management
-- Hatch für Python Environment Management
-- Docker für PostgreSQL Development
+- VS Code with integrated tasks
+- PNPM for package management
+- Hatch for Python environment management
+- Docker (optional, for PostgreSQL)
+- Git for version control
 
-#### **Zukünftige Ziele (future-goals.md)**
+#### **Future Goals (future-goals.md)**
 
-**Quellen: frontend/roadmap.md, module-guide.md, llm-integration.md**
+**Sources: frontend/roadmap.md, module-guide.md, llm-integration.md**
 
-**Geplante Features:**
+**Planned Features:**
 
-- Advanced LLM Integration mit multi-provider support
-- Modular Analysis System für custom evaluation logic
-- Real-time Collaboration Tools
-- Advanced Notification System
-- Accessibility Features und Dark Mode
-- Performance Optimizations
-- Extended API für Third-party Integration
+- Advanced LLM integration with multi-provider support
+- Modular analysis system for custom evaluation logic
+- Real-time collaboration tools
+- Advanced notification system
+- Accessibility features and dark mode
+- Performance optimizations
+- Extended API for third-party integration
 
-**Technische Roadmap:**
+**Technical Roadmap:**
 
-- Microservices Architecture Expansion
-- Advanced Caching Layer
-- Enhanced Security Features
-- Multi-language Support
-- Mobile Application Development
+- Microservices architecture expansion
+- Advanced caching layer
+- Enhanced security features
+- Multi-language support
+- Mobile application development
 
 #### **Installation Guide Content (installation.md)**
 
-**Quellen: setup.md, README.md, IDE_TASKS.md**
+**Sources: setup.md, README.md, IDE_TASKS.md**
 
-**Systemvoraussetzungen:**
+**System Requirements:**
 
 - Python 3.11.9+ (system installation recommended)
-- Node.js 18+ mit PNPM package manager
-- Hatch für Python environment management
-- Docker (optional, für PostgreSQL)
-- Git für version control
+- Node.js 18+ with PNPM package manager
+- Hatch for Python environment management
+- Docker (optional, for PostgreSQL)
+- Git for version control
 
-**VS Code Tasks für Installation:**
+**VS Code Tasks for Installation:**
 
-1. **Install Dependencies Task**: Automatische Installation aller Abhängigkeiten
-   - Führt `pnpm install` im Root aus
-   - Erstellt Hatch environment für Backend
-   - Installiert Frontend dependencies
+1. **Install Dependencies Task**: Automatic installation of all dependencies
+   - Runs `pnpm install` in the root
+   - Creates Hatch environment for backend
+   - Installs frontend dependencies
 
-**Schritt-für-Schritt Installation:**
+**Step-by-Step Installation:**
 
-1. Repository klonen: `git clone https://github.com/filip-herceg/ReViewPoint.git`
-2. Ins Verzeichnis wechseln: `cd ReViewPoint`
-3. VS Code öffnen und "Install Dependencies" Task ausführen
-4. Database-Setup wählen:
-   - SQLite (einfach): `pnpm run dev`
+1. Clone the repository: `git clone https://github.com/filip-herceg/ReViewPoint.git`
+2. Change to the directory: `cd ReViewPoint`
+3. Open in VS Code and run "Install Dependencies" task
+4. Choose database setup:
+   - SQLite (easy): `pnpm run dev`
    - PostgreSQL (production-like): `pnpm run dev:postgres`
 
-**Erste Schritte nach Installation:**
+**First Steps After Installation:**
 
-- Backend verfügbar unter: <http://localhost:8000>
-- Frontend verfügbar unter: <http://localhost:5173>
-- API Documentation: <http://localhost:8000/docs>
+- Backend available at: <http://localhost:8000>
+- Frontend available at: <http://localhost:5173>
+- API documentation: <http://localhost:8000/docs>
 
 #### **Developer Guidelines Content**
 
-**Quellen: dev-guidelines.md, contributing-docs.md**
+**Sources: dev-guidelines.md, contributing-docs.md**
 
 **Code Style Standards:**
 
-- **Python**: Format mit `black`, Linting mit `ruff`, Type checking mit `mypy`
-- **TypeScript**: Linting mit Biome, Format mit Biome
-- **Markdown**: Format mit Prettier, Linting mit markdownlint
+- **Python**: Format with `black`, linting with `ruff`, type checking with `mypy`
+- **TypeScript**: Linting with Biome, format with Biome
+- **Markdown**: Format with Prettier, linting with markdownlint
 
 **Testing Standards:**
 
-- Backend: Pytest mit async support, 86%+ coverage target
-- Frontend: Vitest für unit tests, Playwright für E2E
-- All tests müssen vor PR merge erfolgreich sein
+- Backend: Pytest with async support, 86%+ coverage target
+- Frontend: Vitest for unit tests, Playwright for E2E
+- All tests must pass before PR merge
 
 **Git Workflow:**
 
-- Feature branches für alle changes
+- Feature branches for all changes
 - Conventional commit messages
-- Small, focused PRs für easier review
-- CI/CD pipeline läuft bei jedem PR
+- Small, focused PRs for easier review
+- CI/CD pipeline runs on every PR
 
 **Environment Setup:**
 
-- Backend: Ausschließlich Hatch für Python environments
-- Frontend: PNPM für package management
-- Keine anderen Python environment managers (pyenv, conda) verwenden
+- Backend: Exclusively Hatch for Python environments
+- Frontend: PNPM for package management
+- No other Python environment managers (pyenv, conda) should be used
 
-### 9.2 Content-Templates für neue Seiten
+### 9.2 Content Templates for New Pages
 
 #### **Homepage Template (index.md)**
 
@@ -773,11 +774,11 @@ The ReViewPoint platform follows a modern layered architecture:
 - **Documentation**: Complete 1:1 mapping of source code files
 ```
 
-### 9.3 Detaillierte API Reference Migration
+### 9.3 Detailed API Reference Migration
 
-**Quelle: api-reference.md, backend API documentation**
+**Source: api-reference.md, backend API documentation**
 
-**API Übersicht:**
+**API Overview:**
 
 - Base URL: `http://localhost:8000` (development)
 - API Version: v1
@@ -785,7 +786,7 @@ The ReViewPoint platform follows a modern layered architecture:
 - Content Type: `application/json`
 - Rate Limiting: Configurable per endpoint
 
-**Endpoint Kategorien:**
+**Endpoint Categories:**
 
 1. **Authentication & Security** (auth.py)
 2. **User Management** (users/)
@@ -795,7 +796,7 @@ The ReViewPoint platform follows a modern layered architecture:
 
 ### 9.4 Testing Documentation Migration
 
-**Quellen: test-instructions.md, backend/TESTING.md, backend/TEST_LOGGING.md**
+**Sources: test-instructions.md, backend/TESTING.md, backend/TEST_LOGGING.md**
 
 **Backend Testing:**
 
@@ -814,12 +815,12 @@ The ReViewPoint platform follows a modern layered architecture:
 
 - DEBUG: Detailed SQL queries and internal state
 - INFO: General test progress (default)
-- WARNING: Minimal output für fast tests
+- WARNING: Minimal output for fast tests
 - ERROR/CRITICAL: Error-only output
 
 ### 9.5 Module Development Migration
 
-**Quelle: module-guide.md**
+**Source: module-guide.md**
 
 **Module Architecture:**
 
@@ -851,7 +852,7 @@ my-analysis-module/
 
 ### 9.6 LLM Integration Migration
 
-**Quelle: llm-integration.md**
+**Source: llm-integration.md**
 
 **Supported Providers:**
 
@@ -864,64 +865,64 @@ my-analysis-module/
 - Environment-based provider selection
 - Rate limiting and cost management
 - Intelligent response caching
-- Fallback systems für provider failures
+- Fallback systems for provider failures
 
 **Integration Patterns:**
 
 - Unified API across all providers
-- Async operations für performance
+- Async operations for performance
 - Template-based prompt management
-- Error handling und retry logic
+- Error handling and retry logic
 
 ---
 
-## 10. Verbesserter Implementierungsplan mit Risikomanagement
+## 10. Improved Implementation Plan with Risk Management
 
-### 10.1 Kritische Erfolgsfaktoren
+### 10.1 Critical Success Factors
 
-**Vor der Migration identifizierte Risiken:**
+**Risks identified before migration:**
 
-1. **Content-Verlust**: Bestehende wertvolle Inhalte könnten bei der Migration verloren gehen
-2. **Link-Brüche**: Externe Verlinkungen zu bestehenden URLs könnten brechen
-3. **Search Engine Impact**: Bestehende SEO-Rankings könnten betroffen sein
-4. **User Confusion**: Nutzer könnten vorübergehend Inhalte nicht finden
+1. **Content Loss:** Existing valuable content could be lost during migration
+2. **Link Breakage:** External links to existing URLs could break
+3. **Search Engine Impact:** Existing SEO rankings could be affected
+4. **User Confusion:** Users might temporarily not find content
 
-**Mitigation-Strategien:**
+**Mitigation Strategies:**
 
-1. **Parallel-Betrieb**: Alte Struktur bleibt bis zur vollständigen Migration bestehen
-2. **Redirect-Mapping**: Alle alten URLs werden auf neue URLs weitergeleitet
-3. **Content-Audit**: Vollständige Inventarisierung vor Migration
-4. **Rollback-Plan**: Möglichkeit zur schnellen Rückkehr zur alten Struktur
+1. **Parallel Operation:** Old structure remains in place until complete migration
+2. **Redirect Mapping:** All old URLs will be redirected to new URLs
+3. **Content Audit:** Complete inventory before migration
+4. **Rollback Plan:** Possibility for quick return to old structure
 
-### 10.2 Priorisierter Phasenplan (Überarbeitet)
+### 10.2 Prioritized Phased Plan (Revised)
 
-#### **Phase 0: Vorbereitung und Backup (Tag 1-2)**
+#### **Phase 0: Preparation and Backup (Day 1-2)**
 
-**Ziel**: Sichere Basis für Migration schaffen
+**Goal:** Create a secure basis for migration
 
-1. **Content-Inventarisierung**:
-   - Vollständige Liste aller .md Dateien erstellen
-   - URL-Mapping für alle bestehenden Links dokumentieren
-   - Screenshots der aktuellen Navigation machen
+1. **Content Inventory:**
+   - Create a complete list of all .md files
+   - Document URL mapping for all existing links
+   - Take screenshots of the current navigation
 
-2. **Backup-Strategie**:
-   - Git Branch `backup-old-docs` erstellen
-   - Alte Struktur komplett sichern
-   - Rollback-Prozedur dokumentieren
+2. **Backup Strategy:**
+   - Create Git branch `backup-old-docs`
+   - Completely back up the old structure
+   - Document rollback procedure
 
-3. **Test-Environment Setup**:
-   - Separate MkDocs-Instanz für Testing
-   - Automated Link-Checking Setup
-   - Preview-Environment konfigurieren
+3. **Test Environment Setup:**
+   - Separate MkDocs instance for testing
+   - Automated link-checking setup
+   - Preview environment configuration
 
-#### **Phase 1: Kernstruktur (Tag 3-5)**
+#### **Phase 1: Core Structure (Day 3-5)**
 
-**Ziel**: Neue Navigation und Basis-Seiten
+**Goal:** Establish new navigation and core pages
 
 1. **mkdocs.yml Migration**:
 
    ```yaml
-   # Neue Navigation erstellen
+   # Create new navigation
    nav:
      - Home: index.md
      - Project Overview:
@@ -929,212 +930,212 @@ my-analysis-module/
          - Current Status: current-status.md
          - Future Goals: future-goals.md
      - Installation: installation.md
-     # Alte Struktur parallel beibehalten
+     # Keep old structure in parallel
      - "[Legacy] Current Docs": legacy/
    ```
 
-2. **Neue Kern-Seiten erstellen**:
-   - `index.md` (minimalistisch mit 5 Quicklinks)
+2. **Create New Core Pages:**
+   - `index.md` (minimalistic with 5 Quicklinks)
    - `vision-mission-goals.md`
    - `current-status.md`
    - `future-goals.md`
-   - `installation.md` (aus setup.md überarbeitet)
+   - `installation.md` (revised from setup.md)
 
-3. **Qualitätsprüfung**:
-   - Links validieren
-   - Mobile Navigation testen
-   - Search-Funktionalität prüfen
+3. **Quality Check:**
+   - Validate links
+   - Test mobile navigation
+   - Check search functionality
 
-#### **Phase 2: Developer Documentation Struktur (Tag 6-10)**
+#### **Phase 2: Developer Documentation Structure (Day 6-10)**
 
-**Ziel**: Developer-spezifische Navigation etablieren
+**Goal:** Establish developer-specific navigation
 
-1. **Developer Overview erstellen**:
-   - `developer-overview.md` mit Links zu Guidelines
-   - Architektur-Navigation vorbereiten
-   - Cross-References zu bestehenden Docs
+1. **Create Developer Overview:**
+   - `developer-overview.md` with links to guidelines
+   - Prepare architecture navigation
+   - Cross-references to existing docs
 
-2. **Resources-Konsolidierung**:
-   - Neue `resources/` Struktur anlegen
-   - Bestehende Guidelines, FAQ, etc. migrieren
-   - Konsistente Benennung etablieren
+2. **Consolidate Resources:**
+   - Create new `resources/` structure
+   - Migrate existing guidelines, FAQ, etc.
+   - Establish consistent naming
 
-3. **Backend/Frontend README erstellen**:
-   - `backend/README.md` als Architektur-Einstieg
-   - `frontend/README.md` als Frontend-Übersicht
-   - Verlinkung zu bestehenden Detail-Docs
+3. **Create Backend/Frontend README:**
+   - `backend/README.md` as architecture entry point
+   - `frontend/README.md` as frontend overview
+   - Link to existing detail docs
 
-#### **Phase 3: Source-Code Architektur Migration (Tag 11-18)**
+#### **Phase 3: Source Code Architecture Migration (Day 11-18)**
 
-**Ziel**: 1:1 Source-Code-Mapping implementieren
+**Goal:** Implement 1:1 source code mapping
 
-1. **Automatisierte Migration**:
+1. **Automated Migration:**
 
    ```bash
-   # Script erstellen für mass-migration
+   # Create script for mass-migration
    migrate-source-docs.py:
-   - Alle .py/.ts/.tsx Dateien finden
-   - Entsprechende .md Dateien lokalisieren
-   - Neue Struktur-konforme Pfade erstellen
-   - Content migrieren mit Anpassungen
+   - Find all .py/.ts/.tsx files
+   - Locate corresponding .md files
+   - Create new structure-compliant paths
+   - Migrate content with adjustments
    ```
 
-2. **Backend Source Migration**:
-   - `backend/src/` Struktur 1:1 spiegeln
-   - Alle bestehenden .py.md Dateien migrieren
-   - Cross-References aktualisieren
-   - Template-Konsistenz sicherstellen
+2. **Backend Source Migration:**
+   - Mirror `backend/src/` structure 1:1
+   - Migrate all existing .py.md files
+   - Update cross-references
+   - Ensure template consistency
 
-3. **Frontend Source Documentation**:
-   - Neue .tsx.md/.ts.md Dateien für alle Frontend-Files erstellen
-   - Component-Dokumentation standardisieren
-   - Hook-Dokumentation etablieren
+3. **Frontend Source Documentation:**
+   - Create new .tsx.md/.ts.md files for all frontend files
+   - Standardize component documentation
+   - Establish hook documentation
 
-#### **Phase 4: Content-Optimierung (Tag 19-22)**
+#### **Phase 4: Content Optimization (Day 19-22)**
 
-**Ziel**: Content-Qualität und Konsistenz
+**Goal:** Ensure content quality and consistency
 
-1. **Content-Review**:
-   - Jede migrierte Seite gegen Template prüfen
-   - Redundanzen eliminieren
-   - Missing Cross-References hinzufügen
+1. **Content Review:**
+   - Check each migrated page against template
+   - Eliminate redundancies
+   - Add missing cross-references
 
-2. **SEO-Optimierung**:
-   - Meta-Descriptions für alle Seiten
-   - Header-Hierarchie optimieren
-   - Internal Linking Strategy
+2. **SEO Optimization:**
+   - Meta-descriptions for all pages
+   - Optimize header hierarchy
+   - Internal linking strategy
 
-3. **Accessibility-Audit**:
-   - Alt-Text für alle Images
-   - Heading-Structure validieren
-   - Color Contrast prüfen
+3. **Accessibility Audit:**
+   - Alt-text for all images
+   - Validate heading structure
+   - Check color contrast
 
-#### **Phase 5: Testing & Go-Live (Tag 23-25)**
+#### **Phase 5: Testing & Go-Live (Day 23-25)**
 
-**Ziel**: Produktionsreife Migration
+**Goal:** Achieve production-ready migration
 
-1. **Comprehensive Testing**:
-   - Alle Links automatisiert testen
-   - Mobile Navigation validieren
-   - Search-Performance messen
-   - Load-Time Analysis
+1. **Comprehensive Testing:**
+   - Test all links automatically
+   - Validate mobile navigation
+   - Measure search performance
+   - Analyze load time
 
-2. **Redirect-Implementation**:
-   - .htaccess/.netlify Redirects konfigurieren
-   - 301 Redirects für alle alten URLs
-   - Fallback für nicht-gemappte URLs
+2. **Redirect Implementation:**
+   - Configure .htaccess/.netlify redirects
+   - 301 redirects for all old URLs
+   - Fallback for un-mapped URLs
 
-3. **Go-Live und Monitoring**:
-   - DNS Cutover (falls applicable)
-   - 404-Monitoring einrichten
-   - User Feedback Channel etablieren
+3. **Go-Live and Monitoring:**
+   - DNS cutover (if applicable)
+   - 404-monitoring setup
+   - User feedback channel establishment
 
-### 10.3 Success Metrics und Validierung
+### 10.3 Success Metrics and Validation
 
-#### **Quantitative Metriken**
+#### **Quantitative Metrics**
 
 1. **Navigation Efficiency**:
-   - Durchschnittliche Klicks zu jeder Information ≤ 3
-   - Page Load Time < 2 Sekunden
-   - Search Success Rate > 90%
+   - Average clicks to each information ≤ 3
+   - Page load time < 2 seconds
+   - Search success rate > 90%
 
 2. **Content Completeness**:
-   - 100% Source-Code-Files dokumentiert
+   - 100% source code files documented
    - 0 broken internal links
-   - 95%+ external links funktional
+   - 95%+ external links functional
 
 3. **User Experience**:
-   - Mobile Navigation Score > 95%
-   - Accessibility Score > 90%
-   - SEO Score > 85%
+   - Mobile navigation score > 95%
+   - Accessibility score > 90%
+   - SEO score > 85%
 
-#### **Qualitative Validierung**
+#### **Qualitative Validation**
 
 1. **User Journey Testing**:
-   - Neue Nutzer: Setup in < 30 Minuten
-   - Entwickler: Architektur-Info in < 5 Minuten
-   - Projekt-Verstehen: Vision bis Roadmap in < 10 Minuten
+   - New users: Setup in < 30 minutes
+   - Developers: Architecture info in < 5 minutes
+   - Project understanding: Vision to roadmap in < 10 minutes
 
 2. **Developer Feedback**:
-   - Dokumentation ist findbar
-   - Information ist aktuell und relevant
-   - Navigation ist intuitiv
+   - Documentation is findable
+   - Information is up-to-date and relevant
+   - Navigation is intuitive
 
-### 10.4 Rollback-Strategie
+### 10.4 Rollback Strategy
 
-**Trigger für Rollback**:
+**Triggers for Rollback**:
 
-- Kritische Links funktionieren nicht
-- User Complaints > 5 pro Tag
-- SEO Traffic Drop > 20%
-- Build/Deploy Failures
+- Critical links do not work
+- User complaints > 5 per day
+- SEO traffic drop > 20%
+- Build/deploy failures
 
-**Rollback-Prozess**:
+**Rollback Process**:
 
-1. Git revert zu backup-branch
-2. DNS/Redirect-Änderungen rückgängig
-3. Old mkdocs.yml wiederherstellen
-4. Incident Post-Mortem durchführen
+1. Git revert to backup-branch
+2. DNS/redirect changes reversal
+3. Old mkdocs.yml restoration
+4. Incident post-mortem
 
-### 10.5 Post-Migration Wartungsplan
+### 10.5 Post-Migration Maintenance Plan
 
-#### **Kurzfristig (1-4 Wochen nach Go-Live)**
+#### **Short Term (1-4 weeks after Go-Live)**
 
 1. **Daily Monitoring**:
-   - 404-Error Rate überwachen
-   - User Feedback sammeln
-   - Performance Metrics prüfen
+   - 404-error rate monitoring
+   - User feedback collection
+   - Performance metrics check
 
-2. **Wöchentliche Reviews**:
-   - Content-Gaps identifizieren
-   - Navigation-Verbesserungen
-   - Search-Query Analysis
+2. **Weekly Reviews**:
+   - Content gaps identification
+   - Navigation improvements
+   - Search-query analysis
 
-#### **Langfristig (1-6 Monate)**
+#### **Long Term (1-6 months)**
 
-1. **Quartalsweise Audits**:
-   - Content-Aktualität prüfen
-   - New Source-Files dokumentieren
-   - SEO-Performance reviewen
+1. **Quarterly Audits**:
+   - Content timeliness check
+   - New source files documentation
+   - SEO performance review
 
-2. **Kontinuierliche Verbesserung**:
-   - User Analytics auswerten
-   - Navigation-Patterns optimieren
-   - Content-Templates aktualisieren
+2. **Continuous Improvement**:
+   - User analytics evaluation
+   - Navigation patterns optimization
+   - Content templates update
 
-### 10.6 Team-Rollen und Verantwortlichkeiten
+### 10.6 Team Roles and Responsibilities
 
-**Migration Lead** (Du):
+**Migration Lead** (You):
 
-- Gesamtkoordination
-- Qualitätssicherung
-- Technische Entscheidungen
+- Overall coordination
+- Quality assurance
+- Technical decisions
 
 **Content Migration Specialist**:
 
-- Content-Transfer und -Anpassung
-- Link-Validierung
-- Template-Konsistenz
+- Content transfer and adjustment
+- Link validation
+- Template consistency
 
 **UX/Navigation Specialist**:
 
-- User Journey Optimierung
-- Mobile Experience
-- Accessibility Compliance
+- User journey optimization
+- Mobile experience
+- Accessibility compliance
 
 **Technical QA**:
 
-- Automated Testing Setup
-- Performance Monitoring
-- Redirect-Implementation
+- Automated testing setup
+- Performance monitoring
+- Redirect implementation
 
-**Diese überarbeitete Strategie minimiert Risiken und maximiert Erfolgswahrscheinlichkeit durch systematisches Vorgehen und kontinuierliche Validierung.**
+**This revised strategy minimizes risks and maximizes success probability through systematic approach and continuous validation.**
 
 ---
 
 ## 11. Advanced Implementation Strategies
 
-### 11.1 Automatisierung und Tooling
+### 11.1 Automation and Tooling
 
 #### **Migration Automation Scripts**
 
@@ -1146,12 +1147,12 @@ class DocsMigrationTool:
         self.content_templates = self.load_templates()
     
     def migrate_source_docs(self):
-        """Automatisierte Migration aller Source-Code Dokumentation"""
+        """Automated migration of all source code documentation"""
         for source_file, doc_file in self.source_mapping.items():
             self.migrate_single_file(source_file, doc_file)
     
     def validate_migration(self):
-        """Vollständige Validierung der Migration"""
+        """Complete validation of the migration"""
         return {
             'broken_links': self.check_broken_links(),
             'missing_files': self.check_missing_docs(),
@@ -1159,7 +1160,7 @@ class DocsMigrationTool:
         }
 ```
 
-#### **Continuous Integration für Docs**
+#### **Continuous Integration for Docs**
 
 ```yaml
 # .github/workflows/docs-quality.yml
@@ -1176,19 +1177,19 @@ jobs:
         run: python scripts/seo-audit.py
 ```
 
-### 11.2 Content-Intelligence und Metriken
+### 11.2 Content Intelligence and Metrics
 
 #### **Documentation Analytics**
 
 1. **Content Performance Tracking**:
-   - Meist besuchte Seiten identifizieren
-   - Search Query Analysis für Content-Gaps
-   - User Journey Mapping durch Analytics
+   - Identify most visited pages
+   - Search query analysis for content gaps
+   - User journey mapping through analytics
 
 2. **Content Freshness Monitoring**:
-   - Source-Code-Änderungen vs. Docs-Updates
-   - Automated Staleness Detection
-   - PR-Integration für Doc-Updates
+   - Source code changes vs. docs updates
+   - Automated staleness detection
+   - PR integration for doc updates
 
 3. **Knowledge Graph Generation**:
 
@@ -1205,12 +1206,12 @@ jobs:
 ```python
 class ContentIntelligence:
     def suggest_cross_references(self, current_file):
-        """AI-gestützte Vorschläge für Cross-References"""
+        """AI-powered suggestions for cross-references"""
         related_files = self.analyze_code_relationships(current_file)
         return self.generate_link_suggestions(related_files)
     
     def detect_content_gaps(self):
-        """Identifiziert fehlende Dokumentation"""
+        """Identifies missing documentation"""
         source_files = self.scan_source_code()
         doc_files = self.scan_documentation()
         return source_files - doc_files
@@ -1223,7 +1224,7 @@ class ContentIntelligence:
 1. **Live Code Examples**:
    - Executable code snippets in docs
    - Real-time API testing from documentation
-   - Interactive tutorials mit Feedback
+   - Interactive tutorials with feedback
 
 2. **Visual Architecture Maps**:
 
@@ -1245,12 +1246,12 @@ class ContentIntelligence:
 #### **Multi-Platform Consistency**
 
 1. **Documentation as Code (DaC)**:
-   - Single Source of Truth für alle Platforms
-   - Automated Export zu verschiedenen Formaten
-   - Version-synchronisierte Releases
+   - Single source of truth for all platforms
+   - Automated export to different formats
+   - Version-synchronized releases
 
 2. **API Documentation Integration**:
-   - OpenAPI Schema als primary source
+   - OpenAPI schema as primary source
    - Automated API docs generation
    - Real-time schema validation
 
@@ -1259,8 +1260,8 @@ class ContentIntelligence:
 #### **Scalability Considerations**
 
 1. **Microservices Documentation Pattern**:
-   - Dezentrale Docs mit zentraler Aggregation
-   - Service-spezifische Mini-Sites
+   - Decentralized docs with central aggregation
+   - Service-specific mini-sites
    - Cross-service relationship mapping
 
 2. **Internationalization Readiness**:
@@ -1276,23 +1277,23 @@ class ContentIntelligence:
    ```
 
 3. **AI-Assisted Content Generation**:
-   - Automated first-draft generation für neue Files
-   - Intelligent content updating bei Code-Änderungen
-   - Quality scoring für Documentation
+   - Automated first-draft generation for new files
+   - Intelligent content updating with code changes
+   - Quality scoring for documentation
 
 #### **Technology Evolution Adaptation**
 
 1. **Framework-Agnostic Documentation**:
    - Platform-independent content structure
-   - Easy migration zwischen Documentation Tools
-   - Standard-compliant Markup
+   - Easy migration between documentation tools
+   - Standard-compliant markup
 
 2. **API Evolution Management**:
-   - Versioned documentation parallel zu API versions
-   - Deprecation notices mit migration paths
+   - Versioned documentation parallel to API versions
+   - Deprecation notices with migration paths
    - Backward compatibility tracking
 
-### 11.5 Community und Collaboration
+### 11.5 Community and Collaboration
 
 #### **Contributor Experience Optimization**
 
@@ -1312,23 +1313,23 @@ class ContentIntelligence:
 
 2. **Gamification Elements**:
    - Documentation contribution metrics
-   - Quality scores für contributors
-   - Recognition für excellent documentation
+   - Quality scores for contributors
+   - Recognition for excellent documentation
 
 3. **Expert Knowledge Capture**:
-   - Structured interviews mit domain experts
+   - Structured interviews with domain experts
    - Knowledge extraction workflows
    - Tacit knowledge documentation patterns
 
 #### **Feedback Loop Optimization**
 
 1. **Real-time User Feedback**:
-   - "Was this helpful?" auf jeder Seite
-   - Quick feedback forms für improvements
+   - "Was this helpful?" on every page
+   - Quick feedback forms for improvements
    - Issue tracking integration
 
 2. **Documentation Usage Analytics**:
-   - Heat maps für page interactions
+   - Heat maps for page interactions
    - Search failure analysis
    - User journey optimization
 
@@ -1337,11 +1338,11 @@ class ContentIntelligence:
    - Quarterly architecture reviews
    - Annual complete documentation audit
 
-### 11.6 Integration mit Development Lifecycle
+### 11.6 Integration with Development Lifecycle
 
-#### **DevOps für Documentation**
+#### **DevOps for Documentation**
 
-1. **Infrastructure as Code für Docs**:
+1. **Infrastructure as Code for Docs**:
 
    ```yaml
    # docs-infrastructure.yml
@@ -1360,12 +1361,12 @@ class ContentIntelligence:
 
 2. **Automated Deployment Pipeline**:
    - Branch-specific preview environments
-   - A/B testing für documentation changes
-   - Blue-green deployments für major updates
+   - A/B testing for documentation changes
+   - Blue-green deployments for major updates
 
 3. **Performance Monitoring**:
    - Core Web Vitals tracking
    - Search performance metrics
    - Mobile experience monitoring
 
-**Diese erweiterten Strategien machen die Dokumentation zu einem lebenden, intelligenten System, das mit dem Projekt mitwächst und sich kontinuierlich verbessert.**
+**These advanced strategies make the documentation a living, intelligent system that grows and continuously improves with the project.**
