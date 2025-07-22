@@ -56,7 +56,7 @@ def get_url() -> str | None:
     config = get_config()
     url = config.get_main_option("sqlalchemy.url")
     print(f"[ALEMBIC DEBUG] Fallback URL from alembic.ini: {url}")
-    print(f"[ALEMBIC DEBUG] No environment variable found, using alembic.ini")
+    print("[ALEMBIC DEBUG] No environment variable found, using alembic.ini")
     logger.info(f"Using database URL from alembic.ini: {url}")
     return url
 
