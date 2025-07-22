@@ -13,8 +13,6 @@ from alembic.config import Config
 from sqlalchemy import engine_from_config
 from sqlalchemy.engine import Engine
 
-from src.models.base import Base
-
 LOGGER_NAME: Final[str] = "alembic.env"
 LOG_LEVEL: Final[int] = logging.INFO
 
@@ -25,7 +23,14 @@ logger.propagate = True
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 # Add this to ensure Alembic sees all models for autogenerate
 
-target_metadata: Final[sqlalchemy.MetaData] = Base.metadata
+# For initial migrations, disable model imports to prevent table conflicts
+# TODO: Re-enable model imports for autogenerate functionality after initial migrations.
+#       Import your application's SQLAlchemy models and assign their metadata to target_metadata.
+logger.debug("Using target_metadata = None to avoid table conflicts")
+#       from your_app.models import Base
+#       target_metadata = Base.metadata
+target_metadata: sqlalchemy.MetaData | None = None
+print("[ALEMBIC DEBUG] Using target_metadata = None to avoid table conflicts")
 
 
 # Alembic Config object - accessed lazily to avoid issues in test environments
@@ -40,15 +45,22 @@ def get_config() -> Config:
 def get_url() -> str | None:
     """Get database URL, converting from async to sync format if needed."""
     url: str | None = os.getenv("REVIEWPOINT_DB_URL")
+    print(f"[ALEMBIC DEBUG] Environment variable REVIEWPOINT_DB_URL: {url}")
     if url:
+        original_url = url
         # Convert async URL to sync for Alembic
         url = url.replace("postgresql+asyncpg://", "postgresql://")
+        print(f"[ALEMBIC DEBUG] Original URL: {original_url}")
+        print(f"[ALEMBIC DEBUG] Converted URL: {url}")
+        print(f"[ALEMBIC DEBUG] Running with environment variable: {original_url}")
         logger.info(f"Using database URL from environment: {url}")
         return url
 
     # Fall back to alembic.ini
     config = get_config()
     url = config.get_main_option("sqlalchemy.url")
+    print(f"[ALEMBIC DEBUG] Fallback URL from alembic.ini: {url}")
+    print("[ALEMBIC DEBUG] No environment variable found, using alembic.ini")
     logger.info(f"Using database URL from alembic.ini: {url}")
     return url
 
@@ -58,10 +70,11 @@ EngineFromConfigType = Callable[[Mapping[str, object], str, Any | None], Engine]
 
 
 def run_migrations_offline() -> None:
-    """
-    Run migrations in 'offline' mode.
+    """Run migrations in 'offline' mode.
+
     Raises:
         ValueError: If no sqlalchemy.url is provided for offline migration.
+
     """
     from logging.config import fileConfig
 
@@ -96,11 +109,12 @@ def run_migrations_offline() -> None:
 def run_migrations_online(
     engine_from_config_func: EngineFromConfigType | None = None,
 ) -> None:
-    """
-    Run migrations in 'online' mode. The engine_from_config dependency must be provided for testability.
+    """Run migrations in 'online' mode. The engine_from_config dependency must be provided for testability.
+
     Raises:
         ValueError: If no sqlalchemy.url is provided for online migration.
         TypeError: If the config section is not a Mapping.
+
     """
     from logging.config import fileConfig
 

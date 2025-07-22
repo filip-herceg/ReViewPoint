@@ -98,7 +98,7 @@ async function runMigrations() {
     return new Promise((resolve, reject) => {
         logger.postgres('Running database migrations...');
 
-        const migration = spawn('python', ['-m', 'alembic', 'upgrade', 'head'], {
+        const migration = spawn('hatch', ['run', 'python', '-m', 'alembic', 'upgrade', 'head'], {
             cwd: join(rootDir, 'backend'),
             env: {
                 ...process.env,

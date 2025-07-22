@@ -59,8 +59,8 @@ async function runMigrationsWithAutoSetup(migrationArgs = ['upgrade', 'head']) {
         }
 
         // Run migrations
-        const alembicArgs = ['-m', 'alembic', ...migrationArgs];
-        const migration = spawn('python', alembicArgs, {
+        const alembicArgs = ['run', 'python', '-m', 'alembic', ...migrationArgs];
+        const migration = spawn('hatch', alembicArgs, {
             cwd: join(rootDir, 'backend'),
             env: migrationEnv,
             stdio: 'inherit'
