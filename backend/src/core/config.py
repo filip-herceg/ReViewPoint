@@ -1,5 +1,4 @@
-"""
-Centralized runtime configuration for ReViewPoint.
+"""Centralized runtime configuration for ReViewPoint.
 
 Import the settings using the lazy getter everywhere::
 
@@ -58,7 +57,7 @@ if IS_PYTEST:
                 f"Prevented .env loading during tests. ENV_FILE={_env_path}, "
                 f"config/.env exists={Path('config/.env').exists()}, "
                 f"backend/config/.env exists={Path('backend/config/.env').exists()}, "
-                f"backend/.env exists={Path('backend/.env').exists()}"
+                f"backend/.env exists={Path('backend/.env').exists()}",
             )
         except Exception:
             pass
@@ -75,8 +74,7 @@ else:
 
 
 class Settings(BaseSettings):
-    """
-    Typed runtime configuration container.
+    """Typed runtime configuration container.
 
     Reads from environment variables with the REVIEWPOINT_ prefix, optionally loading from a .env file.
     """
@@ -108,7 +106,8 @@ class Settings(BaseSettings):
         description="Secret key for JWT signing (env: REVIEWPOINT_JWT_SECRET_KEY)",
     )
     jwt_algorithm: str = Field(
-        "HS256", description="JWT signing algorithm (env: REVIEWPOINT_JWT_ALGORITHM)"
+        "HS256",
+        description="JWT signing algorithm (env: REVIEWPOINT_JWT_ALGORITHM)",
     )
     jwt_expire_minutes: int = Field(
         30,
@@ -116,7 +115,9 @@ class Settings(BaseSettings):
     )
     # Backward compatibility: allow jwt_secret as alias for jwt_secret_key
     jwt_secret: str | None = Field(
-        None, repr=False, description="[DEPRECATED] Use jwt_secret_key instead."
+        None,
+        repr=False,
+        description="[DEPRECATED] Use jwt_secret_key instead.",
     )
 
     pwd_hash_scheme: str = "pbkdf2_sha256"
@@ -136,7 +137,8 @@ class Settings(BaseSettings):
     storage_url: str | None = None
     storage_region: str | None = None
     storage_secure: bool = Field(
-        False, description="Whether to use secure (SSL) connection for storage"
+        False,
+        description="Whether to use secure (SSL) connection for storage",
     )
 
     # Email (Optional)
@@ -153,7 +155,8 @@ class Settings(BaseSettings):
 
     # API URLs for OpenAPI servers
     api_local_url: str = Field(
-        "http://localhost:8000", description="Local API server URL for OpenAPI schema"
+        "http://localhost:8000",
+        description="Local API server URL for OpenAPI schema",
     )
     api_prod_url: str = Field(
         "https://api.reviewpoint.org",
@@ -182,8 +185,7 @@ class Settings(BaseSettings):
     @field_validator("db_url", mode="before")
     @classmethod
     def check_db_scheme(cls: type[Settings], v: str | None) -> str:
-        """
-        Ensure the database URL uses a supported scheme and is not empty.
+        """Ensure the database URL uses a supported scheme and is not empty.
 
         Accepted schemes:
         - postgresql+asyncpg:// (production, dev)
@@ -208,22 +210,19 @@ class Settings(BaseSettings):
 
         if v.startswith("postgresql+asyncpg://"):
             return v
-        elif v.startswith("sqlite+aiosqlite://"):
+        if v.startswith("sqlite+aiosqlite://"):
             if is_explicit_test_mode or is_dev_mode:
                 return v
-            else:
-                raise ValueError(
-                    "SQLite database is only allowed in dev or test environments"
-                )
-        else:
-            accepted_schemes: str = "postgresql+asyncpg://"
-            if is_explicit_test_mode or is_dev_mode:
-                accepted_schemes += " or sqlite+aiosqlite://"
-            raise ValueError(f"db_url must use {accepted_schemes} scheme")
+            raise ValueError(
+                "SQLite database is only allowed in dev or test environments",
+            )
+        accepted_schemes: str = "postgresql+asyncpg://"
+        if is_explicit_test_mode or is_dev_mode:
+            accepted_schemes += " or sqlite+aiosqlite://"
+        raise ValueError(f"db_url must use {accepted_schemes} scheme")
 
     def model_post_init(self: Settings, __context: object) -> None:
-        """
-        Post-initialization adjustments for specific environments.
+        """Post-initialization adjustments for specific environments.
         - If environment is 'test', override DB URL to use SQLite in memory
         - If jwt_secret_key is not set but jwt_secret is, use it (for backward compatibility)
         - Raise error if neither is set (only in production mode)
@@ -243,20 +242,21 @@ class Settings(BaseSettings):
             object.__setattr__(self, "db_url", "sqlite+aiosqlite:///:memory:")
             object.__setattr__(self, "log_level", "WARNING")
         if not getattr(self, "jwt_secret_key", None) and getattr(
-            self, "jwt_secret", None
+            self,
+            "jwt_secret",
+            None,
         ):
             object.__setattr__(self, "jwt_secret_key", self.jwt_secret)
         if not getattr(self, "jwt_secret_key", None) and not is_explicit_test_mode:
             raise RuntimeError(
-                "Missing JWT secret: set REVIEWPOINT_JWT_SECRET_KEY or legacy REVIEWPOINT_JWT_SECRET."
+                "Missing JWT secret: set REVIEWPOINT_JWT_SECRET_KEY or legacy REVIEWPOINT_JWT_SECRET.",
             )
         logger.debug("Settings initialized for environment: {}", self.environment)
 
     @field_validator("upload_dir", mode="after")
     @classmethod
     def ensure_upload_dir_exists(cls: type[Settings], v: Path) -> Path:
-        """
-        Create the upload directory if it does not exist.
+        """Create the upload directory if it does not exist.
 
         :param v: The upload directory path.
         :return: The ensured upload directory path.
@@ -281,11 +281,36 @@ class Settings(BaseSettings):
         if isinstance(v, int):
             return v
         if isinstance(v, str):
+            # Handle empty strings as None
+            if v.strip() == "":
+                return None
             try:
                 return int(v)
             except ValueError as err:
                 raise ValueError("email_port must be an integer") from err
         raise TypeError("email_port must be an integer or string")
+
+    @field_validator("allowed_origins", mode="before")
+    @classmethod
+    def parse_allowed_origins(cls: type[Settings], v: object) -> list[str]:
+        if v is None:
+            return []
+        if isinstance(v, list):
+            return v
+        if isinstance(v, str):
+            # Try to parse as JSON array
+            try:
+                import json
+
+                parsed = json.loads(v)
+                if isinstance(parsed, list):
+                    return [str(item) for item in parsed]
+                # If it's a single string, split by comma
+                return [item.strip() for item in v.split(",") if item.strip()]
+            except json.JSONDecodeError:
+                # If JSON parsing fails, split by comma
+                return [item.strip() for item in v.split(",") if item.strip()]
+        raise TypeError("allowed_origins must be a list or string")
 
     def __init__(self: Settings, **values: Any) -> None:
         super().__init__(**values)
@@ -303,8 +328,7 @@ class Settings(BaseSettings):
         return self.upload_dir
 
     def to_public_dict(self: Settings) -> Mapping[str, str]:
-        """
-        Return settings as a dict, excluding sensitive fields.
+        """Return settings as a dict, excluding sensitive fields.
 
         :return: Mapping of public settings.
         """
@@ -316,8 +340,7 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    """
-    Lazily load and cache the Settings instance.
+    """Lazily load and cache the Settings instance.
 
     :return: The cached Settings instance.
     """
@@ -326,8 +349,7 @@ def get_settings() -> Settings:
 
 
 def clear_settings_cache() -> None:
-    """
-    Clear the settings cache. Useful for tests when environment variables change.
+    """Clear the settings cache. Useful for tests when environment variables change.
 
     :return: None
     """
@@ -335,8 +357,7 @@ def clear_settings_cache() -> None:
 
 
 def reload_settings() -> Settings:
-    """
-    Force reload settings from environment. Useful for tests.
+    """Force reload settings from environment. Useful for tests.
 
     :return: The reloaded Settings instance.
     """

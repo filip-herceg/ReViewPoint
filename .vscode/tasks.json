@@ -5,17 +5,12 @@
         {
             "label": "ReViewPoint: Start Backend",
             "type": "shell",
-            "command": "uvicorn",
+            "command": "node",
             "args": [
-                "src.main:app",
-                "--reload",
-                "--host",
-                "0.0.0.0",
-                "--port",
-                "8000"
+                "scripts/start-backend-with-auto-setup.js"
             ],
             "options": {
-                "cwd": "${workspaceFolder}/backend"
+                "cwd": "${workspaceFolder}"
             },
             "group": "build",
             "presentation": {
@@ -28,7 +23,7 @@
             },
             "isBackground": true,
             "problemMatcher": [],
-            "detail": "Start the FastAPI backend server with hot reload"
+            "detail": "Start the FastAPI backend server with automatic PostgreSQL setup"
         },
         {
             "label": "ReViewPoint: Start Frontend",
@@ -136,14 +131,15 @@
         {
             "label": "ReViewPoint: Run All Backend Tests",
             "type": "shell",
-            "command": "python",
+            "command": "node",
             "args": [
+                "scripts/run-backend-tests-with-auto-setup.js",
                 "-m",
                 "pytest",
                 "-v"
             ],
             "options": {
-                "cwd": "${workspaceFolder}/backend"
+                "cwd": "${workspaceFolder}"
             },
             "group": "test",
             "presentation": {
@@ -155,17 +151,18 @@
                 "clear": true
             },
             "problemMatcher": [],
-            "detail": "Run all backend tests with pytest"
+            "detail": "Run all backend tests with automatic database setup"
         },
         {
             "label": "ReViewPoint: Run Fast Backend Tests",
             "type": "shell",
-            "command": "python",
+            "command": "node",
             "args": [
-                "run-fast-tests.py"
+                "scripts/run-backend-tests-with-auto-setup.js",
+                "testing/scripts/run-fast-tests.py"
             ],
             "options": {
-                "cwd": "${workspaceFolder}/backend"
+                "cwd": "${workspaceFolder}"
             },
             "group": "test",
             "presentation": {
@@ -177,13 +174,14 @@
                 "clear": true
             },
             "problemMatcher": [],
-            "detail": "Run fast backend tests (excluding slow/integration tests)"
+            "detail": "Run fast backend tests with automatic database setup (excluding slow/integration tests)"
         },
         {
             "label": "ReViewPoint: Run Backend Tests with Coverage",
             "type": "shell",
-            "command": "python",
+            "command": "node",
             "args": [
+                "scripts/run-backend-tests-with-auto-setup.js",
                 "-m",
                 "pytest",
                 "--cov=src",
@@ -191,7 +189,7 @@
                 "--cov-report=term"
             ],
             "options": {
-                "cwd": "${workspaceFolder}/backend"
+                "cwd": "${workspaceFolder}"
             },
             "group": "test",
             "presentation": {
@@ -203,7 +201,7 @@
                 "clear": true
             },
             "problemMatcher": [],
-            "detail": "Run backend tests with coverage report"
+            "detail": "Run backend tests with coverage report and automatic database setup"
         },
         {
             "label": "ReViewPoint: Run Frontend Tests",
@@ -284,7 +282,7 @@
                 "BACKEND,FRONTEND",
                 "--prefix-colors",
                 "blue,green",
-                "\"cd backend && python -m pytest -v\"",
+                "\"node scripts/run-backend-tests-with-auto-setup.js -m pytest -v\"",
                 "\"cd frontend && pnpm run test\""
             ],
             "options": {
@@ -300,15 +298,15 @@
                 "clear": true
             },
             "problemMatcher": [],
-            "detail": "Run all backend and frontend tests concurrently"
+            "detail": "Run all backend and frontend tests concurrently with automatic setup"
         },
         // === QUALITY & LINTING TASKS ===
         {
             "label": "ReViewPoint: Lint Backend",
             "type": "shell",
-            "command": "python",
+            "command": "hatch",
             "args": [
-                "-m",
+                "run",
                 "ruff",
                 "check",
                 ".",
@@ -332,9 +330,9 @@
         {
             "label": "ReViewPoint: Format Backend",
             "type": "shell",
-            "command": "python",
+            "command": "hatch",
             "args": [
-                "-m",
+                "run",
                 "ruff",
                 "format",
                 "."
@@ -473,8 +471,10 @@
         {
             "label": "ReViewPoint: Export Backend Schema",
             "type": "shell",
-            "command": "python",
+            "command": "hatch",
             "args": [
+                "run",
+                "python",
                 "scripts/export-backend-schema.py"
             ],
             "options": {
@@ -618,69 +618,11 @@
         {
             "label": "ReViewPoint: Run Database Migrations",
             "type": "shell",
-            "command": "python",
+            "command": "node",
             "args": [
-                "-m",
-                "alembic",
+                "scripts/run-migrations-with-auto-setup.js",
                 "upgrade",
                 "head"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}/backend"
-            },
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": true,
-                "panel": "shared",
-                "showReuseMessage": true,
-                "clear": true
-            },
-            "problemMatcher": [],
-            "detail": "Apply all pending database migrations"
-        },
-        {
-            "label": "ReViewPoint: Create New Migration",
-            "type": "shell",
-            "command": "python",
-            "args": [
-                "-m",
-                "alembic",
-                "revision",
-                "--autogenerate",
-                "-m",
-                "${input:migrationMessage}"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}/backend"
-            },
-            "group": "build",
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": true,
-                "panel": "shared",
-                "showReuseMessage": true,
-                "clear": true
-            },
-            "problemMatcher": [],
-            "detail": "Create a new database migration"
-        },
-        // === UTILITY TASKS ===
-        {
-            "label": "ReViewPoint: Install Dependencies",
-            "type": "shell",
-            "command": "npx",
-            "args": [
-                "concurrently",
-                "--names",
-                "ROOT,BACKEND,FRONTEND",
-                "--prefix-colors",
-                "yellow,blue,green",
-                "\"pnpm install\"",
-                "\"cd backend && pip install -e .\"",
-                "\"cd frontend && pnpm install\""
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -695,7 +637,63 @@
                 "clear": true
             },
             "problemMatcher": [],
-            "detail": "Install all dependencies for the entire project"
+            "detail": "Apply all pending database migrations with automatic PostgreSQL setup"
+        },
+        {
+            "label": "ReViewPoint: Create New Migration",
+            "type": "shell",
+            "command": "node",
+            "args": [
+                "scripts/run-migrations-with-auto-setup.js",
+                "revision",
+                "--autogenerate",
+                "-m",
+                "${input:migrationMessage}"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Create a new database migration with automatic PostgreSQL setup"
+        },
+        // === UTILITY TASKS ===
+        {
+            "label": "ReViewPoint: Install Dependencies",
+            "type": "shell",
+            "command": "npx",
+            "args": [
+                "concurrently",
+                "--names",
+                "ROOT,BACKEND,FRONTEND",
+                "--prefix-colors",
+                "yellow,blue,green",
+                "pnpm install",
+                "cd backend && hatch env create",
+                "cd frontend && pnpm install"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "Install all dependencies for the entire project using proper environment managers (pnpm + hatch)"
         },
         {
             "label": "ReViewPoint: Clean All",
@@ -737,7 +735,7 @@
                 "--prefix-colors",
                 "green,blue",
                 "\"cd frontend && pnpm audit\"",
-                "\"cd backend && pip-audit\""
+                "\"cd backend && hatch run pip-audit\""
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

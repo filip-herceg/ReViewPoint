@@ -1,53 +1,99 @@
-import React, { useState } from 'react'
-import { useUploadStore } from '@/lib/store/uploadStore'
-import { getErrorMessage } from '@/lib/utils/errorHandling'
+import { Upload } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useUploadStore } from "@/lib/store/uploadStore";
+import { getErrorMessage } from "@/lib/utils/errorHandling";
 
-const initialState = { name: '', status: 'pending', progress: 0 }
+const initialState = { name: "", status: "pending", progress: 0 };
 
 const UploadForm: React.FC = () => {
-    const [form, setForm] = useState(initialState)
-    const { createUpload, loading, error } = useUploadStore()
-    const [localError, setLocalError] = useState<string | null>(null)
+	const [form, setForm] = useState(initialState);
+	const { createUpload, loading, error } = useUploadStore();
+	const [localError, setLocalError] = useState<string | null>(null);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setForm({ ...form, [e.target.name]: e.target.value })
-    }
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setForm({ ...form, [e.target.name]: e.target.value });
+	};
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setLocalError(null)
-        try {
-            await createUpload({ ...form, status: 'pending', progress: 0 })
-            setForm(initialState)
-        } catch (err) {
-            setLocalError(getErrorMessage(err))
-        }
-    }
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setLocalError(null);
+		try {
+			await createUpload({ ...form, status: "pending", progress: 0 });
+			setForm(initialState);
+		} catch (err) {
+			setLocalError(getErrorMessage(err));
+		}
+	};
 
-    return (
-        <form onSubmit={handleSubmit} className="mb-4 space-y-2">
-            <div>
-                <label htmlFor="upload-name" className="block mb-1 font-medium">File Name</label>
-                <input
-                    id="upload-name"
-                    name="name"
-                    value={form.name}
-                    onChange={handleChange}
-                    className="border rounded px-2 py-1 w-full"
-                    required
-                />
-            </div>
-            <button
-                type="submit"
-                className="bg-blue-600 text-white px-4 py-1 rounded disabled:opacity-50"
-                disabled={loading || !form.name}
-            >
-                {loading ? 'Uploading...' : 'Add Upload'}
-            </button>
-            {error && <div className="text-red-600">Error: {getErrorMessage(error)}</div>}
-            {localError && <div className="text-red-600">Error: {localError}</div>}
-        </form>
-    )
-}
+	return (
+		<Card className="bg-background border border-border hover-lift">
+			<CardHeader>
+				<CardTitle className="flex items-center gap-2 text-foreground">
+					<Upload className="h-5 w-5 text-primary" />
+					Upload Document
+				</CardTitle>
+				<CardDescription className="text-muted-foreground">
+					Add a new document to the review system
+				</CardDescription>
+			</CardHeader>
+			<CardContent>
+				<form onSubmit={handleSubmit} className="space-y-4">
+					<div className="space-y-2">
+						<Label htmlFor="upload-name" className="text-foreground">
+							File Name
+						</Label>
+						<Input
+							id="upload-name"
+							name="name"
+							value={form.name}
+							onChange={handleChange}
+							placeholder="Enter document name..."
+							required
+						/>
+					</div>
 
-export default UploadForm
+					<div className="flex gap-2">
+						<Button
+							type="submit"
+							className="flex-1 group hover-lift"
+							disabled={loading || !form.name}
+						>
+							{loading ? (
+								<>
+									<div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-transparent border-t-primary" />
+									Uploading...
+								</>
+							) : (
+								<>
+									<Upload className="mr-2 h-4 w-4 text-primary transition-transform group-hover:scale-110" />
+									Add Upload
+								</>
+							)}
+						</Button>
+					</div>
+
+					{(error || localError) && (
+						<div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+							<p className="text-sm text-destructive-foreground">
+								Error: {getErrorMessage(error || localError)}
+							</p>
+						</div>
+					)}
+				</form>
+			</CardContent>
+		</Card>
+	);
+};
+
+export default UploadForm;

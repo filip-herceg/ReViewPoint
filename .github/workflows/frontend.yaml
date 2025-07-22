@@ -1,0 +1,78 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend.yaml"
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "frontend/**"
+    # This prevents duplicate runs when pushing to a PR branch
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Biome Check & Tests
+    # Skip duplicate workflow runs for PRs from the same repository
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          pnpm install --frozen-lockfile
+
+      - name: Clear caches
+        run: |
+          cd frontend
+          rm -rf node_modules/.cache dist .vite
+
+      - name: Run Biome (Lint & Format Check)
+        run: |
+          cd frontend
+          pnpm run lint
+
+      - name: Run Vitest (Tests)
+        run: |
+          cd frontend
+          pnpm run test
+
+      - name: Build (Verify build works)
+        run: |
+          cd frontend
+          pnpm run build

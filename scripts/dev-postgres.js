@@ -22,11 +22,49 @@ async function main() {
             ...process.env,
             REVIEWPOINT_DB_URL: 'postgresql+asyncpg://postgres:postgres@localhost:5432/reviewpoint',
             REVIEWPOINT_ENVIRONMENT: 'dev',
-            ENV_FILE: 'config/.env'
+            ENV_FILE: 'config/.env',
+            // Feature flags - manually set to ensure they're loaded
+            REVIEWPOINT_FEATURES: 'auth:register,auth:login,auth:logout,auth:refresh_token,auth:request_password_reset,auth:reset_password,auth:me,health:read',
+            REVIEWPOINT_FEATURE_AUTH: 'true',
+            REVIEWPOINT_FEATURE_AUTH_LOGIN: 'true',
+            REVIEWPOINT_FEATURE_AUTH_REGISTER: 'true',
+            REVIEWPOINT_FEATURE_HEALTH: 'true',
+            REVIEWPOINT_FEATURE_HEALTH_READ: 'true',
+            REVIEWPOINT_FEATURE_AUTH_REFRESH: 'true',
+            REVIEWPOINT_FEATURE_AUTH_LOGOUT: 'true',
+            REVIEWPOINT_FEATURE_AUTH_PASSWORD_RESET: 'true',
+            REVIEWPOINT_FEATURE_AUTH_PASSWORD_RESET_CONFIRM: 'true',
+            REVIEWPOINT_FEATURE_AUTH_PROFILE: 'true',
+            REVIEWPOINT_FEATURE_HEALTH: 'true',
+            REVIEWPOINT_FEATURE_HEALTH_READ: 'true'
         };
 
+        // Run database migrations first
+        logger.info('Running database migrations...');
+        const migration = spawn('hatch', ['run', 'python', '-m', 'alembic', 'upgrade', 'head'], {
+            cwd: join(rootDir, 'backend'),
+            env: postgresEnv,
+            stdio: 'inherit'
+        });
+
+        await new Promise((resolve, reject) => {
+            migration.on('close', (code) => {
+                if (code === 0) {
+                    logger.success('Database migrations completed successfully!');
+                    resolve();
+                } else {
+                    reject(new Error(`Migrations failed with exit code ${code}`));
+                }
+            });
+
+            migration.on('error', (error) => {
+                reject(new Error(`Migration process error: ${error.message}`));
+            });
+        });
+
         // Start backend with PostgreSQL environment
-        const backend = spawn('python', ['-m', 'uvicorn', 'src.main:app', '--reload', '--host', '0.0.0.0', '--port', '8000'], {
+        const host = process.env.HOST || 'localhost';
+        const backend = spawn('hatch', ['run', 'python', '-m', 'uvicorn', 'src.main:app', '--reload', '--host', host, '--port', '8000'], {
             cwd: join(rootDir, 'backend'),
             env: postgresEnv,
             shell: true

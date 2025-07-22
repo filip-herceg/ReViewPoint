@@ -35,7 +35,7 @@ SENSITIVE_FIELDS: Final[frozenset[str]] = frozenset(
         "token",
         "access_token",
         "refresh_token",
-    }
+    },
 )
 
 # Thread-local request ID storage
@@ -79,6 +79,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         ------
         Exception
             If logger_instance is not a Logger or None.
+
         """
         super().__init__(app)
         self.exclude_paths: Sequence[str] = (
@@ -95,8 +96,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         request: Request,
         call_next: Callable[[Request], Awaitable[Response]],
     ) -> Response:
-        """
-        Process a request and add logging and request ID tracking.
+        """Process a request and add logging and request ID tracking.
 
         Parameters
         ----------
@@ -114,6 +114,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         ------
         Exception
             Any exception raised during request processing is logged and re-raised.
+
         """
         # Skip excluded paths
         if request.url.path in self.exclude_paths:
@@ -140,7 +141,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         }
 
         cast("Logger", self.logger.bind(**log_extra)).info(  # type: ignore[no-untyped-call]
-            f"Request {request.method} {request.url.path} | query: {filtered_query_str}"
+            f"Request {request.method} {request.url.path} | query: {filtered_query_str}",
         )
         try:
             # Process the request
@@ -159,7 +160,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
                     process_time_ms=process_time_ms,
                 ),
             ).info(
-                f"Response {request.method} {request.url.path} completed with status {response.status_code} in {process_time_ms}ms | query: {filtered_query_str}"
+                f"Response {request.method} {request.url.path} completed with status {response.status_code} in {process_time_ms}ms | query: {filtered_query_str}",
             )
 
             # Attach request ID to response headers
@@ -179,7 +180,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
                     process_time_ms=error_process_time_ms,
                 ),
             ).exception(
-                f"Error processing request {request.method} {request.url.path}: {exc}"
+                f"Error processing request {request.method} {request.url.path}: {exc}",
             )
             raise
         finally:

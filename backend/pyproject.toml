@@ -10,9 +10,7 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
 keywords = []
-authors = [
-  { name = "filip-herceg", email = "pvt.filip.herceg@gmail.com" },
-]
+authors = [{ name = "filip-herceg", email = "pvt.filip.herceg@gmail.com" }]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
@@ -33,7 +31,7 @@ dependencies = [
   "python-multipart>=0.0.18",
   "python-jose[cryptography]>=3.3.0",
   "passlib[bcrypt]>=1.7.4",
-  "bcrypt>=4.0.1,<4.1.0",  # Ensure compatible bcrypt version for passlib
+  "bcrypt>=4.0.1,<4.1.0",             # Ensure compatible bcrypt version for passlib
   "python-dotenv>=1.0.1",
   "structlog>=23.1.0",
   "pydantic-settings==2.0.3",
@@ -54,7 +52,7 @@ dependencies = [
   "pytest-xdist>=3.6.1",
   "typing_extensions>=4.0.0",
   "python-dateutil>=2.8.0",
-  "setuptools>=78.1.1",  # Security fix for CVE-2024-6345 and CVE-2025-47273
+  "setuptools>=78.1.1",               # Security fix for CVE-2024-6345 and CVE-2025-47273
 ]
 
 [project.urls]
@@ -100,7 +98,7 @@ check = "mypy --install-types --non-interactive {args:src tests}"
 path = ".venv-fast"
 dependencies = [
   "pytest>=8.3.4",
-  "pytest-asyncio>=0.24.0", 
+  "pytest-asyncio>=0.24.0",
   "pytest-mock>=3.14.0",
   "httpx>=0.28.1",
   "aiosqlite==0.20.0",
@@ -143,10 +141,10 @@ REVIEWPOINT_API_KEY = "testkey"
 REVIEWPOINT_EXTERNAL_SERVICES_ENABLED = "false"
 
 [tool.hatch.envs.fast.scripts]
-test = "python run-fast-tests.py {args}"
-fast-only = "python run-fast-tests.py --fast-only {args}"
-watch = "python run-fast-tests.py -f {args}"
-coverage = "python run-fast-tests.py --cov=src --cov-report=html {args}"
+test = "python testing/scripts/run-fast-tests.py {args}"
+fast-only = "python testing/scripts/run-fast-tests.py --fast-only {args}"
+watch = "python testing/scripts/run-fast-tests.py -f {args}"
+coverage = "python testing/scripts/run-fast-tests.py --cov=src --cov-report=html {args}"
 
 [tool.black]
 line-length = 88
@@ -206,7 +204,7 @@ omit = [
   "*/alembic/*",
   "*/__pycache__/*",
   "*/venv/*",
-  "*/.venv/*"
+  "*/.venv/*",
 ]
 
 [tool.coverage.paths]
@@ -221,7 +219,7 @@ exclude_lines = [
   "raise AssertionError",
   "raise NotImplementedError",
   "if __name__ == .__main__.:",
-  "if TYPE_CHECKING:"
+  "if TYPE_CHECKING:",
 ]
 
 [tool.pytest.ini_options]
@@ -240,14 +238,14 @@ log_file_level = "DEBUG"
 log_file_format = "%(asctime)s [%(levelname)8s] %(name)s: %(message)s"
 asyncio_mode = "auto"
 markers = [
-    "jwt: mark tests that require JWT handling",
-    "performance: marks tests as performance (deselect with '-m \"not performance\"')",
-    "slow: marks tests that access real database or are slow",
-    "fast: marks tests that use mocks or in-memory DB",
-    "skip_if_fast_tests: skip test only in fast test mode",
-    "skip_if_not_fast_tests: skip test only in regular test mode",
-    "requires_real_db: skip test if using in-memory SQLite",
-    "requires_timing_precision: skip test if timing is unreliable"
+  "jwt: mark tests that require JWT handling",
+  "performance: marks tests as performance (deselect with '-m \"not performance\"')",
+  "slow: marks tests that access real database or are slow",
+  "fast: marks tests that use mocks or in-memory DB",
+  "skip_if_fast_tests: skip test only in fast test mode",
+  "skip_if_not_fast_tests: skip test only in regular test mode",
+  "requires_real_db: skip test if using in-memory SQLite",
+  "requires_timing_precision: skip test if timing is unreliable",
 ]
 
 [tool.hatch.build.targets.wheel]
