@@ -59,7 +59,8 @@ async function startBackendWithAutoSetup() {
         }
 
         // Start backend
-        const backend = spawn('hatch', ['run', 'python', '-m', 'uvicorn', 'src.main:app', '--reload', '--host', 'localhost', '--port', '8000'], {
+        const host = process.env.HOST || 'localhost';
+        const backend = spawn('hatch', ['run', 'python', '-m', 'uvicorn', 'src.main:app', '--reload', '--host', host, '--port', '8000'], {
             cwd: join(rootDir, 'backend'),
             env: backendEnv,
             stdio: 'inherit'
