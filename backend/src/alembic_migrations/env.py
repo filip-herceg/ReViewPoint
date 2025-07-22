@@ -24,7 +24,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"
 # Add this to ensure Alembic sees all models for autogenerate
 
 # For initial migrations, disable model imports to prevent table conflicts
-# Once migrations are applied, you can re-enable this for autogenerate functionality
+# TODO: Re-enable model imports for autogenerate functionality after initial migrations.
+#       Import your application's SQLAlchemy models and assign their metadata to target_metadata.
+logger.debug("Using target_metadata = None to avoid table conflicts")
+#       from your_app.models import Base
+#       target_metadata = Base.metadata
 target_metadata: sqlalchemy.MetaData | None = None
 print("[ALEMBIC DEBUG] Using target_metadata = None to avoid table conflicts")
 
@@ -66,10 +70,11 @@ EngineFromConfigType = Callable[[Mapping[str, object], str, Any | None], Engine]
 
 
 def run_migrations_offline() -> None:
-    """
-    Run migrations in 'offline' mode.
+    """Run migrations in 'offline' mode.
+
     Raises:
         ValueError: If no sqlalchemy.url is provided for offline migration.
+
     """
     from logging.config import fileConfig
 
@@ -104,11 +109,12 @@ def run_migrations_offline() -> None:
 def run_migrations_online(
     engine_from_config_func: EngineFromConfigType | None = None,
 ) -> None:
-    """
-    Run migrations in 'online' mode. The engine_from_config dependency must be provided for testability.
+    """Run migrations in 'online' mode. The engine_from_config dependency must be provided for testability.
+
     Raises:
         ValueError: If no sqlalchemy.url is provided for online migration.
         TypeError: If the config section is not a Mapping.
+
     """
     from logging.config import fileConfig
 
