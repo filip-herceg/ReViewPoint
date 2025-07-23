@@ -12,15 +12,11 @@ ReViewPoint empowers development teams with intuitive tools that make code revie
 
 ## 🎬 **Project Tour**
 
-<!-- � **Video Tour** (Coming Soon)
+### 🎥 Demo Video
 
-Get a quick overview of ReViewPoint's features and capabilities in this guided tour.
+Get a quick overview of ReViewPoint's features and capabilities in this demo.
 
-[Watch Video Tour →](link-to-video)
-
---- -->
-
-*📹 Video tour coming soon - will showcase the complete ReViewPoint workflow*
+[📹 Watch Demo Video](https://github.com/user-attachments/assets/demo_video.mkv)
 
 ---
 

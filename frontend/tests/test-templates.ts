@@ -15,7 +15,6 @@ export function createTestError(message: string | Error = "Test error"): Error {
 // Use these to generate consistent test data in all tests
 // You can import utilities from test-utils as needed
 
-import { randomInt as cryptoRandomInt } from "node:crypto";
 import type {
 	ApiError,
 	ApiResponse,
@@ -117,7 +116,7 @@ export function createUploadList(
 
 export function createUser(overrides: Partial<User> = {}): User {
 	const user: User = {
-		id: overrides.id ?? cryptoRandomInt(1, 10001),
+		id: overrides.id ?? randomInt(1, 10001),
 		email: overrides.email ?? `${randomString(5)}@example.com`,
 		name:
 			"name" in overrides
@@ -137,7 +136,7 @@ export function createUser(overrides: Partial<User> = {}): User {
 }
 
 export function createAuthUser(overrides: Partial<AuthUser> = {}): AuthUser {
-	const userId = overrides.id ?? String(cryptoRandomInt(1, 10001));
+	const userId = overrides.id ?? String(randomInt(1, 10001));
 	// Ensure name is always defined (not undefined)
 	const authUser: AuthUser = {
 		id: userId,
@@ -1503,12 +1502,12 @@ export function createUploadChunkInfo(
 export function createFileValidationResult(
 	overrides: Partial<FileValidationResult> = {},
 ): FileValidationResult {
-	const isValid = overrides.isValid ?? cryptoRandomInt(0, 10) > 1; // 80% valid by default
+	const isValid = overrides.isValid ?? randomInt(0, 10) > 1; // 80% valid by default
 	const errors =
 		overrides.errors || (isValid ? [] : [createFileValidationError()]);
 	const warnings =
 		overrides.warnings ||
-		(cryptoRandomInt(0, 10) > 6 ? [createFileValidationWarning()] : []); // 30% chance
+		(randomInt(0, 10) > 6 ? [createFileValidationWarning()] : []); // 30% chance
 
 	const result: FileValidationResult = {
 		isValid,
@@ -1624,7 +1623,7 @@ export function createFileMetadataExtract(
 			(category === "document" || category === "pdf"
 				? randomInt(1, 50)
 				: undefined),
-		isEncrypted: overrides.isEncrypted ?? cryptoRandomInt(0, 10) > 8, // 10% encrypted
+		isEncrypted: overrides.isEncrypted ?? randomInt(0, 10) > 8, // 10% encrypted
 		createdDate: overrides.createdDate || randomDate(),
 		modifiedDate: overrides.modifiedDate || randomDate(),
 		...overrides,

@@ -29,6 +29,7 @@ cd plugin_prototypes
 
 # Clone the plugin repositories
 git clone https://github.com/Swabble/pdf_latex_converter.git
+git clone https://github.com/Swabble/literature_footnote_classification.git
 git clone https://github.com/filip-herceg/ReViewPoint-CitationValidatorPro.git
 ```
 
@@ -60,27 +61,31 @@ The PDF LaTeX Converter is ReViewPoint's primary document processing plugin, des
 
 [Learn more about PDF LaTeX Converter →](plugins/pdf-latex-converter.md)
 
-### 2. [Second Plugin - Built-in]
+### 2. Literature Footnote Classification
 
 **Status:** In Development (Built-in)  
-**Repository:** TBD
+**Repository:** [literature_footnote_classification](https://github.com/Swabble/literature_footnote_classification.git)
 
-[Placeholder for second built-in plugin description]
+The Literature Footnote Classification plugin is an intelligent analysis tool designed to automatically categorize and analyze footnotes within academic literature. This plugin enhances the review process by providing structured insights into citation patterns, reference types, and footnote usage across scientific documents.
 
 **Key Features:**
 
-- [Feature 1]
-- [Feature 2]
-- [Feature 3]
-- [Feature 4]
+- Automated footnote detection and extraction
+- Machine learning-based footnote classification
+- Citation pattern analysis and insights
+- Reference type categorization
+- Statistical reporting on footnote usage
+- Integration with citation validation workflows
 
 **Use Cases:**
 
-- [Use case 1]
-- [Use case 2]
-- [Use case 3]
+- Analyzing citation patterns in academic papers during review
+- Quality assessment of reference usage and documentation
+- Automated categorization of footnote types for consistency checking
+- Supporting reviewers with structured footnote analysis
+- Generating reports on citation and reference practices
 
-[Learn more about [Plugin Name] →](plugins/second-plugin.md)
+[Learn more about Literature Footnote Classification →](plugins/second-plugin.md)
 
 ### 3. Citation Validator Pro
 
