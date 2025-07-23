@@ -4,15 +4,31 @@
 [![Lint Status](https://github.com/filip-herceg/ReViewPoint/actions/workflows/docs.yaml/badge.svg?label=lint "Lint Status")](https://github.com/filip-herceg/ReViewPoint/actions/workflows/docs.yaml)
 ![Test Coverage](docs/content/images/coverage.svg "Test Coverage Badge")
 
-> **Start Here:** For all contributors and users, please read the [Development Guidelines](https://filip-herceg.github.io/ReViewPoint/dev-guidelines/) before making changes or opening a Pull Request.
+> **Modular, scalable, and LLM-powered platform for scientific paper review.**
 
-ReViewPoint is a modular, scalable platform for academic paper evaluation using Large Language Models (LLMs) and rule-based algorithms. It is designed for researchers, reviewers, and developers who want to automate, accelerate, and improve the quality of scientific paper review workflows.
+ReViewPoint empowers development teams with intuitive tools that make code review efficient, comprehensive, and collaborative. Built for researchers, reviewers, and developers who want to automate, accelerate, and improve the quality of scientific paper review workflows.
 
 ---
 
-## 🚀 Quick Start (Fresh Windows Machine)
+## 🎬 **Project Tour**
 
-**Get running in 3 commands - 100% automated with safety checks:**
+<!-- � **Video Tour** (Coming Soon)
+
+Get a quick overview of ReViewPoint's features and capabilities in this guided tour.
+
+[Watch Video Tour →](link-to-video)
+
+--- -->
+
+*📹 Video tour coming soon - will showcase the complete ReViewPoint workflow*
+
+---
+
+## 🚀 **Quick Start**
+
+### **⚡ Get Running in Under 30 Minutes**
+
+**For fresh Windows machines - 100% automated with safety checks:**
 
 ```powershell
 git clone https://github.com/filip-herceg/ReViewPoint.git
@@ -20,182 +36,223 @@ cd ReViewPoint
 powershell -ExecutionPolicy Bypass -File scripts/install-prerequisites.ps1
 ```
 
-### 🛡️ **What Gets Installed? (Complete Transparency)**
+**For other platforms or existing environments:**
 
-**The installer clearly lists ALL tools before installation:**
+```bash
+# Clone and start everything
+git clone https://github.com/filip-herceg/ReViewPoint.git
+cd ReViewPoint
 
-- **Chocolatey** (package manager)
-- **Git** (version control)
-- **Node.js 18+** (JavaScript runtime)
-- **pnpm** (fast package manager)
-- **Python 3.11+** (backend runtime)
-- **pipx** (Python app installer)
-- **Hatch** (Python environment manager)
-- **Docker Desktop guidance** (manual install)
+# Option A: SQLite (Simple, no containers)
+pnpm run dev
 
-**⚡ Safety Features:**
+# Option B: PostgreSQL (Production-like, auto-setup)
+pnpm run dev:postgres
+```
 
-- Shows complete tool list before installation
-- Requires confirmation before proceeding
-- All VS Code tasks check prerequisites first
-- Helpful error messages if tools are missing
-- Zero risk of silent failures
-
-Perfect for grading scenarios - professor sees exactly what gets installed!
+**🎯 [Complete Installation Guide →](https://filip-herceg.github.io/ReViewPoint/installation/)**
 
 ---
 
-## Quickstart
+## 🌟 **What is ReViewPoint?**
 
-- **[Setup Guide](https://filip-herceg.github.io/ReViewPoint/setup/):** Step-by-step environment and installation instructions (Hatch-based, no pyenv/conda).
-- **[System Architecture](https://filip-herceg.github.io/ReViewPoint/architecture/):** Visual overview, diagrams, and directory/file breakdowns.
-- **[Backend Source Guide](https://filip-herceg.github.io/ReViewPoint/backend-source-guide/):** Layered, cross-referenced backend documentation.
+ReViewPoint is a **production-ready platform** that streamlines scientific paper review through:
 
-## Development
+### **🔬 Core Capabilities**
 
-- **[Developer Guidelines](https://filip-herceg.github.io/ReViewPoint/dev-guidelines/):** Coding standards, workflow, PR process, and test mapping.
-- **[IDE Tasks](docs/IDE_TASKS.md):** VS Code tasks for streamlined development, testing, and deployment workflows.
-- **[CI/CD](https://filip-herceg.github.io/ReViewPoint/ci-cd/):** Project-specific continuous integration and deployment info.
-- **[How to Use the Docs](https://filip-herceg.github.io/ReViewPoint/how-to-use-docs/):** Navigation, search, and best practices for contributors.
+- **AI-Powered Analysis** - LLM integration for automated paper evaluation
+- **Secure File Management** - Robust PDF upload and processing
+- **User Management** - Complete authentication and authorization system
+- **Modular Architecture** - Extensible design for custom analysis modules
+- **Developer Experience** - Comprehensive tooling and VS Code integration
 
-## Modules
+### **🏆 Production Highlights**
 
-- **[Module Guide](https://filip-herceg.github.io/ReViewPoint/module-guide/):** How to build, test, and integrate modules.
-- **[LLM Integration](https://filip-herceg.github.io/ReViewPoint/llm-integration/):** Adapters, prompt templating, and LLM usage.
-
-## Resources
-
-- **[FAQ](https://filip-herceg.github.io/ReViewPoint/faq/):** Common questions and troubleshooting.
-- **[Changelog](https://filip-herceg.github.io/ReViewPoint/changelog/):** Major updates and documentation changes.
-- **[Documentation Enhancements](https://filip-herceg.github.io/ReViewPoint/documentation-enhancements/):** Advanced features, plugins, and tips.
+| Component         | Technology             | Status                    |
+| ----------------- | ---------------------- | ------------------------- |
+| **Backend**       | FastAPI + Python 3.11+ | ✅ **86%+ test coverage** |
+| **Frontend**      | React 18 + TypeScript  | ✅ **80%+ test coverage** |
+| **Database**      | PostgreSQL/SQLite      | ✅ **Production ready**   |
+| **CI/CD**         | GitHub Actions         | ✅ **Automated pipeline** |
+| **Documentation** | MkDocs Material        | ✅ **968+ pages**         |
 
 ---
 
-## Project Overview
+## 🎯 **Vision & Mission**
 
-ReViewPoint provides a flexible backend for:
+### **Our Vision**
+ReViewPoint envisions becoming the **premier platform for collaborative code review** that transforms how development teams work together, creating an environment where code quality, team collaboration, and project transparency are seamlessly integrated.
 
-- Automated evaluation of scientific papers (PDFs) using LLMs and rule-based algorithms
-- Modular, plug-and-play analysis modules
-- Secure user management and file uploads
-- Extensible LLM adapters (OpenAI, vLLM, etc.)
-- Async, production-grade backend with CI/CD and test infrastructure
+### **Our Mission**
+**To empower development teams with intuitive tools that make code review efficient, comprehensive, and collaborative.**
 
-**Main use-cases:**
+We believe great software is built through:
+- **Collaborative Review Processes** - Multiple perspectives lead to better code
+- **Transparent Communication** - Clear feedback loops and decision tracking  
+- **Quality-Driven Development** - Built-in tools that promote best practices
+- **Inclusive Team Dynamics** - Accessible interfaces for all skill levels
 
-- Academic peer review support
-- Automated compliance and structure checks
-- Custom module development for new evaluation criteria
+**📖 [Full Vision & Mission →](https://filip-herceg.github.io/ReViewPoint/vision-mission-goals/)**
 
-## System Architecture
+---
 
-- **Frontend:** React + Vite + TailwindCSS (see docs)
-- **Backend:** FastAPI core, async SQLAlchemy, modular dispatch
-- **Modules:** Dockerized microservices, JSON I/O, independent CI
-- **LLM Layer:** Pluggable adapters (OpenAI, vLLM), prompt templating
-- **Storage:** PostgreSQL (metadata), MinIO/S3 (file storage)
-- **Deployment:** [Docker configurations](backend/deployment/docker/DOCKER-GUIDE.md) for development and production
+## 📚 **Essential Documentation**
 
-See the [Architecture Diagram](https://filip-herceg.github.io/ReViewPoint/architecture/) for a visual overview.
+### **🎯 Getting Started**
 
-## Features
+<div align="center">
 
-- Modular backend with plug-and-play modules
-- Async database and file storage
-- Secure user authentication and management
-- File upload and PDF parsing
-- LLM integration (OpenAI, vLLM, Jinja2 prompts)
-- Full test suite and CI/CD pipeline
+| 🚀 **Quick Start** | 👩‍💻 **For Developers** | 📖 **Resources** | ℹ️ **About** |
+|---|---|---|---|
+| Get running in under 30 minutes | Technical docs & guides | Guidelines, API, FAQ | Vision, status, roadmap |
+| [Installation Guide →](https://filip-herceg.github.io/ReViewPoint/installation/) | [Developer Docs →](https://filip-herceg.github.io/ReViewPoint/developer-overview/) | [Browse Resources →](https://filip-herceg.github.io/ReViewPoint/resources/guidelines/) | [Project Overview →](https://filip-herceg.github.io/ReViewPoint/vision-mission-goals/) |
 
-## Getting Started
+</div>
 
-### Quick Development Setup
+### **🔧 Key Resources**
 
-1. **Clone the repository:**
+- **📘 [Complete Documentation](https://filip-herceg.github.io/ReViewPoint/)** - Full documentation site
+- **🏗️ [System Architecture](https://filip-herceg.github.io/ReViewPoint/developer-overview/)** - Technical architecture and design
+- **🧩 [Plugins Guide](https://filip-herceg.github.io/ReViewPoint/plugins/)** - Modular plugin ecosystem
+- **📊 [Current Status](https://filip-herceg.github.io/ReViewPoint/current-status/)** - Development progress and roadmap
+- **🛠️ [Developer Guidelines](https://filip-herceg.github.io/ReViewPoint/resources/guidelines/)** - Coding standards and workflow
 
-   ```bash
-   git clone https://github.com/your-org/reviewpoint.git
-   cd reviewpoint
-   ```
+---
 
-2. **Install dependencies:**
+## 🏗️ **System Architecture**
 
-   ```bash
-   pnpm install
-   ```
+### **Technology Stack**
 
-3. **Choose your development database:**
+- **Frontend:** React 18 + TypeScript + Vite + TailwindCSS
+- **Backend:** FastAPI + Python 3.11+ + async SQLAlchemy  
+- **Database:** PostgreSQL (production) / SQLite (development)
+- **LLM Integration:** Pluggable adapters (OpenAI, vLLM), prompt templating
+- **Storage:** File upload with validation and metadata management
+- **DevOps:** Docker, GitHub Actions CI/CD, automated testing
 
-   **Option A: SQLite (Simple, no containers)**
+### **Key Features**
 
-   ```bash
-   pnpm dev
-   ```
+✅ **Async Operations** - Full async/await support throughout  
+✅ **Type Safety** - Complete TypeScript coverage, Pydantic validation  
+✅ **Security** - JWT authentication, rate limiting, comprehensive error handling  
+✅ **Testing** - 86%+ backend coverage, 80%+ frontend coverage  
+✅ **Documentation** - Auto-generated API docs, comprehensive guides  
+✅ **Developer Experience** - VS Code integration, hot reload, automated setup  
 
-   **Option B: PostgreSQL (Production-like, auto-setup)**
+---
 
-   ```bash
-   pnpm dev:postgres
-   ```
+## 🛠️ **Development**
 
-   The PostgreSQL option will automatically:
-   - Start Docker container
-   - Setup database and run migrations
-   - Start both backend and frontend servers
+### **🔧 Developer Experience**
 
-For detailed setup and troubleshooting, see:
+- **VS Code Integration**: Pre-configured tasks for all operations
+- **Package Management**: PNPM (frontend) + Hatch (backend)  
+- **Hot Reload**: Instant development feedback
+- **Automated Setup**: One-command PostgreSQL setup with Docker
+- **Quality Tools**: Black, Ruff, Biome, comprehensive linting
 
-- [Development Setup](DEVELOPMENT.md)
-- [PostgreSQL Setup Guide](docs/POSTGRES_SETUP.md)
+### **🧪 Testing**
 
-## Documentation
+```bash
+# Run all tests
+pnpm run test:all
 
-- **Docs website:** [https://filip-herceg.github.io/ReViewPoint/](https://filip-herceg.github.io/ReViewPoint/)
-- [Architecture](https://filip-herceg.github.io/ReViewPoint/architecture/)
-- [Developer Guidelines](https://filip-herceg.github.io/ReViewPoint/dev-guidelines/)
-- [Module Guide](https://filip-herceg.github.io/ReViewPoint/module-guide/)
-- [LLM Integration](https://filip-herceg.github.io/ReViewPoint/llm-integration/)
-- [Backend Docs](https://filip-herceg.github.io/ReViewPoint/backend/)
+# Backend tests only
+pnpm run test:backend
 
-## Development Standards
+# Frontend tests only  
+pnpm run test:frontend
 
-- **Formatting:** [black](https://black.readthedocs.io/)
-- **Linting:** [ruff](https://docs.astral.sh/ruff/)
-- **Type checking:** [mypy](https://mypy-lang.org/)
-- **Dependency management:** [hatch](https://hatch.pypa.io/)
-- **Commit messages:** Conventional, see [Developer Guidelines](https://filip-herceg.github.io/ReViewPoint/dev-guidelines/)
+# With coverage
+pnpm run test:coverage
+```
 
-## Contribution Workflow
+### **📋 Development Standards**
 
-1. **Fork** the repository on GitHub
-2. **Clone** your fork locally
-3. **Install** dependencies with `hatch env create && hatch run pip install -e .`
-4. **Create a new branch** for your feature or fix
-5. **Write code and tests** (format, lint, type-check before commit)
-6. **Push** your branch and open a **Pull Request**
-7. **CI/CD** will run tests and checks automatically
-8. **Discuss and revise** as needed
+| Language       | Formatter  | Linter    | Type Checker |
+| -------------- | ---------- | --------- | ------------ |
+| **Python**     | `black`    | `ruff`    | `mypy`       |
+| **TypeScript** | `Biome`    | `Biome`   | `tsc`        |
+| **Markdown**   | `Prettier` | `markdownlint` | -      |
 
-For questions or bugs, [open a GitHub Issue](https://github.com/filip-herceg/ReViewPoint/issues).
+---
 
-See [Developer Guidelines](https://filip-herceg.github.io/ReViewPoint/dev-guidelines/) for details.
+## 🤝 **Contributing**
 
-## Testing
+We welcome contributions! Here's how to get started:
 
-- Run all backend tests:
+### **🎯 Quick Contribution Guide**
 
-  ```bash
-  hatch run pytest
-  ```
+1. **📖 Read the [Contributing Guidelines](https://filip-herceg.github.io/ReViewPoint/resources/contributing/)**
+2. **🍴 Fork** the repository on GitHub
+3. **📥 Clone** your fork locally
+4. **🛠️ Install** dependencies: `pnpm install`
+5. **🌿 Create** a feature branch: `git checkout -b feature/amazing-feature`
+6. **✍️ Write** code and tests
+7. **✅ Test** your changes: `pnpm run test:all`
+8. **📤 Push** and open a Pull Request
 
-- Run with coverage:
+### **💡 Contribution Areas**
 
-  ```bash
-  hatch run pytest --cov=backend --cov-report=term --cov-report=xml
-  ```
+- 🐛 **Bug fixes** and performance improvements
+- ✨ **New features** and enhancements  
+- 📝 **Documentation** improvements
+- 🧩 **Plugin development** for analysis modules
+- 🧪 **Testing** and quality assurance
+- 🎨 **UI/UX** improvements
 
-- See [Backend Test Instructions](https://filip-herceg.github.io/ReViewPoint/backend/test-instructions/) for more.
+---
 
-## License
+## 📊 **Project Status**
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+### **🚧 Current Development Phase: Beta**
+
+- **Backend**: Production-ready core with 135+ tests
+- **Frontend**: Active development, foundation complete
+- **Documentation**: Comprehensive (968+ pages)
+- **CI/CD**: Fully automated pipeline
+- **Plugins**: Modular architecture with sample plugins
+
+### **🔄 Recent Updates**
+
+- ✅ Complete plugin documentation system
+- ✅ Enhanced VS Code task integration
+- ✅ Automated PostgreSQL setup with Docker
+- ✅ Comprehensive testing infrastructure
+- ✅ Production-ready authentication system
+
+**📈 [Full Status Report →](https://filip-herceg.github.io/ReViewPoint/current-status/)**
+
+---
+
+## 🔗 **Links & Resources**
+
+### **📚 Documentation**
+- **🏠 [Main Documentation](https://filip-herceg.github.io/ReViewPoint/)** - Complete documentation site
+- **📖 [API Reference](https://filip-herceg.github.io/ReViewPoint/resources/api-reference/)** - Full API documentation
+- **❓ [FAQ](https://filip-herceg.github.io/ReViewPoint/resources/faq/)** - Common questions & troubleshooting
+
+### **🛠️ Development** 
+- **🐛 [Issues](https://github.com/filip-herceg/ReViewPoint/issues)** - Report bugs & request features
+- **🔄 [Pull Requests](https://github.com/filip-herceg/ReViewPoint/pulls)** - View active contributions
+- **📋 [Projects](https://github.com/filip-herceg/ReViewPoint/projects)** - Development roadmap
+
+### **🌐 Community**
+- **💬 [Discussions](https://github.com/filip-herceg/ReViewPoint/discussions)** - Community Q&A
+- **📧 [Contact](mailto:contact@reviewpoint.dev)** - Direct communication
+
+---
+
+## 📄 **License**
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+
+**⭐ Star this repo if you find it useful! ⭐**
+
+[🚀 Get Started](https://filip-herceg.github.io/ReViewPoint/installation/) | [📖 Docs](https://filip-herceg.github.io/ReViewPoint/) | [🤝 Contribute](https://filip-herceg.github.io/ReViewPoint/resources/contributing/)
+
+</div>
