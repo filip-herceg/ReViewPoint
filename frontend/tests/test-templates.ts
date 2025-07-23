@@ -22,6 +22,7 @@ import type {
 	AuthLoginRequest,
 	AuthRegisterRequest,
 	AuthTokens,
+	AuthUser,
 	FileUploadResponse,
 	PaginatedResponse,
 	Upload,
@@ -132,6 +133,19 @@ export function createUser(overrides: Partial<User> = {}): User {
 		testLogger.debug("Created user", user);
 	}
 	return user;
+}
+
+export function createAuthUser(overrides: Partial<AuthUser> = {}): AuthUser {
+	const userId = overrides.id ?? String(Math.floor(Math.random() * 10000));
+	// Ensure name is always defined (not undefined)
+	const authUser: AuthUser = {
+		id: userId,
+		email: overrides.email ?? `${randomString(5)}@example.com`,
+		name: overrides.name !== undefined ? overrides.name : `user_${randomString(4)}`,
+		roles: overrides.roles ?? ["user"],
+	};
+	testLogger.debug("Created auth user", authUser);
+	return authUser;
 }
 
 // Template for upload form data (matches UploadForm initial state)

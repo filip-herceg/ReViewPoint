@@ -252,8 +252,8 @@ describe("JWT utilities", () => {
 			const invalidPayload = {} as JWTPayload; // Missing exp field
 			expect(isTokenExpired(invalidPayload)).toBe(true);
 
-			const nullPayload = null as any;
-			expect(isTokenExpired(nullPayload)).toBe(true);
+			// Test with null payload
+			expect(isTokenExpired(null as unknown as JWTPayload)).toBe(true);
 
 			testLogger.debug("Invalid tokens treated as expired");
 		});

@@ -2,14 +2,14 @@ import type { Mock } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 type ExtendedMock = Mock<
-	() => {
-		trackEvent: Mock<any>;
-		trackPageview: Mock<any>;
-		enableAutoPageviews: Mock<any>;
-		enableAutoOutboundTracking: Mock<any>;
-	}
+  () => {
+	trackEvent: Mock<(...args: unknown[]) => void>;
+	trackPageview: Mock<(...args: unknown[]) => void>;
+	enableAutoPageviews: Mock<(...args: unknown[]) => void>;
+	enableAutoOutboundTracking: Mock<(...args: unknown[]) => void>;
+  }
 > & {
-	invokeMockImplementationOnce: () => any;
+  invokeMockImplementationOnce: () => unknown;
 };
 
 vi.mock("plausible-tracker", () => {
@@ -53,9 +53,10 @@ let plausibleMock: ExtendedMock;
 beforeEach(() => {
 	plausibleMock = vi.mocked(require("plausible-tracker").default);
 
-	// Ensure mockImplementation is attached
+	// Ensure mockImplementation is properly set up (the mock should already have this from vi.mock())
 	if (!plausibleMock.mockImplementation) {
-		(plausibleMock as any).mockImplementation = vi.fn(() =>
+		// Type assertion to bypass TypeScript checking for this edge case setup
+		(plausibleMock as unknown as Record<string, unknown>).mockImplementation = vi.fn(() =>
 			Object.assign(
 				() => ({
 					trackEvent: vi.fn(),
@@ -108,23 +109,6 @@ beforeEach(() => {
 		);
 	}
 
-	// Ensure mockImplementationOnce is attached
-	if (!plausibleMock.mockImplementationOnce) {
-		plausibleMock.mockImplementationOnce = vi.fn();
-	}
-
-	// Ensure invokeMockImplementationOnce is attached
-	if (!plausibleMock.invokeMockImplementationOnce) {
-		plausibleMock.invokeMockImplementationOnce = function () {
-			const impl = this.getMockImplementation();
-			if (!impl) {
-				throw new Error("No mock implementation set");
-			}
-			const result = impl();
-			return result;
-		};
-	}
-
 	// Debug log to inspect plausibleMock state
 	console.log("Debug: plausibleMock after initialization", plausibleMock);
 	console.debug("plausibleMock state in beforeEach:", plausibleMock);
@@ -147,14 +131,12 @@ describe("analytics.ts", () => {
 	});
 
 	it("should handle Plausible init errors defensively", async () => {
-		// Debug log to inspect plausibleMock
-		console.log("Debug: plausibleMock in test", plausibleMock);
-
-		// Ensure plausibleMock is defined
-		expect(plausibleMock).toBeDefined();
+		// Get the mock directly from the module mock
+		const plausibleModule = await import("plausible-tracker");
+		const mockTracker = plausibleModule.default as unknown as ExtendedMock;
 
 		// Force Plausible to throw
-		plausibleMock.mockImplementationOnce(() => {
+		mockTracker.mockImplementationOnce(() => {
 			throw new Error("fail");
 		});
 

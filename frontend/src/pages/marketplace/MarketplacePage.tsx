@@ -104,11 +104,11 @@ const MarketplacePage: React.FC = () => {
 	};
 
 	const handleSortChange = (sortBy: string) => {
-		setSearchParams({
-			...searchParams,
-			sortBy: sortBy as any,
-			page: 1,
-		});
+	   setSearchParams({
+			   ...searchParams,
+			   sortBy: sortBy as string,
+			   page: 1,
+	   });
 	};
 
 	const handlePageChange = (page: number) => {

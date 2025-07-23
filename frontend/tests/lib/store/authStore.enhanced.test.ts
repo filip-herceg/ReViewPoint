@@ -10,8 +10,27 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getRefreshToken, getToken, useAuthStore } from "@/lib/store/authStore";
-import { createUser, createValidAuthTokens } from "../../test-templates";
+import { createValidAuthTokens } from "../../test-templates";
 import { testLogger } from "../../test-utils";
+
+// Helper to create AuthUser compatible with the store
+function createStoreAuthUser() {
+	return {
+		id: `user_${Math.floor(Math.random() * 10000)}`,
+		email: `user${Math.floor(Math.random() * 1000)}@example.com`,
+		name: `User ${Math.floor(Math.random() * 1000)}`,
+		roles: ["user"],
+	};
+}
+
+// Helper to create AuthTokens compatible with the store
+function createStoreAuthTokens() {
+	const tokens = createValidAuthTokens();
+	return {
+		...tokens,
+		expires_in: 3600,
+	};
+}
 
 // Mock logger to prevent console output during tests
 vi.mock("@/logger", () => ({
@@ -42,8 +61,8 @@ describe("Enhanced Auth Store", () => {
 		it("should login user with valid data", () => {
 			testLogger.info("Testing user login with valid data");
 
-			const user = createUser();
-			const tokens = createValidAuthTokens();
+			const user = createStoreAuthUser();
+			const tokens = createStoreAuthTokens();
 
 			const authStore = useAuthStore.getState();
 			authStore.login(user, tokens);
@@ -63,10 +82,10 @@ describe("Enhanced Auth Store", () => {
 		it("should throw error for invalid user data", () => {
 			testLogger.info("Testing login with invalid user data");
 
-			const tokens = createValidAuthTokens();
+			const tokens = createStoreAuthTokens();
 			const authStore = useAuthStore.getState();
 
-			expect(() => authStore.login(null as any, tokens)).toThrow(
+			expect(() => authStore.login(null as unknown, tokens)).toThrow(
 				"User and tokens required for login",
 			);
 
@@ -82,10 +101,10 @@ describe("Enhanced Auth Store", () => {
 		it("should throw error for invalid tokens", () => {
 			testLogger.info("Testing login with invalid tokens");
 
-			const user = createUser();
+			const user = createStoreAuthUser();
 			const authStore = useAuthStore.getState();
 
-			expect(() => authStore.login(user, null as any)).toThrow(
+			expect(() => authStore.login(user, null as unknown)).toThrow(
 				"User and tokens required for login",
 			);
 
@@ -100,13 +119,11 @@ describe("Enhanced Auth Store", () => {
 	});
 
 	describe("Logout Functionality", () => {
-		it("should logout user and clear all data", () => {
-			testLogger.info("Testing user logout");
+		it("should logout correctly", () => {
+			testLogger.info("Testing logout flow");
 
-			const user = createUser();
-			const tokens = createValidAuthTokens();
-
-			// First login
+			const user = createStoreAuthUser();
+			const tokens = createStoreAuthTokens();			// First login
 			const authStore = useAuthStore.getState();
 			authStore.login(user, tokens);
 
@@ -130,7 +147,7 @@ describe("Enhanced Auth Store", () => {
 		it("should set tokens with valid data", () => {
 			testLogger.info("Testing token setting with valid data");
 
-			const tokens = createValidAuthTokens();
+			const tokens = createStoreAuthTokens();
 			const authStore = useAuthStore.getState();
 
 			authStore.setTokens(tokens);
@@ -147,7 +164,7 @@ describe("Enhanced Auth Store", () => {
 
 			const authStore = useAuthStore.getState();
 
-			expect(() => authStore.setTokens(null as any)).toThrow(
+			expect(() => authStore.setTokens(null as unknown)).toThrow(
 				"Invalid tokens provided",
 			);
 			expect(() =>
@@ -155,6 +172,7 @@ describe("Enhanced Auth Store", () => {
 					access_token: "",
 					refresh_token: "test",
 					token_type: "bearer",
+					expires_in: 3600,
 				}),
 			).toThrow("Invalid tokens provided");
 
@@ -169,7 +187,7 @@ describe("Enhanced Auth Store", () => {
 		it("should clear tokens", () => {
 			testLogger.info("Testing token clearing");
 
-			const tokens = createValidAuthTokens();
+			const tokens = createStoreAuthTokens();
 			const authStore = useAuthStore.getState();
 
 			// First set tokens
@@ -207,7 +225,7 @@ describe("Enhanced Auth Store", () => {
 		it("should get current access token", () => {
 			testLogger.info("Testing access token utility");
 
-			const tokens = createValidAuthTokens();
+			const tokens = createStoreAuthTokens();
 			useAuthStore.setState({ tokens, isAuthenticated: true });
 
 			const accessToken = getToken();
@@ -219,7 +237,7 @@ describe("Enhanced Auth Store", () => {
 		it("should get current refresh token", () => {
 			testLogger.info("Testing refresh token utility");
 
-			const tokens = createValidAuthTokens();
+			const tokens = createStoreAuthTokens();
 			useAuthStore.setState({ tokens, isAuthenticated: true });
 
 			const refreshToken = getRefreshToken();
@@ -247,8 +265,8 @@ describe("Enhanced Auth Store", () => {
 		it("should maintain consistent state during login", () => {
 			testLogger.info("Testing state consistency during login");
 
-			const user = createUser();
-			const tokens = createValidAuthTokens();
+			const user = createStoreAuthUser();
+			const tokens = createStoreAuthTokens();
 
 			const authStore = useAuthStore.getState();
 			authStore.login(user, tokens);
@@ -267,8 +285,8 @@ describe("Enhanced Auth Store", () => {
 		it("should maintain consistent state during logout", () => {
 			testLogger.info("Testing state consistency during logout");
 
-			const user = createUser();
-			const tokens = createValidAuthTokens();
+			const user = createStoreAuthUser();
+			const tokens = createStoreAuthTokens();
 
 			// First login
 			const authStore = useAuthStore.getState();
@@ -291,7 +309,7 @@ describe("Enhanced Auth Store", () => {
 		it("should maintain consistent state during token operations", () => {
 			testLogger.info("Testing state consistency during token operations");
 
-			const tokens = createValidAuthTokens();
+			const tokens = createStoreAuthTokens();
 			const authStore = useAuthStore.getState();
 
 			// Set tokens

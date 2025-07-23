@@ -317,7 +317,7 @@ const ReviewDetailPage: React.FC = () => {
 							acc[key] = module.configuration?.[key].default;
 							return acc;
 						},
-						{} as any,
+			   {} as Record<string, unknown>,
 					),
 				});
 				setConfigSidebarOpen(true);
@@ -589,7 +589,7 @@ const ReviewDetailPage: React.FC = () => {
 		};
 
 		return (
-			(results as any)[module.id] || {
+			   (results as Record<string, unknown>)[module.id] || {
 				status: "completed",
 				score: Math.round((Math.random() * 30 + 70) * 100) / 100,
 				findings: Math.floor(Math.random() * 5),
@@ -598,7 +598,7 @@ const ReviewDetailPage: React.FC = () => {
 		);
 	};
 
-	const handleSaveModuleConfig = async (config: any) => {
+const handleSaveModuleConfig = async (config: Record<string, unknown>) => {
 		console.log("Running module with config:", selectedModule?.id, config);
 
 		// TODO: Implement actual module execution
@@ -623,7 +623,7 @@ const ReviewDetailPage: React.FC = () => {
 			// Check if module supports the file type and is active
 			return (
 				subscription.status === "active" &&
-				module.capabilities.supportedFormats.includes(review.fileType as any)
+			   module.capabilities.supportedFormats.includes(review.fileType as string)
 			);
 		});
 	};
@@ -981,7 +981,7 @@ const ReviewDetailPage: React.FC = () => {
 																</p>
 																<div className="space-y-1">
 																	{result.claims.map(
-																		(claim: any, idx: number) => (
+			   (claim: { claim: string; verified: boolean }, idx: number) => (
 																			<div
 																				key={`claim-${idx}-${claim.claim?.slice(0, 15) || idx}`}
 																				className="flex items-center gap-2 text-sm"
@@ -1067,7 +1067,7 @@ const ReviewDetailPage: React.FC = () => {
 																		<select
 																			value={severityFilter}
 																			onChange={(e) =>
-																				setSeverityFilter(e.target.value as any)
+					   setSeverityFilter(e.target.value as string)
 																			}
 																			className="px-2 py-1 border rounded text-sm"
 																		>
@@ -1195,7 +1195,7 @@ const ReviewDetailPage: React.FC = () => {
 																					),
 																					severityFilter,
 																					typeFilter,
-																				).map((issue: any, _idx: number) => {
+			   ).map((issue: { type?: string }, _idx: number) => {
 																					const originalIdx =
 																						result.issues.indexOf(issue);
 																					return (

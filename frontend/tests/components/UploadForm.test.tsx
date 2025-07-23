@@ -22,7 +22,7 @@ function setupUseUploadStoreMock(
 	if (useUploadStoreSpy) useUploadStoreSpy.mockRestore();
 	useUploadStoreSpy = vi
 		.spyOn(uploadStoreModule, "useUploadStore")
-		.mockReturnValue(store as any);
+	   .mockReturnValue(store as unknown);
 	return store;
 }
 
@@ -105,9 +105,9 @@ describe("UploadForm", () => {
 	});
 
 	it("shows store error for non-Error values (object, number)", () => {
-		renderUploadFormWithStore({ error: { message: "Obj error" } as any });
+	   renderUploadFormWithStore({ error: { message: "Obj error" } as unknown });
 		expect(screen.getByText(/error: obj error/i)).toBeInTheDocument();
-		renderUploadFormWithStore({ error: 42 as any });
+	   renderUploadFormWithStore({ error: 42 as unknown });
 		expect(screen.getByText(/error: 42/i)).toBeInTheDocument();
 	});
 

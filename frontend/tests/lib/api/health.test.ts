@@ -1,4 +1,36 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { AxiosRequestConfig } from "axios";
+import type { ApiResponse } from "@/lib/api/types/common";
+
+// Define interfaces matching those in the health.ts file
+interface PoolStats {
+	size?: number;
+	checkedin?: number;
+	checkedout?: number;
+	overflow?: number;
+	awaiting?: number;
+}
+
+interface DBStatus {
+	ok: boolean;
+	error?: string;
+	pool?: PoolStats;
+}
+
+interface Versions {
+	python: string;
+	fastapi?: string;
+	sqlalchemy?: string;
+}
+
+interface HealthResponse {
+	status: "ok" | "error";
+	db: DBStatus;
+	uptime: number;
+	response_time: number;
+	versions: Versions;
+	detail?: string;
+}
 
 // Mock the logger and request modules to avoid hoisting issues
 vi.mock("@/logger", () => ({
@@ -14,9 +46,20 @@ vi.mock("@/lib/api/base", () => ({
 }));
 
 describe("Health API", () => {
-	let healthApi: any;
-	let mockRequest: any;
-	let mockLogger: any;
+	// Define proper types for the API and mocks
+	type HealthApi = {
+		getHealth: () => Promise<HealthResponse>;
+		getHealthStatus: () => Promise<HealthResponse>;
+		getMetrics: () => Promise<string>;
+	};
+	
+	let healthApi: HealthApi;
+	let mockRequest: ReturnType<typeof vi.fn>;
+	let mockLogger: {
+		info: ReturnType<typeof vi.fn>;
+		warn: ReturnType<typeof vi.fn>;
+		error: ReturnType<typeof vi.fn>;
+	};
 
 	beforeEach(async () => {
 		// Reset all mocks
@@ -27,9 +70,14 @@ describe("Health API", () => {
 		const logger = (await import("@/logger")).default;
 		const { healthApi: api } = await import("@/lib/api/health");
 
+		// Store the values with proper casting for test mocks
 		healthApi = api;
-		mockRequest = request as any;
-		mockLogger = logger;
+		mockRequest = request as unknown as ReturnType<typeof vi.fn>;
+		mockLogger = logger as unknown as {
+			info: ReturnType<typeof vi.fn>;
+			warn: ReturnType<typeof vi.fn>;
+			error: ReturnType<typeof vi.fn>;
+		};
 	});
 
 	describe("getHealth", () => {

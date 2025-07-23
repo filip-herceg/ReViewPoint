@@ -1,4 +1,36 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { AxiosRequestConfig } from "axios";
+import type { ApiResponse } from "@/lib/api/types/common";
+
+// Define interfaces from uploads.ts
+interface FileUploadResponse {
+	filename: string;
+	url: string;
+}
+
+interface FileDict {
+	filename: string;
+	url: string;
+	status?: string;
+	progress?: number;
+	createdAt?: string;
+}
+
+interface FileListResponse {
+	files: FileDict[];
+	total: number;
+}
+
+interface FileListParams {
+	offset?: number;
+	limit?: number;
+	q?: string;
+	fields?: string;
+	sort?: "created_at" | "filename";
+	order?: "desc" | "asc";
+	created_after?: string;
+	created_before?: string;
+}
 
 // Mock the logger and request modules to avoid hoisting issues
 vi.mock("@/logger", () => ({
@@ -14,9 +46,27 @@ vi.mock("@/lib/api/base", () => ({
 }));
 
 describe("Uploads API", () => {
-	let uploadsApi: any;
-	let mockRequest: any;
-	let mockLogger: any;
+	type UploadsApi = {
+		rootTest: () => Promise<{ status: string; router: string }>;
+		testAlive: () => Promise<{ status: string }>;
+		exportAlive: () => Promise<{ status: string }>;
+		exportTest: () => Promise<{ status: string }>;
+		listFiles: (params?: FileListParams) => Promise<FileListResponse>;
+		getFiles: (params?: FileListParams) => Promise<FileListResponse>;
+		uploadFile: (file: File, options?: { onProgress?: (progress: number) => void }) => Promise<FileUploadResponse>;
+		deleteFile: (filename: string) => Promise<void | null>;
+		exportFiles: (params?: FileListParams) => Promise<Blob>;
+		getFileByFilename: (filename: string) => Promise<FileDict>;
+		deleteFileById: (id: string) => Promise<void>;
+	};
+	
+	let uploadsApi: UploadsApi;
+	let mockRequest: ReturnType<typeof vi.fn>;
+	let mockLogger: {
+		info: ReturnType<typeof vi.fn>;
+		warn: ReturnType<typeof vi.fn>;
+		error: ReturnType<typeof vi.fn>;
+	};
 
 	beforeEach(async () => {
 		// Reset all mocks
@@ -27,9 +77,14 @@ describe("Uploads API", () => {
 		const logger = (await import("@/logger")).default;
 		const { uploadsApi: api } = await import("@/lib/api/uploads");
 
-		uploadsApi = api;
-		mockRequest = request as any;
-		mockLogger = logger;
+		// Use type assertion since the actual implementation may have more methods
+		uploadsApi = api as unknown as UploadsApi;
+		mockRequest = request as unknown as ReturnType<typeof vi.fn>;
+		mockLogger = logger as unknown as {
+			info: ReturnType<typeof vi.fn>;
+			warn: ReturnType<typeof vi.fn>;
+			error: ReturnType<typeof vi.fn>;
+		};
 	});
 
 	describe("Test and diagnostic endpoints", () => {

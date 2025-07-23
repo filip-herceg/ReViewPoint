@@ -28,7 +28,7 @@ describe("Feature Flags System", () => {
 
 		// Clear any window feature flags
 		if (typeof window !== "undefined") {
-			delete (window as any).FEATURE_FLAGS;
+			delete (window as Window & { FEATURE_FLAGS?: unknown }).FEATURE_FLAGS;
 		}
 
 		testLogger.debug("Feature flags test setup complete");
@@ -68,7 +68,7 @@ describe("Feature Flags System", () => {
 			};
 
 			// Mock window.FEATURE_FLAGS
-			(global as any).window = {
+			(global as Record<string, unknown>).window = {
 				FEATURE_FLAGS: windowFlags,
 			};
 
@@ -98,7 +98,7 @@ describe("Feature Flags System", () => {
 				.mockImplementation(() => {});
 
 			// Mock malformed window feature flags
-			(global as any).window = {
+			(global as Record<string, unknown>).window = {
 				FEATURE_FLAGS: {
 					enableSocialLogin: "not-a-boolean",
 					invalidFlag: "invalid",
@@ -236,9 +236,10 @@ describe("Feature Flags System", () => {
 				.spyOn(console, "error")
 				.mockImplementation(() => {});
 
+			// Use a type assertion to override type safety for testing invalid values
 			const invalidUpdates = {
-				enableSocialLogin: "not-a-boolean" as any,
-				invalidFlag: true as any,
+				enableSocialLogin: "not-a-boolean" as unknown as boolean,
+				invalidFlag: true as unknown as boolean,
 			};
 
 			updateFeatureFlags(invalidUpdates);

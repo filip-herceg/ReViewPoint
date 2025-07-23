@@ -22,9 +22,23 @@ import {
 } from "../../test-templates";
 import { testLogger } from "../../test-utils";
 
+// Define type for ImportMeta environment
+interface ImportMetaEnv {
+	[key: string]: string | boolean | undefined;
+}
+
+// Define GlobalWithImport interface for testing
+interface GlobalWithImport {
+	import?: {
+		meta: {
+			env: ImportMetaEnv;
+		}
+	};
+}
+
 // Mock import.meta.env
 const mockImportMeta = {
-	env: {} as any,
+	env: {} as ImportMetaEnv,
 };
 
 vi.stubGlobal("import.meta", mockImportMeta);
@@ -324,8 +338,8 @@ describe("Environment Configuration System", () => {
 			testLogger.info("Testing missing import.meta.env handling");
 
 			// Temporarily remove import.meta.env
-			const originalImportMeta = (globalThis as any).import;
-			delete (globalThis as any).import;
+			const originalImportMeta = (globalThis as Record<string, unknown>).import;
+			delete (globalThis as Record<string, unknown>).import;
 
 			const config = getEnvironmentConfig();
 
@@ -334,7 +348,7 @@ describe("Environment Configuration System", () => {
 			expect(config.API_BASE_URL).toBe("http://localhost:8000");
 
 			// Restore import.meta
-			(globalThis as any).import = originalImportMeta;
+			(globalThis as Record<string, unknown>).import = originalImportMeta;
 
 			testLogger.debug("Missing import.meta.env handled gracefully", config);
 		});

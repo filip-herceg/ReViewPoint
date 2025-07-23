@@ -256,7 +256,7 @@ describe("Advanced API Types Tests", () => {
 
 			const invalidStatuses = ["invalid", "unknown", "", null, undefined];
 			invalidStatuses.forEach((status) => {
-				expect(validateUploadStatus(status as any)).toBe(false);
+				expect(validateUploadStatus(status as unknown as string)).toBe(false);
 			});
 
 			testLogger.debug("Upload status validation works correctly");
