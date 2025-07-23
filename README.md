@@ -16,7 +16,7 @@ ReViewPoint empowers development teams with intuitive tools that make code revie
 
 Get a quick overview of ReViewPoint's features and capabilities in this demo.
 
-[📹 Watch Demo Video](https://github.com/user-attachments/assets/demo_video.mkv)
+[📹 Watch Demo Video](https://github.com/user-attachments/assets/8f7d9b3c-b6db-4e29-aa7f-4ab3ca06b729)
 
 ---
 
