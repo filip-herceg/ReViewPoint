@@ -586,8 +586,8 @@ This user export API provides flexible and secure data export capabilities with 
 
 ## Related Files
 
-- [`models/user.py.md`](../../models/user.py.md) - User data models for export
-- [`repositories/user.py.md`](../../repositories/user.py.md) - User data retrieval
-- [`api/deps.py.md`](../deps.py.md) - Export authentication dependencies
-- [`core/database.py.md`](../../core/database.py.md) - Database session management
+- [`models/user.py.md`](../../../models/user.py.md) - User data models for export
+- [`repositories/user.py.md`](../../../repositories/user.py.md) - User data retrieval
+- [`api/deps.py.md`](../../deps.py.md) - Export authentication dependencies
+- [`core/database.py.md`](../../../core/database.py.md) - Database session management
 - [`api/v1/users/core.py.md`](core.py.md) - Core user management API

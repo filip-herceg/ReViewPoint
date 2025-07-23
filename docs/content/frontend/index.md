@@ -1050,6 +1050,79 @@ export const Dropdown = ({ items, onSelect }) => {
 
 ---
 
+## Detailed Module Documentation
+
+Explore the comprehensive source code documentation for essential frontend modules:
+
+### Bootstrap & Configuration
+
+- [Application Entry Point](src/main.tsx.md) - React app initialization and providers
+- [Root Component](src/App.tsx.md) - Main app structure and routing
+- [Analytics Integration](src/analytics.ts.md) - User behavior and performance tracking
+
+### Core Infrastructure
+
+- [Query Client](src/lib/queryClient.ts.md) - React Query configuration and cache management
+- [API Base Client](src/lib/api/base.ts.md) - HTTP client with interceptors and error handling
+- [Environment Configuration](src/lib/config/environment.ts.md) - Environment variables and settings
+- [Feature Flags](src/lib/config/featureFlags.ts.md) - Feature toggle management
+
+### State Management
+
+- [Authentication Store](src/lib/store/authStore.ts.md) - User authentication state with Zustand
+
+### Architecture Overview
+
+The frontend follows a modular architecture with clear separation of concerns:
+
+- **src/main.tsx** - Application bootstrap with providers and error boundaries
+- **src/App.tsx** - Root component with routing and global components
+- **src/lib/** - Core infrastructure including API clients, state management, and configuration
+- **src/components/** - Reusable UI components organized by domain
+- **src/pages/** - Route-level components representing different application screens
+- **src/hooks/** - Custom React hooks for shared logic
+
+For complete module coverage, additional documentation will be added covering:
+
+- Component library (UI, layout, domain-specific components)
+- Custom hooks and utilities
+- Page components and routing
+- Testing utilities and mocks
+
+---
+
+## Component Patterns
+
+The ReViewPoint frontend follows established React patterns for building reusable and maintainable components:
+
+### Container and Presentation Components
+
+- **Container Components**: Handle data fetching and state management
+- **Presentation Components**: Focus purely on rendering UI based on props
+- **Custom Hooks**: Extract reusable logic for cleaner component code
+
+### Composition Patterns
+
+- **Higher-Order Components (HOCs)**: For cross-cutting concerns like authentication
+- **Render Props**: For flexible component composition
+- **Context Providers**: For sharing state across component trees
+
+## Responsive Design
+
+The frontend implements a mobile-first responsive design approach:
+
+### Breakpoint System
+
+- **Mobile**: 320px - 767px (base styles)
+- **Tablet**: 768px - 1023px (md breakpoint)
+- **Desktop**: 1024px+ (lg breakpoint and up)
+
+### Layout Strategies
+
+- **CSS Grid**: For complex layout arrangements
+- **Flexbox**: For component-level layouts
+- **Tailwind CSS**: Utility-first responsive classes
+
 ## Next Steps
 
 - **Backend Integration**: Learn about [Backend](../backend/index.md) API integration

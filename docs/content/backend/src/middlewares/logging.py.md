@@ -369,7 +369,7 @@ Designed for high-throughput production environments:
 ## Related Files
 
 - [`__init__.py`](__init__.py.md) - Middlewares package overview and integration
-- [`../core/logging.py`](../core/logging.py.md) - Core logging configuration and setup
+- [`../core/app_logging.py`](../core/app_logging.py.md) - Core logging configuration and setup
 - [`../core/config.py`](../core/config.py.md) - Application configuration management
 - [`../api/deps.py`](../api/deps.py.md) - Dependency injection system integration
 - [`../main.py`](../main.py.md) - Application setup and middleware registration

@@ -205,7 +205,7 @@ Production monitoring capabilities:
 ## Related Files
 
 - [`logging.py`](logging.py.md) - HTTP request logging middleware implementation
-- [`../core/logging.py`](../core/logging.py.md) - Core logging configuration and setup
+- [`../core/logging.py`](../core/app_logging.py.md) - Core logging configuration and setup
 - [`../core/config.py`](../core/config.py.md) - Application configuration management
 - [`../api/__init__.py`](../api/__init__.py.md) - API package and middleware integration
 - [`../main.py`](../main.py.md) - Application setup and middleware registration

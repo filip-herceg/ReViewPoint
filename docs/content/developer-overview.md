@@ -1,33 +1,236 @@
-# Developer Overview
+# Developer Documentation
 
-Welcome to the ReViewPoint developer documentation! This comprehensive guide will help you understand the architecture, set up your development environment, and contribute effectively to the project.
+> **Everything you need to develop, test, and contribute to ReViewPoint.**
 
-## Quick Start for Developers
-
-### Prerequisites
-
-- **Node.js** 18+ and **pnpm** 8+
-- **Python** 3.11+ and **Hatch**
-- **Docker** (for PostgreSQL)
-- **VS Code** (recommended, with configured tasks)
-
-### Get Up and Running (30 seconds)
+## 🚀 **Quick Start** (30 seconds)
 
 ```bash
-# Clone and setup everything
+# Clone and start everything
 git clone https://github.com/filip-herceg/ReViewPoint.git
 cd ReViewPoint
-pnpm run dev:postgres  # Starts PostgreSQL + Backend + Frontend
+pnpm run dev:postgres  # Starts everything: DB + Backend + Frontend
 ```
 
-This single command will:
+**That's it!** Visit `http://localhost:5173` to see the app running.
 
-- Install all dependencies (backend and frontend)
-- Start PostgreSQL in Docker
-- Run database migrations
-- Start FastAPI backend with hot reload
-- Start Vite frontend with hot reload
-- Open the application at `http://localhost:3000`
+---
+
+## 📚 **Essential Resources**
+
+<div class="grid cards" markdown>
+
+-   :material-cog: **Development Guidelines**
+
+    ---
+
+    Code standards, testing, Git workflow, environment setup
+
+    [View Guidelines →](resources/guidelines.md)
+
+-   :material-test-tube: **Testing Guide**
+
+    ---
+
+    Backend tests, frontend tests, E2E tests, coverage reports
+
+    [Testing Docs →](resources/testing.md)
+
+-   :material-api: **API Reference**
+
+    ---
+
+    Complete REST API documentation with examples
+
+    [API Docs →](resources/api-reference.md)
+
+-   :material-account-plus: **Contributing**
+
+    ---
+
+    How to contribute code, documentation, and report issues
+
+    [Contributing Guide →](resources/contributing.md)
+
+-   :material-help-circle: **FAQ**
+
+    ---
+
+    Common questions, troubleshooting, and solutions
+
+    [Browse FAQ →](resources/faq.md)
+
+-   :material-folder-cog: **Architecture Deep Dive**
+
+    ---
+
+    Backend and frontend architecture, code organization
+
+    [Backend →](backend/index.md) · [Frontend →](frontend/index.md)
+
+</div>
+
+---
+
+## 🏗️ **Architecture Overview**
+
+### **Tech Stack**
+
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| **Frontend** | React 18 + TypeScript + Vite | Modern UI with hot reload |
+| **Backend** | FastAPI + Python 3.11+ | High-performance async API |
+| **Database** | PostgreSQL / SQLite | Reliable data persistence |
+| **Testing** | Pytest + Vitest + Playwright | Comprehensive test coverage |
+| **CI/CD** | GitHub Actions | Automated quality gates |
+
+### **Project Structure**
+
+```text
+ReViewPoint/
+├── backend/               # FastAPI backend
+│   ├── src/              # Source code
+│   ├── tests/            # Backend tests (135+ tests)
+│   └── alembic/          # Database migrations
+├── frontend/             # React frontend  
+│   ├── src/              # Source code
+│   ├── tests/            # Frontend tests (672+ tests)
+│   └── e2e/              # End-to-end tests
+└── docs/                 # Documentation (you are here!)
+```
+
+### **Development Workflow**
+
+```mermaid
+graph LR
+    A[Clone Repo] --> B[Run pnpm run dev:postgres]
+    B --> C[Backend: localhost:8000]
+    B --> D[Frontend: localhost:5173]
+    C --> E[Make Changes]
+    D --> E
+    E --> F[Run Tests]
+    F --> G[Submit PR]
+```
+
+---
+
+## ⚡ **VS Code Integration**
+
+ReViewPoint includes **24 VS Code tasks** for streamlined development:
+
+### **Most Used Tasks**
+
+- **`ReViewPoint: Start Development`** - Full stack with PostgreSQL
+- **`ReViewPoint: Run All Tests`** - Backend + Frontend tests
+- **`ReViewPoint: Install Dependencies`** - One-command setup
+- **`ReViewPoint: Format All Code`** - Backend + Frontend formatting
+
+*Access via `Ctrl+Shift+P` → "Tasks: Run Task"*
+
+---
+
+## 🧪 **Testing Strategy**
+
+| Test Type | Framework | Coverage | Command |
+|-----------|-----------|----------|---------|
+| **Backend Unit** | pytest | 86%+ | `pnpm run test:backend` |
+| **Frontend Unit** | Vitest | 80%+ | `cd frontend && pnpm test` |
+| **E2E Tests** | Playwright | Critical paths | `cd frontend && pnpm run test:e2e` |
+| **All Tests** | Combined | Full suite | `pnpm run test:all` |
+
+---
+
+## 🔧 **Development Environment**
+
+### **Prerequisites**
+
+- **Node.js** 18+ with **pnpm** 8+
+- **Python** 3.11+ with **Hatch**  
+- **Docker** (for PostgreSQL)
+- **VS Code** (recommended)
+
+### **Database Options**
+
+```bash
+# Option 1: SQLite (simple, no Docker)
+pnpm run dev
+
+# Option 2: PostgreSQL (production-like)
+pnpm run dev:postgres
+```
+
+### **Hot Reload Development**
+
+Both backend and frontend support hot reload:
+
+- **Backend**: FastAPI auto-reloads on Python file changes
+- **Frontend**: Vite HMR for instant React updates
+- **Database**: Automatic migrations on startup
+
+---
+
+## 🎯 **Common Development Tasks**
+
+### **Adding a New Feature**
+
+1. **Create feature branch**: `git checkout -b feature/your-feature`
+2. **Backend changes**: Add to `backend/src/`
+3. **Frontend changes**: Add to `frontend/src/`
+4. **Write tests**: Backend in `backend/tests/`, Frontend in `frontend/tests/`
+5. **Test locally**: `pnpm run test:all`
+6. **Submit PR**: Follow [Contributing Guidelines](resources/contributing.md)
+
+### **Debugging**
+
+```bash
+# Backend debugging with logs
+cd backend && hatch run python -m debugpy --listen 5678 --wait-for-client -m uvicorn src.main:app --reload
+
+# Frontend debugging  
+cd frontend && pnpm run dev --debug
+
+# Database debugging
+pnpm run db:reset  # Reset and rebuild database
+```
+
+### **Code Quality**
+
+```bash
+# Lint and format everything
+pnpm run lint:all
+pnpm run format:all
+
+# Type checking
+cd backend && hatch run mypy src/
+cd frontend && pnpm run type-check
+```
+
+---
+
+## 🚀 **Production Deployment**
+
+ReViewPoint is production-ready with:
+
+- **Docker containerization** for easy deployment
+- **Environment-specific configs** for dev/staging/prod  
+- **Automated CI/CD** with GitHub Actions
+- **Health checks** and monitoring endpoints
+- **Security best practices** (JWT, rate limiting, CORS)
+
+---
+
+## 💡 **Getting Help**
+
+**Stuck? Here's where to get help:**
+
+1. **Check the [FAQ](resources/faq.md)** - Common issues and solutions
+2. **Browse [Testing Guide](resources/testing.md)** - For test-related questions  
+3. **Review [Contributing Guide](resources/contributing.md)** - For contribution process
+4. **Create GitHub Issue** - For bugs or feature requests
+5. **Search the codebase** - Well-documented inline comments
+
+---
+
+**Ready to contribute?** Start with the [Contributing Guide](resources/contributing.md) and make your first PR!
 
 ## Architecture Overview
 

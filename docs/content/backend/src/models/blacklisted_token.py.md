@@ -231,8 +231,8 @@ Complete audit support:
 ## Related Files
 
 - [`base.py`](base.py.md) - BaseModel inheritance with timestamp functionality
-- [`../../schemas/blacklisted_token.py`](../../schemas/blacklisted_token.py.md) - Blacklisted token schemas
-- [`../../repositories/blacklisted_token.py`](../../repositories/blacklisted_token.py.md) - Blacklist repository operations
-- [`../../core/security.py`](../../core/security.py.md) - JWT security integration
-- [`../../api/v1/auth.py`](../../api/v1/auth.py.md) - Authentication endpoints using blacklist
-- [`../../middlewares/`](../../middlewares/__init__.py.md) - Authentication middleware integration
+- [`../schemas/blacklisted_token.py`](../schemas/blacklisted_token.py.md) - Blacklisted token schemas
+- [`../repositories/blacklisted_token.py`](../repositories/blacklisted_token.py.md) - Blacklist repository operations
+- [`../core/security.py`](../core/security.py.md) - JWT security integration
+- [`../api/v1/auth.py`](../api/v1/auth.py.md) - Authentication endpoints using blacklist
+- [`../middlewares/`](../middlewares/__init__.py.md) - Authentication middleware integration

@@ -930,13 +930,13 @@ async def test_user_registration_workflow(client: TestClient):
 
 ## Related Files
 
-- [User Service](../services/user.py.md) - Business logic for user operations
-- [User Repository](../repositories/user.py.md) - Data access layer
-- [User Schemas](../schemas/user.py.md) - Pydantic schemas for validation
-- [User Model](../models/user.py.md) - SQLAlchemy user model
-- [Authentication API](auth.py.md) - Login and token management endpoints
-- [API Dependencies](../deps.py.md) - Shared API dependencies and utilities
-- [Security Utils](../../core/security.py.md) - JWT and password utilities
+- [User Service](../../../services/user.py.md) - Business logic for user operations
+- [User Repository](../../../repositories/user.py.md) - Data access layer
+- [User Schemas](../../../schemas/user.py.md) - Pydantic schemas for validation
+- [User Model](../../../models/user.py.md) - SQLAlchemy user model
+- [Authentication API](../auth.py.md) - Login and token management endpoints
+- [API Dependencies](../../deps.py.md) - Shared API dependencies and utilities
+- [Security Utils](../../../core/security.py.md) - JWT and password utilities
 
 ## Security Considerations
 

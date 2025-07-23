@@ -6,7 +6,24 @@
 
 ## Overview
 
-This file serves as the main entry point for the ReViewPoint FastAPI application. It configures the application instance, sets up middleware, includes API routers, and defines the application lifecycle events.
+This file serves as the main entry point for the FastAPI application.
+
+### Core Dependencies
+
+- [config.py](core/config.py.md) - Application configuration and settings
+- [database.py](core/database.py.md) - Database connection and session management
+- [logging.py](core/app_logging.py.md) - Logging configuration and setup
+
+### API Routes
+
+- [auth.py](api/v1/auth.py.md) - Authentication endpoints
+- [users.py](api/v1/users/core.py.md) - User management endpoints
+- [uploads.py](api/v1/uploads.py.md) - File upload endpoints
+- [health.py](api/v1/health.py.md) - Health check endpoints
+
+## Description
+
+The main module is the entry point for the FastAPI application. It configures the application instance, sets up middleware, includes API routers, and defines the application lifecycle events.
 
 ## Key Components
 
@@ -253,21 +270,16 @@ logger.info("Application started", extra={"component": "main"})
 
 ### Core Configuration
 
-- [config.py](../core/config.py.md) - Application configuration and settings
-- [database.py](../core/database.py.md) - Database connection and session management
-- [logging.py](../core/logging.py.md) - Logging configuration and setup
+- [config.py](core/config.py.md) - Application configuration and settings
+- [database.py](core/database.py.md) - Database connection and session management
+- [logging.py](core/app_logging.py.md) - Logging configuration and setup
 
 ### API Components
 
-- [auth.py](../api/v1/auth.py.md) - Authentication endpoints
-- [users.py](../api/v1/users/core.py.md) - User management endpoints
-- [uploads.py](../api/v1/uploads.py.md) - File upload endpoints
-- [health.py](../api/v1/health.py.md) - Health check endpoints
-
-### Testing
-
-- [test_main.py](../../tests/test_main.py.md) - Main application tests
-- [conftest.py](../../tests/conftest.py.md) - Test configuration and fixtures
+- [auth.py](api/v1/auth.py.md) - Authentication endpoints
+- [users.py](api/v1/users/core.py.md) - User management endpoints
+- [uploads.py](api/v1/uploads.py.md) - File upload endpoints
+- [health.py](api/v1/health.py.md) - Health check endpoints
 
 ## Development Notes
 

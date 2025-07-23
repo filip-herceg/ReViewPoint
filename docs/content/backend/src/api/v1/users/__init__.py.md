@@ -228,7 +228,7 @@ Package-level metrics provide holistic view:
 - [`exports.py`](exports.py.md) - User data export and administrative reporting
 - [`test_only_router.py`](test_only_router.py.md) - Development and testing endpoints
 - [`../../__init__.py`](../../__init__.py.md) - API v1 package integration
-- [`../../../deps.py`](../../../deps.py.md) - Dependency injection for authentication
-- [`../../../../services/user.py`](../../../../services/user.py.md) - User service implementation
-- [`../../../../models/user.py`](../../../../models/user.py.md) - User ORM model definition
-- [`../../../../schemas/user.py`](../../../../schemas/user.py.md) - User API schema definitions
+- [`../../deps.py`](../../deps.py.md) - Dependency injection for authentication
+- [`../../../services/user.py`](../../../services/user.py.md) - User service implementation
+- [`../../../models/user.py`](../../../models/user.py.md) - User ORM model definition
+- [`../../../schemas/user.py`](../../../schemas/user.py.md) - User API schema definitions

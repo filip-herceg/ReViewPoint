@@ -822,6 +822,59 @@ SECURITY_HEADERS = {
 
 ---
 
+## Detailed Module Documentation
+
+Explore the complete 1:1 source code documentation for all backend modules:
+
+### Core Infrastructure
+
+- [Application Entry Point](src/main.py.md) - FastAPI application setup and configuration
+- [Core Configuration](src/core/config.py.md) - Application settings and environment management
+- [Database Management](src/core/database.py.md) - Database connections and session management
+- [Security Framework](src/core/security.py.md) - JWT authentication and password hashing
+- [Logging System](src/core/app_logging.py.md) - Comprehensive logging configuration
+
+### API Layer
+
+- [API Dependencies](src/api/deps.py.md) - Shared API dependencies and utilities
+- [Authentication Routes](src/api/v1/auth.py.md) - Login, registration, token management
+- [User Management API](src/api/v1/users/core.py.md) - Complete user operations
+- [File Upload API](src/api/v1/uploads.py.md) - File handling and storage
+- [Health Check API](src/api/v1/health.py.md) - System health monitoring
+- [WebSocket Handler](src/api/v1/websocket.py.md) - Real-time communication
+
+### Business Logic
+
+- [User Service](src/services/user.py.md) - User business logic and operations
+- [Upload Service](src/services/upload.py.md) - File processing and management
+
+### Data Access Layer
+
+- [Base Model](src/models/base.py.md) - SQLAlchemy base model with common fields
+- [User Model](src/models/user.py.md) - User entity and relationships
+- [File Model](src/models/file.py.md) - File metadata and storage tracking
+- [Token Models](src/models/blacklisted_token.py.md) - Token management models
+- [User Repository](src/repositories/user.py.md) - User data access patterns
+- [File Repository](src/repositories/file.py.md) - File data operations
+
+### Request/Response Schemas
+
+- [Authentication Schemas](src/schemas/auth.py.md) - Login, registration schemas
+- [User Schemas](src/schemas/user.py.md) - User data transfer objects
+- [File Schemas](src/schemas/file.py.md) - File upload and metadata schemas
+- [Token Schemas](src/schemas/token.py.md) - JWT token structures
+
+### Utilities & Middleware
+
+- [Caching Utilities](src/utils/cache.py.md) - Redis and memory caching
+- [File Utilities](src/utils/file.py.md) - File processing helpers
+- [Validation Utilities](src/utils/validation.py.md) - Custom validation logic
+- [Hashing Utilities](src/utils/hashing.py.md) - Password and data hashing
+- [Rate Limiting](src/utils/rate_limit.py.md) - API rate limiting implementation
+- [Request Logging](src/middlewares/logging.py.md) - HTTP request/response logging
+
+---
+
 ## Next Steps
 
 - **API Integration**: Learn how to integrate with the [Frontend](../frontend/index.md)

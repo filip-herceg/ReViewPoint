@@ -190,5 +190,5 @@ Models work seamlessly with test configurations:
 - [`file.py`](file.py.md) - File metadata and upload management
 - [`blacklisted_token.py`](blacklisted_token.py.md) - JWT security operations
 - [`used_password_reset_token.py`](used_password_reset_token.py.md) - Password reset security
-- [`../../repositories/`](../../repositories/__init__.py.md) - Repository layer using models
-- [`../../schemas/`](../../schemas/__init__.py.md) - API schemas coordinating with models
+- [`../repositories/`](../repositories/__init__.py.md) - Repository layer using models
+- [`../schemas/`](../schemas/__init__.py.md) - API schemas coordinating with models

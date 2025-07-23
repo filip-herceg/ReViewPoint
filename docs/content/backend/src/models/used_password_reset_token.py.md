@@ -286,8 +286,8 @@ def __repr__(self: "UsedPasswordResetToken") -> str:
 ## Related Files
 
 - [`base.py`](base.py.md) - BaseModel inheritance with timestamp functionality
-- [`../../schemas/auth.py`](../../schemas/auth.py.md) - Password reset schemas
-- [`../../services/user.py`](../../services/user.py.md) - User service with password reset logic
-- [`../../core/security.py`](../../core/security.py.md) - Security utilities for password reset
-- [`../../api/v1/auth.py`](../../api/v1/auth.py.md) - Authentication endpoints
-- [`../../utils/validation.py`](../../utils/validation.py.md) - Additional validation utilities
+- [`../schemas/auth.py`](../schemas/auth.py.md) - Password reset schemas
+- [`../services/user.py`](../services/user.py.md) - User service with password reset logic
+- [`../core/security.py`](../core/security.py.md) - Security utilities for password reset
+- [`../api/v1/auth.py`](../api/v1/auth.py.md) - Authentication endpoints
+- [`../utils/validation.py`](../utils/validation.py.md) - Additional validation utilities

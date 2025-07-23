@@ -144,28 +144,15 @@ markdown_extensions:
       custom_checkbox: true
   - pymdownx.tilde
 
-# Page tree
+# Page tree - Slim navigation with key pages for maximum user-friendliness
 nav:
   - Home: index.md
-  - Project Overview:
-      - Vision, Mission & Goals: vision-mission-goals.md
-      - Current Status: current-status.md
-      - Future Goals: future-goals.md
-  - Installation: installation.md
-  - Developer Documentation:
-      - Overview: developer-overview.md
-      - Backend Architecture: 
-          - Overview: backend/README.md
-          - Complete Source Code: backend/index.md
-      - Frontend Architecture:
-          - Overview: frontend/README.md
-          - Complete Source Code: frontend/index.md
-  - Resources:
-      - API Reference: resources/api-reference.md
-      - FAQ: resources/faq.md
+  - Vision & Mission: vision-mission-goals.md
+  - Get Started: installation.md
+  - Documentation: developer-overview.md
+  - Resources: 
       - Guidelines: resources/guidelines.md
-      - Testing: resources/testing.md
-      - Contributing: resources/contributing.md
+      - VS Code Tasks Safety: vscode-tasks-safety-guide.md
 
 # Documentation directory
 docs_dir: content

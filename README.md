@@ -10,6 +10,39 @@ ReViewPoint is a modular, scalable platform for academic paper evaluation using 
 
 ---
 
+## 🚀 Quick Start (Fresh Windows Machine)
+
+**Get running in 3 commands - 100% automated with safety checks:**
+
+```powershell
+git clone https://github.com/filip-herceg/ReViewPoint.git
+cd ReViewPoint
+powershell -ExecutionPolicy Bypass -File scripts/install-prerequisites.ps1
+```
+
+### 🛡️ **What Gets Installed? (Complete Transparency)**
+
+**The installer clearly lists ALL tools before installation:**
+- **Chocolatey** (package manager)
+- **Git** (version control) 
+- **Node.js 18+** (JavaScript runtime)
+- **pnpm** (fast package manager)
+- **Python 3.11+** (backend runtime)
+- **pipx** (Python app installer)
+- **Hatch** (Python environment manager)
+- **Docker Desktop guidance** (manual install)
+
+**⚡ Safety Features:**
+- Shows complete tool list before installation
+- Requires confirmation before proceeding  
+- All VS Code tasks check prerequisites first
+- Helpful error messages if tools are missing
+- Zero risk of silent failures
+
+Perfect for grading scenarios - professor sees exactly what gets installed!
+
+---
+
 ## Quickstart
 
 - **[Setup Guide](https://filip-herceg.github.io/ReViewPoint/setup/):** Step-by-step environment and installation instructions (Hatch-based, no pyenv/conda).

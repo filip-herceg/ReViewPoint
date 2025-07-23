@@ -1525,7 +1525,7 @@ This WebSocket API provides enterprise-grade real-time communication capabilitie
 
 ## Related Files
 
-- [`core/security.py.md`](../core/security.py.md) - JWT token validation and security
-- [`models/user.py.md`](../models/user.py.md) - User model for authentication
+- [`core/security.py.md`](../../core/security.py.md) - JWT token validation and security
+- [`models/user.py.md`](../../models/user.py.md) - User model for authentication
 - [`api/deps.py.md`](../deps.py.md) - Dependency injection patterns
 - [`api/v1/uploads.py.md`](uploads.py.md) - File upload integration with WebSocket events

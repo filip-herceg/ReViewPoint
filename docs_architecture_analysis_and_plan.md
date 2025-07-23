@@ -697,7 +697,7 @@ The new structure enables intuitive access to information, eliminates redundanci
 
 **Testing Standards:**
 
-- Backend: Pytest with async support, 86%+ coverage target
+- Backend: Pytest with async support, 80%+ coverage target
 - Frontend: Vitest for unit tests, Playwright for E2E
 - All tests must pass before PR merge
 

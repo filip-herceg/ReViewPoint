@@ -351,7 +351,7 @@ This test-only router provides essential development and testing utilities while
 
 ## Related Files
 
-- [`utils/environment.py.md`](../../utils/environment.py.md) - Environment detection utilities
-- [`models/user.py.md`](../../models/user.py.md) - User data models
-- [`core/database.py.md`](../../core/database.py.md) - Database session management
+- [`utils/environment.py.md`](../../../utils/environment.py.md) - Environment detection utilities
+- [`models/user.py.md`](../../../models/user.py.md) - User data models
+- [`core/database.py.md`](../../../core/database.py.md) - Database session management
 - [`api/v1/users/core.py.md`](core.py.md) - Production user management API

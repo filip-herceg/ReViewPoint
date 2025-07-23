@@ -221,5 +221,5 @@ The base model promotes secure data access:
 - [`file.py`](file.py.md) - File model with BaseModel functionality
 - [`blacklisted_token.py`](blacklisted_token.py.md) - Security model using base patterns
 - [`used_password_reset_token.py`](used_password_reset_token.py.md) - Password reset with base inheritance
-- [`../../core/database.py`](../../core/database.py.md) - Database configuration using Base
-- [`../../repositories/`](../../repositories/__init__.py.md) - Repository layer using BaseModel patterns
+- [`../core/database.py`](../core/database.py.md) - Database configuration using Base
+- [`../repositories/`](../repositories/__init__.py.md) - Repository layer using BaseModel patterns

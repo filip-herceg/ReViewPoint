@@ -343,8 +343,8 @@ API designed for production deployment:
 
 ## Related Files
 
-- [`__init__.py`](../README.md) - API package overview and architecture
-- [`deps.py`](deps.py.md) - Comprehensive dependency injection system
+- [`__init__.py`](../__init__.py.md) - API package overview and architecture
+- [`deps.py`](../deps.py.md) - Comprehensive dependency injection system
 - [`auth.py`](auth.py.md) - Authentication and authorization endpoints
 - [`health.py`](health.py.md) - System health monitoring endpoints
 - [`uploads.py`](uploads.py.md) - File upload and management endpoints
