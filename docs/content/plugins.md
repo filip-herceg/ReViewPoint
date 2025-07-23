@@ -36,7 +36,7 @@ git clone https://github.com/filip-herceg/ReViewPoint-CitationValidatorPro.git
 
 ### 1. PDF LaTeX Converter
 
-**Status:** Available (Built-in)  
+**Status:** In Development (Built-in)  
 **Repository:** [pdf_latex_converter](https://github.com/Swabble/pdf_latex_converter.git)
 
 The PDF LaTeX Converter is ReViewPoint's primary document processing plugin, designed to intelligently extract and structure content from PDF documents using advanced parsing and AI-assisted analysis. This plugin transforms unstructured PDF content into well-organized, machine-readable formats suitable for academic review workflows.
@@ -84,7 +84,7 @@ The PDF LaTeX Converter is ReViewPoint's primary document processing plugin, des
 
 ### 3. Citation Validator Pro
 
-**Status:** Available (Marketplace)  
+**Status:** In Development (Marketplace)  
 **Repository:** [ReViewPoint-CitationValidatorPro](https://github.com/filip-herceg/ReViewPoint-CitationValidatorPro)
 
 The Citation Validator Pro is a comprehensive tool for validating and analyzing citations in scientific papers. It helps ensure citation accuracy, completeness, and adherence to academic standards.

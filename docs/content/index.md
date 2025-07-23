@@ -8,35 +8,35 @@
 
 - :material-rocket-launch: **Quick Start**
 
-  ***
+    ---
 
-  Get ReViewPoint running on your machine in under 30 minutes
+    Get ReViewPoint running on your machine in under 30 minutes
 
-  [Installation Guide →](installation.md)
+    [Installation Guide →](installation.md)
 
 - :material-code-braces: **For Developers**
 
-  ***
+    ---
 
-  Technical documentation, architecture guides, and contribution info
+    Technical documentation, architecture guides, and contribution info
 
-  [Developer Docs →](developer-overview.md)
+    [Developer Docs →](developer-overview.md)
 
 - :material-book-open: **Resources**
 
-  ***
+    ---
 
-  Guidelines, testing, API docs, FAQ, and contributing guides
+    Guidelines, testing, API docs, FAQ, and contributing guides
 
-  [Browse Resources →](resources/guidelines.md)
+    [Browse Resources →](resources/guidelines.md)
 
 - :material-information: **About the Project**
 
-  ***
+    ---
 
-  Vision, current status, features, and future roadmap
+    Vision, current status, features, and future roadmap
 
-  [Project Overview →](vision-mission-goals.md)
+    [Project Overview →](vision-mission-goals.md)
 
 </div>
 
