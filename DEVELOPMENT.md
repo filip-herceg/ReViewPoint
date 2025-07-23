@@ -15,7 +15,7 @@ Set up Git to handle line endings properly:
 # For Windows users
 git config --global core.autocrlf true
 
-# For macOS/Linux users  
+# For macOS/Linux users
 git config --global core.autocrlf input
 ```
 

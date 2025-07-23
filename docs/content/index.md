@@ -1,89 +1,88 @@
-# Welcome to ReViewPoint
-
-[![Docs Build](https://github.com/filip-herceg/ReViewPoint/actions/workflows/docs.yaml/badge.svg "Docs Build Status")](https://github.com/filip-herceg/ReViewPoint/actions/workflows/docs.yaml)
-[![Lint Status](https://github.com/filip-herceg/ReViewPoint/actions/workflows/docs.yaml/badge.svg?label=lint "Lint Status")](https://github.com/filip-herceg/ReViewPoint/actions/workflows/docs.yaml)
-![Test Coverage](images/coverage.svg "Test Coverage Badge")
+# ReViewPoint
 
 > **Modular, scalable, and LLM-powered platform for scientific paper review.**
 
+## 🚀 **Get Started**
+
+<div class="grid cards" markdown>
+
+- :material-rocket-launch: **Quick Start**
+
+  ***
+
+  Get ReViewPoint running on your machine in under 30 minutes
+
+  [Installation Guide →](installation.md)
+
+- :material-code-braces: **For Developers**
+
+  ***
+
+  Technical documentation, architecture guides, and contribution info
+
+  [Developer Docs →](developer-overview.md)
+
+- :material-book-open: **Resources**
+
+  ***
+
+  Guidelines, testing, API docs, FAQ, and contributing guides
+
+  [Browse Resources →](resources/guidelines.md)
+
+- :material-information: **About the Project**
+
+  ***
+
+  Vision, current status, features, and future roadmap
+
+  [Project Overview →](vision-mission-goals.md)
+
+</div>
+
+## ✨ **What is ReViewPoint?**
+
+ReViewPoint is a **production-ready platform** that streamlines scientific paper review through:
+
+- **AI-Powered Analysis** - LLM integration for automated paper evaluation
+- **Secure File Management** - Robust PDF upload and processing
+- **User Management** - Complete authentication and authorization system
+- **Modular Architecture** - Extensible design for custom analysis modules
+- **Developer Experience** - Comprehensive tooling and VS Code integration
+
+## 🌐 **Live Application URLs**
+
+**If you have ReViewPoint running locally, access it here:**
+
+- **📱 Main Application**: [http://localhost:5173](http://localhost:5173) ← **Start here!**
+- **📚 Documentation Site**: [http://127.0.0.1:8001/ReViewPoint/](http://127.0.0.1:8001/ReViewPoint/) ← **You are here!**
+- **🔧 Backend API**: [http://localhost:8000](http://localhost:8000)
+- **📖 API Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+**Not running yet?** → [Get Started in 30 minutes](installation.md)
+
+### 🏆 **Production Highlights**
+
+| Component         | Technology             | Status                    |
+| ----------------- | ---------------------- | ------------------------- |
+| **Backend**       | FastAPI + Python 3.11+ | ✅ **86%+ test coverage** |
+| **Frontend**      | React 18 + TypeScript  | ✅ **80%+ test coverage** |
+| **Database**      | PostgreSQL/SQLite      | ✅ **Production ready**   |
+| **CI/CD**         | GitHub Actions         | ✅ **Automated pipeline** |
+| **Documentation** | MkDocs Material        | ✅ **968+ pages**         |
+
 ---
 
-## Quick Links
+**New to the project?** Start with [Installation →](installation.md)  
+**Want to contribute?** Check [Developer Docs →](developer-overview.md)
 
-- [Developer Guidelines](dev-guidelines.md)
-- [Backend API Reference](backend/api-reference.md)
-- [System Architecture](architecture.md)
-- [Setup Guide](setup.md)
-- [CI/CD](ci-cd.md)
-- [FAQ](faq.md)
+- **Async Operations**: Full async/await support throughout
+- **Type Safety**: Complete TypeScript coverage, Pydantic validation
+- **Security**: JWT authentication, rate limiting, comprehensive error handling
 
----
+### 🔧 **Developer Experience**
 
-<div class="grid cards">
-
-<div class="card">
-<h3>🚀 Quickstart</h3>
-<ul>
-  <li><a href="setup/">Setup Guide</a></li>
-  <li><a href="architecture/">System Architecture</a></li>
-  <li><a href="backend-source-guide/">Backend Source Guide</a></li>
-</ul>
-</div>
-
-<div class="card">
-<h3>🛠️ Development</h3>
-<ul>
-  <li><a href="dev-guidelines/">Developer Guidelines</a></li>
-  <li><a href="test-instructions/">Test Instructions</a></li>
-  <li><a href="test-log-levels/">Test Log Level Control</a></li>
-  <li><a href="ci-cd/">CI/CD</a></li>
-  <li><a href="backend/api-reference/">Backend API Reference</a></li>
-</ul>
-</div>
-
-<div class="card">
-<h3>🧩 Modules</h3>
-<ul>
-  <li><a href="module-guide/">Module Guide</a></li>
-  <li><a href="llm-integration/">LLM Integration</a></li>
-</ul>
-</div>
-
-<div class="card">
-<h3>📖 Resources</h3>
-<ul>
-  <li><a href="faq/">FAQ</a></li>
-  <li><a href="contributing-docs/">Contributing to Documentation</a></li>
-</ul>
-</div>
-
-</div>
-
----
-
-## Project Overview
-
-ReViewPoint streamlines the review process for scientific papers by combining modular backend services, a modern frontend, and seamless LLM integration. The platform is designed for extensibility, rapid onboarding, and robust automation.
-
-### Key Features
-
-- Modular backend (FastAPI, PostgreSQL, S3)
-- Pluggable module system for new evaluation logic
-- LLM adapters for OpenAI/vLLM
-- CI/CD pipeline for quality and reliability
-- Developer-friendly setup and contribution process
-
----
-
-## Documentation Structure
-
-- **System Overview:** Architecture, backend structure, and file responsibilities
-- **Development:** Setup, guidelines, CI/CD
-- **Modules:** Module creation, LLM integration
-- **Resources:** FAQ, troubleshooting
-
-> For backend file details and test instructions, see [Backend Source Guide](backend-source-guide.md).
-
-## ReViewPoint Documentation
-
-Welcome to the official documentation for ReViewPoint!
+- **VS Code Integration**: Pre-configured tasks for all operations
+- **Package Management**: PNPM (frontend) + Hatch (backend)
+- **Hot Reload**: Instant development feedback
+- **Automated Setup**: One-command PostgreSQL setup with Docker

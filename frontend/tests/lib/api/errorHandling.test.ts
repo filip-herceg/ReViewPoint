@@ -53,7 +53,7 @@ describe("handleApiError", () => {
 
 	it("handles null/undefined error", () => {
 		expect(handleApiError(undefined).type).toBe("unknown");
-		expect(handleApiError(null as any).type).toBe("unknown");
+		expect(handleApiError(null as unknown).type).toBe("unknown");
 	});
 });
 

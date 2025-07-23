@@ -174,7 +174,8 @@ export function isFeatureEnabled(feature: keyof FeatureFlags): boolean {
 
 	logger.debug(`Feature flag check: ${feature} = ${enabled}`);
 
-	return enabled;
+	// Ensure we always return a boolean - unknown features should be false
+	return Boolean(enabled);
 }
 
 /**

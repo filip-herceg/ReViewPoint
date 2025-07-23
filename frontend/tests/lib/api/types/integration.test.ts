@@ -7,6 +7,7 @@ import {
 	extractApiData,
 	isApiError,
 	isAuthError,
+	type Upload,
 	type User,
 } from "@/lib/api/types";
 import { useAuthStore } from "@/lib/store/authStore";
@@ -16,6 +17,7 @@ import {
 	createApiUpload,
 	createAuthError,
 	createAuthTokens,
+	createAuthUser,
 	createUser,
 	createValidationError,
 } from "../../../test-templates";
@@ -61,7 +63,7 @@ describe("API Types Integration Tests", () => {
 			testLogger.info("Testing successful auth store login");
 
 			const mockTokens = createAuthTokens();
-			const mockUser = createUser();
+			const mockUser = createAuthUser();
 
 			// Mock successful login
 			vi.mocked(authApi.login).mockResolvedValue(mockTokens);
@@ -81,7 +83,7 @@ describe("API Types Integration Tests", () => {
 			testLogger.info("Testing auth store logout");
 
 			const mockTokens = createAuthTokens();
-			const mockUser = createUser();
+			const mockUser = createAuthUser();
 
 			const authStore = useAuthStore.getState();
 			authStore.login(mockUser, mockTokens);
@@ -340,10 +342,10 @@ describe("API Types Integration Tests", () => {
 			const uploadStore = useUploadStore.getState();
 
 			// Test invalid operations
-			expect(() => uploadStore.addUpload(null as any)).toThrow();
+			expect(() => uploadStore.addUpload(null as unknown as Upload)).toThrow();
 			expect(() => uploadStore.updateUpload("", {})).toThrow();
 			expect(() =>
-				uploadStore.setCurrentUpload({ id: "", name: "" } as any),
+				uploadStore.setCurrentUpload({ id: "", name: "" } as unknown as Upload),
 			).toThrow();
 
 			testLogger.debug("Invalid store operation handling test passed");

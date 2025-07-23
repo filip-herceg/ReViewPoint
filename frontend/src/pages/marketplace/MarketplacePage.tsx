@@ -106,7 +106,7 @@ const MarketplacePage: React.FC = () => {
 	const handleSortChange = (sortBy: string) => {
 		setSearchParams({
 			...searchParams,
-			sortBy: sortBy as any,
+			sortBy: sortBy as string,
 			page: 1,
 		});
 	};

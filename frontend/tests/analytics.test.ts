@@ -3,13 +3,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 type ExtendedMock = Mock<
 	() => {
-		trackEvent: Mock<any>;
-		trackPageview: Mock<any>;
-		enableAutoPageviews: Mock<any>;
-		enableAutoOutboundTracking: Mock<any>;
+		trackEvent: Mock<(...args: unknown[]) => void>;
+		trackPageview: Mock<(...args: unknown[]) => void>;
+		enableAutoPageviews: Mock<(...args: unknown[]) => void>;
+		enableAutoOutboundTracking: Mock<(...args: unknown[]) => void>;
 	}
 > & {
-	invokeMockImplementationOnce: () => any;
+	invokeMockImplementationOnce: () => unknown;
 };
 
 vi.mock("plausible-tracker", () => {
@@ -53,25 +53,19 @@ let plausibleMock: ExtendedMock;
 beforeEach(() => {
 	plausibleMock = vi.mocked(require("plausible-tracker").default);
 
-	// Ensure mockImplementation is attached
+	// Ensure mockImplementation is properly set up (the mock should already have this from vi.mock())
 	if (!plausibleMock.mockImplementation) {
-		(plausibleMock as any).mockImplementation = vi.fn(() =>
-			Object.assign(
-				() => ({
-					trackEvent: vi.fn(),
-					trackPageview: vi.fn(),
-					enableAutoPageviews: vi.fn(),
-					enableAutoOutboundTracking: vi.fn(),
-				}),
-				{
-					calls: [],
-					instances: [],
-					contexts: [],
-					invocationCallOrder: [],
-					results: [],
-					settledResults: [],
-					lastCall: [] as [],
-					mock: {
+		// Type assertion to bypass TypeScript checking for this edge case setup
+		(plausibleMock as unknown as Record<string, unknown>).mockImplementation =
+			vi.fn(() =>
+				Object.assign(
+					() => ({
+						trackEvent: vi.fn(),
+						trackPageview: vi.fn(),
+						enableAutoPageviews: vi.fn(),
+						enableAutoOutboundTracking: vi.fn(),
+					}),
+					{
 						calls: [],
 						instances: [],
 						contexts: [],
@@ -79,50 +73,41 @@ beforeEach(() => {
 						results: [],
 						settledResults: [],
 						lastCall: [] as [],
+						mock: {
+							calls: [],
+							instances: [],
+							contexts: [],
+							invocationCallOrder: [],
+							results: [],
+							settledResults: [],
+							lastCall: [] as [],
+						},
+						mockClear: vi.fn(),
+						mockReset: vi.fn(),
+						mockRestore: vi.fn(),
+						getMockImplementation: vi.fn(),
+						mockImplementation: vi.fn(),
+						mockImplementationOnce: vi.fn(),
+						withImplementation: vi.fn(),
+						mockReturnThis: vi.fn(),
+						mockReturnValue: vi.fn(),
+						mockReturnValueOnce: vi.fn(),
+						mockResolvedValue: vi.fn(),
+						mockResolvedValueOnce: vi.fn(),
+						mockRejectedValue: vi.fn(),
+						mockRejectedValueOnce: vi.fn(),
+						getMockName: vi.fn(),
+						mockName: vi.fn(),
+						[Symbol.dispose]: vi.fn(),
+						new: () => ({
+							trackEvent: vi.fn(),
+							trackPageview: vi.fn(),
+							enableAutoPageviews: vi.fn(),
+							enableAutoOutboundTracking: vi.fn(),
+						}),
 					},
-					mockClear: vi.fn(),
-					mockReset: vi.fn(),
-					mockRestore: vi.fn(),
-					getMockImplementation: vi.fn(),
-					mockImplementation: vi.fn(),
-					mockImplementationOnce: vi.fn(),
-					withImplementation: vi.fn(),
-					mockReturnThis: vi.fn(),
-					mockReturnValue: vi.fn(),
-					mockReturnValueOnce: vi.fn(),
-					mockResolvedValue: vi.fn(),
-					mockResolvedValueOnce: vi.fn(),
-					mockRejectedValue: vi.fn(),
-					mockRejectedValueOnce: vi.fn(),
-					getMockName: vi.fn(),
-					mockName: vi.fn(),
-					[Symbol.dispose]: vi.fn(),
-					new: () => ({
-						trackEvent: vi.fn(),
-						trackPageview: vi.fn(),
-						enableAutoPageviews: vi.fn(),
-						enableAutoOutboundTracking: vi.fn(),
-					}),
-				},
-			),
-		);
-	}
-
-	// Ensure mockImplementationOnce is attached
-	if (!plausibleMock.mockImplementationOnce) {
-		plausibleMock.mockImplementationOnce = vi.fn();
-	}
-
-	// Ensure invokeMockImplementationOnce is attached
-	if (!plausibleMock.invokeMockImplementationOnce) {
-		plausibleMock.invokeMockImplementationOnce = function () {
-			const impl = this.getMockImplementation();
-			if (!impl) {
-				throw new Error("No mock implementation set");
-			}
-			const result = impl();
-			return result;
-		};
+				),
+			);
 	}
 
 	// Debug log to inspect plausibleMock state
@@ -147,14 +132,12 @@ describe("analytics.ts", () => {
 	});
 
 	it("should handle Plausible init errors defensively", async () => {
-		// Debug log to inspect plausibleMock
-		console.log("Debug: plausibleMock in test", plausibleMock);
-
-		// Ensure plausibleMock is defined
-		expect(plausibleMock).toBeDefined();
+		// Get the mock directly from the module mock
+		const plausibleModule = await import("plausible-tracker");
+		const mockTracker = plausibleModule.default as unknown as ExtendedMock;
 
 		// Force Plausible to throw
-		plausibleMock.mockImplementationOnce(() => {
+		mockTracker.mockImplementationOnce(() => {
 			throw new Error("fail");
 		});
 

@@ -1,0 +1,309 @@
+tests\lib\config\featureFlags.test.ts:186:15 lint/suspicious/noExplicitAny ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Unexpected any. Specify a different type.
+  
+    185 Γöé 			// Mock the feature flags for testing
+  > 186 Γöé 			(global as any).window = {
+        Γöé 			           ^^^
+    187 Γöé 				FEATURE_FLAGS: testFlags,
+    188 Γöé 			};
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+tests\lib\utils.ts:30:41 lint/suspicious/noExplicitAny ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Unexpected any. Specify a different type.
+  
+    28 Γöé 			// Unmock twMerge to pass through
+    29 Γöé 			const { twMerge } = require("tailwind-merge");
+  > 30 Γöé 			twMerge.mockImplementation((...args: any[]) => args.join(" "));
+       Γöé 			                                     ^^^
+    31 Γöé 			const { clsx } = require("clsx");
+    32 Γöé 			clsx.mockImplementationOnce(() => {
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+tests\lib\utils\chunkUtils.test.ts:406:35 lint/suspicious/noExplicitAny ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Unexpected any. Specify a different type.
+  
+    405 Γöé 			// Test with null/undefined inputs
+  > 406 Γöé 			expect(() => chunkFile(null as any, 1024)).not.toThrow();
+        Γöé 			                               ^^^
+    407 Γöé 			expect(() => calculateProgress(0, 0, 0, 0, Date.now())).not.toThrow();
+    408 Γöé 			expect(() => combineChunks([])).not.toThrow();
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+tests\lib\utils\fileUtils.test.ts:30:87 lint/complexity/noCommaOperator ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! The comma operator is disallowed.
+  
+    28 Γöé 		expect(() => getFileExtension(null as unknown)).not.toThrow();
+    29 Γöé 		expect(() => formatFileSize(NaN)).not.toThrow();
+  > 30 Γöé 		expect(() => getFileTypeGroup(undefined as unknown)).not.toThrow();	validateFilename,
+       Γöé 		                                                                   	                ^
+    31 Γöé } from "@/lib/utils/fileUtils";
+    32 Γöé 
+  
+  i Its use is often confusing and obscures side effects.
+  
+
+tests\lib\utils\fileUtils.test.ts:437:42 lint/suspicious/noExplicitAny ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Unexpected any. Specify a different type.
+  
+    436 Γöé 			// Test with invalid data types
+  > 437 Γöé 			expect(() => getFileExtension(null as any)).not.toThrow();
+        Γöé 			                                      ^^^
+    438 Γöé 			expect(() => formatFileSize(NaN)).not.toThrow();
+    439 Γöé 			expect(() => getFileTypeGroup(undefined as any)).not.toThrow();
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+tests\lib\utils\fileUtils.test.ts:439:47 lint/suspicious/noExplicitAny ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Unexpected any. Specify a different type.
+  
+    437 Γöé 			expect(() => getFileExtension(null as any)).not.toThrow();
+    438 Γöé 			expect(() => formatFileSize(NaN)).not.toThrow();
+  > 439 Γöé 			expect(() => getFileTypeGroup(undefined as any)).not.toThrow();
+        Γöé 			                                           ^^^
+    440 Γöé 		});
+    441 Γöé 
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+tests\lib\utils\fileUtils.test.ts:450:30 lint/suspicious/noExplicitAny ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Unexpected any. Specify a different type.
+  
+    448 Γöé 			try {
+    449 Γöé 				// These should not throw but may log errors
+  > 450 Γöé 				getFileExtension(null as any);
+        Γöé 				                         ^^^
+    451 Γöé 				formatFileSize(NaN);
+    452 Γöé 				getFileTypeGroup(undefined as any);
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+tests\lib\utils\fileUtils.test.ts:452:35 lint/suspicious/noExplicitAny ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Unexpected any. Specify a different type.
+  
+    450 Γöé 				getFileExtension(null as any);
+    451 Γöé 				formatFileSize(NaN);
+  > 452 Γöé 				getFileTypeGroup(undefined as any);
+        Γöé 				                              ^^^
+    453 Γöé 			} catch (error) {
+    454 Γöé 				// Should not reach here
+  
+  i any disables many type checking rules. Its use should be avoided.
+  
+
+tests\lib\utils\fileUtils.test.ts:13:32 lint/correctness/noUnusedImports  FIXABLE  ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Several of these imports are unused.
+  
+    11 Γöé  */
+    12 Γöé 
+  > 13 Γöé import { beforeEach, describe, expect, it, vi } from "vitest";
+       Γöé                                ^^^^^^
+    14 Γöé import {
+    15 Γöé 	FILE_TYPE_GROUPS,
+  
+  i Unused imports might be the result of an incomplete refactoring.
+  
+  i Unsafe fix: Remove the unused imports.
+  
+    13 Γöé import┬╖{┬╖beforeEach,┬╖describe,┬╖expect,┬╖it,┬╖vi┬╖}┬╖from┬╖"vitest";
+       Γöé                                --------                       
+
+tests\lib\utils\fileUtils.test.ts:27:2 lint/correctness/noUnusedImports  FIXABLE  ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ! Several of these imports are unused.
+  
+    25 Γöé 	readFileAsDataUrl,
+    26 Γöé 	readFileAsText,
+  > 27 Γöé 	sanitizeFilena		// Test with invalid data types
+       Γöé 	^^^^^^^^^^^^^^
+    28 Γöé 		expect(() => getFileExtension(null as unknown)).not.toThrow();
+    29 Γöé 		expect(() => formatFileSize(NaN)).not.toThrow();
+  
+  i Unused imports might be the result of an incomplete refactoring.
+  
+  i Unsafe fix: Remove the unused imports.
+  
+     25  25 Γöé   	readFileAsDataUrl,
+     26  26 Γöé   	readFileAsText,
+     27     Γöé - ΓåÆ sanitizeFilenaΓåÆ ΓåÆ //┬╖Test┬╖with┬╖invalid┬╖data┬╖types
+     28  27 Γöé   		expect(() => getFileExtension(null as unknown)).not.toThrow();
+     29  28 Γöé   		expect(() => formatFileSize(NaN)).not.toThrow();
+  
+
+tests\lib\utils\fileUtils.test.ts:28:3 parse ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ├ù expected `,` but instead found `expect`
+  
+    26 Γöé 	readFileAsText,
+    27 Γöé 	sanitizeFilena		// Test with invalid data types
+  > 28 Γöé 		expect(() => getFileExtension(null as unknown)).not.toThrow();
+       Γöé 		^^^^^^
+    29 Γöé 		expect(() => formatFileSize(NaN)).not.toThrow();
+    30 Γöé 		expect(() => getFileTypeGroup(undefined as unknown)).not.toThrow();	validateFilename,
+  
+  i Remove expect
+  
+
+tests\lib\utils\fileUtils.test.ts:28:9 parse ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ├ù expected `,` but instead found `(`
+  
+    26 Γöé 	readFileAsText,
+    27 Γöé 	sanitizeFilena		// Test with invalid data types
+  > 28 Γöé 		expect(() => getFileExtension(null as unknown)).not.toThrow();
+       Γöé 		      ^
+    29 Γöé 		expect(() => formatFileSize(NaN)).not.toThrow();
+    30 Γöé 		expect(() => getFileTypeGroup(undefined as unknown)).not.toThrow();	validateFilename,
+  
+  i Remove (
+  
+
+tests\lib\utils\fileUtils.test.ts:28:64 parse ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ├ù expected `,` but instead found `;`
+  
+    26 Γöé 	readFileAsText,
+    27 Γöé 	sanitizeFilena		// Test with invalid data types
+  > 28 Γöé 		expect(() => getFileExtension(null as unknown)).not.toThrow();
+       Γöé 		                                                             ^
+    29 Γöé 		expect(() => formatFileSize(NaN)).not.toThrow();
+    30 Γöé 		expect(() => getFileTypeGroup(undefined as unknown)).not.toThrow();	validateFilename,
+  
+  i Remove ;
+  
+
+tests\lib\utils\fileUtils.test.ts:31:1 parse ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ├ù Expected an expression but instead found '}'.
+  
+    29 Γöé 		expect(() => formatFileSize(NaN)).not.toThrow();
+    30 Γöé 		expect(() => getFileTypeGroup(undefined as unknown)).not.toThrow();	validateFilename,
+  > 31 Γöé } from "@/lib/utils/fileUtils";
+       Γöé ^
+    32 Γöé 
+    33 Γöé import { testLogger } from "../../test-utils";
+  
+  i Expected an expression here.
+  
+    29 Γöé 		expect(() => formatFileSize(NaN)).not.toThrow();
+    30 Γöé 		expect(() => getFileTypeGroup(undefined as unknown)).not.toThrow();	validateFilename,
+  > 31 Γöé } from "@/lib/utils/fileUtils";
+       Γöé ^
+    32 Γöé 
+    33 Γöé import { testLogger } from "../../test-utils";
+  
+
+tests\lib\utils\fileUtils.test.ts:28:3 lint/suspicious/noRedeclare ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ├ù Shouldn't redeclare 'expect'. Consider to delete it or rename it.
+  
+    26 Γöé 	readFileAsText,
+    27 Γöé 	sanitizeFilena		// Test with invalid data types
+  > 28 Γöé 		expect(() => getFileExtension(null as unknown)).not.toThrow();
+       Γöé 		^^^^^^
+    29 Γöé 		expect(() => formatFileSize(NaN)).not.toThrow();
+    30 Γöé 		expect(() => getFileTypeGroup(undefined as unknown)).not.toThrow();	validateFilename,
+  
+  i 'expect' is defined here:
+  
+    11 Γöé  */
+    12 Γöé 
+  > 13 Γöé import { beforeEach, describe, expect, it, vi } from "vitest";
+       Γöé                                ^^^^^^
+    14 Γöé import {
+    15 Γöé 	FILE_TYPE_GROUPS,
+  
+
+tests\lib\utils\fileUtils.test.ts:28:3 parse ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ├ù expected `,` but instead found `expect`
+  
+    26 Γöé 	readFileAsText,
+    27 Γöé 	sanitizeFilena		// Test with invalid data types
+  > 28 Γöé 		expect(() => getFileExtension(null as unknown)).not.toThrow();
+       Γöé 		^^^^^^
+    29 Γöé 		expect(() => formatFileSize(NaN)).not.toThrow();
+    30 Γöé 		expect(() => getFileTypeGroup(undefined as unknown)).not.toThrow();	validateFilename,
+  
+  i Remove expect
+  
+
+tests\lib\utils\fileUtils.test.ts:28:9 parse ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ├ù expected `,` but instead found `(`
+  
+    26 Γöé 	readFileAsText,
+    27 Γöé 	sanitizeFilena		// Test with invalid data types
+  > 28 Γöé 		expect(() => getFileExtension(null as unknown)).not.toThrow();
+       Γöé 		      ^
+    29 Γöé 		expect(() => formatFileSize(NaN)).not.toThrow();
+    30 Γöé 		expect(() => getFileTypeGroup(undefined as unknown)).not.toThrow();	validateFilename,
+  
+  i Remove (
+  
+
+tests\lib\utils\fileUtils.test.ts:28:64 parse ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ├ù expected `,` but instead found `;`
+  
+    26 Γöé 	readFileAsText,
+    27 Γöé 	sanitizeFilena		// Test with invalid data types
+  > 28 Γöé 		expect(() => getFileExtension(null as unknown)).not.toThrow();
+       Γöé 		                                                             ^
+    29 Γöé 		expect(() => formatFileSize(NaN)).not.toThrow();
+    30 Γöé 		expect(() => getFileTypeGroup(undefined as unknown)).not.toThrow();	validateFilename,
+  
+  i Remove ;
+  
+
+tests\lib\utils\fileUtils.test.ts:31:1 parse ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ├ù Expected an expression but instead found '}'.
+  
+    29 Γöé 		expect(() => formatFileSize(NaN)).not.toThrow();
+    30 Γöé 		expect(() => getFileTypeGroup(undefined as unknown)).not.toThrow();	validateFilename,
+  > 31 Γöé } from "@/lib/utils/fileUtils";
+       Γöé ^
+    32 Γöé 
+    33 Γöé import { testLogger } from "../../test-utils";
+  
+  i Expected an expression here.
+  
+    29 Γöé 		expect(() => formatFileSize(NaN)).not.toThrow();
+    30 Γöé 		expect(() => getFileTypeGroup(undefined as unknown)).not.toThrow();	validateFilename,
+  > 31 Γöé } from "@/lib/utils/fileUtils";
+       Γöé ^
+    32 Γöé 
+    33 Γöé import { testLogger } from "../../test-utils";
+  
+
+tests\lib\utils\fileUtils.test.ts format ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ├ù Code formatting aborted due to parsing errors. To format code with errors, enable the 'formatter.formatWithErrors' option.
+  
+
+Checked 70 files in 42ms. No fixes applied.
+Found 10 errors.
+Found 10 warnings.
+check ΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöüΓöü
+
+  ├ù Some errors were emitted while running checks.
+  
+

@@ -68,8 +68,8 @@ describe("Auth API", () => {
 		try {
 			await authApi.login({ email: "bad", password: "pw" });
 			expect.fail("Should have thrown an error");
-		} catch (error: any) {
-			expect(error.message).toBe("Invalid credentials");
+		} catch (error: unknown) {
+			expect((error as Error).message).toBe("Invalid credentials");
 		}
 	});
 
@@ -80,8 +80,8 @@ describe("Auth API", () => {
 		try {
 			await authApi.login({ email: "test", password: "pw" });
 			expect.fail("Should have thrown an error");
-		} catch (error: any) {
-			expect(error.message).toBe("Network error");
+		} catch (error: unknown) {
+			expect((error as Error).message).toBe("Network error");
 		}
 	});
 });
@@ -133,8 +133,8 @@ describe("API error handling edge cases", () => {
 		try {
 			await uploadsApi.listFiles();
 			expect.fail("Should have thrown an error");
-		} catch (error: any) {
-			expect(error.message).toMatch(/fail|error/i);
+		} catch (error: unknown) {
+			expect((error as Error).message).toMatch(/fail|error/i);
 		}
 	});
 
@@ -144,21 +144,30 @@ describe("API error handling edge cases", () => {
 		try {
 			await uploadsApi.listFiles();
 			expect.fail("Should have thrown an error");
-		} catch (error: any) {
-			expect(error.message).toMatch(/error|unknown/i);
+		} catch (error: unknown) {
+			expect((error as Error).message).toMatch(/error|unknown/i);
 		}
 	});
 
 	it("handles 4xx/5xx error with status and message", async () => {
 		const error = new Error("Request failed");
-		(error as any).response = { status: 500, data: { error: "Server error" } };
+		// Define the shape of the error response
+		type ErrorWithResponse = Error & {
+			response: { status: number; data: { error: string } };
+		};
+		(error as ErrorWithResponse).response = {
+			status: 500,
+			data: { error: "Server error" },
+		};
 		getMockedRequest().mockRejectedValueOnce(error);
 
 		try {
 			await uploadsApi.listFiles();
 			expect.fail("Should have thrown an error");
-		} catch (err: any) {
-			expect(err.message).toMatch(/server error|500|request failed/i);
+		} catch (err: unknown) {
+			expect((err as Error).message).toMatch(
+				/server error|500|request failed/i,
+			);
 		}
 	});
 
@@ -168,8 +177,8 @@ describe("API error handling edge cases", () => {
 		try {
 			await uploadsApi.listFiles();
 			expect.fail("Should have thrown an error");
-		} catch (error: any) {
-			expect(error.message).toMatch(/unknown/i);
+		} catch (error: unknown) {
+			expect((error as Error).message).toMatch(/unknown/i);
 		}
 	});
 
@@ -189,8 +198,8 @@ describe("API error handling edge cases", () => {
 			try {
 				await fn();
 				expect.fail("Should have thrown an error");
-			} catch (error: any) {
-				expect(error.message).toMatch(/fail|error/i);
+			} catch (error: unknown) {
+				expect((error as Error).message).toMatch(/fail|error/i);
 			}
 		}
 	});

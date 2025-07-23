@@ -11,7 +11,7 @@ describe("uiStore error handling", () => {
 	});
 
 	it("throws if setTheme called with invalid theme", () => {
-		expect(() => useUIStore.getState().setTheme("blue" as any)).toThrow(
+		expect(() => useUIStore.getState().setTheme("blue" as never)).toThrow(
 			/invalid theme/i,
 		);
 	});

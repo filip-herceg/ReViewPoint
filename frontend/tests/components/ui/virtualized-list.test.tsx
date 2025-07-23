@@ -13,6 +13,7 @@ import {
 import { testLogger } from "../../test-utils";
 
 // Create test template for virtualized list items
+type TestItem = { id: string; name: string; value: number };
 function createTestItems(count: number) {
 	return Array.from({ length: count }, (_, index) => ({
 		id: `item-${index}`,
@@ -23,7 +24,8 @@ function createTestItems(count: number) {
 
 describe("VirtualizedList Component", () => {
 	const mockItems = createTestItems(100);
-	const mockRenderItem = (item: any, index: number) => (
+	type TestItem = { id: string; name: string; value: number };
+	const mockRenderItem = (item: TestItem, index: number) => (
 		<div key={item.id} data-testid={`item-${index}`}>
 			{item.name}
 		</div>
@@ -230,7 +232,7 @@ describe("VirtualizedList Component", () => {
 
 describe("VirtualizedGrid Component", () => {
 	const mockGridItems = createTestItems(50);
-	const mockRenderGridItem = (item: any, index: number) => (
+	const mockRenderGridItem = (item: TestItem, index: number) => (
 		<div key={item.id} data-testid={`grid-item-${index}`}>
 			{item.name}
 		</div>
@@ -332,7 +334,7 @@ describe("VirtualizedGrid Component", () => {
 });
 
 describe("useVirtualizedList Hook", () => {
-	const TestComponent = ({ items }: { items: any[] }) => {
+	const TestComponent = ({ items }: { items: unknown[] }) => {
 		const {
 			scrollTop,
 			scrollToIndex,

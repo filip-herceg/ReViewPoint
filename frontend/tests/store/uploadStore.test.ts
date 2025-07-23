@@ -39,18 +39,18 @@ describe("uploadStore error handling", () => {
 	});
 
 	it("throws and sets error for invalid addUpload", () => {
-		expect(() => useUploadStore.getState().addUpload(null as any)).toThrow();
+		expect(() => useUploadStore.getState().addUpload(null as never)).toThrow();
 	});
 
 	it("throws and sets error for invalid updateUpload", () => {
 		expect(() =>
-			useUploadStore.getState().updateUpload(undefined as any, {}),
+			useUploadStore.getState().updateUpload(undefined as never, {}),
 		).toThrow();
 	});
 
 	it("throws and sets error for invalid setCurrentUpload", () => {
 		expect(() =>
-			useUploadStore.getState().setCurrentUpload({} as any),
+			useUploadStore.getState().setCurrentUpload({} as never),
 		).toThrow();
 	});
 
@@ -144,12 +144,12 @@ describe("uploadStore error handling", () => {
 	});
 
 	it("sets error for invalid patchUpload input", async () => {
-		await useUploadStore.getState().patchUpload(undefined as any, {});
+		await useUploadStore.getState().patchUpload(undefined as never, {});
 		expect(useUploadStore.getState().error).toBeTruthy();
 	});
 
 	it("sets error for invalid removeUpload input", async () => {
-		await useUploadStore.getState().removeUpload(undefined as any);
+		await useUploadStore.getState().removeUpload(undefined as never);
 		expect(useUploadStore.getState().error).toBeTruthy();
 	});
 });

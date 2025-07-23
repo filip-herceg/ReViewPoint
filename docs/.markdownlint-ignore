@@ -1,0 +1,19 @@
+# Markdownlint ignore patterns
+.venv/
+venv/
+__pycache__/
+node_modules/
+site/
+dist/
+build/
+.git/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
+htmlcov/
+coverage/
+*.bak
+*~

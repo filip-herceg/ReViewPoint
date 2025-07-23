@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 // Mock clsx with proper export structure
 vi.mock("clsx", () => {
-	const clsxMock = vi.fn((inputs: any) => {
+	const clsxMock = vi.fn((inputs: unknown) => {
 		if (Array.isArray(inputs)) {
 			return inputs.filter(Boolean).join(" ");
 		}
@@ -17,7 +17,7 @@ vi.mock("clsx", () => {
 
 // Mock tailwind-merge
 vi.mock("tailwind-merge", () => {
-	const twMergeMock = vi.fn((input: any) => String(input));
+	const twMergeMock = vi.fn((input: unknown) => String(input));
 	return { twMerge: twMergeMock };
 });
 
@@ -46,13 +46,13 @@ describe("utils.ts", () => {
 		beforeEach(() => {
 			vi.clearAllMocks();
 			console.log("clsxMock state in beforeEach:", clsxMock);
-			clsxMock.mockImplementation((inputs: any) => {
+			clsxMock.mockImplementation((inputs: unknown) => {
 				if (Array.isArray(inputs)) {
 					return inputs.filter(Boolean).join(" ");
 				}
 				return String(inputs);
 			});
-			twMergeMock.mockImplementation((input: any) => String(input));
+			twMergeMock.mockImplementation((input: unknown) => String(input));
 		});
 
 		it("merges class names normally", () => {

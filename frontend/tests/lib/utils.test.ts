@@ -1,8 +1,9 @@
+import type { ClassValue } from "clsx";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock clsx with proper export structure
 vi.mock("clsx", () => {
-	const clsxMock = vi.fn((inputs: any) => {
+	const clsxMock = vi.fn((inputs: ClassValue) => {
 		if (Array.isArray(inputs)) {
 			return inputs.filter(Boolean).join(" ");
 		}
@@ -45,13 +46,13 @@ describe("utils.ts", () => {
 		beforeEach(() => {
 			vi.clearAllMocks();
 			// Setup default implementations
-			clsxMock.mockImplementation((inputs: any) => {
+			clsxMock.mockImplementation((inputs: ClassValue) => {
 				if (Array.isArray(inputs)) {
 					return inputs.filter(Boolean).join(" ");
 				}
 				return String(inputs);
 			});
-			twMergeMock.mockImplementation((input: any) => String(input));
+			twMergeMock.mockImplementation((...args: unknown[]) => args.join(" "));
 		});
 
 		it("merges class names normally", () => {

@@ -3,10 +3,10 @@ import { cn } from "@/lib/utils";
 
 // Mock twMerge and clsx for error simulation
 vi.mock("tailwind-merge", () => ({
-	twMerge: vi.fn((...args: any[]) => args.join(" ")),
+	twMerge: vi.fn((...args: unknown[]) => args.join(" ")),
 }));
 vi.mock("clsx", () => ({
-	clsx: vi.fn((...args: any[]) => args.join(" ")),
+	clsx: vi.fn((...args: unknown[]) => args.join(" ")),
 }));
 
 describe("utils.ts", () => {
@@ -27,7 +27,7 @@ describe("utils.ts", () => {
 		it("returns error class and logs if clsx throws", () => {
 			// Unmock twMerge to pass through
 			const { twMerge } = require("tailwind-merge");
-			twMerge.mockImplementation((...args: any[]) => args.join(" "));
+			twMerge.mockImplementation((...args: unknown[]) => args.join(" "));
 			const { clsx } = require("clsx");
 			clsx.mockImplementationOnce(() => {
 				throw new Error("clsx fail");

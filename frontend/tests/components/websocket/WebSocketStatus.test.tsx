@@ -65,7 +65,7 @@ describe("WebSocketStatus", () => {
 		});
 
 		it("should display connecting state", () => {
-			(useWebSocketConnection as any).mockReturnValue({
+			(useWebSocketConnection as unknown).mockReturnValue({
 				...mockConnectionData,
 				state: "connecting",
 				isConnected: false,
@@ -81,7 +81,7 @@ describe("WebSocketStatus", () => {
 		});
 
 		it("should display disconnected state", () => {
-			(useWebSocketConnection as any).mockReturnValue({
+			(useWebSocketConnection as jest.Mock).mockReturnValue({
 				...mockConnectionData,
 				state: "disconnected",
 				isConnected: false,
@@ -97,7 +97,7 @@ describe("WebSocketStatus", () => {
 		});
 
 		it("should display error state with reconnect button", () => {
-			(useWebSocketConnection as any).mockReturnValue({
+			(useWebSocketConnection as jest.Mock).mockReturnValue({
 				...mockConnectionData,
 				state: "error",
 				isConnected: false,
@@ -117,7 +117,7 @@ describe("WebSocketStatus", () => {
 		});
 
 		it("should display reconnecting state", () => {
-			(useWebSocketConnection as any).mockReturnValue({
+			(useWebSocketConnection as jest.Mock).mockReturnValue({
 				...mockConnectionData,
 				state: "reconnecting",
 				isConnected: false,
@@ -136,7 +136,7 @@ describe("WebSocketStatus", () => {
 	describe("interaction", () => {
 		it("should call reconnect when reconnect button is clicked", () => {
 			const mockReconnect = vi.fn();
-			(useWebSocketConnection as any).mockReturnValue({
+			(useWebSocketConnection as jest.Mock).mockReturnValue({
 				...mockConnectionData,
 				state: "error",
 				isConnected: false,
@@ -155,7 +155,7 @@ describe("WebSocketStatus", () => {
 		});
 
 		it("should show reconnect button when disconnected", () => {
-			(useWebSocketConnection as any).mockReturnValue({
+			(useWebSocketConnection as jest.Mock).mockReturnValue({
 				...mockConnectionData,
 				state: "disconnected",
 				isConnected: false,
@@ -196,7 +196,7 @@ describe("WebSocketStatus", () => {
 		});
 
 		it("should not show details when disconnected", () => {
-			(useWebSocketConnection as any).mockReturnValue({
+			(useWebSocketConnection as jest.Mock).mockReturnValue({
 				...mockConnectionData,
 				state: "disconnected",
 				isConnected: false,
@@ -227,7 +227,7 @@ describe("WebSocketStatus", () => {
 
 	describe("error handling", () => {
 		it("should handle missing connection data gracefully", () => {
-			(useWebSocketConnection as any).mockReturnValue({
+			(useWebSocketConnection as jest.Mock).mockReturnValue({
 				state: "disconnected",
 				isConnected: false,
 				error: null,
@@ -244,7 +244,7 @@ describe("WebSocketStatus", () => {
 		});
 
 		it("should handle null error gracefully", () => {
-			(useWebSocketConnection as any).mockReturnValue({
+			(useWebSocketConnection as jest.Mock).mockReturnValue({
 				...mockConnectionData,
 				error: null,
 			});
@@ -271,7 +271,7 @@ describe("WebSocketStatus", () => {
 			unmount1();
 
 			// Test error state
-			(useWebSocketConnection as any).mockReturnValue({
+			(useWebSocketConnection as jest.Mock).mockReturnValue({
 				...mockConnectionData,
 				state: "error",
 				isConnected: false,
@@ -300,7 +300,7 @@ describe("WebSocketIndicator", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		(useWebSocketConnection as any).mockReturnValue(mockConnectionData);
+		(useWebSocketConnection as jest.Mock).mockReturnValue(mockConnectionData);
 	});
 
 	it("should render connection indicator", () => {
@@ -311,7 +311,7 @@ describe("WebSocketIndicator", () => {
 	});
 
 	it("should show disconnected icon when not connected", () => {
-		(useWebSocketConnection as any).mockReturnValue({
+		(useWebSocketConnection as jest.Mock).mockReturnValue({
 			...mockConnectionData,
 			state: "disconnected",
 			isConnected: false,

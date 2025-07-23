@@ -79,14 +79,14 @@ describe("User Types", () => {
 				const baseUser = createTestUser();
 
 				// Test missing id
-				const userWithoutId = { ...baseUser } as any;
+				const userWithoutId = { ...baseUser } as Partial<User>;
 				delete userWithoutId.id;
-				expect(isUser(userWithoutId)).toBe(false);
+				expect(isUser(userWithoutId as unknown as User)).toBe(false);
 
 				// Test missing email
-				const userWithoutEmail = { ...baseUser } as any;
+				const userWithoutEmail = { ...baseUser } as Partial<User>;
 				delete userWithoutEmail.email;
-				expect(isUser(userWithoutEmail)).toBe(false);
+				expect(isUser(userWithoutEmail as unknown as User)).toBe(false);
 
 				// Test invalid id type
 				const userWithStringId = { ...baseUser, id: "string-id" };

@@ -21,13 +21,13 @@ describe("authStore error handling", () => {
 	});
 
 	it("throws if login called with missing user", () => {
-		expect(() => useAuthStore.getState().login(null as any, tokens)).toThrow(
+		expect(() => useAuthStore.getState().login(null as never, tokens)).toThrow(
 			/user and tokens required/i,
 		);
 	});
 
 	it("throws if login called with missing token", () => {
-		expect(() => useAuthStore.getState().login(user, null as any)).toThrow(
+		expect(() => useAuthStore.getState().login(user, null as never)).toThrow(
 			/user and tokens required/i,
 		);
 	});

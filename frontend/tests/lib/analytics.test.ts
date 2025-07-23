@@ -20,7 +20,7 @@ describe("analytics.ts", () => {
 	it("should handle Plausible init errors defensively", async () => {
 		// Patch the vi.mock above to throw on next call
 		const plausibleTracker = await import("plausible-tracker");
-		(plausibleTracker.default as any).mockImplementationOnce(() => {
+		(plausibleTracker.default as jest.Mock).mockImplementationOnce(() => {
 			throw new Error("fail");
 		});
 		// Re-import the module to trigger the error handling

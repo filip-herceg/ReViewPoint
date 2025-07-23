@@ -90,21 +90,23 @@ describe("Upload Types", () => {
 				const baseUpload = createTestUpload();
 
 				// Test missing required fields
-				const uploadWithoutId = { ...baseUpload } as any;
+				const uploadWithoutId = { ...baseUpload } as Partial<Upload>;
 				delete uploadWithoutId.id;
-				expect(isUpload(uploadWithoutId)).toBe(false);
+				expect(isUpload(uploadWithoutId as unknown as Upload)).toBe(false);
 
-				const uploadWithoutName = { ...baseUpload } as any;
+				const uploadWithoutName = { ...baseUpload } as Partial<Upload>;
 				delete uploadWithoutName.name;
-				expect(isUpload(uploadWithoutName)).toBe(false);
+				expect(isUpload(uploadWithoutName as unknown as Upload)).toBe(false);
 
-				const uploadWithoutStatus = { ...baseUpload } as any;
+				const uploadWithoutStatus = { ...baseUpload } as Partial<Upload>;
 				delete uploadWithoutStatus.status;
-				expect(isUpload(uploadWithoutStatus)).toBe(false);
+				expect(isUpload(uploadWithoutStatus as unknown as Upload)).toBe(false);
 
-				const uploadWithoutProgress = { ...baseUpload } as any;
+				const uploadWithoutProgress = { ...baseUpload } as Partial<Upload>;
 				delete uploadWithoutProgress.progress;
-				expect(isUpload(uploadWithoutProgress)).toBe(false);
+				expect(isUpload(uploadWithoutProgress as unknown as Upload)).toBe(
+					false,
+				);
 			});
 		});
 
@@ -125,13 +127,13 @@ describe("Upload Types", () => {
 				const baseFile = createTestFile();
 
 				// Test missing required fields
-				const fileWithoutId = { ...baseFile } as any;
+				const fileWithoutId = { ...baseFile } as Partial<File>;
 				delete fileWithoutId.id;
-				expect(isFile(fileWithoutId)).toBe(false);
+				expect(isFile(fileWithoutId as unknown as File)).toBe(false);
 
-				const fileWithoutFilename = { ...baseFile } as any;
+				const fileWithoutFilename = { ...baseFile } as Partial<File>;
 				delete fileWithoutFilename.filename;
-				expect(isFile(fileWithoutFilename)).toBe(false);
+				expect(isFile(fileWithoutFilename as unknown as File)).toBe(false);
 			});
 		});
 

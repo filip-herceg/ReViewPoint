@@ -18,10 +18,12 @@ pytest -n auto
 - Use `FAST_TESTS=1` to enable in-memory SQLite for most tests.
 
 ## Test Markers
+
 - `@pytest.mark.slow` — marks slow/integration tests
 - `@pytest.mark.fast` — marks fast/unit tests
 
 ## Test Data Factories
+
 See `tests/factories.py` for reusable test data factories.
 
 ---

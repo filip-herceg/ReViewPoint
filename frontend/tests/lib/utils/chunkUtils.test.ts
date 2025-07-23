@@ -403,7 +403,7 @@ describe("chunkUtils", () => {
 			testLogger.info("Testing error handling for invalid inputs");
 
 			// Test with null/undefined inputs
-			expect(() => chunkFile(null as any, 1024)).not.toThrow();
+			expect(() => chunkFile(null as unknown, 1024)).not.toThrow();
 			expect(() => calculateProgress(0, 0, 0, 0, Date.now())).not.toThrow();
 			expect(() => combineChunks([])).not.toThrow();
 		});

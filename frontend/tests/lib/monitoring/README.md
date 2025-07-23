@@ -53,14 +53,14 @@ If you need to test error monitoring functionality:
 ```typescript
 // ✅ DO: Create isolated unit tests
 describe("Error Service - Unit Tests", () => {
-	it("should format error messages", () => {
-		// Test pure functions only
-	});
+  it("should format error messages", () => {
+    // Test pure functions only
+  });
 });
 
 // ❌ DON'T: Test full error monitoring system
 describe("Error Monitoring Integration", () => {
-	// This will likely cause infinite loops
+  // This will likely cause infinite loops
 });
 ```
 

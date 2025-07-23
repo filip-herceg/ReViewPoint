@@ -118,7 +118,7 @@ cp .env.development .env.local
 # Staging deployment
 cp .env.staging .env.local
 
-# Production deployment  
+# Production deployment
 cp .env.production .env.local
 ```
 
@@ -156,7 +156,7 @@ cp .env.production .env.local
 
 - Node environment, API URLs, timeouts, WebSocket, app metadata
 
-### Monitoring (5 variables)  
+### Monitoring (5 variables)
 
 - Sentry, analytics, logging, error reporting, performance tracking
 
@@ -184,7 +184,7 @@ The environment configuration is now properly integrated with the test suite:
 ## 🔒 Security Considerations
 
 - **Sensitive data handling** - Clear guidance on what not to commit
-- **Environment separation** - Different configs for different environments  
+- **Environment separation** - Different configs for different environments
 - **HTTPS enforcement** - Production defaults to secure protocols
 - **Debug mode safety** - Automatically disabled in production
 - **API key rotation** - Guidance on key management

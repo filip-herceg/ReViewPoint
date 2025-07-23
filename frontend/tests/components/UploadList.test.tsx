@@ -1,6 +1,4 @@
 import {
-	act,
-	fireEvent,
 	render,
 	screen,
 	waitForElementToBeRemoved,
@@ -16,7 +14,7 @@ import { testLogger } from "../test-utils";
 // Mock the store module
 vi.mock("@/lib/store/uploadStore");
 
-const globalAny: any = globalThis;
+const globalAny = globalThis as unknown as typeof globalThis;
 
 describe("UploadList component", () => {
 	beforeEach(() => {
@@ -197,7 +195,7 @@ describe("UploadList component", () => {
 			uploads: [],
 			currentUpload: null,
 			loading: false,
-			error: { message: "Obj error" } as any,
+			error: { message: "Obj error" } as unknown,
 			addUpload: vi.fn(),
 			updateUpload: vi.fn(),
 			setCurrentUpload: vi.fn(),
@@ -216,7 +214,7 @@ describe("UploadList component", () => {
 			uploads: [],
 			currentUpload: null,
 			loading: false,
-			error: 42 as any,
+			error: 42 as unknown,
 			addUpload: vi.fn(),
 			updateUpload: vi.fn(),
 			setCurrentUpload: vi.fn(),

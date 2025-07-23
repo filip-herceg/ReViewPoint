@@ -33,7 +33,7 @@ import {
 } from "./config";
 
 // Event listener function type
-export type EventListener = (data: any) => void;
+export type EventListener = (data: unknown) => void;
 
 interface ConnectionMetadata {
 	connectionId?: string;
@@ -497,7 +497,9 @@ class WebSocketService {
 			return;
 		}
 
-		const { timestamp, timeout } = this.pendingPings.get(pingId)!;
+		const pingData = this.pendingPings.get(pingId);
+		if (!pingData) return;
+		const { timestamp, timeout } = pingData;
 		clearTimeout(timeout);
 		this.pendingPings.delete(pingId);
 
@@ -531,7 +533,10 @@ class WebSocketService {
 	/**
 	 * Send message to server with validation and rate limiting
 	 */
-	public send(type: WebSocketEventType, data: any = {}): void {
+	public send(
+		type: WebSocketEventType,
+		data: Record<string, unknown> = {},
+	): void {
 		// Validate input message
 		try {
 			WebSocketIncomingMessageSchema.parse({ type, data });
@@ -744,7 +749,7 @@ class WebSocketService {
 		logger.debug("[WebSocket] State changed", { from: oldState, to: newState });
 	}
 
-	private emit(event: WebSocketEventType, data: any): void {
+	private emit(event: WebSocketEventType, data: unknown): void {
 		const listeners = this.eventListeners.get(event);
 		if (listeners) {
 			listeners.forEach((listener) => {

@@ -5,6 +5,7 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+	type FeatureFlags,
 	getEnabledFeatures,
 	getFeatureFlags,
 	isFeatureEnabled,
@@ -19,6 +20,59 @@ import {
 } from "../../test-templates";
 import { testLogger } from "../../test-utils";
 
+describe("Feature Flags", () => {
+	// Define test feature flags
+	let testFlags: FeatureFlags;
+
+	beforeEach(() => {
+		// Clear any existing window.FEATURE_FLAGS
+		delete (globalThis as unknown as { window?: { FEATURE_FLAGS?: unknown } })
+			.window?.FEATURE_FLAGS;
+
+		// Create fresh test flags
+		testFlags = createFeatureFlags({
+			enablePasswordReset: true,
+			enableSocialLogin: false,
+			enableDarkMode: true,
+			enableVirtualization: false,
+		});
+
+		// Mock the feature flags for testing
+		(
+			globalThis as unknown as { window: { FEATURE_FLAGS: FeatureFlags } }
+		).window = {
+			FEATURE_FLAGS: testFlags,
+		};
+
+		resetFeatureFlags();
+	});
+
+	describe("isFeatureEnabled", () => {
+		it("returns true for enabled features", () => {
+			expect(isFeatureEnabled("enablePasswordReset")).toBe(true);
+			expect(isFeatureEnabled("enableDarkMode")).toBe(true);
+		});
+
+		it("returns false for disabled features", () => {
+			expect(isFeatureEnabled("enableSocialLogin")).toBe(false);
+			expect(isFeatureEnabled("enableVirtualization")).toBe(false);
+		});
+
+		it("returns false for unknown features", () => {
+			expect(isFeatureEnabled("unknownFeature" as keyof FeatureFlags)).toBe(
+				false,
+			);
+		});
+
+		it("handles missing window.FEATURE_FLAGS gracefully", () => {
+			delete (globalThis as unknown as { window?: { FEATURE_FLAGS?: unknown } })
+				.window?.FEATURE_FLAGS;
+			resetFeatureFlags(); // Reset to reload without window flags
+			expect(isFeatureEnabled("enablePasswordReset")).toBe(true); // Should use default value
+		});
+	});
+});
+
 describe("Feature Flags System", () => {
 	beforeEach(() => {
 		testLogger.info("Setting up feature flags test");
@@ -28,7 +82,7 @@ describe("Feature Flags System", () => {
 
 		// Clear any window feature flags
 		if (typeof window !== "undefined") {
-			delete (window as any).FEATURE_FLAGS;
+			delete (window as Window & { FEATURE_FLAGS?: unknown }).FEATURE_FLAGS;
 		}
 
 		testLogger.debug("Feature flags test setup complete");
@@ -68,7 +122,7 @@ describe("Feature Flags System", () => {
 			};
 
 			// Mock window.FEATURE_FLAGS
-			(global as any).window = {
+			(global as Record<string, unknown>).window = {
 				FEATURE_FLAGS: windowFlags,
 			};
 
@@ -98,7 +152,7 @@ describe("Feature Flags System", () => {
 				.mockImplementation(() => {});
 
 			// Mock malformed window feature flags
-			(global as any).window = {
+			(global as Record<string, unknown>).window = {
 				FEATURE_FLAGS: {
 					enableSocialLogin: "not-a-boolean",
 					invalidFlag: "invalid",
@@ -130,10 +184,11 @@ describe("Feature Flags System", () => {
 			});
 
 			// Mock the feature flags for testing
-			(global as any).window = {
+			(
+				global as unknown as { window: { FEATURE_FLAGS: FeatureFlags } }
+			).window = {
 				FEATURE_FLAGS: testFlags,
 			};
-
 			resetFeatureFlags();
 
 			expect(isFeatureEnabled("enablePasswordReset")).toBe(true);
@@ -157,7 +212,7 @@ describe("Feature Flags System", () => {
 			});
 
 			// Mock the feature flags for testing
-			(global as any).window = {
+			(global as unknown as { window: { FEATURE_FLAGS: unknown } }).window = {
 				FEATURE_FLAGS: testFlags,
 			};
 
@@ -184,14 +239,13 @@ describe("Feature Flags System", () => {
 			});
 
 			// Mock the feature flags for testing
-			(global as any).window = {
+			(global as unknown as { window: { FEATURE_FLAGS: unknown } }).window = {
 				FEATURE_FLAGS: testFlags,
 			};
 
 			resetFeatureFlags();
 
 			const enabledFeatures = getEnabledFeatures();
-
 			expect(Array.isArray(enabledFeatures)).toBe(true);
 			expect(enabledFeatures).toContain("enablePasswordReset");
 			expect(enabledFeatures).toContain("enableDarkMode");
@@ -236,9 +290,10 @@ describe("Feature Flags System", () => {
 				.spyOn(console, "error")
 				.mockImplementation(() => {});
 
+			// Use a type assertion to override type safety for testing invalid values
 			const invalidUpdates = {
-				enableSocialLogin: "not-a-boolean" as any,
-				invalidFlag: true as any,
+				enableSocialLogin: "not-a-boolean" as unknown as boolean,
+				invalidFlag: true as unknown as boolean,
 			};
 
 			updateFeatureFlags(invalidUpdates);

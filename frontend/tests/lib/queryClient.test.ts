@@ -32,17 +32,28 @@ describe("queryClient error handling config", () => {
 	});
 
 	it("can subscribe to global query errors via queryCache", async () => {
-		const errors: any[] = [];
-		const unsubscribe = queryClient.getQueryCache().subscribe((event) => {
-			logger.info("Event captured:", event);
-			if (event?.type === "updated") {
-				logger.info("Updated event action type:", event.action.type);
-				if (event.action.type === "error") {
-					logger.error("Captured error event:", event.action.error);
-					errors.push(event.action.error);
+		// Define a specific interface for query cache events
+		interface QueryCacheEvent {
+			type: string;
+			action?: {
+				type: string;
+				error?: Error;
+			};
+		}
+
+		const errors: Error[] = [];
+		const unsubscribe = queryClient
+			.getQueryCache()
+			.subscribe((event: QueryCacheEvent) => {
+				logger.info("Event captured:", event);
+				if (event?.type === "updated" && event.action) {
+					logger.info("Updated event action type:", event.action.type);
+					if (event.action.type === "error" && event.action.error) {
+						logger.error("Captured error event:", event.action.error);
+						errors.push(event.action.error);
+					}
 				}
-			}
-		});
+			});
 		// Simulate a query error
 		const query = queryClient.getQueryCache().build(queryClient, {
 			queryKey: ["test"],
@@ -66,12 +77,28 @@ describe("queryClient error handling config", () => {
 	});
 
 	it("can subscribe to global mutation errors via mutationCache", async () => {
-		const errors: any[] = [];
-		const unsubscribe = queryClient.getMutationCache().subscribe((event) => {
-			if (event?.type === "updated" && event.action.type === "error") {
-				errors.push(event.action.error);
-			}
-		});
+		// Define mutation cache event type
+		interface MutationCacheEvent {
+			type: string;
+			action?: {
+				type: string;
+				error?: Error;
+			};
+		}
+
+		const errors: Error[] = [];
+		const unsubscribe = queryClient
+			.getMutationCache()
+			.subscribe((event: MutationCacheEvent) => {
+				if (
+					event?.type === "updated" &&
+					event.action &&
+					event.action.type === "error" &&
+					event.action.error
+				) {
+					errors.push(event.action.error);
+				}
+			});
 		// Simulate a mutation error
 		const mutation = queryClient.getMutationCache().build(queryClient, {
 			mutationKey: ["test-mutation"],
@@ -103,11 +130,31 @@ describe("queryClient error handling config", () => {
 		expect(handledAxios.message).toMatch(/fail/i);
 	});
 	it("invokes global queryCache and mutationCache listeners and handles errors", async () => {
+		// Define event interfaces
+		interface QueryCacheEvent {
+			type: string;
+			action?: {
+				type: string;
+				error?: Error;
+			};
+			query?: unknown;
+		}
+
+		interface MutationCacheEvent {
+			type: string;
+			action?: {
+				type: string;
+				error?: Error;
+			};
+			mutation?: unknown;
+		}
+
 		// Setup spies for global listeners
-		const queryEvents: any[] = [];
-		const mutationEvents: any[] = [];
-		const queryListener = (event: any) => queryEvents.push(event);
-		const mutationListener = (event: any) => mutationEvents.push(event);
+		const queryEvents: QueryCacheEvent[] = [];
+		const mutationEvents: MutationCacheEvent[] = [];
+		const queryListener = (event: QueryCacheEvent) => queryEvents.push(event);
+		const mutationListener = (event: MutationCacheEvent) =>
+			mutationEvents.push(event);
 
 		// Register listeners
 		const unsubscribeQuery = queryClient
@@ -163,13 +210,13 @@ describe("queryClient error handling config", () => {
 	it("normalizes unknown and non-Error types in error handling", () => {
 		// Unknown thrown value
 		const unknownError = { foo: "bar" };
-		const handled = handleApiError(unknownError as any);
+		const handled = handleApiError(unknownError as unknown);
 		expect(handled.type).toBe("unknown");
 		expect(handled.message).toBe("Unknown error type");
 
 		// String thrown
 		const stringError = "fail string";
-		const handledStr = handleApiError(stringError as any);
+		const handledStr = handleApiError(stringError as unknown);
 		expect(handledStr.type).toBe("unknown");
 		expect(handledStr.message).toBe("fail string");
 	});
@@ -182,8 +229,8 @@ describe("queryClient error handling config", () => {
 
 		// Passing undefined
 		expect(createTestError(undefined)).toBeInstanceOf(Error);
-		// Passing null (cast to any to bypass TS)
-		expect(createTestError(null as any)).toBeInstanceOf(Error);
-		expect(createTestError(null as any).message).toBe("null");
+		// Need to cast null to string to match function signature
+		expect(createTestError(null as unknown as string)).toBeInstanceOf(Error);
+		expect(createTestError(null as unknown as string).message).toBe("null");
 	});
 });

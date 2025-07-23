@@ -1,144 +1,160 @@
-site_name: ReViewPoint
-site_description: Documentation and development manual for ReViewPoint. Modular, scalable, and LLM-powered platform for scientific paper review.
-site_author: ReViewPoint Team
-site_url: https://github.com/filip-herceg/ReViewPoint
+site_name: ReViewPoint Documentation
+site_url: https://filip-herceg.github.io/ReViewPoint/
+site_author: filip-herceg
+site_description: Modular, scalable, and LLM-powered platform for scientific paper review
 
-docs_dir: content
+# Repository information
+repo_name: filip-herceg/ReViewPoint
+repo_url: https://github.com/filip-herceg/ReViewPoint
+edit_uri: edit/main/docs/content/
 
-nav:
-  - Home: index.md
-  - Quickstart:
-      - Setup Guide: setup.md
-      - System Architecture: architecture.md
-      - FAQ: faq.md
-  - Development:
-      - Developer Guidelines: dev-guidelines.md
-      - CI/CD: ci-cd.md
-      - Changelog: changelog.md
-      - Contributing to Documentation: contributing-docs.md
-      - How to Use the Docs: how-to-use-docs.md
-      - Documentation Enhancements: documentation-enhancements.md
-  - Backend:
-      - Backend Source Guide: backend-source-guide.md
-      - API Reference: api-reference.md
-      - Backend API Reference: backend/api-reference.md
-      - Backend Models: backend/src/models/README.md
-      - Backend Utilities: backend/src/utils/README.md
-      - Backend Tests: backend/tests/README.md
-  - Modules:
-      - Module Guide: module-guide.md
-      - LLM Integration: llm-integration.md
-  - Frontend:
-      - Frontend Overview: frontend/overview.md
-      - Frontend Roadmap: frontend/roadmap.md
-      - Frontend Source Directory: frontend/src/README.md
-      - Frontend Tests: frontend/tests/README.md
-  - Resources:
-      - Documentation Enhancements: documentation-enhancements.md
-      - _Templates (for contributors)_: _TEMPLATE.md
+# Copyright
+copyright: Copyright &copy; 2025 filip-herceg
 
+# Configuration
 theme:
   name: material
-  palette:
-    scheme: default
+  custom_dir: overrides
   features:
-    - navigation.tabs
-    - navigation.tabs.sticky
-    - navigation.top
-    - navigation.sections
-    - navigation.expand
-    - navigation.tracking
-    - navigation.footer
-    - navigation.instant
-    - navigation.path
-    - navigation.indexes
-    - toc.integrate
-    - search.suggest
-    - search.highlight
-    - search.share
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
     - content.code.annotate
     - content.code.copy
     - content.code.select
     - content.tabs.link
-    - content.tabs
-    - content.footnotes
-    - content.images.lazy
-    - content.emoji
-    - content.anchors
-    - content.action.edit
-    - content.action.view
-    - content.buttons
-    - content.badges
-    - content.grid
-    - content.cards
-    - content.toc
-    - content.admonition
-    - announce.dismiss
-  language: en
-  custom_dir: overrides  # For custom 404.html and other overrides
+    - content.tooltips
+    - header.autohide
+    - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.prune
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    - toc.integrate
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  font:
+    text: Roboto
+    code: Roboto Mono
+  favicon: assets/favicon.png
+  icon:
+    logo: material/book-open-page-variant
 
+# Plugins
 plugins:
-  - search
-  - awesome-pages
-  - mermaid2
+  - search:
+      separator: '[\s\-,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
   - minify:
       minify_html: true
   - git-revision-date-localized:
-      fallback_to_build_date: true
+      enable_creation_date: true
+      type: timeago
+  - awesome-pages
   - glightbox
-  - macros
-  - mkdocstrings:
-      handlers:
-        python:
-          paths: ["../backend/src"]
-          options:
-            show_root_heading: true
-            show_source: true
-            docstring_style: google
-            merge_init_into_class: true
-            show_if_no_docstring: true
-            heading_level: 2
-            members_order: source
-          import:
-            - url: https://docs.python-requests.org/en/master/objects.inv
-              domains: [py]
+  - mermaid2
 
+# Customization
+extra:
+  annotate:
+    json: [.s2]
+  analytics:
+    provider: google
+    property: !ENV GOOGLE_ANALYTICS_KEY
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/filip-herceg
+    - icon: fontawesome/brands/linkedin
+      link: https://linkedin.com/in/filip-herceg
+
+# Extensions
 markdown_extensions:
+  - abbr
   - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
   - toc:
       permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      normalize_issue_symbols: true
+      repo_url_shorthand: true
+      user: filip-herceg
+      repo: ReViewPoint
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      auto_append:
+        - includes/mkdocs.md
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
           class: mermaid
-          format: !!python/name:mermaid2.fence_mermaid_custom
-  - pymdownx.highlight
-  - pymdownx.inlinehilite
-  - pymdownx.details
-  - pymdownx.tabbed
-  - pymdownx.emoji
-  - pymdownx.snippets
-  - pymdownx.caret
-  - pymdownx.mark
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - pymdownx.tilde
-  - pymdownx.tasklist
-  - pymdownx.keys
-  - pymdownx.betterem
-  - pymdownx.magiclink
-  - pymdownx.progressbar
-  - pymdownx.smartsymbols
-  - pymdownx.tabbed
-  # - pymdownx.tags  # removed due to missing extension, re-add if available in future
 
-extra:
-  social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/filip-herceg/ReViewPoint
-  analytics:
-    provider: plausible
-    domain: yourdomain.com  # Replace with your analytics domain
-  announce:
-    type: info
-    text: "🚀 ReViewPoint Docs: Now with enhanced navigation, search, and frontend roadmap!"
+# Page tree - Slim navigation with key pages for maximum user-friendliness
+nav:
+  - Home: index.md
+  - Vision & Mission: vision-mission-goals.md
+  - Get Started: installation.md
+  - Plugins: plugins.md
+  - Documentation: developer-overview.md
+  - Resources:
+      - Guidelines: resources/guidelines.md
+      - VS Code Tasks Safety: vscode-tasks-safety-guide.md
 
-edit_uri: https://github.com/filip-herceg/ReViewPoint/edit/main/docs/content/
+# Documentation directory
+docs_dir: content
+site_dir: site

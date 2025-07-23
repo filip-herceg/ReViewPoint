@@ -15,36 +15,35 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "docs"
+name = "reviewpoint-docs"
 version = "0.1.0"
 description = "ReViewPoint documentation and developer manual."
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
 keywords = ["documentation", "mkdocs", "reviewpoint"]
-authors = [
-  { name = "filip-herceg", email = "pvt.filip.herceg@gmail.com" },
-]
+authors = [{ name = "filip-herceg", email = "pvt.filip.herceg@gmail.com" }]
 classifiers = [
-  "Development Status :: 4 - Beta",
-  "Programming Language :: Python",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: Implementation :: CPython",
-  "Programming Language :: Python :: Implementation :: PyPy",
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dependencies = []
 
 [project.urls]
-Documentation = "https://github.com/filip-herceg/docs#readme"
-Issues = "https://github.com/filip-herceg/docs/issues"
-Source = "https://github.com/filip-herceg/docs"
+Documentation = "https://github.com/filip-herceg/ReViewPoint#readme"
+Issues = "https://github.com/filip-herceg/ReViewPoint/issues"
+Source = "https://github.com/filip-herceg/ReViewPoint"
 
 [tool.hatch.envs.default]
 path = ".venv"
+skip-install = true
 dependencies = [
     "mkdocs>=1.4.0",
     "mkdocs-material>=9.0.0",
@@ -57,5 +56,16 @@ dependencies = [
     "mkdocs-macros-plugin>=1.0.0",
     "mkdocstrings[python]>=0.22.0",
     "mkdocs-autorefs>=0.5.0",
-    "griffe>=0.30.0"
+    "griffe>=0.30.0",
 ]
+
+[tool.hatch.envs.default.scripts]
+serve = "mkdocs serve --dev-addr 127.0.0.1:8001"
+build = "mkdocs build"
+clean = "mkdocs build --clean"
+
+[tool.hatch.build.targets.wheel]
+packages = []
+
+[tool.hatch.build.targets.sdist]
+exclude = ["/.venv", "/site", "/.git"]

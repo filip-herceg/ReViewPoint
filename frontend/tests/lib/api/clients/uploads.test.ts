@@ -82,7 +82,7 @@ describe("Type-Safe Upload API Client", () => {
 				total: 2,
 			};
 
-			(generatedApiClient.GET as any).mockResolvedValue({
+			(generatedApiClient.GET as jest.Mock).mockResolvedValue({
 				data: mockFiles,
 				error: null,
 			});
@@ -100,7 +100,7 @@ describe("Type-Safe Upload API Client", () => {
 		it("should handle list files errors", async () => {
 			const { generatedApiClient } = await import("@/lib/api/generated/client");
 
-			(generatedApiClient.GET as any).mockResolvedValue({
+			(generatedApiClient.GET as jest.Mock).mockResolvedValue({
 				data: null,
 				error: { message: "Unauthorized" },
 			});
@@ -118,7 +118,7 @@ describe("Type-Safe Upload API Client", () => {
 				url: "/uploads/test.txt",
 			};
 
-			(generatedApiClient.GET as any).mockResolvedValue({
+			(generatedApiClient.GET as jest.Mock).mockResolvedValue({
 				data: mockFileInfo,
 				error: null,
 			});
@@ -141,7 +141,7 @@ describe("Type-Safe Upload API Client", () => {
 		it("should delete file using generated client", async () => {
 			const { generatedApiClient } = await import("@/lib/api/generated/client");
 
-			(generatedApiClient.DELETE as any).mockResolvedValue({
+			(generatedApiClient.DELETE as jest.Mock).mockResolvedValue({
 				data: {},
 				error: null,
 			});
