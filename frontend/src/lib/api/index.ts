@@ -94,11 +94,11 @@ import { createUpload, uploadsApi } from "./uploads";
 import { usersApi } from "./users";
 
 const api = {
-  ...authApi,
-  ...uploadsApi,
-  ...usersApi,
-  ...healthApi,
-  createUpload,
+	...authApi,
+	...uploadsApi,
+	...usersApi,
+	...healthApi,
+	createUpload,
 };
 
 export default api;

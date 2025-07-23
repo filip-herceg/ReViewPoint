@@ -11,8 +11,8 @@ export { FilePreviewModal } from "./FilePreviewModal";
 export { type FileFilters, FileSearchFilters } from "./FileSearchFilters";
 export { FileTable } from "./FileTable";
 export {
-  FileToolbar,
-  type SortField,
-  type SortOrder,
-  type ViewMode,
+	FileToolbar,
+	type SortField,
+	type SortOrder,
+	type ViewMode,
 } from "./FileToolbar";
