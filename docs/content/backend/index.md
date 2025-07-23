@@ -880,6 +880,6 @@ Explore the complete 1:1 source code documentation for all backend modules:
 - **API Integration**: Learn how to integrate with the [Frontend](../frontend/index.md)
 - **Testing**: Dive deeper into [Testing Guide](../resources/testing.md)
 - **Deployment**: Review deployment strategies and production configuration
-- **Contributing**: Check out [Contributing Guidelines](../resources/contributing.md)
+- **Contributing**: Contributing guidelines are currently under development. Stay tuned!
 
 **The ReViewPoint backend provides a solid, secure, and scalable foundation for the application. This documentation covers all major aspects of the backend implementation and will help you understand, use, and contribute to the codebase effectively.**
