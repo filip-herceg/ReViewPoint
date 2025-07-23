@@ -169,6 +169,7 @@ def sanitize_filename(filename: Filename) -> SanitizedFilename:
    ```
 
 4. **Character Sanitization:**
+
    ```python
    safe_name: SanitizedFilename = "_".join(parts)
    safe_name = re.sub(_INVALID_CHARS_PATTERN, "_", safe_name)
@@ -224,6 +225,7 @@ def is_safe_filename(filename: Filename) -> Literal[True, False]:
    ```
 
 4. **Success Return:**
+
    ```python
    return True
    ```

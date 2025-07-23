@@ -17,7 +17,7 @@ Centralized environment configuration with type safety and validation using Zod 
 
 #### API Configuration
 
-- **API_BASE_URL**: Backend API endpoint (default: http://localhost:8000)
+- **API_BASE_URL**: Backend API endpoint (default: <http://localhost:8000>)
 - **API_TIMEOUT**: Request timeout in milliseconds (default: 5000ms)
 - **WS_URL**: WebSocket endpoint (default: ws://localhost:8000/api/v1)
 

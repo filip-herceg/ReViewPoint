@@ -106,6 +106,7 @@ def _get_pwd_context() -> CryptContext:
    ```
 
 3. **Context Creation:**
+
    ```python
    return CryptContext(
        schemes=schemes,
@@ -156,6 +157,7 @@ def hash_password(password: str) -> str:
    ```
 
 3. **Hash Generation:**
+
    ```python
    hash_result: str = pwd_context.hash(password)
    return hash_result
@@ -203,6 +205,7 @@ def verify_password(plain: str, hashed: str) -> bool:
    ```
 
 3. **Verification:**
+
    ```python
    result: bool = pwd_context.verify(plain, hashed)
    return result

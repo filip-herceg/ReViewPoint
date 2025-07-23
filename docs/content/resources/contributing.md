@@ -332,7 +332,7 @@ We are committed to providing a welcoming and inclusive environment for all cont
 
 - **GitHub Issues**: Bug reports and feature requests
 - **GitHub Discussions**: General questions and community discussion
-- **Email**: security@reviewpoint.dev for security issues
+- **Email**: <security@reviewpoint.dev> for security issues
 
 ### Recognition
 

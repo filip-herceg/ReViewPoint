@@ -120,6 +120,7 @@ def filter_fields(
    ```
 
 4. **Filtering Operation:**
+
    ```python
    return {k: v for k, v in obj.items() if k in fields_to_include}
    ```
@@ -195,6 +196,7 @@ def process_user_filters(
    ```
 
 3. **Return Processing:**
+
    ```python
    return sort, order, created_after_dt, created_before_dt
    ```

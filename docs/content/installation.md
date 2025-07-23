@@ -1,6 +1,6 @@
 # Get Started with ReViewPoint
 
-> **Fresh Windows mac💡 **Docker Note\*\*: Docker Desktop requires manual installation but isn't required for basic development (SQLite mode works without it).
+> **Fresh Windows mac💡**Docker Note\*\*: Docker Desktop requires manual installation but isn't required for basic development (SQLite mode works without it).
 
 ---
 
@@ -121,6 +121,7 @@ Perfect for **fresh Windows machines** or **professor grading scenarios**:
    ```
 
 3. **Start development:**
+
    ```powershell
    pnpm run dev
    ```
@@ -409,7 +410,7 @@ npx kill-port 8000
 
 **After successful installation:**
 
-1. **Explore the API**: Visit http://localhost:8000/docs
+1. **Explore the API**: Visit <http://localhost:8000/docs>
 2. **Check Documentation**: Browse to the [Developer Documentation](developer-overview.md)
 3. **Run Tests**: Execute tests to ensure everything works
 4. **Start Developing**: Read [Development Guidelines](resources/guidelines.md)
@@ -468,9 +469,9 @@ pnpm run frontend       # Start Vite frontend
 
 **Check that everything is working:**
 
-1. **Frontend loads**: http://localhost:5173 shows the login page
-2. **Backend API**: http://localhost:8000/docs shows Swagger documentation
-3. **Health check**: http://localhost:8000/api/v1/health returns `{"status": "healthy"}`
+1. **Frontend loads**: <http://localhost:5173> shows the login page
+2. **Backend API**: <http://localhost:8000/docs> shows Swagger documentation
+3. **Health check**: <http://localhost:8000/api/v1/health> returns `{"status": "healthy"}`
 
 ---
 

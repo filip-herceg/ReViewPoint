@@ -102,6 +102,7 @@ test(user): add unit tests for user service
    ```
 
 3. **Start Development**:
+
    ```bash
    pnpm run dev              # SQLite mode (simple)
    pnpm run dev:postgres     # PostgreSQL mode (production-like)

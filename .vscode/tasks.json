@@ -993,6 +993,32 @@
             },
             "problemMatcher": [],
             "detail": "Completely reset PostgreSQL container and database (removes all data)"
+        },
+        // === PLUGIN TASKS ===
+        {
+            "label": "ReViewPoint: Setup Plugin Repositories",
+            "type": "shell",
+            "command": "powershell",
+            "args": [
+                "-ExecutionPolicy",
+                "Bypass",
+                "-Command",
+                "& { $ErrorActionPreference = 'Stop'; if (!(Test-Path 'plugin_prototypes')) { New-Item -ItemType Directory -Path 'plugin_prototypes' | Out-Null }; cd plugin_prototypes; if (!(Test-Path 'pdf_latex_converter')) { Write-Host '📥 Cloning PDF LaTeX Converter...' -ForegroundColor Green; git clone https://github.com/Swabble/pdf_latex_converter.git } else { Write-Host '✅ PDF LaTeX Converter already exists' -ForegroundColor Yellow }; if (!(Test-Path 'ReViewPoint-CitationValidatorPro')) { Write-Host '📥 Cloning Citation Validator Pro...' -ForegroundColor Green; git clone https://github.com/filip-herceg/ReViewPoint-CitationValidatorPro.git } else { Write-Host '✅ Citation Validator Pro already exists' -ForegroundColor Yellow }; Write-Host '🎉 Plugin repositories setup complete!' -ForegroundColor Green }"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": true
+            },
+            "problemMatcher": [],
+            "detail": "🔌 Clone plugin repositories into plugin_prototypes/ if they don't exist yet"
         }
     ],
     "inputs": [

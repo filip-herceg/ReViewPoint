@@ -94,14 +94,14 @@ def to_dict(self) -> Mapping[str, Any]:
     return result
 ```
 
-#### Features:
+#### Features
 
 - Iterates through all table columns dynamically
 - Handles missing attributes gracefully with None default
 - Returns immutable Mapping interface for safety
 - Uses type casting for SQLAlchemy table access
 
-#### Error Handling:
+#### Error Handling
 
 - Raises `AttributeError` if column attributes are missing
 - Provides clear documentation of potential exceptions
@@ -111,13 +111,13 @@ def to_dict(self) -> Mapping[str, Any]:
 
 Automatic timestamp handling ensures audit trail consistency:
 
-#### Created Timestamp:
+#### Created Timestamp
 
 - Set automatically on record creation using `default=func.now()`
 - Timezone-aware to support global deployments
 - Immutable after creation (no onupdate trigger)
 
-#### Updated Timestamp:
+#### Updated Timestamp
 
 - Set on creation and automatically updated on modifications
 - Uses `onupdate=func.now()` for automatic maintenance

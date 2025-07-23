@@ -108,6 +108,7 @@ def http_error(
    ```
 
 3. **Exception Raising:**
+
    ```python
    raise HTTPException(status_code=status_code, detail=detail) from exc
    ```

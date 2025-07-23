@@ -428,6 +428,7 @@ We maintain **comprehensive testing** at multiple levels:
    ```
 
 3. **Coverage Reports**
+
    ```bash
    cd backend && hatch run fast:coverage
    ```
@@ -447,6 +448,7 @@ We maintain **comprehensive testing** at multiple levels:
    ```
 
 3. **Coverage Reports**
+
    ```bash
    cd frontend && pnpm run test:coverage
    ```

@@ -149,6 +149,7 @@ nav:
   - Home: index.md
   - Vision & Mission: vision-mission-goals.md
   - Get Started: installation.md
+  - Plugins: plugins.md
   - Documentation: developer-overview.md
   - Resources:
       - Guidelines: resources/guidelines.md
