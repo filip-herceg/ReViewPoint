@@ -14,7 +14,7 @@ pnpm run dev:postgres  # Starts everything: DB + Backend + Frontend
 **🌐 Access Your Development Environment:**
 
 - **📱 Main Application**: [http://localhost:5173](http://localhost:5173) ← **Start here!**
-- **📚 Documentation Site**: [http://127.0.0.1:8000/ReViewPoint/](http://127.0.0.1:8000/ReViewPoint/)
+- **📚 Documentation Site**: [http://127.0.0.1:8001/ReViewPoint/](http://127.0.0.1:8001/ReViewPoint/)
 - **🔧 Backend API**: [http://localhost:8000](http://localhost:8000)
 - **📖 API Docs (Swagger)**: [http://localhost:8000/docs](http://localhost:8000/docs)
 

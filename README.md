@@ -53,11 +53,27 @@ pnpm run dev:postgres
 **🌐 Access Your Running Application:**
 
 - **📱 Main Application**: [http://localhost:5173](http://localhost:5173)
-- **📚 Documentation Site**: [http://127.0.0.1:8000/ReViewPoint/](http://127.0.0.1:8000/ReViewPoint/)
+- **📚 Documentation Site**: [http://127.0.0.1:8001/ReViewPoint/](http://127.0.0.1:8001/ReViewPoint/)
 - **🔧 Backend API**: [http://localhost:8000](http://localhost:8000)
 - **📖 API Docs (Swagger)**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 **🎯 [Complete Installation Guide →](https://filip-herceg.github.io/ReViewPoint/installation/)**
+
+---
+
+## 🌐 **📚 Online Documentation**
+
+> **🔥 Want to explore ReViewPoint without installing? Check out our comprehensive online documentation!**
+
+<div align="center">
+
+### **🚀 [https://filip-herceg.github.io/ReViewPoint](https://filip-herceg.github.io/ReViewPoint)**
+
+**📖 Browse the full documentation site • 🧭 Interactive guides • 📊 Architecture details**
+
+*Always up-to-date with the latest features and developments*
+
+</div>
 
 ---
 

@@ -60,7 +60,7 @@ dependencies = [
 ]
 
 [tool.hatch.envs.default.scripts]
-serve = "mkdocs serve"
+serve = "mkdocs serve --dev-addr 127.0.0.1:8001"
 build = "mkdocs build"
 clean = "mkdocs build --clean"
 

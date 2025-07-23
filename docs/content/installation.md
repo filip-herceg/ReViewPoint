@@ -222,7 +222,7 @@ pnpm run dev:postgres
 ### **🌐 Access Your Application:**
 
 - **📱 Main Application**: [http://localhost:5173](http://localhost:5173) ← **Start here!**
-- **📚 This Documentation**: [http://127.0.0.1:8000/ReViewPoint/](http://127.0.0.1:8000/ReViewPoint/)
+- **📚 This Documentation**: [http://127.0.0.1:8001/ReViewPoint/](http://127.0.0.1:8001/ReViewPoint/)
 - **🔧 Backend API**: [http://localhost:8000](http://localhost:8000)
 - **📖 API Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
@@ -473,7 +473,7 @@ pnpm run frontend       # Start Vite frontend
 **Check that everything is working correctly:**
 
 1. **📱 Main App**: [http://localhost:5173](http://localhost:5173) shows the ReViewPoint login page
-2. **📚 Documentation**: [http://127.0.0.1:8000/ReViewPoint/](http://127.0.0.1:8000/ReViewPoint/) shows this documentation site
+2. **📚 Documentation**: [http://127.0.0.1:8001/ReViewPoint/](http://127.0.0.1:8001/ReViewPoint/) shows this documentation site
 3. **🔧 Backend API**: [http://localhost:8000/docs](http://localhost:8000/docs) shows Swagger documentation
 4. **💚 Health Check**: [http://localhost:8000/api/v1/health](http://localhost:8000/api/v1/health) returns `{"status": "healthy"}`
 
