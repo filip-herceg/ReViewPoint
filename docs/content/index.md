@@ -50,6 +50,17 @@ ReViewPoint is a **production-ready platform** that streamlines scientific paper
 - **Modular Architecture** - Extensible design for custom analysis modules
 - **Developer Experience** - Comprehensive tooling and VS Code integration
 
+## 🌐 **Live Application URLs**
+
+**If you have ReViewPoint running locally, access it here:**
+
+- **📱 Main Application**: [http://localhost:5173](http://localhost:5173) ← **Start here!**
+- **📚 Documentation Site**: [http://127.0.0.1:8000/ReViewPoint/](http://127.0.0.1:8000/ReViewPoint/) ← **You are here!**
+- **🔧 Backend API**: [http://localhost:8000](http://localhost:8000)
+- **📖 API Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+**Not running yet?** → [Get Started in 30 minutes](installation.md)
+
 ### 🏆 **Production Highlights**
 
 | Component         | Technology             | Status                    |

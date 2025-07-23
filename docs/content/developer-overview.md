@@ -11,7 +11,12 @@ cd ReViewPoint
 pnpm run dev:postgres  # Starts everything: DB + Backend + Frontend
 ```
 
-**That's it!** Visit `http://localhost:5173` to see the app running.
+**🌐 Access Your Development Environment:**
+
+- **📱 Main Application**: [http://localhost:5173](http://localhost:5173) ← **Start here!**
+- **📚 Documentation Site**: [http://127.0.0.1:8000/ReViewPoint/](http://127.0.0.1:8000/ReViewPoint/)
+- **🔧 Backend API**: [http://localhost:8000](http://localhost:8000)
+- **📖 API Docs (Swagger)**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ---
 

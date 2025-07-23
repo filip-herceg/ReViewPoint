@@ -50,6 +50,13 @@ pnpm run dev
 pnpm run dev:postgres
 ```
 
+**🌐 Access Your Running Application:**
+
+- **📱 Main Application**: [http://localhost:5173](http://localhost:5173)
+- **📚 Documentation Site**: [http://127.0.0.1:8000/ReViewPoint/](http://127.0.0.1:8000/ReViewPoint/)
+- **🔧 Backend API**: [http://localhost:8000](http://localhost:8000)
+- **📖 API Docs (Swagger)**: [http://localhost:8000/docs](http://localhost:8000/docs)
+
 **🎯 [Complete Installation Guide →](https://filip-herceg.github.io/ReViewPoint/installation/)**
 
 ---
@@ -74,6 +81,7 @@ ReViewPoint is a **production-ready platform** that streamlines scientific paper
 | **Frontend**      | React 18 + TypeScript  | ✅ **80%+ test coverage** |
 | **Database**      | PostgreSQL/SQLite      | ✅ **Production ready**   |
 | **CI/CD**         | GitHub Actions         | ✅ **Automated pipeline** |
+
 | **Documentation** | MkDocs Material        | ✅ **968+ pages**         |
 
 ---
@@ -81,12 +89,15 @@ ReViewPoint is a **production-ready platform** that streamlines scientific paper
 ## 🎯 **Vision & Mission**
 
 ### **Our Vision**
+
 ReViewPoint envisions becoming the **premier platform for collaborative code review** that transforms how development teams work together, creating an environment where code quality, team collaboration, and project transparency are seamlessly integrated.
 
 ### **Our Mission**
+
 **To empower development teams with intuitive tools that make code review efficient, comprehensive, and collaborative.**
 
 We believe great software is built through:
+
 - **Collaborative Review Processes** - Multiple perspectives lead to better code
 - **Transparent Communication** - Clear feedback loops and decision tracking  
 - **Quality-Driven Development** - Built-in tools that promote best practices
@@ -225,19 +236,22 @@ We welcome contributions! Here's how to get started:
 
 ---
 
-## 🔗 **Links & Resources**
+## 🔗 **Links & Resourcs**
 
 ### **📚 Documentation**
+
 - **🏠 [Main Documentation](https://filip-herceg.github.io/ReViewPoint/)** - Complete documentation site
 - **📖 [API Reference](https://filip-herceg.github.io/ReViewPoint/resources/api-reference/)** - Full API documentation
 - **❓ [FAQ](https://filip-herceg.github.io/ReViewPoint/resources/faq/)** - Common questions & troubleshooting
 
-### **🛠️ Development** 
+### **🛠️ Development**
+
 - **🐛 [Issues](https://github.com/filip-herceg/ReViewPoint/issues)** - Report bugs & request features
 - **🔄 [Pull Requests](https://github.com/filip-herceg/ReViewPoint/pulls)** - View active contributions
 - **📋 [Projects](https://github.com/filip-herceg/ReViewPoint/projects)** - Development roadmap
 
 ### **🌐 Community**
+
 - **💬 [Discussions](https://github.com/filip-herceg/ReViewPoint/discussions)** - Community Q&A
 - **📧 [Contact](mailto:contact@reviewpoint.dev)** - Direct communication
 
