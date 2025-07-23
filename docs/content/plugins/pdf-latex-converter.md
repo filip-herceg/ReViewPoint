@@ -1,7 +1,5 @@
 # PDF LaTeX Converter
 
-# PDF LaTeX Converter
-
 The PDF LaTeX Converter is ReViewPoint's flagship document processing plugin, designed to intelligently extract, analyze, and structure content from PDF documents using advanced parsing techniques and AI-assisted analysis.
 
 ## Primary Goal
