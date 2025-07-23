@@ -2,7 +2,11 @@
 
 ## Purpose
 
-The `api/v1/users/exports.py` module provides comprehensive user data export functionality for the ReViewPoint platform. It implements secure CSV export capabilities with different data granularity levels, health checking endpoints, and debugging utilities for user data reporting, analytics, and system integration needs.
+The `api/v1/users/exports.py` module provides comprehensive user data export
+functionality for the ReViewPoint platform. It implements secure CSV export
+capabilities with different data granularity levels, health checking endpoints,
+and debugging utilities for user data reporting, analytics, and system
+integration needs.
 
 ## Key Components
 
@@ -112,7 +116,8 @@ CSV_FULL_EXPORT_FILENAME: Final[Literal["users_full_export.csv"]] = "users_full_
             "description": "CSV export successful",
             "content": {
                 "text/csv": {
-                    "example": "id,email,name\n123,john@example.com,John Doe\n456,jane@example.com,Jane Smith"
+                    "example": "id,email,name\n123,john@example.com,John Doe\n" +
+                               "456,jane@example.com,Jane Smith"
                 }
             },
         },
@@ -222,7 +227,11 @@ async def export_users_csv(
             "description": "Full CSV export successful",
             "content": {
                 "text/csv": {
-                    "example": "id,email,name,created_at,updated_at,is_active,is_admin\n123,john@example.com,John Doe,2025-01-08T10:30:00Z,2025-01-08T15:45:00Z,true,false"
+                    "example": "id,email,name,created_at,updated_at," +
+                               "is_active,is_admin\n" +
+                               "123,john@example.com,John Doe," +
+                               "2025-01-08T10:30:00Z," +
+                               "2025-01-08T15:45:00Z,true,false"
                 }
             },
         },
@@ -407,8 +416,12 @@ def generate_csv_export(users_data: Sequence[User], headers: list[str]) -> str:
             user.email,
             user.name,
             # Additional fields for full export
-            user.created_at.isoformat() if hasattr(user, 'created_at') and user.created_at else "",
-            user.updated_at.isoformat() if hasattr(user, 'updated_at') and user.updated_at else "",
+            user.created_at.isoformat() if (
+                hasattr(user, 'created_at') and user.created_at
+            ) else "",
+            user.updated_at.isoformat() if (
+                hasattr(user, 'updated_at') and user.updated_at
+            ) else "",
             user.is_active if hasattr(user, 'is_active') else False,
             user.is_admin if hasattr(user, 'is_admin') else False,
         ])
@@ -582,7 +595,10 @@ if email is not None:
 - Implement proper HTTP status codes and responses
 - Log export errors for monitoring and debugging
 
-This user export API provides flexible and secure data export capabilities with multiple granularity levels, comprehensive health monitoring, and robust security controls essential for user data reporting and analytics in the ReViewPoint platform.
+This user export API provides flexible and secure data export capabilities with
+multiple granularity levels, comprehensive health monitoring, and robust
+security controls essential for user data reporting and analytics in the
+ReViewPoint platform.
 
 ## Related Files
 

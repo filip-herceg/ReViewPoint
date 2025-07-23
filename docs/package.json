@@ -1,0 +1,17 @@
+{
+  "name": "reviewpoint-docs-tooling",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Development tooling for ReViewPoint documentation",
+  "scripts": {
+    "format:md": "prettier --write \"**/*.md\" --ignore-path .prettierignore",
+    "lint:md": "markdownlint \"**/*.md\" --ignore-path .markdownlint-ignore"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "markdownlint-cli": "^0.39.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
