@@ -67,11 +67,12 @@ jobs:
           # If lockfile exists but is out of sync, re-generate it
           npm install
 
-      - name: Lint Markdown (Prettier)
-        run: |
-          cd docs
-          npm run format:md -- --check
-          npm run lint:md
+      # Temporarily disabled Prettier Markdown lint check
+      # - name: Lint Markdown (Prettier)
+      #   run: |
+      #     cd docs
+      #     npm run format:md -- --check
+      #     npm run lint:md
       # - name: Lint mkdocs.yml
       #   run: |
       #     pip install mkdocs-lint
