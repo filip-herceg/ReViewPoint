@@ -10,13 +10,13 @@ The `performanceMonitoring.ts` file provides comprehensive performance monitorin
 
 ```typescript
 interface PerformanceMetric {
-  id: string;                    // Unique metric identifier
-  name: string;                  // Metric name (CLS, FCP, INP, LCP, TTFB)
-  value: number;                 // Measured value
+  id: string; // Unique metric identifier
+  name: string; // Metric name (CLS, FCP, INP, LCP, TTFB)
+  value: number; // Measured value
   rating: "good" | "needs-improvement" | "poor";
-  timestamp: number;             // Measurement timestamp
-  url: string;                   // Page URL when measured
-  navigationType: string;        // Navigation type (navigate, reload, etc.)
+  timestamp: number; // Measurement timestamp
+  url: string; // Page URL when measured
+  navigationType: string; // Navigation type (navigate, reload, etc.)
   deviceType: "mobile" | "tablet" | "desktop";
 }
 ```
@@ -25,12 +25,12 @@ interface PerformanceMetric {
 
 ```typescript
 interface PerformanceConfig {
-  enableWebVitals: boolean;          // Track Core Web Vitals
-  enableResourceTiming: boolean;     // Track resource load times
-  enableNavigationTiming: boolean;   // Track navigation metrics
-  enableUserTiming: boolean;         // Track custom user marks
-  sampleRate: number;               // Sampling rate (0.0 to 1.0)
-  reportToAnalytics: boolean;       // Send metrics to analytics
+  enableWebVitals: boolean; // Track Core Web Vitals
+  enableResourceTiming: boolean; // Track resource load times
+  enableNavigationTiming: boolean; // Track navigation metrics
+  enableUserTiming: boolean; // Track custom user marks
+  sampleRate: number; // Sampling rate (0.0 to 1.0)
+  reportToAnalytics: boolean; // Send metrics to analytics
 }
 ```
 
@@ -74,11 +74,11 @@ private setupWebVitalsTracking(): void {
 
 ```typescript
 const thresholds = {
-  CLS: { good: 0.1, poor: 0.25 },          // Layout stability
-  FCP: { good: 1800, poor: 3000 },         // First paint (ms)
-  INP: { good: 200, poor: 500 },           // Interaction response (ms)
-  LCP: { good: 2500, poor: 4000 },         // Largest paint (ms)
-  TTFB: { good: 800, poor: 1800 },         // Server response (ms)
+  CLS: { good: 0.1, poor: 0.25 }, // Layout stability
+  FCP: { good: 1800, poor: 3000 }, // First paint (ms)
+  INP: { good: 200, poor: 500 }, // Interaction response (ms)
+  LCP: { good: 2500, poor: 4000 }, // Largest paint (ms)
+  TTFB: { good: 800, poor: 1800 }, // Server response (ms)
 };
 
 // Rating classification:
@@ -116,7 +116,7 @@ private recordResourceTiming(entry: PerformanceResourceTiming): void {
     id: `resource_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     name: "resource-timing",
     value: entry.duration,
-    rating: entry.duration < 500 ? "good" : 
+    rating: entry.duration < 500 ? "good" :
             entry.duration < 1000 ? "needs-improvement" : "poor",
     timestamp: Date.now(),
     url: entry.name,              // Resource URL
@@ -159,11 +159,11 @@ const navigationMetrics = [
 
 ```typescript
 const navigationThresholds = {
-  "dns-lookup": { good: 50, poor: 200 },      // DNS resolution time
-  "tcp-connect": { good: 100, poor: 500 },    // TCP connection time
+  "dns-lookup": { good: 50, poor: 200 }, // DNS resolution time
+  "tcp-connect": { good: 100, poor: 500 }, // TCP connection time
   "request-response": { good: 500, poor: 1500 }, // Server response time
   "dom-processing": { good: 1000, poor: 3000 }, // DOM parsing time
-  "page-load": { good: 2000, poor: 5000 },    // Complete page load
+  "page-load": { good: 2000, poor: 5000 }, // Complete page load
 };
 ```
 
@@ -259,11 +259,11 @@ function checkPerformanceBudget(): {
   violations: Array<{ metric: string; value: number; budget: number }>;
 } {
   const budgets = {
-    LCP: 2500,   // 2.5 seconds
-    INP: 200,    // 200 milliseconds
-    CLS: 0.1,    // 0.1 shift score
-    FCP: 1800,   // 1.8 seconds
-    TTFB: 800,   // 800 milliseconds
+    LCP: 2500, // 2.5 seconds
+    INP: 200, // 200 milliseconds
+    CLS: 0.1, // 0.1 shift score
+    FCP: 1800, // 1.8 seconds
+    TTFB: 800, // 800 milliseconds
   };
 
   const violations = [];
@@ -318,9 +318,10 @@ export function usePerformanceMonitoring() {
     getMetrics: performanceMonitoringService.getMetrics.bind(
       performanceMonitoringService,
     ),
-    getPerformanceSummary: performanceMonitoringService.getPerformanceSummary.bind(
-      performanceMonitoringService,
-    ),
+    getPerformanceSummary:
+      performanceMonitoringService.getPerformanceSummary.bind(
+        performanceMonitoringService,
+      ),
     clearMetrics: performanceMonitoringService.clearMetrics.bind(
       performanceMonitoringService,
     ),
@@ -398,8 +399,8 @@ function BudgetValidator() {
     // Alert development team or show warning
   }
 
-  return budgetCheck.passed ? 
-    <SuccessIndicator /> : 
+  return budgetCheck.passed ?
+    <SuccessIndicator /> :
     <WarningIndicator violations={budgetCheck.violations} />;
 }
 ```
@@ -414,8 +415,9 @@ if (entry.duration < 100) return;
 
 // Filter out irrelevant metrics
 const isRelevantMetric = (metric: PerformanceMetric) => {
-  return metric.name in ['CLS', 'FCP', 'INP', 'LCP', 'TTFB'] ||
-         metric.value > 50; // Threshold for custom metrics
+  return (
+    metric.name in ["CLS", "FCP", "INP", "LCP", "TTFB"] || metric.value > 50
+  ); // Threshold for custom metrics
 };
 ```
 
@@ -442,7 +444,7 @@ cleanup(): void {
 ```typescript
 // Configure sampling rate for production
 const config: PerformanceConfig = {
-  sampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0, // 10% in prod
+  sampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0, // 10% in prod
   // ... other config
 };
 ```
@@ -460,19 +462,19 @@ const config: PerformanceConfig = {
 
 ```typescript
 // Development helpers for testing
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === "development") {
   window.performanceTest = {
     triggerSlowResource: () => {
       const img = new Image();
-      img.src = '/slow-loading-image.jpg';
+      img.src = "/slow-loading-image.jpg";
     },
     simulateLayoutShift: () => {
       // Trigger artificial layout shift for testing
-      document.body.style.marginTop = '100px';
+      document.body.style.marginTop = "100px";
       setTimeout(() => {
-        document.body.style.marginTop = '0px';
+        document.body.style.marginTop = "0px";
       }, 100);
-    }
+    },
   };
 }
 ```

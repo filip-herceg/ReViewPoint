@@ -1,0 +1,49 @@
+# Prettier ignore file for docs/
+# This file ensures Prettier skips these directories and files permanently
+
+# Python virtual environment
+.venv/
+venv/
+__pycache__/
+
+# Build outputs
+site/
+dist/
+build/
+
+# Node modules (if any)
+node_modules/
+
+# Git
+.git/
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.temp
+
+# Generated documentation files that shouldn't be formatted
+htmlcov/
+coverage/
+.coverage
+.nyc_output/

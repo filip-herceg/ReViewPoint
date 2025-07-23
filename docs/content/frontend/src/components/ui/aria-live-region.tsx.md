@@ -79,15 +79,15 @@ export function FormValidationAnnouncer({ ... }: FormValidationAnnouncerProps)
 ### Basic Live Region
 
 ```tsx
-import { AriaLiveRegion } from '@/components/ui/aria-live-region';
+import { AriaLiveRegion } from "@/components/ui/aria-live-region";
 
 function MyComponent() {
-  const [message, setMessage] = useState('');
-  
+  const [message, setMessage] = useState("");
+
   const handleSave = () => {
-    setMessage('Changes saved successfully');
+    setMessage("Changes saved successfully");
   };
-  
+
   return (
     <>
       <button onClick={handleSave}>Save</button>
@@ -100,17 +100,19 @@ function MyComponent() {
 ### Status Announcements
 
 ```tsx
-import { StatusAnnouncer } from '@/components/ui/aria-live-region';
+import { StatusAnnouncer } from "@/components/ui/aria-live-region";
 
 function DataLoader() {
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  
+  const [status, setStatus] = useState<"loading" | "success" | "error">(
+    "loading",
+  );
+
   return (
     <>
       <div>Loading data...</div>
-      <StatusAnnouncer 
-        status={status} 
-        message="User data loaded successfully" 
+      <StatusAnnouncer
+        status={status}
+        message="User data loaded successfully"
       />
     </>
   );
@@ -120,18 +122,15 @@ function DataLoader() {
 ### Form Validation
 
 ```tsx
-import { FormValidationAnnouncer } from '@/components/ui/aria-live-region';
+import { FormValidationAnnouncer } from "@/components/ui/aria-live-region";
 
 function LoginForm() {
   const [errors, setErrors] = useState<string[]>([]);
-  
+
   return (
     <form>
       <input name="email" />
-      <FormValidationAnnouncer 
-        errors={errors} 
-        fieldName="email" 
-      />
+      <FormValidationAnnouncer errors={errors} fieldName="email" />
     </form>
   );
 }
@@ -140,7 +139,10 @@ function LoginForm() {
 ### Global Live Region with Context
 
 ```tsx
-import { LiveRegionProvider, useLiveRegion } from '@/components/ui/aria-live-region';
+import {
+  LiveRegionProvider,
+  useLiveRegion,
+} from "@/components/ui/aria-live-region";
 
 function App() {
   return (
@@ -152,16 +154,16 @@ function App() {
 
 function SomeComponent() {
   const { announceSuccess, announceError } = useLiveRegion();
-  
+
   const handleAction = async () => {
     try {
       await performAction();
-      announceSuccess('Action completed successfully');
+      announceSuccess("Action completed successfully");
     } catch (error) {
-      announceError('Action failed. Please try again.');
+      announceError("Action failed. Please try again.");
     }
   };
-  
+
   return <button onClick={handleAction}>Perform Action</button>;
 }
 ```
@@ -171,9 +173,11 @@ function SomeComponent() {
 ### useAriaLive Hook
 
 ```tsx
-export function useAriaLive(defaultPoliteness: LiveRegionPoliteness = "polite") {
+export function useAriaLive(
+  defaultPoliteness: LiveRegionPoliteness = "polite",
+) {
   const { announce, announcePolite, announceAssertive, clear } = useAriaLive();
-  
+
   // Usage examples
   announce("Custom message", "assertive");
   announcePolite("Polite announcement");
@@ -216,12 +220,13 @@ export function FormValidationAnnouncer({
 }: FormValidationAnnouncerProps) {
   const message = React.useMemo(() => {
     if (errors.length === 0) return "";
-    
+
     const prefix = fieldName ? `${fieldName} field:` : "Validation error:";
-    const errorText = errors.length === 1 
-      ? errors[0] 
-      : `${errors.length} errors: ${errors.join(", ")}`;
-    
+    const errorText =
+      errors.length === 1
+        ? errors[0]
+        : `${errors.length} errors: ${errors.join(", ")}`;
+
     return `${prefix} ${errorText}`;
   }, [errors, fieldName]);
 }
@@ -358,15 +363,22 @@ useEffect(() => {
 ### Global Provider Implementation
 
 ```tsx
-export function LiveRegionProvider({ children }: { children: React.ReactNode }) {
+export function LiveRegionProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { announce, announcePolite, announceAssertive } = useAriaLive();
-  
-  const contextValue = React.useMemo(() => ({
-    announce,
-    announceSuccess: announcePolite,
-    announceError: announceAssertive,
-  }), [announce, announcePolite, announceAssertive]);
-  
+
+  const contextValue = React.useMemo(
+    () => ({
+      announce,
+      announceSuccess: announcePolite,
+      announceError: announceAssertive,
+    }),
+    [announce, announcePolite, announceAssertive],
+  );
+
   return (
     <LiveRegionContext.Provider value={contextValue}>
       {children}

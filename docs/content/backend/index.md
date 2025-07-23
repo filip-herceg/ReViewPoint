@@ -15,25 +15,25 @@ graph TB
         Schemas[Pydantic Schemas]
         Auth[Authentication Middleware]
     end
-    
+
     subgraph "Business Logic Layer"
         Services[Service Classes]
         Validators[Input Validation]
         Cache[Cache Layer]
     end
-    
+
     subgraph "Data Access Layer"
         Repositories[Repository Pattern]
         Models[SQLAlchemy Models]
         Migrations[Alembic Migrations]
     end
-    
+
     subgraph "Infrastructure"
         DB[(PostgreSQL)]
         Files[File Storage]
         Redis[(Redis Cache)]
     end
-    
+
     API --> Services
     Schemas --> Services
     Auth --> Services
@@ -47,16 +47,16 @@ graph TB
 
 ### Key Technologies
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **FastAPI** | 0.104+ | High-performance web framework |
-| **SQLAlchemy** | 2.0+ | Modern ORM with async support |
-| **PostgreSQL** | 15+ | Primary production database |
-| **Alembic** | 1.12+ | Database migration management |
-| **Pydantic** | 2.0+ | Data validation and serialization |
-| **JWT** | PyJWT | Secure authentication tokens |
-| **Pytest** | 7.0+ | Comprehensive testing framework |
-| **Hatch** | 1.7+ | Python project management |
+| Technology     | Version | Purpose                           |
+| -------------- | ------- | --------------------------------- |
+| **FastAPI**    | 0.104+  | High-performance web framework    |
+| **SQLAlchemy** | 2.0+    | Modern ORM with async support     |
+| **PostgreSQL** | 15+     | Primary production database       |
+| **Alembic**    | 1.12+   | Database migration management     |
+| **Pydantic**   | 2.0+    | Data validation and serialization |
+| **JWT**        | PyJWT   | Secure authentication tokens      |
+| **Pytest**     | 7.0+    | Comprehensive testing framework   |
+| **Hatch**      | 1.7+    | Python project management         |
 
 ## Quick Navigation
 
@@ -369,16 +369,16 @@ sequenceDiagram
     participant Client
     participant API
     participant Database
-    
+
     Client->>API: POST /auth/login
     API->>Database: Verify credentials
     Database-->>API: User data
     API-->>Client: Access + Refresh tokens
-    
+
     Client->>API: API request with access token
     API->>API: Validate token
     API-->>Client: Protected resource
-    
+
     Note over Client,API: When access token expires
     Client->>API: POST /auth/refresh
     API->>API: Validate refresh token
@@ -423,7 +423,7 @@ erDiagram
         timestamp updated_at
         boolean is_active
     }
-    
+
     File {
         uuid id PK
         uuid user_id FK
@@ -436,7 +436,7 @@ erDiagram
         timestamp uploaded_at
         boolean is_public
     }
-    
+
     UsedPasswordResetToken {
         uuid id PK
         uuid user_id FK
@@ -444,7 +444,7 @@ erDiagram
         timestamp used_at
         timestamp expires_at
     }
-    
+
     User ||--o{ File : uploads
     User ||--o{ UsedPasswordResetToken : uses
 ```
@@ -456,7 +456,7 @@ erDiagram
 ```python
 class User(Base):
     __tablename__ = "users"
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     username = Column(String(50), unique=True, nullable=False, index=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
@@ -465,7 +465,7 @@ class User(Base):
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    
+
     # Relationships
     files = relationship("File", back_populates="user")
     used_tokens = relationship("UsedPasswordResetToken", back_populates="user")
@@ -476,7 +476,7 @@ class User(Base):
 ```python
 class File(Base):
     __tablename__ = "files"
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     filename = Column(String(255), nullable=False)
@@ -487,7 +487,7 @@ class File(Base):
     file_hash = Column(String(64), nullable=False)  # SHA-256
     uploaded_at = Column(DateTime(timezone=True), server_default=func.now())
     is_public = Column(Boolean, default=False, nullable=False)
-    
+
     # Relationships
     user = relationship("User", back_populates="files")
 ```
@@ -558,7 +558,7 @@ class TestUserAuthentication:
         })
         assert response.status_code == 201
         assert response.json()["username"] == "testuser"
-    
+
     def test_user_login(self, db: Session, test_user):
         """Test user login endpoint."""
         response = client.post("/api/v1/auth/login", json={
@@ -634,20 +634,20 @@ LOG_FORMAT=json
 class Settings(BaseSettings):
     # Database
     db_url: str = Field(..., env="REVIEWPOINT_DB_URL")
-    
+
     # Security
     secret_key: str = Field(..., env="SECRET_KEY")
     algorithm: str = Field(default="HS256", env="ALGORITHM")
     access_token_expire_minutes: int = Field(default=60, env="ACCESS_TOKEN_EXPIRE_MINUTES")
-    
+
     # Application
     debug: bool = Field(default=False, env="DEBUG")
     allowed_origins: List[str] = Field(default=["http://localhost:3000"], env="ALLOWED_ORIGINS")
-    
+
     # File uploads
     upload_dir: str = Field(default="uploads/", env="UPLOAD_DIR")
     max_upload_size: int = Field(default=10485760, env="MAX_UPLOAD_SIZE")  # 10MB
-    
+
     class Config:
         env_file = "config/.env"
         case_sensitive = False
@@ -676,7 +676,7 @@ cd backend
 hatch run ruff check .
 
 # Format code
-cd backend  
+cd backend
 hatch run ruff format .
 
 # Type checking
@@ -744,7 +744,7 @@ UPLOAD_SETTINGS = {
     "max_size": 10 * 1024 * 1024,  # 10MB
     "allowed_types": [
         "image/jpeg",
-        "image/png", 
+        "image/png",
         "application/pdf",
         "text/plain"
     ],

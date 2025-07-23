@@ -29,6 +29,7 @@ SanitizedFilename: TypeAlias = str          # Sanitized filename output
 ```
 
 **Purpose:**
+
 - **Type Clarity**: Clear distinction between original and sanitized filenames
 - **Type Safety**: Enables type checking for function parameters and returns
 - **Documentation**: Self-documenting code through meaningful type names
@@ -47,6 +48,7 @@ class SanitizedResult(TypedDict):
 ```
 
 **Design Benefits:**
+
 - **Extensibility**: Easy to add additional metadata fields
 - **Type Safety**: Structured return type with validation
 - **Future Enhancement**: Ready for additional sanitization information
@@ -65,6 +67,7 @@ _PATH_SEPARATORS: Final[tuple[Literal["/"], Literal["\\"]]] = ("/", "\\")
 ```
 
 **Security Purpose:**
+
 - **Cross-Platform**: Handles both Unix and Windows path separators
 - **Attack Prevention**: Prevents directory traversal through path separators
 - **Type Safety**: Literal types ensure exact string matching
@@ -77,6 +80,7 @@ _DANGEROUS_COMPONENTS: Final[tuple[Literal[".."], Literal["."]]] = ("..", ".")
 ```
 
 **Protection Against:**
+
 - **Parent Directory Access**: Prevents `../` path traversal
 - **Current Directory Reference**: Removes `.` components
 - **Path Manipulation**: Blocks relative path components
@@ -91,6 +95,7 @@ _INVALID_CHARS_PATTERN: Final[Literal[r'[\\/*?:"<>|]']] = r'[\\/*?:"<>|]'
 ```
 
 **Blocked Characters:**
+
 - `\` - Backslash (Windows path separator)
 - `/` - Forward slash (Unix path separator)
 - `*` - Wildcard character
@@ -102,6 +107,7 @@ _INVALID_CHARS_PATTERN: Final[Literal[r'[\\/*?:"<>|]']] = r'[\\/*?:"<>|]'
 - `|` - Pipe character
 
 **Security Rationale:**
+
 - **File System Compatibility**: Ensures filenames work across all file systems
 - **Injection Prevention**: Blocks characters used in command injection
 - **Shell Safety**: Prevents shell metacharacters from causing issues
@@ -117,19 +123,19 @@ _INVALID_CHARS_PATTERN: Final[Literal[r'[\\/*?:"<>|]']] = r'[\\/*?:"<>|]'
 def sanitize_filename(filename: Filename) -> SanitizedFilename:
     """
     Sanitizes a filename to prevent path traversal attacks.
-    
+
     Args:
         filename: Filename (str) to sanitize
-    
+
     Returns:
         SanitizedFilename (str) with no path components
-    
+
     Examples:
         >>> sanitize_filename("../etc/passwd")
         'etc_passwd'
         >>> sanitize_filename("file.txt")
         'file.txt'
-    
+
     Raises:
         None
     """
@@ -138,6 +144,7 @@ def sanitize_filename(filename: Filename) -> SanitizedFilename:
 **Sanitization Process:**
 
 1. **Empty Input Handling:**
+
    ```python
    if not filename:
        unnamed: Final[SanitizedFilename] = "unnamed_file"
@@ -145,14 +152,16 @@ def sanitize_filename(filename: Filename) -> SanitizedFilename:
    ```
 
 2. **Path Component Splitting:**
+
    ```python
    parts: list[Filename] = [
-       p for p in re.split(r"[\\/]+", filename) 
+       p for p in re.split(r"[\\/]+", filename)
        if p and p not in _DANGEROUS_COMPONENTS
    ]
    ```
 
 3. **Empty Result Handling:**
+
    ```python
    if not parts:
        empty: Final[SanitizedFilename] = "_"
@@ -168,6 +177,7 @@ def sanitize_filename(filename: Filename) -> SanitizedFilename:
    ```
 
 **Security Features:**
+
 - **Path Traversal Prevention**: Removes `../` and `./` components
 - **Character Replacement**: Replaces dangerous characters with underscores
 - **Empty Name Handling**: Provides default names for empty inputs
@@ -181,10 +191,10 @@ def sanitize_filename(filename: Filename) -> SanitizedFilename:
 def is_safe_filename(filename: Filename) -> Literal[True, False]:
     """
     Checks if a filename is safe (no path traversal).
-    
+
     Args:
         filename: Filename (str) to check
-    
+
     Returns:
         Literal[True] if the filename is safe, Literal[False] otherwise
     """
@@ -193,18 +203,21 @@ def is_safe_filename(filename: Filename) -> Literal[True, False]:
 **Validation Checks:**
 
 1. **Type and Existence Validation:**
+
    ```python
    if not isinstance(filename, str) or not filename:
        return False
    ```
 
 2. **Path Traversal Detection:**
+
    ```python
    if any(sep in filename for sep in _PATH_SEPARATORS) or ".." in filename:
        return False
    ```
 
 3. **Character Validation:**
+
    ```python
    if re.search(_INVALID_CHARS_PATTERN, filename):
        return False
@@ -216,6 +229,7 @@ def is_safe_filename(filename: Filename) -> Literal[True, False]:
    ```
 
 **Use Cases:**
+
 - **Input Validation**: Check filenames before processing
 - **Security Verification**: Validate user-submitted filenames
 - **API Validation**: Ensure filename parameters are safe
@@ -233,15 +247,15 @@ from fastapi import HTTPException, UploadFile
 
 async def secure_file_upload(file: UploadFile, user_id: str) -> dict:
     """Secure file upload with filename sanitization."""
-    
+
     # Get original filename
     original_filename = file.filename or "unnamed_file"
-    
+
     # Validate filename safety
     if not is_safe_filename(original_filename):
         # Sanitize dangerous filename
         safe_filename = sanitize_filename(original_filename)
-        
+
         logger.warning(f"Sanitized unsafe filename: {original_filename} -> {safe_filename}", extra={
             "user_id": user_id,
             "original_filename": original_filename,
@@ -249,27 +263,27 @@ async def secure_file_upload(file: UploadFile, user_id: str) -> dict:
         })
     else:
         safe_filename = original_filename
-    
+
     # Additional validation
     if not safe_filename or safe_filename == "_":
         raise HTTPException(
             status_code=400,
             detail="Invalid filename provided"
         )
-    
+
     # Generate unique filename to prevent conflicts
     timestamp = int(time.time())
     unique_filename = f"{user_id}_{timestamp}_{safe_filename}"
-    
+
     # Save file with secure filename
     file_path = UPLOAD_DIR / unique_filename
-    
+
     try:
         content = await file.read()
-        
+
         with open(file_path, "wb") as f:
             f.write(content)
-        
+
         return {
             "original_filename": original_filename,
             "stored_filename": unique_filename,
@@ -277,7 +291,7 @@ async def secure_file_upload(file: UploadFile, user_id: str) -> dict:
             "file_size": len(content),
             "file_path": str(file_path)
         }
-        
+
     except Exception as e:
         logger.error(f"File upload failed: {e}")
         raise HTTPException(
@@ -289,21 +303,21 @@ async def secure_file_upload(file: UploadFile, user_id: str) -> dict:
 @app.post("/upload")
 async def upload_file(file: UploadFile, current_user: User = Depends(get_current_user)):
     """Upload file endpoint with security."""
-    
+
     # Validate file type (additional security)
     if not file.content_type.startswith('image/'):
         raise HTTPException(
             status_code=400,
             detail="Only image files are allowed"
         )
-    
+
     # Validate file size
     if file.size > MAX_FILE_SIZE:
         raise HTTPException(
             status_code=413,
             detail="File too large"
         )
-    
+
     return await secure_file_upload(file, current_user.id)
 ```
 
@@ -317,9 +331,9 @@ from typing import List, Dict
 
 async def process_file_batch(filenames: List[str], user_id: str) -> Dict[str, str]:
     """Process multiple filenames with security validation."""
-    
+
     results = {}
-    
+
     for original_filename in filenames:
         try:
             # Check if filename is safe
@@ -330,23 +344,23 @@ async def process_file_batch(filenames: List[str], user_id: str) -> Dict[str, st
                 # Sanitize unsafe filename
                 safe_filename = sanitize_filename(original_filename)
                 status = "sanitized"
-            
+
             # Additional validation
             if not safe_filename or safe_filename == "_":
                 status = "invalid"
                 safe_filename = "unnamed_file"
-            
+
             results[original_filename] = {
                 "safe_filename": safe_filename,
                 "status": status,
                 "processed": True
             }
-            
+
             logger.info(f"Processed filename: {original_filename} -> {safe_filename}", extra={
                 "user_id": user_id,
                 "status": status
             })
-            
+
         except Exception as e:
             logger.error(f"Failed to process filename {original_filename}: {e}")
             results[original_filename] = {
@@ -355,27 +369,27 @@ async def process_file_batch(filenames: List[str], user_id: str) -> Dict[str, st
                 "processed": False,
                 "error": str(e)
             }
-    
+
     return results
 
 # Service layer usage
 class FileService:
     """File service with secure filename handling."""
-    
+
     async def create_user_files(self, user_id: str, file_data: List[dict]) -> List[dict]:
         """Create multiple files for user with secure naming."""
-        
+
         created_files = []
-        
+
         for file_info in file_data:
             original_name = file_info.get('filename', 'unnamed_file')
-            
+
             # Sanitize filename
             safe_name = sanitize_filename(original_name)
-            
+
             # Create unique filename
             unique_name = f"{user_id}_{int(time.time())}_{safe_name}"
-            
+
             # Store file metadata
             file_record = {
                 "original_filename": original_name,
@@ -385,9 +399,9 @@ class FileService:
                 "created_at": datetime.utcnow(),
                 "file_size": file_info.get('size', 0)
             }
-            
+
             created_files.append(file_record)
-        
+
         return created_files
 ```
 
@@ -401,29 +415,29 @@ from pathlib import Path
 
 class SecureConfigLoader:
     """Load configuration files with filename validation."""
-    
+
     def __init__(self, config_dir: Path):
         self.config_dir = config_dir
-    
+
     def load_config(self, config_name: str) -> dict:
         """Load configuration file with filename validation."""
-        
+
         # Validate filename safety
         if not is_safe_filename(config_name):
             raise ValueError(f"Unsafe config filename: {config_name}")
-        
+
         # Ensure .json extension
         if not config_name.endswith('.json'):
             config_name += '.json'
-        
+
         config_path = self.config_dir / config_name
-        
+
         # Validate path is within config directory
         try:
             config_path.resolve().relative_to(self.config_dir.resolve())
         except ValueError:
             raise ValueError(f"Config file path outside allowed directory: {config_name}")
-        
+
         # Load configuration
         try:
             with open(config_path, 'r') as f:
@@ -432,21 +446,21 @@ class SecureConfigLoader:
             raise FileNotFoundError(f"Config file not found: {config_name}")
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON in config file {config_name}: {e}")
-    
+
     def list_available_configs(self) -> List[str]:
         """List available configuration files."""
-        
+
         configs = []
-        
+
         for config_file in self.config_dir.glob('*.json'):
             filename = config_file.name
-            
+
             # Only include files with safe names
             if is_safe_filename(filename):
                 configs.append(filename)
             else:
                 logger.warning(f"Skipping unsafe config filename: {filename}")
-        
+
         return sorted(configs)
 
 # Usage in application
@@ -454,7 +468,7 @@ config_loader = SecureConfigLoader(Path('config'))
 
 def load_app_config(config_name: str) -> dict:
     """Load application configuration securely."""
-    
+
     try:
         return config_loader.load_config(config_name)
     except Exception as e:
@@ -472,7 +486,7 @@ from fastapi.responses import FileResponse
 
 async def secure_file_download(requested_filename: str, user_id: str) -> FileResponse:
     """Secure file download with validation."""
-    
+
     # Validate requested filename
     if not is_safe_filename(requested_filename):
         logger.warning(f"Unsafe download request: {requested_filename}", extra={
@@ -483,11 +497,11 @@ async def secure_file_download(requested_filename: str, user_id: str) -> FileRes
             status_code=400,
             detail="Invalid filename requested"
         )
-    
+
     # Find file in user's directory
     user_upload_dir = UPLOAD_DIR / user_id
     file_path = user_upload_dir / requested_filename
-    
+
     # Validate path is within user directory
     try:
         file_path.resolve().relative_to(user_upload_dir.resolve())
@@ -499,14 +513,14 @@ async def secure_file_download(requested_filename: str, user_id: str) -> FileRes
             status_code=403,
             detail="Access denied"
         )
-    
+
     # Check file exists
     if not file_path.exists():
         raise HTTPException(
             status_code=404,
             detail="File not found"
         )
-    
+
     # Return secure file response
     return FileResponse(
         path=file_path,
@@ -518,7 +532,7 @@ async def secure_file_download(requested_filename: str, user_id: str) -> FileRes
 @app.get("/download/{filename}")
 async def download_file(filename: str, current_user: User = Depends(get_current_user)):
     """Download file endpoint with security validation."""
-    
+
     return await secure_file_download(filename, current_user.id)
 ```
 
@@ -527,33 +541,35 @@ async def download_file(filename: str, current_user: User = Depends(get_current_
 ### Path Traversal Prevention
 
 **Attack Vectors Blocked:**
+
 - `../../../etc/passwd` → `etc_passwd`
 - `..\\..\\windows\\system32\\config` → `windows_system32_config`
 - `/root/.ssh/id_rsa` → `root_.ssh_id_rsa`
 - `file/../../../secret.txt` → `file_secret.txt`
 
 **Implementation Strategy:**
+
 ```python
 # Multi-layer protection approach
 def secure_filename_processing(filename: str) -> str:
     """Multi-layer filename security processing."""
-    
+
     # 1. Initial validation
     if not filename or not isinstance(filename, str):
         return "unnamed_file"
-    
+
     # 2. Length validation
     if len(filename) > MAX_FILENAME_LENGTH:
         filename = filename[:MAX_FILENAME_LENGTH]
-    
+
     # 3. Sanitization
     safe_filename = sanitize_filename(filename)
-    
+
     # 4. Final validation
     if not is_safe_filename(safe_filename):
         logger.error(f"Sanitization failed for: {filename}")
         return "sanitized_file"
-    
+
     return safe_filename
 ```
 
@@ -566,33 +582,33 @@ import unicodedata
 
 def normalize_filename(filename: str) -> str:
     """Normalize filename for consistent handling."""
-    
+
     # Normalize unicode characters
     normalized = unicodedata.normalize('NFKD', filename)
-    
+
     # Remove non-ASCII characters
     ascii_only = normalized.encode('ascii', 'ignore').decode('ascii')
-    
+
     # Apply standard sanitization
     return sanitize_filename(ascii_only)
 
 # Enhanced sanitization with encoding
 def enhanced_sanitize_filename(filename: str) -> str:
     """Enhanced filename sanitization with encoding normalization."""
-    
+
     if not filename:
         return "unnamed_file"
-    
+
     # Normalize encoding
     normalized = normalize_filename(filename)
-    
+
     # Standard sanitization
     sanitized = sanitize_filename(normalized)
-    
+
     # Additional safety checks
     if not sanitized or sanitized in ['_', '.', '..']:
         return "safe_file"
-    
+
     return sanitized
 ```
 
@@ -612,23 +628,23 @@ _COMPILED_PATH_SPLIT: Pattern[str] = re.compile(r'[\\/]+')
 
 def optimized_sanitize_filename(filename: Filename) -> SanitizedFilename:
     """Optimized version using pre-compiled regex."""
-    
+
     if not filename:
         return "unnamed_file"
-    
+
     # Use pre-compiled patterns
     parts = [
         p for p in _COMPILED_PATH_SPLIT.split(filename)
         if p and p not in _DANGEROUS_COMPONENTS
     ]
-    
+
     if not parts:
         return "_"
-    
+
     safe_name = "_".join(parts)
     safe_name = _COMPILED_INVALID_CHARS.sub("_", safe_name)
     safe_name = safe_name.replace("..", "_")
-    
+
     return safe_name
 ```
 
@@ -652,7 +668,7 @@ def cached_sanitize_filename(filename: str) -> str:
 # Usage in high-frequency scenarios
 def process_many_filenames(filenames: List[str]) -> List[str]:
     """Process many filenames with caching."""
-    
+
     return [
         cached_sanitize_filename(filename)
         for filename in filenames
@@ -671,10 +687,10 @@ from src.utils.file import sanitize_filename, is_safe_filename
 
 class TestFilenameSecurity:
     """Test suite for filename security validation."""
-    
+
     def test_path_traversal_prevention(self):
         """Test prevention of path traversal attacks."""
-        
+
         dangerous_filenames = [
             "../etc/passwd",
             "..\\windows\\system32\\config",
@@ -682,56 +698,56 @@ class TestFilenameSecurity:
             "/root/.ssh/id_rsa",
             "file/../../../escape.txt"
         ]
-        
+
         for dangerous in dangerous_filenames:
             sanitized = sanitize_filename(dangerous)
-            
+
             # Should not contain path separators
             assert "/" not in sanitized
             assert "\\" not in sanitized
             assert ".." not in sanitized
-            
+
             # Should be marked as unsafe
             assert not is_safe_filename(dangerous)
-    
+
     def test_character_filtering(self):
         """Test filtering of dangerous characters."""
-        
+
         dangerous_chars = ['\\', '/', '*', '?', ':', '"', '<', '>', '|']
-        
+
         for char in dangerous_chars:
             filename = f"file{char}name.txt"
             sanitized = sanitize_filename(filename)
-            
+
             # Should replace dangerous character with underscore
             assert char not in sanitized
             assert "_" in sanitized
-            
+
             # Should be marked as unsafe
             assert not is_safe_filename(filename)
-    
+
     def test_empty_and_edge_cases(self):
         """Test edge cases and empty inputs."""
-        
+
         edge_cases = ["", None, ".", "..", "...", " ", "\t", "\n"]
-        
+
         for case in edge_cases:
             if case is None:
                 continue
-                
+
             sanitized = sanitize_filename(case)
-            
+
             # Should handle gracefully
             assert sanitized is not None
             assert len(sanitized) > 0
-            
+
             # Empty/whitespace should be unsafe
             if not case or case.isspace():
                 assert not is_safe_filename(case)
-    
+
     def test_safe_filenames(self):
         """Test that safe filenames pass validation."""
-        
+
         safe_filenames = [
             "document.txt",
             "image.jpg",
@@ -739,27 +755,27 @@ class TestFilenameSecurity:
             "report-2023.pdf",
             "my_file_name.docx"
         ]
-        
+
         for safe in safe_filenames:
             # Should pass safety check
             assert is_safe_filename(safe)
-            
+
             # Should remain unchanged after sanitization
             assert sanitize_filename(safe) == safe
-    
+
     def test_unicode_handling(self):
         """Test handling of unicode characters."""
-        
+
         unicode_filenames = [
             "файл.txt",        # Cyrillic
             "文件.doc",         # Chinese
             "αρχείο.pdf",      # Greek
             "🎉party.jpg"      # Emoji
         ]
-        
+
         for unicode_name in unicode_filenames:
             sanitized = sanitize_filename(unicode_name)
-            
+
             # Should handle gracefully
             assert sanitized is not None
             assert len(sanitized) > 0
@@ -776,45 +792,45 @@ from src.utils.file import sanitize_filename, is_safe_filename
 
 class TestFilenamePerformance:
     """Performance tests for filename utilities."""
-    
+
     def test_sanitization_performance(self):
         """Test sanitization performance with many filenames."""
-        
+
         filenames = [
             f"test_file_{i}.txt" for i in range(1000)
         ] + [
             f"../dangerous/file_{i}.txt" for i in range(100)
         ]
-        
+
         start_time = time.time()
-        
+
         for filename in filenames:
             sanitize_filename(filename)
-        
+
         end_time = time.time()
         processing_time = end_time - start_time
-        
+
         # Should process 1100 filenames in under 1 second
         assert processing_time < 1.0
-        
+
         # Calculate throughput
         throughput = len(filenames) / processing_time
         assert throughput > 1000  # More than 1000 filenames per second
-    
+
     def test_validation_performance(self):
         """Test validation performance."""
-        
+
         safe_filenames = [f"safe_file_{i}.txt" for i in range(500)]
         unsafe_filenames = [f"../unsafe_{i}.txt" for i in range(500)]
-        
+
         start_time = time.time()
-        
+
         for filename in safe_filenames + unsafe_filenames:
             is_safe_filename(filename)
-        
+
         end_time = time.time()
         processing_time = end_time - start_time
-        
+
         # Should validate 1000 filenames quickly
         assert processing_time < 0.5
 ```
@@ -880,7 +896,7 @@ FILE_CONFIG = {
 
 # Allowed file extensions
 ALLOWED_EXTENSIONS = {
-    '.txt', '.pdf', '.doc', '.docx', 
+    '.txt', '.pdf', '.doc', '.docx',
     '.jpg', '.jpeg', '.png', '.gif',
     '.csv', '.xlsx', '.json'
 }

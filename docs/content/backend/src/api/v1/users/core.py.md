@@ -49,22 +49,22 @@ async def register_user(
 ) -> User:
     """
     Register a new user account.
-    
+
     This endpoint allows public registration of new users with:
     - Email validation and uniqueness checking
     - Password strength validation
     - Optional email verification
     - Rate limiting to prevent abuse
-    
+
     Args:
         user_data: User registration information
         background_tasks: For sending verification emails
         user_service: User business logic service
         rate_limiter: Rate limiting dependency
-        
+
     Returns:
         Created user information (without sensitive data)
-        
+
     Raises:
         HTTPException: 400 if email already exists
         HTTPException: 422 if validation fails
@@ -78,10 +78,10 @@ async def register_user(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="User with this email already exists"
             )
-        
+
         # Create new user
         new_user = await user_service.create_user(user_data)
-        
+
         # Send verification email in background
         if get_setting("SEND_VERIFICATION_EMAILS", True):
             background_tasks.add_task(
@@ -89,10 +89,10 @@ async def register_user(
                 email=new_user.email,
                 user_id=new_user.id
             )
-        
+
         logger.info(f"New user registered: {new_user.email}")
         return new_user
-        
+
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -121,24 +121,24 @@ async def get_current_user_profile(
 ) -> UserWithStats:
     """
     Get current user's profile information with statistics.
-    
+
     Returns comprehensive user information including:
     - Basic profile data
     - File upload statistics
     - Account activity metrics
     - Computed fields for analytics
-    
+
     Args:
         current_user: Current authenticated user
         user_service: User business logic service
-        
+
     Returns:
         User profile with statistics
     """
     try:
         user_with_stats = await user_service.get_user_with_stats(current_user.id)
         return user_with_stats
-        
+
     except Exception as e:
         logger.error(f"Error fetching user profile: {e}")
         raise HTTPException(
@@ -163,22 +163,22 @@ async def update_current_user_profile(
 ) -> User:
     """
     Update current user's profile information.
-    
+
     Allows users to update their own profile data including:
     - Full name
     - Email address (with verification)
     - Other non-sensitive profile fields
-    
+
     Note: Role and admin fields cannot be self-updated
-    
+
     Args:
         update_data: Fields to update
         current_user: Current authenticated user
         user_service: User business logic service
-        
+
     Returns:
         Updated user information
-        
+
     Raises:
         HTTPException: 400 if email already in use
         HTTPException: 422 if validation fails
@@ -191,18 +191,18 @@ async def update_current_user_profile(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Cannot modify your own role"
                 )
-        
+
         updated_user = await user_service.update_user(current_user.id, update_data)
-        
+
         if not updated_user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found"
             )
-        
+
         logger.info(f"User profile updated: {current_user.email}")
         return updated_user
-        
+
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -235,22 +235,22 @@ async def change_password(
 ) -> Dict[str, str]:
     """
     Change current user's password.
-    
+
     Requires:
     - Current password verification
     - New password strength validation
     - Password confirmation matching
     - Rate limiting to prevent brute force
-    
+
     Args:
         password_data: Password change information
         current_user: Current authenticated user
         user_service: User business logic service
         rate_limiter: Rate limiting dependency
-        
+
     Returns:
         Success message
-        
+
     Raises:
         HTTPException: 400 if current password incorrect
         HTTPException: 422 if validation fails
@@ -262,25 +262,25 @@ async def change_password(
             current_user.id,
             password_data.current_password
         )
-        
+
         if not is_valid:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Current password is incorrect"
             )
-        
+
         # Change password
         await user_service.change_password(
             current_user.id,
             password_data.new_password
         )
-        
+
         # Invalidate all existing tokens
         await user_service.invalidate_all_tokens(current_user.id)
-        
+
         logger.info(f"Password changed for user: {current_user.email}")
         return {"message": "Password changed successfully"}
-        
+
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -312,27 +312,27 @@ async def request_password_reset(
 ) -> Dict[str, str]:
     """
     Request password reset email.
-    
+
     Always returns success for security reasons, even if email doesn't exist.
     This prevents email enumeration attacks.
-    
+
     Args:
         reset_request: Password reset request data
         background_tasks: For sending reset emails
         user_service: User business logic service
         rate_limiter: Rate limiting dependency
-        
+
     Returns:
         Success message (always, for security)
     """
     try:
         # Always return success, send email only if user exists
         user = await user_service.get_user_by_email(reset_request.email)
-        
+
         if user and user.is_active:
             # Generate reset token
             reset_token = await user_service.generate_password_reset_token(user.id)
-            
+
             # Send reset email in background
             background_tasks.add_task(
                 send_password_reset_email,
@@ -340,14 +340,14 @@ async def request_password_reset(
                 reset_token=reset_token,
                 user_name=user.full_name
             )
-            
+
             logger.info(f"Password reset requested for: {user.email}")
-        
+
         # Always return same response for security
         return {
             "message": "If the email exists, a password reset link has been sent"
         }
-        
+
     except Exception as e:
         logger.error(f"Password reset request error: {e}")
         # Still return success to prevent information disclosure
@@ -375,21 +375,21 @@ async def list_users(
 ) -> UserList:
     """
     Get paginated list of users with search and filtering.
-    
+
     Admin-only endpoint that provides:
     - Full user list with pagination
     - Search by name or email
     - Filter by role and status
     - Sort by various fields
-    
+
     Args:
         search_params: Search and pagination parameters
         current_user: Current authenticated admin user
         user_service: User business logic service
-        
+
     Returns:
         Paginated list of users
-        
+
     Raises:
         HTTPException: 403 if not admin
     """
@@ -405,9 +405,9 @@ async def list_users(
             sort_by=search_params.sort_by,
             sort_order=search_params.sort_order
         )
-        
+
         return users_result
-        
+
     except Exception as e:
         logger.error(f"Error listing users: {e}")
         raise HTTPException(
@@ -433,33 +433,33 @@ async def get_user_by_id(
 ) -> UserWithStats:
     """
     Get specific user by ID with statistics.
-    
+
     Admin-only endpoint for retrieving detailed user information
     including statistics and activity data.
-    
+
     Args:
         user_id: User UUID identifier
         current_user: Current authenticated admin user
         user_service: User business logic service
-        
+
     Returns:
         User information with statistics
-        
+
     Raises:
         HTTPException: 403 if not admin
         HTTPException: 404 if user not found
     """
     try:
         user = await user_service.get_user_with_stats(user_id)
-        
+
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found"
             )
-        
+
         return user
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -488,22 +488,22 @@ async def update_user(
 ) -> User:
     """
     Update user information (admin only).
-    
+
     Allows admins to update any user's information including:
     - Profile information
     - Role assignments
     - Account status
     - Administrative flags
-    
+
     Args:
         user_id: User UUID identifier
         update_data: Fields to update
         current_user: Current authenticated admin user
         user_service: User business logic service
-        
+
     Returns:
         Updated user information
-        
+
     Raises:
         HTTPException: 403 if not admin
         HTTPException: 404 if user not found
@@ -516,18 +516,18 @@ async def update_user(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Cannot demote yourself from admin role"
             )
-        
+
         updated_user = await user_service.update_user(user_id, update_data)
-        
+
         if not updated_user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found"
             )
-        
+
         logger.info(f"User {user_id} updated by admin {current_user.email}")
         return updated_user
-        
+
     except HTTPException:
         raise
     except ValueError as e:
@@ -562,21 +562,21 @@ async def bulk_user_operations(
 ) -> UserBulkResult:
     """
     Perform bulk operations on multiple users.
-    
+
     Supported operations:
     - activate: Activate user accounts
     - deactivate: Deactivate user accounts
     - delete: Soft delete user accounts
     - update_role: Update user roles
-    
+
     Args:
         bulk_operation: Bulk operation parameters
         current_user: Current authenticated admin user
         user_service: User business logic service
-        
+
     Returns:
         Results of bulk operation
-        
+
     Raises:
         HTTPException: 403 if not admin
         HTTPException: 400 if invalid operation
@@ -588,20 +588,20 @@ async def bulk_user_operations(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Cannot include yourself in bulk operations"
             )
-        
+
         result = await user_service.bulk_user_operation(
             user_ids=bulk_operation.user_ids,
             operation=bulk_operation.operation,
             data=bulk_operation.data
         )
-        
+
         logger.info(
             f"Bulk operation {bulk_operation.operation} performed by "
             f"{current_user.email} on {len(bulk_operation.user_ids)} users"
         )
-        
+
         return result
-        
+
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -633,24 +633,24 @@ async def get_user_statistics(
 ) -> UserStatistics:
     """
     Get comprehensive user statistics and analytics.
-    
+
     Provides admin dashboard data including:
     - Total user counts
     - User distribution by role
     - Activity metrics
     - Registration trends
-    
+
     Args:
         current_user: Current authenticated admin user
         user_service: User business logic service
-        
+
     Returns:
         User statistics and analytics data
     """
     try:
         stats = await user_service.get_user_statistics()
         return stats
-        
+
     except Exception as e:
         logger.error(f"Error retrieving user statistics: {e}")
         raise HTTPException(
@@ -677,18 +677,18 @@ async def deactivate_current_user(
 ) -> Dict[str, str]:
     """
     Deactivate current user's account.
-    
+
     Performs soft delete by marking account as inactive.
     Requires explicit confirmation to prevent accidental deletion.
-    
+
     Args:
         confirmation: Must contain {"confirm": true}
         current_user: Current authenticated user
         user_service: User business logic service
-        
+
     Returns:
         Success message
-        
+
     Raises:
         HTTPException: 400 if confirmation not provided
     """
@@ -699,7 +699,7 @@ async def deactivate_current_user(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Account deactivation requires confirmation"
             )
-        
+
         # Prevent admin self-deletion if they're the only admin
         if current_user.role == UserRole.ADMIN:
             admin_count = await user_service.count_users_by_role(UserRole.ADMIN)
@@ -708,15 +708,15 @@ async def deactivate_current_user(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Cannot deactivate the only admin account"
                 )
-        
+
         await user_service.deactivate_user(current_user.id)
-        
+
         # Invalidate all tokens
         await user_service.invalidate_all_tokens(current_user.id)
-        
+
         logger.info(f"User account deactivated: {current_user.email}")
         return {"message": "Account deactivated successfully"}
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -741,7 +741,7 @@ import logging
 # Internal Dependencies
 from src.schemas.user import (
     User, UserCreate, UserUpdate, UserWithStats, UserList,
-    UserSearch, PasswordChange, PasswordResetRequest, 
+    UserSearch, PasswordChange, PasswordResetRequest,
     UserBulkOperation, UserBulkResult, UserStatistics
 )
 from src.services.user import UserService
@@ -865,9 +865,9 @@ async def test_register_user_success(client: TestClient):
         "password": "SecurePass123!",
         "role": "user"
     }
-    
+
     response = client.post("/api/v1/users/register", json=user_data)
-    
+
     assert response.status_code == 201
     data = response.json()
     assert data["email"] == "test@example.com"
@@ -878,7 +878,7 @@ async def test_register_user_success(client: TestClient):
 async def test_get_current_user_profile(client: TestClient, auth_headers):
     """Test retrieving current user profile."""
     response = client.get("/api/v1/users/me", headers=auth_headers)
-    
+
     assert response.status_code == 200
     data = response.json()
     assert "email" in data
@@ -889,7 +889,7 @@ async def test_get_current_user_profile(client: TestClient, auth_headers):
 async def test_admin_required_endpoints(client: TestClient, user_headers):
     """Test admin-only endpoints reject regular users."""
     response = client.get("/api/v1/users/", headers=user_headers)
-    
+
     assert response.status_code == 403
     assert "admin" in response.json()["detail"].lower()
 ```
@@ -906,24 +906,24 @@ async def test_user_registration_workflow(client: TestClient):
         "full_name": "Workflow Test",
         "password": "SecurePass123!"
     }
-    
+
     register_response = client.post("/api/v1/users/register", json=user_data)
     assert register_response.status_code == 201
-    
+
     # Login to get token
     login_response = client.post("/api/v1/auth/login", data={
         "username": user_data["email"],
         "password": user_data["password"]
     })
     assert login_response.status_code == 200
-    
+
     token = login_response.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
-    
+
     # Get profile
     profile_response = client.get("/api/v1/users/me", headers=headers)
     assert profile_response.status_code == 200
-    
+
     profile_data = profile_response.json()
     assert profile_data["email"] == user_data["email"]
 ```

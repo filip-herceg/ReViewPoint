@@ -923,7 +923,7 @@ def validate_message_structure(data: str) -> dict[str, Any]:
 
 #### Production-Ready WebSocket Endpoint
 
-```python
+````python
 @router.websocket("/ws/{token}")
 async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
     """**Production-Ready WebSocket Communication Endpoint**
@@ -1185,7 +1185,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
         # Clean up connection
         if connection_id:
             await connection_manager.disconnect(connection_id)
-```
+````
 
 ### Administrative Endpoints
 

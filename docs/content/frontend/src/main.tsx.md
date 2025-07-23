@@ -14,21 +14,22 @@ The main entry implements a multi-stage initialization process:
 
 ```tsx
 async function initializeApp() {
-    // 1. Initialize environment config first
-    const envConfig = getEnvironmentConfig();
-    
-    // 2. Initialize feature flags
-    const currentFeatures = getFeatureFlags();
-    
-    // 3. Initialize error monitoring
-    initializeErrorMonitoring();
-    
-    // 4. Initialize performance monitoring
-    initializePerformanceMonitoring();
+  // 1. Initialize environment config first
+  const envConfig = getEnvironmentConfig();
+
+  // 2. Initialize feature flags
+  const currentFeatures = getFeatureFlags();
+
+  // 3. Initialize error monitoring
+  initializeErrorMonitoring();
+
+  // 4. Initialize performance monitoring
+  initializePerformanceMonitoring();
 }
 ```
 
 #### Initialization Stages
+
 - **Environment Configuration** - Load and validate environment settings
 - **Feature Flag System** - Initialize feature toggles and configuration
 - **Error Monitoring** - Set up Sentry and error tracking systems
@@ -40,17 +41,18 @@ async function initializeApp() {
 
 ```tsx
 function renderApp() {
-    const container = document.getElementById("root");
-    const root = createRoot(container);
-    root.render(
-        <QueryClientProvider client={queryClient}>
-            <App />
-        </QueryClientProvider>,
-    );
+  const container = document.getElementById("root");
+  const root = createRoot(container);
+  root.render(
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>,
+  );
 }
 ```
 
 #### Bootstrap Features
+
 - **Root Container Validation** - Ensure DOM container exists
 - **React 18 Concurrent Features** - Use createRoot for concurrent rendering
 - **Query Client Integration** - TanStack Query provider setup
@@ -63,20 +65,22 @@ function renderApp() {
 Comprehensive environment configuration loading:
 
 #### Configuration Loading
+
 ```tsx
 const envConfig = getEnvironmentConfig();
 logger.debug("Environment config loaded", {
-    env: envConfig.NODE_ENV,
-    api: envConfig.API_BASE_URL,
-    monitoring: {
-        error: !!envConfig.ENABLE_ERROR_REPORTING,
-        performance: !!envConfig.ENABLE_PERFORMANCE_MONITORING,
-        sentry: !!envConfig.SENTRY_DSN,
-    },
+  env: envConfig.NODE_ENV,
+  api: envConfig.API_BASE_URL,
+  monitoring: {
+    error: !!envConfig.ENABLE_ERROR_REPORTING,
+    performance: !!envConfig.ENABLE_PERFORMANCE_MONITORING,
+    sentry: !!envConfig.SENTRY_DSN,
+  },
 });
 ```
 
 #### Environment Features
+
 - **API Configuration** - Backend service URL configuration
 - **Monitoring Toggles** - Conditional monitoring system activation
 - **Development Settings** - Environment-specific debugging features
@@ -89,14 +93,16 @@ logger.debug("Environment config loaded", {
 Comprehensive feature flag system integration:
 
 #### Feature Flag Loading
+
 ```tsx
 const currentFeatures = getFeatureFlags();
 logger.debug("Feature flags initialized", {
-    count: Object.keys(currentFeatures).length,
+  count: Object.keys(currentFeatures).length,
 });
 ```
 
 #### Feature Management
+
 - **Runtime Configuration** - Dynamic feature toggle loading
 - **Performance Impact** - Lazy loading and singleton pattern
 - **Development Support** - Feature debugging and monitoring
@@ -109,12 +115,14 @@ logger.debug("Feature flags initialized", {
 Production-ready error tracking and monitoring:
 
 #### Error Monitoring Setup
+
 ```tsx
 initializeErrorMonitoring();
 logger.debug("Error monitoring initialized");
 ```
 
 #### Error Tracking Features
+
 - **Sentry Integration** - Comprehensive error tracking and reporting
 - **User Context** - User session and context capture
 - **Error Boundaries** - React error boundary integration
@@ -125,12 +133,14 @@ logger.debug("Error monitoring initialized");
 Comprehensive performance tracking and optimization:
 
 #### Performance Monitoring Setup
+
 ```tsx
 initializePerformanceMonitoring();
 logger.debug("Performance monitoring initialized");
 ```
 
 #### Performance Features
+
 - **Web Vitals Tracking** - Core Web Vitals measurement
 - **React Performance** - Component render time tracking
 - **User Experience** - Interaction and navigation timing
@@ -143,14 +153,16 @@ logger.debug("Performance monitoring initialized");
 Robust application startup with proper event management:
 
 #### Event-Driven Startup
+
 ```tsx
 window.addEventListener("DOMContentLoaded", async () => {
-    await initializeApp();
-    renderApp();
+  await initializeApp();
+  renderApp();
 });
 ```
 
 #### Lifecycle Features
+
 - **DOM Ready Detection** - Ensure DOM is fully loaded
 - **Async Initialization** - Non-blocking initialization sequence
 - **Error Recovery** - Graceful handling of initialization failures
@@ -161,14 +173,15 @@ window.addEventListener("DOMContentLoaded", async () => {
 Comprehensive error handling throughout initialization:
 
 #### Error Recovery Strategy
+
 ```tsx
 try {
-    logger.info("Starting ReViewPoint application initialization");
-    // ... initialization steps
-    logger.info("Application initialization completed successfully");
+  logger.info("Starting ReViewPoint application initialization");
+  // ... initialization steps
+  logger.info("Application initialization completed successfully");
 } catch (error) {
-    logger.error("Failed to initialize application", error);
-    // Continue with app startup even if monitoring fails
+  logger.error("Failed to initialize application", error);
+  // Continue with app startup even if monitoring fails
 }
 ```
 
@@ -179,13 +192,15 @@ try {
 Modern data fetching and caching integration:
 
 #### Query Provider Configuration
+
 ```tsx
 <QueryClientProvider client={queryClient}>
-    <App />
+  <App />
 </QueryClientProvider>
 ```
 
 #### Query Client Features
+
 - **Request Caching** - Intelligent API response caching
 - **Background Updates** - Automatic data synchronization
 - **Error Handling** - Centralized API error management
@@ -198,15 +213,19 @@ Modern data fetching and caching integration:
 Structured logging throughout the initialization process:
 
 #### Logging Strategy
+
 - **Initialization Logging** - Detailed startup process tracking
 - **Configuration Logging** - Environment and feature flag visibility
 - **Error Logging** - Comprehensive error context capture
 - **Performance Logging** - Timing and performance metrics
 
 #### Log Levels and Context
+
 ```tsx
 logger.info("Starting ReViewPoint application initialization");
-logger.debug("Environment config loaded", { /* context */ });
+logger.debug("Environment config loaded", {
+  /* context */
+});
 logger.error("Failed to initialize application", error);
 ```
 
@@ -217,6 +236,7 @@ logger.error("Failed to initialize application", error);
 Optimized startup performance and resource usage:
 
 #### Performance Strategies
+
 - **Async Operations** - Non-blocking initialization sequence
 - **Conditional Loading** - Feature-based monitoring activation
 - **Lazy Imports** - Dynamic module loading for performance
@@ -227,6 +247,7 @@ Optimized startup performance and resource usage:
 Modern build and bundling considerations:
 
 #### Optimization Features
+
 - **Tree Shaking** - Unused code elimination
 - **Code Splitting** - Dynamic import optimization
 - **Asset Optimization** - Image and resource optimization
@@ -239,6 +260,7 @@ Modern build and bundling considerations:
 Comprehensive development experience optimization:
 
 #### Development Features
+
 - **Hot Module Replacement** - Fast development iteration
 - **Error Boundaries** - Development error visualization
 - **Debug Logging** - Detailed development logging
@@ -249,6 +271,7 @@ Comprehensive development experience optimization:
 Production deployment and operational considerations:
 
 #### Production Features
+
 - **Error Monitoring** - Production error tracking and alerting
 - **Performance Monitoring** - Production performance optimization
 - **Security Configuration** - Production security settings
@@ -261,6 +284,7 @@ Production deployment and operational considerations:
 Security-focused initialization and configuration:
 
 #### Security Features
+
 - **Environment Variable Validation** - Secure configuration loading
 - **Content Security Policy** - XSS and injection prevention
 - **Secure Dependencies** - Vetted third-party library usage
@@ -273,6 +297,7 @@ Security-focused initialization and configuration:
 Integration with modern React patterns and practices:
 
 #### Architecture Integration
+
 - **React 18 Features** - Concurrent rendering and suspense
 - **TypeScript Integration** - Type-safe component and configuration
 - **Modern Hooks** - State management and lifecycle integration

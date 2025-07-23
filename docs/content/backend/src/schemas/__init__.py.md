@@ -11,17 +11,20 @@ The schema layer serves as the contract definition layer between the API endpoin
 ### Schema Categories
 
 #### **Authentication & Security Schemas**
+
 - **`auth.py`** - Authentication requests and responses (login, registration, password reset)
 - **`token.py`** - JWT token structures and refresh token handling
 - **`blacklisted_token.py`** - Token blacklisting for logout and security
 
 #### **Entity Schemas**
+
 - **`user.py`** - User profile, preferences, and management schemas
 - **`file.py`** - File metadata and upload response schemas
 
 ### Common Patterns
 
 #### **Request/Response Separation**
+
 ```python
 # Request schemas for input validation
 class UserRegisterRequest(BaseModel):
@@ -36,6 +39,7 @@ class AuthResponse(BaseModel):
 ```
 
 #### **Validation Integration**
+
 ```python
 @field_validator("email")
 @classmethod
@@ -46,6 +50,7 @@ def validate_email_field(cls, v: str) -> str:
 ```
 
 #### **Configuration Management**
+
 ```python
 model_config = ConfigDict(
     from_attributes=True,  # For ORM model conversion
@@ -56,16 +61,19 @@ model_config = ConfigDict(
 ## Schema Validation Philosophy
 
 ### **Strict Validation**
+
 - All schemas use `extra="forbid"` to prevent unexpected fields
 - Field constraints with proper min/max lengths
 - Type-safe field definitions with Union types where appropriate
 
 ### **Security-First Design**
+
 - Password validation integration with utility functions
 - Email validation with proper format checking
 - Token expiration and security field handling
 
 ### **API Contract Enforcement**
+
 - Clear separation between request and response schemas
 - Comprehensive field documentation with descriptions
 - Example values in schema configurations for API documentation
@@ -73,6 +81,7 @@ model_config = ConfigDict(
 ## Integration Patterns
 
 ### **With API Layer**
+
 ```python
 # API endpoint using schema validation
 @router.post("/register", response_model=AuthResponse)
@@ -83,6 +92,7 @@ async def register(request: UserRegisterRequest):
 ```
 
 ### **With ORM Models**
+
 ```python
 # Conversion from ORM to schema
 user_profile = UserProfile.model_validate(user_orm)
@@ -92,6 +102,7 @@ model_config = ConfigDict(from_attributes=True)
 ```
 
 ### **With Service Layer**
+
 ```python
 # Service layer receives validated schema objects
 async def create_user(user_data: UserRegisterRequest) -> User:
@@ -102,6 +113,7 @@ async def create_user(user_data: UserRegisterRequest) -> User:
 ## Error Handling Strategy
 
 ### **Validation Errors**
+
 ```python
 try:
     user_request = UserRegisterRequest(**request_data)
@@ -111,6 +123,7 @@ except ValidationError as e:
 ```
 
 ### **Custom Validators**
+
 ```python
 @field_validator("password")
 @classmethod
@@ -124,6 +137,7 @@ def validate_password_field(cls, v: str) -> str:
 ## Type Safety Implementation
 
 ### **Literal Types for Constants**
+
 ```python
 TOKEN_TYPE_BEARER: Final[Literal["bearer"]] = "bearer"
 
@@ -132,6 +146,7 @@ class AuthResponse(BaseModel):
 ```
 
 ### **TypedDict for Compatibility**
+
 ```python
 class AuthResponseDict(TypedDict):
     access_token: str
@@ -140,6 +155,7 @@ class AuthResponseDict(TypedDict):
 ```
 
 ### **Optional and Union Types**
+
 ```python
 name: str | None = Field(None, max_length=128)
 created_at: str | None = None  # ISO datetime string
@@ -148,11 +164,13 @@ created_at: str | None = None  # ISO datetime string
 ## Performance Considerations
 
 ### **Model Configuration**
+
 - `from_attributes=True` for efficient ORM conversion
 - Field constraints reduce validation overhead
 - Proper use of Optional types for better memory usage
 
 ### **Validation Caching**
+
 - Field validators are cached by Pydantic
 - Schema compilation happens once at startup
 - Efficient serialization/deserialization
@@ -160,6 +178,7 @@ created_at: str | None = None  # ISO datetime string
 ## Testing Integration
 
 ### **Schema Testing Patterns**
+
 ```python
 def test_user_register_request_validation():
     # Valid data should pass
@@ -177,6 +196,7 @@ def test_user_register_request_validation():
 ```
 
 ### **Mock Data Generation**
+
 ```python
 # Schema examples for testing
 user_register_example = {
@@ -189,11 +209,13 @@ user_register_example = {
 ## Documentation Integration
 
 ### **OpenAPI Schema Generation**
+
 - Pydantic models automatically generate OpenAPI schemas
 - Field descriptions become API documentation
 - Examples in `json_schema_extra` appear in Swagger UI
 
 ### **Type Hints for IDE Support**
+
 - Full type safety with modern Python typing
 - IDE autocompletion and error detection
 - Integration with static type checkers (mypy)
@@ -201,6 +223,7 @@ user_register_example = {
 ## Migration and Versioning
 
 ### **Schema Evolution Strategy**
+
 ```python
 # Backwards-compatible additions
 class UserProfileV2(UserProfile):
@@ -213,10 +236,11 @@ class UserProfileV1(BaseModel):
 ```
 
 ### **Deprecation Handling**
+
 ```python
 class UserProfileUpdate(BaseModel):
     name: str | None = Field(
-        None, 
+        None,
         deprecated=True,  # Mark deprecated fields
         max_length=128
     )
@@ -225,16 +249,19 @@ class UserProfileUpdate(BaseModel):
 ## Related Modules
 
 ### **Core Dependencies**
+
 - **`src.utils.validation`** - Email and password validation functions
 - **`src.utils.errors`** - Custom exception classes for validation
 - **`pydantic`** - Core validation and serialization framework
 
 ### **Integration Points**
+
 - **`src.api.v1.*`** - API endpoints using schemas for validation
 - **`src.services.*`** - Service layer receiving validated schema objects
 - **`src.models.*`** - ORM models converted to/from schemas
 
 ### **External Dependencies**
+
 - **`pydantic[email]`** - EmailStr validation support
 - **`typing_extensions`** - Enhanced typing support for older Python versions
 

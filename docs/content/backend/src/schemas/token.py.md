@@ -214,10 +214,10 @@ jti: str | None = Field(None, description="JWT ID for token tracking")
 async def validate_token_expiration(token_data: TokenData) -> bool:
     if token_data.exp is None:
         return True  # No expiration set
-    
+
     if token_data.exp < datetime.utcnow():
         raise HTTPException(status_code=401, detail="Token expired")
-    
+
     return True
 ```
 
@@ -227,11 +227,11 @@ async def validate_token_expiration(token_data: TokenData) -> bool:
 async def check_token_blacklist(token_data: TokenData) -> bool:
     if token_data.jti is None:
         return True  # No JTI, cannot be blacklisted
-    
+
     is_blacklisted = await blacklist_service.is_token_blacklisted(token_data.jti)
     if is_blacklisted:
         raise HTTPException(status_code=401, detail="Token revoked")
-    
+
     return True
 ```
 
@@ -244,11 +244,11 @@ async def get_current_user(token_data: TokenData) -> User:
         user_id = int(token_data.user_id)
     except ValueError:
         raise HTTPException(status_code=401, detail="Invalid user ID in token")
-    
+
     user = await user_repository.get_user_by_id(user_id)
     if user is None:
         raise HTTPException(status_code=401, detail="User not found")
-    
+
     return user
 ```
 
@@ -261,10 +261,10 @@ async def get_current_user(token_data: TokenData) -> User:
 async def login(credentials: LoginRequest) -> TokenResponse:
     # Validate credentials
     user = await auth_service.authenticate_user(
-        credentials.email, 
+        credentials.email,
         credentials.password
     )
-    
+
     # Generate tokens
     access_token = await jwt_service.create_access_token(
         data={"sub": str(user.id), "email": user.email}
@@ -272,7 +272,7 @@ async def login(credentials: LoginRequest) -> TokenResponse:
     refresh_token = await jwt_service.create_refresh_token(
         data={"sub": str(user.id)}
     )
-    
+
     return TokenResponse(
         access_token=access_token,
         refresh_token=refresh_token,
@@ -283,7 +283,7 @@ async def login(credentials: LoginRequest) -> TokenResponse:
 async def refresh_token(request: RefreshTokenRequest) -> TokenResponse:
     # Validate refresh token
     token_data = await jwt_service.verify_refresh_token(request.refresh_token)
-    
+
     # Generate new tokens
     new_access_token = await jwt_service.create_access_token(
         data={"sub": token_data.user_id}
@@ -291,7 +291,7 @@ async def refresh_token(request: RefreshTokenRequest) -> TokenResponse:
     new_refresh_token = await jwt_service.create_refresh_token(
         data={"sub": token_data.user_id}
     )
-    
+
     return TokenResponse(
         access_token=new_access_token,
         refresh_token=new_refresh_token,
@@ -307,13 +307,13 @@ async def get_current_user_from_token(
 ) -> User:
     # Decode token to schema
     token_data = jwt_service.decode_access_token(token)
-    
+
     # Validate expiration
     await validate_token_expiration(token_data)
-    
+
     # Check blacklist
     await check_token_blacklist(token_data)
-    
+
     # Get user
     return await get_current_user(token_data)
 ```
@@ -328,7 +328,7 @@ try:
 except ValidationError as e:
     for error in e.errors():
         field = error['loc'][0]
-        
+
         if field == 'access_token':
             raise HTTPException(
                 status_code=500,

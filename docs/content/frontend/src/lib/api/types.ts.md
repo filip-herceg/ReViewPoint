@@ -20,9 +20,15 @@ The `types/index.ts` file serves as the central export point for all API type de
 
 ```typescript
 export type {
-  AuthError, AuthLoginRequest, AuthRegisterRequest,
-  AuthLoginResponse, AuthLogoutResponse, AuthTokens,
-  AuthUser, JWTPayload, TokenType
+  AuthError,
+  AuthLoginRequest,
+  AuthRegisterRequest,
+  AuthLoginResponse,
+  AuthLogoutResponse,
+  AuthTokens,
+  AuthUser,
+  JWTPayload,
+  TokenType,
 } from "./auth";
 ```
 
@@ -30,8 +36,12 @@ export type {
 
 ```typescript
 export type {
-  ApiResponse, ApiError, PaginatedResponse,
-  PaginationParams, ISODateString, HttpMethod
+  ApiResponse,
+  ApiError,
+  PaginatedResponse,
+  PaginationParams,
+  ISODateString,
+  HttpMethod,
 } from "./common";
 ```
 
@@ -39,8 +49,12 @@ export type {
 
 ```typescript
 export type {
-  File, FileUploadConfig, FileUploadResponse,
-  UploadStatus, UploadError, FileListResponse
+  File,
+  FileUploadConfig,
+  FileUploadResponse,
+  UploadStatus,
+  UploadError,
+  FileListResponse,
 } from "./upload";
 ```
 
@@ -48,8 +62,12 @@ export type {
 
 ```typescript
 export type {
-  User, UserCreateRequest, UserUpdateRequest,
-  UserPreferences, UserRole, UserStats
+  User,
+  UserCreateRequest,
+  UserUpdateRequest,
+  UserPreferences,
+  UserRole,
+  UserStats,
 } from "./user";
 ```
 
@@ -62,7 +80,8 @@ export type {
 export type ExtractApiData<T> = T extends ApiResponse<infer U> ? U : never;
 
 // Extract item type from paginated responses
-export type ExtractPaginatedItem<T> = T extends PaginatedResponse<infer U> ? U : never;
+export type ExtractPaginatedItem<T> =
+  T extends PaginatedResponse<infer U> ? U : never;
 
 // Extract item type from list responses
 export type ExtractListItem<T> = T extends ListResponse<infer U> ? U : never;
@@ -169,7 +188,9 @@ export function createDefaultApiState<T>(): ApiState<T> {
 // Type guards for API state
 export function isApiStateLoading<T>(state: ApiState<T>): boolean;
 export function isApiStateError<T>(state: ApiState<T>): boolean;
-export function isApiStateSuccess<T>(state: ApiState<T>): state is ApiState<T> & { data: T };
+export function isApiStateSuccess<T>(
+  state: ApiState<T>,
+): state is ApiState<T> & { data: T };
 ```
 
 ## Usage Examples
@@ -177,14 +198,14 @@ export function isApiStateSuccess<T>(state: ApiState<T>): state is ApiState<T> &
 ### Basic Type Usage
 
 ```typescript
-import type { User, ApiResponse, PaginatedResponse } from '@/lib/api/types';
+import type { User, ApiResponse, PaginatedResponse } from "@/lib/api/types";
 
 // Type-safe API response handling
 function handleUserResponse(response: ApiResponse<User>) {
   if (response.success) {
-    console.log('User:', response.data.name);
+    console.log("User:", response.data.name);
   } else {
-    console.error('Error:', response.error);
+    console.error("Error:", response.error);
   }
 }
 
@@ -201,13 +222,17 @@ function handleUserList(response: ApiResponse<PaginatedResponse<User>>) {
 ### Type Utility Usage Examples
 
 ```typescript
-import type { DeepPartial, RequiredFields, ExtractApiData } from '@/lib/api/types';
+import type {
+  DeepPartial,
+  RequiredFields,
+  ExtractApiData,
+} from "@/lib/api/types";
 
 // Partial update types
 type UserUpdate = DeepPartial<User>;
 
 // Ensure required fields
-type UserCreation = RequiredFields<User, 'name' | 'email'>;
+type UserCreation = RequiredFields<User, "name" | "email">;
 
 // Extract response data type
 type UserApiResponse = ApiResponse<User>;
@@ -217,7 +242,7 @@ type UserData = ExtractApiData<UserApiResponse>; // User
 ### Form Integration
 
 ```typescript
-import type { AuthLoginRequest, UserCreateRequest } from '@/lib/api/types';
+import type { AuthLoginRequest, UserCreateRequest } from "@/lib/api/types";
 
 // Type-safe form handling
 function handleLoginForm(formData: AuthLoginRequest) {
@@ -250,12 +275,12 @@ const useUserStore = create<UserStore>(() => ({
 // Type-safe state checking
 function UserProfile() {
   const currentUser = useUserStore(state => state.currentUser);
-  
+
   if (isApiStateSuccess(currentUser)) {
     // TypeScript knows currentUser.data is User
     return <div>Hello, {currentUser.data.name}!</div>;
   }
-  
+
   return <div>Loading...</div>;
 }
 ```

@@ -1,6 +1,6 @@
 # Get Started with ReViewPoint
 
-> **Fresh Windows mac💡 **Docker Note**: Docker Desktop requires manual installation but isn't required for basic development (SQLite mode works without it).
+> **Fresh Windows mac💡 **Docker Note\*\*: Docker Desktop requires manual installation but isn't required for basic development (SQLite mode works without it).
 
 ---
 
@@ -10,25 +10,25 @@ The automated installer is completely transparent about what it installs:
 
 ### **Core Tools Installed via Chocolatey:**
 
-| Tool | Package | Purpose | Disk Space |
-|------|---------|---------|------------|
-| **Chocolatey** | `choco` | Package manager for Windows | ~50MB |
-| **Git** | `git` | Version control system | ~300MB |
-| **Node.js 18+** | `nodejs` | JavaScript runtime + npm | ~200MB |
-| **Python 3.11+** | `python` | Backend runtime + pip | ~150MB |
+| Tool             | Package  | Purpose                     | Disk Space |
+| ---------------- | -------- | --------------------------- | ---------- |
+| **Chocolatey**   | `choco`  | Package manager for Windows | ~50MB      |
+| **Git**          | `git`    | Version control system      | ~300MB     |
+| **Node.js 18+**  | `nodejs` | JavaScript runtime + npm    | ~200MB     |
+| **Python 3.11+** | `python` | Backend runtime + pip       | ~150MB     |
 
 ### **Package Managers Installed via Native Tools:**
 
-| Tool | Install Method | Purpose | Size |
-|------|----------------|---------|------|
-| **pnpm** | `npm install -g pnpm` | Fast package manager | ~20MB |
-| **pipx** | `python -m pip install --user pipx` | Python app installer | ~10MB |
-| **Hatch** | `pipx install hatch` | Python environment manager | ~15MB |
+| Tool      | Install Method                      | Purpose                    | Size  |
+| --------- | ----------------------------------- | -------------------------- | ----- |
+| **pnpm**  | `npm install -g pnpm`               | Fast package manager       | ~20MB |
+| **pipx**  | `python -m pip install --user pipx` | Python app installer       | ~10MB |
+| **Hatch** | `pipx install hatch`                | Python environment manager | ~15MB |
 
 ### **Manual Installation Required:**
 
-| Tool | Why Manual? | Required For |
-|------|-------------|--------------|
+| Tool               | Why Manual?                                 | Required For                      |
+| ------------------ | ------------------------------------------- | --------------------------------- |
 | **Docker Desktop** | Large download, requires license acceptance | PostgreSQL development (optional) |
 
 ### **🛡️ Security & Privacy:**
@@ -45,7 +45,7 @@ Before running the automated installer, you'll see a **complete list** of what w
 ```
 📦 TOOLS THAT WILL BE INSTALLED:
   1. Chocolatey - Package manager for Windows
-  2. Git - Version control system  
+  2. Git - Version control system
   3. Node.js 18+ - JavaScript runtime
   4. pnpm - Fast package manager (via npm)
   5. Python 3.11+ - Backend runtime
@@ -65,14 +65,14 @@ Before running the automated installer, you'll see a **complete list** of what w
 
 ### **Tasks with Prerequisite Checks:**
 
-| Task Name | Checks For | Behavior on Failure |
-|-----------|------------|-------------------|
-| **Start Backend** | Node.js | ❌ Stops with helpful error message |
-| **Start Frontend** | pnpm | ❌ Stops with helpful error message |
-| **Start Both Services** | pnpm | ❌ Stops with helpful error message |
-| **Run Backend Tests** | Node.js, hatch | ❌ Stops with helpful error message |
-| **Install Dependencies** | pnpm, hatch | ❌ Stops with helpful error message |
-| **Generate API Types** | pnpm | ❌ Stops with helpful error message |
+| Task Name                | Checks For     | Behavior on Failure                 |
+| ------------------------ | -------------- | ----------------------------------- |
+| **Start Backend**        | Node.js        | ❌ Stops with helpful error message |
+| **Start Frontend**       | pnpm           | ❌ Stops with helpful error message |
+| **Start Both Services**  | pnpm           | ❌ Stops with helpful error message |
+| **Run Backend Tests**    | Node.js, hatch | ❌ Stops with helpful error message |
+| **Install Dependencies** | pnpm, hatch    | ❌ Stops with helpful error message |
+| **Generate API Types**   | pnpm           | ❌ Stops with helpful error message |
 
 ### **Error Message Examples:**
 
@@ -97,7 +97,7 @@ When prerequisites are found:
 
 ## 🛠️ **Manual Installation (If Automatic Fails)**
 
-**⏱️ Expected time: 15-20 minutes**et ReViewPoint running in just 3 steps!**
+**⏱️ Expected time: 15-20 minutes**et ReViewPoint running in just 3 steps!\*\*
 
 ## 🚀 **Quick Start for Fresh Windows Machines**
 
@@ -108,12 +108,14 @@ When prerequisites are found:
 Perfect for **fresh Windows machines** or **professor grading scenarios**:
 
 1. **Download the project:**
+
    ```powershell
    git clone https://github.com/filip-herceg/ReViewPoint.git
    cd ReViewPoint
    ```
 
 2. **Run the automated installer:**
+
    ```powershell
    powershell -ExecutionPolicy Bypass -File scripts/install-prerequisites.ps1
    ```
@@ -139,16 +141,16 @@ Perfect for **fresh Windows machines** or **professor grading scenarios**:
 
 The automated installer handles all prerequisites:
 
-| Tool | Purpose | Auto-Installed |
-|------|---------|----------------|
-| **Chocolatey** | Package manager | ✅ |
-| **Git** | Version control | ✅ |
-| **Node.js 18+** | JavaScript runtime | ✅ |
-| **pnpm** | Fast package manager | ✅ |
-| **Python 3.11+** | Backend runtime | ✅ |
-| **pipx** | Python app installer | ✅ |
-| **Hatch** | Python environment manager | ✅ |
-| **Docker Desktop** | Container platform | ⚠️ Manual |
+| Tool               | Purpose                    | Auto-Installed |
+| ------------------ | -------------------------- | -------------- |
+| **Chocolatey**     | Package manager            | ✅             |
+| **Git**            | Version control            | ✅             |
+| **Node.js 18+**    | JavaScript runtime         | ✅             |
+| **pnpm**           | Fast package manager       | ✅             |
+| **Python 3.11+**   | Backend runtime            | ✅             |
+| **pipx**           | Python app installer       | ✅             |
+| **Hatch**          | Python environment manager | ✅             |
+| **Docker Desktop** | Container platform         | ⚠️ Manual      |
 
 💡 **Docker Note**: Docker Desktop requires manual installation but isn't required for basic development (SQLite mode works without it).
 
@@ -160,15 +162,15 @@ The automated installer handles all prerequisites:
 
 Install these tools in order. **Don't skip any steps!**
 
-| # | Tool | Purpose | Install Method | Verification |
-|---|------|---------|---------------|--------------|
-| 1 | **Git** | Version control | [Download installer](https://git-scm.com/download/win) | `git --version` |
-| 2 | **Node.js** (18+) | JavaScript runtime | [Download LTS](https://nodejs.org/) | `node --version` |
-| 3 | **pnpm** | Fast package manager | `npm install -g pnpm` | `pnpm --version` |
-| 4 | **Python** (3.11+) | Backend runtime | [Download from python.org](https://python.org/downloads/) | `python --version` |
-| 5 | **pipx** | Python app installer | `python -m pip install --user pipx` | `pipx --version` |
-| 6 | **Hatch** | Python env manager | `pipx install hatch` | `hatch --version` |
-| 7 | **Docker Desktop** | Container platform | [Download installer](https://docker.com/products/docker-desktop/) | `docker --version` |
+| #   | Tool               | Purpose              | Install Method                                                    | Verification       |
+| --- | ------------------ | -------------------- | ----------------------------------------------------------------- | ------------------ |
+| 1   | **Git**            | Version control      | [Download installer](https://git-scm.com/download/win)            | `git --version`    |
+| 2   | **Node.js** (18+)  | JavaScript runtime   | [Download LTS](https://nodejs.org/)                               | `node --version`   |
+| 3   | **pnpm**           | Fast package manager | `npm install -g pnpm`                                             | `pnpm --version`   |
+| 4   | **Python** (3.11+) | Backend runtime      | [Download from python.org](https://python.org/downloads/)         | `python --version` |
+| 5   | **pipx**           | Python app installer | `python -m pip install --user pipx`                               | `pipx --version`   |
+| 6   | **Hatch**          | Python env manager   | `pipx install hatch`                                              | `hatch --version`  |
+| 7   | **Docker Desktop** | Container platform   | [Download installer](https://docker.com/products/docker-desktop/) | `docker --version` |
 
 ### 🚨 **Critical Windows Notes:**
 
@@ -190,7 +192,7 @@ Or manually verify with:
 ```powershell
 # Check all tools are installed
 git --version
-node --version  
+node --version
 pnpm --version
 python --version
 hatch --version
@@ -245,7 +247,7 @@ cd ReViewPoint
 
 # 2. Install dependencies
 pnpm install                    # Root dependencies
-cd backend && hatch env create  # Backend Python environment  
+cd backend && hatch env create  # Backend Python environment
 cd ../frontend && pnpm install  # Frontend dependencies
 cd ..
 
@@ -254,7 +256,7 @@ cd ..
 # Option A: PostgreSQL (recommended)
 pnpm run dev:postgres
 
-# Option B: SQLite (simpler)  
+# Option B: SQLite (simpler)
 pnpm run dev
 ```
 
@@ -267,7 +269,7 @@ If you want to start backend and frontend separately:
 pnpm run postgres:start  # Start PostgreSQL container
 # Then run VS Code task: "ReViewPoint: Start Backend"
 
-# Terminal 2: Start Frontend  
+# Terminal 2: Start Frontend
 # Run VS Code task: "ReViewPoint: Start Frontend"
 ```
 
@@ -279,45 +281,46 @@ pnpm run postgres:start  # Start PostgreSQL container
 
 ### **🚀 Development Tasks**
 
-| Task Name | Purpose | When to Use |
-|-----------|---------|-------------|
-| **Install Dependencies** | Install all project dependencies | First time setup |
-| **Start Both - PostgreSQL** | Full stack with PostgreSQL | Production-like development |
-| **Start Both - SQLite** | Full stack with SQLite | Simple development |
-| **Start Backend** | Backend only | Backend development |
-| **Start Frontend** | Frontend only | Frontend development |
-| **Check PostgreSQL Prerequisites** | Verify Docker & tools | Troubleshooting |
+| Task Name                          | Purpose                          | When to Use                 |
+| ---------------------------------- | -------------------------------- | --------------------------- |
+| **Install Dependencies**           | Install all project dependencies | First time setup            |
+| **Start Both - PostgreSQL**        | Full stack with PostgreSQL       | Production-like development |
+| **Start Both - SQLite**            | Full stack with SQLite           | Simple development          |
+| **Start Backend**                  | Backend only                     | Backend development         |
+| **Start Frontend**                 | Frontend only                    | Frontend development        |
+| **Check PostgreSQL Prerequisites** | Verify Docker & tools            | Troubleshooting             |
 
 ### **🧪 Testing Tasks**
 
-| Task Name | Purpose | Test Type |
-|-----------|---------|-----------|
-| **Run All Backend Tests** | Full backend test suite | Comprehensive testing |
-| **Run Fast Backend Tests** | Quick backend tests only | Rapid feedback |
-| **Run Frontend Tests** | Frontend unit tests | Frontend validation |
-| **Run Frontend E2E Tests** | End-to-end browser tests | Full user flows |
-| **Run All Tests** | Everything (backend + frontend) | Complete validation |
+| Task Name                  | Purpose                         | Test Type             |
+| -------------------------- | ------------------------------- | --------------------- |
+| **Run All Backend Tests**  | Full backend test suite         | Comprehensive testing |
+| **Run Fast Backend Tests** | Quick backend tests only        | Rapid feedback        |
+| **Run Frontend Tests**     | Frontend unit tests             | Frontend validation   |
+| **Run Frontend E2E Tests** | End-to-end browser tests        | Full user flows       |
+| **Run All Tests**          | Everything (backend + frontend) | Complete validation   |
 
 ### **🔧 Utility Tasks**
-| Task Name | Purpose | Usage |
-|-----------|---------|-------|
-| **Lint Backend** | Check Python code style | Code quality |
-| **Format Backend** | Auto-format Python code | Code cleanup |
-| **Lint Frontend** | Check TypeScript code style | Code quality |
-| **Format Frontend** | Auto-format TypeScript | Code cleanup |
+
+| Task Name              | Purpose                          | Usage             |
+| ---------------------- | -------------------------------- | ----------------- |
+| **Lint Backend**       | Check Python code style          | Code quality      |
+| **Format Backend**     | Auto-format Python code          | Code cleanup      |
+| **Lint Frontend**      | Check TypeScript code style      | Code quality      |
+| **Format Frontend**    | Auto-format TypeScript           | Code cleanup      |
 | **Generate API Types** | Create TypeScript types from API | After API changes |
-| **Clean All** | Remove cache/build files | Troubleshooting |
+| **Clean All**          | Remove cache/build files         | Troubleshooting   |
 
 ### **🗄️ Database Tasks**
 
-| Task Name | Purpose | When to Use |
-|-----------|---------|------------|
-| **Start PostgreSQL Container** | Start database only | Database setup |
-| **Stop PostgreSQL Container** | Stop database | Cleanup |
-| **Run Database Migrations** | Apply schema changes | After pulling updates |
-| **Switch to PostgreSQL** | Change to PostgreSQL | Production-like setup |
-| **Switch to SQLite** | Change to SQLite | Simple setup |
-| **Reset PostgreSQL Database** | Completely reset database | Clean slate |
+| Task Name                      | Purpose                   | When to Use           |
+| ------------------------------ | ------------------------- | --------------------- |
+| **Start PostgreSQL Container** | Start database only       | Database setup        |
+| **Stop PostgreSQL Container**  | Stop database             | Cleanup               |
+| **Run Database Migrations**    | Apply schema changes      | After pulling updates |
+| **Switch to PostgreSQL**       | Change to PostgreSQL      | Production-like setup |
+| **Switch to SQLite**           | Change to SQLite          | Simple setup          |
+| **Reset PostgreSQL Database**  | Completely reset database | Clean slate           |
 
 ---
 
@@ -326,6 +329,7 @@ pnpm run postgres:start  # Start PostgreSQL container
 **After installation, verify everything works:**
 
 ### **1. Check Services are Running**
+
 ```bash
 # Frontend should be accessible
 curl http://localhost:5173
@@ -338,6 +342,7 @@ curl http://localhost:8000/health
 ```
 
 ### **2. Run Quick Tests**
+
 ```bash
 # Run a quick test to verify setup
 # Use VS Code task: "ReViewPoint: Run Fast Backend Tests"
@@ -345,6 +350,7 @@ curl http://localhost:8000/health
 ```
 
 ### **3. Check Database Connection**
+
 - Backend logs should show successful database connection
 - No error messages in terminal outputs
 
@@ -353,11 +359,12 @@ curl http://localhost:8000/health
 ## 🐛 **Common Issues & Solutions**
 
 ### **Docker Issues**
+
 ```bash
 # Problem: "docker: command not found"
 # Solution: Install Docker Desktop and ensure it's running
 
-# Problem: "Cannot connect to the Docker daemon"  
+# Problem: "Cannot connect to the Docker daemon"
 # Solution: Start Docker Desktop application
 
 # Problem: "docker info" fails
@@ -365,9 +372,10 @@ curl http://localhost:8000/health
 ```
 
 ### **Python/Hatch Issues**
+
 ```bash
 # Problem: "hatch: command not found"
-# Solution: 
+# Solution:
 pipx install hatch
 # Then restart terminal
 
@@ -376,6 +384,7 @@ pipx install hatch
 ```
 
 ### **Node.js/pnpm Issues**
+
 ```bash
 # Problem: "pnpm: command not found"
 # Solution:
@@ -386,6 +395,7 @@ npm install -g pnpm
 ```
 
 ### **Port Conflicts**
+
 ```bash
 # Problem: Port 5173 or 8000 already in use
 # Solution: Kill existing processes:
@@ -400,7 +410,7 @@ npx kill-port 8000
 **After successful installation:**
 
 1. **Explore the API**: Visit http://localhost:8000/docs
-2. **Check Documentation**: Browse to the [Developer Documentation](developer-overview.md)  
+2. **Check Documentation**: Browse to the [Developer Documentation](developer-overview.md)
 3. **Run Tests**: Execute tests to ensure everything works
 4. **Start Developing**: Read [Development Guidelines](resources/guidelines.md)
 
@@ -418,7 +428,8 @@ npx kill-port 8000
 4. **Ask for Help**: Create an issue on GitHub with your error message
 
 **Most issues are caused by missing prerequisites or Docker not running!**
-```
+
+````
 
 ### **Option 2: Simple SQLite Setup**
 
@@ -427,7 +438,7 @@ npx kill-port 8000
 ```bash
 # Simpler setup with SQLite database
 pnpm run dev
-```
+````
 
 ### **Option 3: Manual Step-by-Step**
 
@@ -458,7 +469,7 @@ pnpm run frontend       # Start Vite frontend
 **Check that everything is working:**
 
 1. **Frontend loads**: http://localhost:5173 shows the login page
-2. **Backend API**: http://localhost:8000/docs shows Swagger documentation  
+2. **Backend API**: http://localhost:8000/docs shows Swagger documentation
 3. **Health check**: http://localhost:8000/api/v1/health returns `{"status": "healthy"}`
 
 ---
@@ -472,13 +483,13 @@ ReViewPoint includes **24 VS Code tasks** for streamlined development:
 3. **Type "Tasks: Run Task"**
 4. **Choose from available tasks:**
 
-| Task | Purpose |
-|------|---------|
-| **Install Dependencies** | One-command setup |
-| **Start Development (PostgreSQL)** | Full stack development |
-| **Start Development (SQLite)** | Simple development |
-| **Run All Tests** | Backend + Frontend tests |
-| **Format All Code** | Code formatting |
+| Task                               | Purpose                  |
+| ---------------------------------- | ------------------------ |
+| **Install Dependencies**           | One-command setup        |
+| **Start Development (PostgreSQL)** | Full stack development   |
+| **Start Development (SQLite)**     | Simple development       |
+| **Run All Tests**                  | Backend + Frontend tests |
+| **Format All Code**                | Code formatting          |
 
 ---
 
@@ -498,10 +509,11 @@ ReViewPoint includes **24 VS Code tasks** for streamlined development:
 ### **Common Issues**
 
 **Port conflicts:**
+
 ```bash
 # Check what's using the ports
 lsof -i :8000  # Backend port
-lsof -i :5173  # Frontend port  
+lsof -i :5173  # Frontend port
 lsof -i :5432  # PostgreSQL port
 
 # Kill processes if needed
@@ -509,16 +521,18 @@ kill -9 <PID>
 ```
 
 **Database connection issues:**
+
 ```bash
 # Reset PostgreSQL
 pnpm run postgres:stop
 pnpm run postgres:start
 
-# Or switch to SQLite  
+# Or switch to SQLite
 pnpm run db:sqlite
 ```
 
 **Dependency issues:**
+
 ```bash
 # Clean and reinstall everything
 pnpm run clean
@@ -526,8 +540,9 @@ pnpm run install
 ```
 
 **Python environment issues:**
+
 ```bash
-# Reset Python environment  
+# Reset Python environment
 cd backend
 rm -rf .hatch
 hatch env create
@@ -546,8 +561,9 @@ hatch env create
 **Congratulations!** You now have a fully functional ReViewPoint development environment.
 
 **What's running:**
+
 - ✅ **Backend**: FastAPI server with hot reload
-- ✅ **Frontend**: React app with Vite hot reload  
+- ✅ **Frontend**: React app with Vite hot reload
 - ✅ **Database**: PostgreSQL or SQLite
 - ✅ **Tests**: Full test suite ready to run
 

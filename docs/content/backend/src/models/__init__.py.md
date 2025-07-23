@@ -17,6 +17,7 @@ The models package defines the core SQLAlchemy ORM models for the ReViewPoint pl
 ### Package Structure
 
 The models are organized with clear separation of concerns:
+
 - Base classes providing common functionality
 - Domain-specific models for business entities
 - Security-focused models for authentication operations
@@ -27,6 +28,7 @@ The models are organized with clear separation of concerns:
 ### SQLAlchemy Foundation
 
 The models package establishes the SQLAlchemy foundation through:
+
 - Declarative base class inheritance
 - Consistent column mapping patterns
 - Standardized relationship configurations
@@ -35,6 +37,7 @@ The models package establishes the SQLAlchemy foundation through:
 ### Database Schema Management
 
 Models define the complete database schema including:
+
 - Primary key strategies with auto-increment
 - Foreign key relationships with cascade behavior
 - Unique constraints and database indexes
@@ -43,6 +46,7 @@ Models define the complete database schema including:
 ### ORM Integration Points
 
 The models integrate with other application layers:
+
 - **Repositories** use models for database operations
 - **Schemas** provide API serialization/deserialization
 - **Services** implement business logic using model operations
@@ -67,6 +71,7 @@ The models integrate with other application layers:
 ### Base Model Inheritance
 
 All models inherit from `BaseModel` providing:
+
 - Automatic ID generation with integer primary keys
 - Created/updated timestamp tracking with timezone awareness
 - Dictionary conversion methods for serialization
@@ -75,6 +80,7 @@ All models inherit from `BaseModel` providing:
 ### Relationship Definitions
 
 Models use SQLAlchemy relationships for data integrity:
+
 - Foreign key constraints with proper cascade behavior
 - Back-population for bidirectional relationships
 - WriteOnlyMapped for performance in large collections
@@ -83,6 +89,7 @@ Models use SQLAlchemy relationships for data integrity:
 ### Validation and Security
 
 Models implement validation and security features:
+
 - Column-level validation through SQLAlchemy validators
 - Timezone-aware datetime handling for security tokens
 - Unique constraints for business rules enforcement
@@ -113,6 +120,7 @@ dict_data = instance.to_dict()  # Convert to dictionary
 ### Repository Layer Integration
 
 The models package provides the foundation for repository operations:
+
 - Type-safe database operations through mapped columns
 - Relationship navigation for complex queries
 - Consistent error handling through SQLAlchemy exceptions
@@ -120,6 +128,7 @@ The models package provides the foundation for repository operations:
 ### Schema Layer Coordination
 
 Models coordinate with Pydantic schemas for API operations:
+
 - ORM mode enables automatic schema population
 - Column definitions align with schema field validation
 - Relationship patterns support nested serialization
@@ -127,6 +136,7 @@ Models coordinate with Pydantic schemas for API operations:
 ### Service Layer Operations
 
 Service classes use models for business logic implementation:
+
 - Transaction management through SQLAlchemy sessions
 - Business rule enforcement through model validation
 - Complex operations through relationship navigation
@@ -136,6 +146,7 @@ Service classes use models for business logic implementation:
 ### Query Optimization
 
 Models are designed for efficient database operations:
+
 - Strategic indexing on frequently queried columns
 - Lazy loading relationships to prevent N+1 queries
 - WriteOnlyMapped for large collections
@@ -144,6 +155,7 @@ Models are designed for efficient database operations:
 ### Memory Management
 
 Models implement efficient memory usage patterns:
+
 - Minimal attribute overhead through mapped columns
 - Lazy relationship loading when appropriate
 - Proper session management through repository layer
@@ -153,6 +165,7 @@ Models implement efficient memory usage patterns:
 ### Authentication Security
 
 Models support secure authentication operations:
+
 - Password hashing integration through user model
 - JWT token blacklisting for secure logout
 - Password reset token tracking with expiration
@@ -161,6 +174,7 @@ Models support secure authentication operations:
 ### Data Protection
 
 Models implement data protection features:
+
 - Soft deletion patterns through boolean flags
 - Audit trail support through created/updated timestamps
 - Secure relationship cascade behaviors
@@ -171,6 +185,7 @@ Models implement data protection features:
 ### Model Testing Support
 
 The models package supports comprehensive testing:
+
 - Base model functionality testing through inheritance
 - Relationship testing through foreign key constraints
 - Validation testing through SQLAlchemy validators
@@ -179,6 +194,7 @@ The models package supports comprehensive testing:
 ### Test Database Configuration
 
 Models work seamlessly with test configurations:
+
 - SQLite compatibility for fast test execution
 - Alembic migration support for test schema setup
 - Transaction rollback support for test isolation

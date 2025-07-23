@@ -112,23 +112,23 @@ async def create_user_with_validation(
     if not validate_email(email):
         logging.warning(f"Invalid email format: {email}")
         raise ValidationError("Invalid email format.")
-    
+
     err: str | None = get_password_validation_error(password)
     if err is not None:
         logging.warning(f"Password validation failed for {email}")
         raise ValidationError(err)
-    
+
     is_unique: bool = await is_email_unique(session, email)
     if not is_unique:
         logging.warning(f"Email already exists: {email}")
         raise UserAlreadyExistsError("Email already exists.")
-    
+
     from src.utils.hashing import hash_password
     hashed: str = hash_password(password)
     user = User(email=email, hashed_password=hashed, is_active=True)
     if name is not None:
         user.name = name
-    
+
     session.add(user)
     try:
         await session.commit()
@@ -180,7 +180,7 @@ async def list_users(
 ) -> tuple[list[User], int]:
     """List users with filtering and pagination."""
     stmt = select(User)
-    
+
     # Apply filters
     if email:
         stmt = stmt.where(User.email.ilike(f"%{email}%"))
@@ -192,7 +192,7 @@ async def list_users(
         stmt = stmt.where(User.created_at >= created_after)
     if created_before:
         stmt = stmt.where(User.created_at <= created_before)
-    
+
     # Apply sorting
     if sort in {"created_at", "name", "email"}:
         col = getattr(User, sort)
@@ -201,16 +201,16 @@ async def list_users(
         else:
             col = col.asc()
         stmt = stmt.order_by(col)
-    
+
     # Get total count
     count_stmt = select(func.count()).select_from(stmt.subquery())
     total = (await session.execute(count_stmt)).scalar_one()
-    
+
     # Apply pagination
     stmt = stmt.offset(offset).limit(limit)
     result = await session.execute(stmt)
     users = list(result.scalars().all())
-    
+
     return users, total
 ```
 
@@ -269,20 +269,20 @@ async def bulk_update_users(
     """Bulk update users by IDs with the given update_data dict."""
     if not user_ids or not update_data:
         return 0
-    
+
     result = await session.execute(select(User).where(User.id.in_(user_ids)))
     users: Sequence[User] = result.scalars().all()
-    
+
     for user in users:
         for key, value in update_data.items():
             setattr(user, key, value)
-    
+
     try:
         await session.commit()
     except Exception as exc:
         await session.rollback()
         raise exc
-    
+
     return len(users)
 ```
 
@@ -315,7 +315,7 @@ async def sensitive_user_action(
     user: User | None = await get_user_by_id(session, user_id)
     if user is None:
         raise UserNotFoundError(f"User with id {user_id} not found.")
-    
+
     limiter_key: Final[str] = f"user:{user_id}:{action}"
     allowed: bool = await user_action_limiter.is_allowed(limiter_key)
     if not allowed:
@@ -350,7 +350,7 @@ async def deactivate_user(session: AsyncSession, user_id: int) -> bool:
     user: User | None = await get_user_by_id(session, user_id)
     if user is None or not getattr(user, "is_active", False):
         return False
-    
+
     user.is_active = False
     try:
         await session.commit()
@@ -369,7 +369,7 @@ async def soft_delete_user(session: AsyncSession, user_id: int) -> bool:
     user: User | None = await get_user_by_id(session, user_id)
     if user is None or getattr(user, "is_deleted", False):
         return False
-    
+
     user.is_deleted = True
     try:
         await session.commit()
@@ -388,13 +388,13 @@ async def anonymize_user(session: AsyncSession, user_id: int) -> bool:
     user: User | None = await get_user_by_id(session, user_id, use_cache=False)
     if user is None or getattr(user, "is_deleted", False):
         return False
-    
+
     user.email = f"anon_{user.id}_{int(datetime.now(UTC).timestamp())}@anon.invalid"
     user.hashed_password = ""
     user.is_active = False
     user.is_deleted = True
     user.last_login_at = None
-    
+
     try:
         await session.commit()
     except Exception as exc:
@@ -423,14 +423,14 @@ async def export_users_to_csv(session: AsyncSession) -> str:
     """Export all users to CSV string."""
     result = await session.execute(select(User))
     users: Sequence[User] = result.scalars().all()
-    
+
     output: io.StringIO = io.StringIO()
     writer: csv.DictWriter[str] = csv.DictWriter(
         output,
         fieldnames=["id", "email", "is_active", "is_deleted", "created_at", "updated_at", "last_login_at"]
     )
     writer.writeheader()
-    
+
     for user in users:
         row: UserCSVRow = {
             "id": user.id,
@@ -442,7 +442,7 @@ async def export_users_to_csv(session: AsyncSession) -> str:
             "last_login_at": user.last_login_at,
         }
         writer.writerow(row)
-    
+
     return output.getvalue()
 ```
 
@@ -453,7 +453,7 @@ async def export_users_to_json(session: AsyncSession) -> str:
     """Export all users to JSON string."""
     result = await session.execute(select(User))
     users: Sequence[User] = result.scalars().all()
-    
+
     data: list[UserJSONRow] = [
         {
             "id": user.id,
@@ -466,7 +466,7 @@ async def export_users_to_json(session: AsyncSession) -> str:
         }
         for user in users
     ]
-    
+
     return json.dumps(data)
 ```
 
@@ -493,16 +493,16 @@ async def user_signups_per_month(session: AsyncSession, year: int) -> dict[int, 
         .group_by("month")
         .order_by("month")
     )
-    
+
     result = await session.execute(stmt)
     rows: Sequence[Row[Any]] = result.all()
-    
+
     stats: dict[int, int] = dict.fromkeys(range(1, 13), 0)
     for row in rows:
         month: int = int(row[0])
         count: int = int(row[1])
         stats[month] = count
-    
+
     return stats
 ```
 
@@ -524,7 +524,7 @@ async def user_signups_per_month(session: AsyncSession, year: int) -> dict[int, 
 async def db_session_context() -> AsyncIterator[AsyncSession]:
     """Async context manager for DB session."""
     from src.core.database import get_async_session
-    
+
     async with get_async_session() as session:
         try:
             yield session
@@ -741,10 +741,10 @@ async def test_get_user_by_id_cached():
     # Mock cache hit
     mock_cache = AsyncMock()
     mock_cache.get.return_value = 123
-    
+
     with patch('src.repositories.user.user_cache', mock_cache):
         result = await get_user_by_id(mock_session, 123)
-        
+
     mock_cache.get.assert_called_once_with("user_id:123")
     assert result is not None
 ```
@@ -756,16 +756,16 @@ async def test_get_user_by_id_cached():
 async def test_create_user_workflow():
     async with db_session_context() as session:
         user = await create_user_with_validation(
-            session, 
-            "test@example.com", 
+            session,
+            "test@example.com",
             "SecurePassword123!",
             "Test User"
         )
-        
+
         assert user.id is not None
         assert user.email == "test@example.com"
         assert user.is_active is True
-        
+
         # Verify user can be retrieved
         retrieved = await get_user_by_id(session, user.id)
         assert retrieved.email == user.email
@@ -795,7 +795,7 @@ async def enhanced_get_user(session: AsyncSession, user_id: int, use_cache: bool
         cached = await user_cache.get(f"user_id:{user_id}")
         if cached:
             return await get_user_from_cache(session, cached)
-    
+
     return await get_user_from_database(session, user_id)
 ```
 

@@ -9,7 +9,7 @@ The `user.py` schema module defines comprehensive Pydantic data validation model
 The schema module follows a modular validation design with specialized schemas for different user operations:
 
 - **Profile Management Layer**: Complete user profile data structures
-- **Preferences Layer**: User customization and settings management  
+- **Preferences Layer**: User customization and settings management
 - **Avatar Management Layer**: Profile image handling
 - **Administrative Layer**: Bulk user operations and management
 - **Type Safety Layer**: Strict typing with ConfigDict and Field validation
@@ -66,6 +66,7 @@ UserResponse = UserProfile  # Type alias for API responses
 ```
 
 **Design Purpose:**
+
 - Semantic distinction between data models
 - Future extensibility for read-specific fields
 - Type alias consistency across API layers
@@ -104,6 +105,7 @@ bio: str | None = Field(None, max_length=512)
 - **Null Handling**: Distinguishes between null and unchanged values
 
 **Security Features:**
+
 - Field length limits prevent DoS attacks
 - No email updates (requires separate verification flow)
 - Strict field validation with `extra="forbid"`
@@ -123,7 +125,7 @@ user_preferences = UserPreferences(
 
 # With all fields
 full_preferences = UserPreferences(
-    theme="light", 
+    theme="light",
     locale="fr-FR"
 )
 ```
@@ -155,7 +157,7 @@ Flexible preference update schema supporting arbitrary preference keys.
 preferences_update = UserPreferencesUpdate(
     preferences={
         "theme": "dark",
-        "locale": "en-US", 
+        "locale": "en-US",
         "notifications": True,
         "autoSave": False,
         "fontSize": 14
@@ -168,6 +170,7 @@ preferences_update = UserPreferencesUpdate(
 - `preferences: Mapping[str, object]` - Arbitrary key-value preference mapping
 
 **Design Features:**
+
 - **Flexible Structure**: Supports any preference key-value pairs
 - **Type Safety**: Uses `object` instead of `Any` for better type checking
 - **Future Proof**: Easily accommodates new preference types
@@ -191,6 +194,7 @@ avatar_response = UserAvatarResponse(
 - `avatar_url: str` - Complete URL to user's uploaded avatar image
 
 **Use Cases:**
+
 - Avatar upload confirmation responses
 - Profile image update notifications
 - Avatar deletion confirmations (with placeholder URL)
@@ -256,6 +260,7 @@ user_list = UserListResponse(
 - `total: int` - Total count of users (for pagination calculations)
 
 **Pagination Support:**
+
 - **User Array**: Current page of user profiles
 - **Total Count**: Enables pagination UI calculations
 - **Type Safety**: Strongly typed user sequence
@@ -266,6 +271,7 @@ user_list = UserListResponse(
 ### Field Validation Rules
 
 **Length Constraints:**
+
 ```python
 # Profile update constraints
 name: str | None = Field(None, max_length=128)    # Reasonable name length
@@ -273,12 +279,14 @@ bio: str | None = Field(None, max_length=512)     # Extended bio support
 ```
 
 **Type Constraints:**
+
 ```python
 # Theme validation with literals
 theme: Literal["dark", "light"] | None = Field(None)
 ```
 
 **Configuration Patterns:**
+
 ```python
 # Strict validation configuration
 model_config = ConfigDict(extra="forbid")
@@ -287,6 +295,7 @@ model_config = ConfigDict(extra="forbid")
 ### Schema Relationships
 
 **Profile Inheritance:**
+
 ```python
 # UserRead extends UserProfile
 class UserRead(UserProfile):
@@ -297,6 +306,7 @@ UserResponse = UserProfile
 ```
 
 **Update Patterns:**
+
 ```python
 # Separate schemas for different operations
 UserProfile       # Complete profile data
@@ -309,18 +319,21 @@ UserPreferences   # Settings management
 ### Data Protection
 
 **Field Access Control:**
+
 - Profile fields are read-only in base schema
 - Updates require separate validated schema
 - No sensitive data exposure in profile responses
 - Email updates require separate verification workflow
 
 **Input Validation:**
+
 - Length limits prevent buffer overflow attacks
 - `extra="forbid"` prevents field injection
 - Type constraints prevent data type confusion
 - Optional fields properly handle null values
 
 **Privacy Features:**
+
 - Avatar URLs support CDN integration
 - Bio field supports markdown-safe content
 - Preference data isolated from profile data
@@ -329,12 +342,14 @@ UserPreferences   # Settings management
 ### Validation Security
 
 **Preference Validation:**
+
 ```python
 # Safe preference handling
 preferences: Mapping[str, object]  # Not Any - better type safety
 ```
 
 **Field Constraints:**
+
 ```python
 # Prevent oversized data
 name: str | None = Field(None, max_length=128)
@@ -349,14 +364,14 @@ bio: str | None = Field(None, max_length=512)
 async def update_user_profile(user_id: int, update_data: UserProfileUpdate):
     # Schema validation happens automatically
     current_profile = await get_user_profile(user_id)
-    
+
     # Apply updates
     updated_fields = {}
     if update_data.name is not None:
         updated_fields["name"] = update_data.name
     if update_data.bio is not None:
         updated_fields["bio"] = update_data.bio
-    
+
     # Update and return
     updated_profile = await update_profile(user_id, updated_fields)
     return UserProfile(**updated_profile.__dict__)
@@ -368,7 +383,7 @@ async def update_user_profile(user_id: int, update_data: UserProfileUpdate):
 async def update_user_preferences(user_id: int, prefs: UserPreferencesUpdate):
     # Validate preference structure
     preferences_data = prefs.preferences
-    
+
     # Apply preferences with validation
     valid_preferences = {}
     for key, value in preferences_data.items():
@@ -377,7 +392,7 @@ async def update_user_preferences(user_id: int, prefs: UserPreferencesUpdate):
         elif key == "locale" and isinstance(value, str):
             valid_preferences[key] = value
         # Add more preference validation as needed
-    
+
     await save_user_preferences(user_id, valid_preferences)
     return UserPreferences(**valid_preferences)
 ```
@@ -388,13 +403,13 @@ async def update_user_preferences(user_id: int, prefs: UserPreferencesUpdate):
 async def create_new_user(request: UserCreateRequest):
     # Schema validation ensures data integrity
     hashed_password = hash_password(request.password)
-    
+
     new_user = await create_user(
         email=request.email,
         password_hash=hashed_password,
         name=request.name
     )
-    
+
     # Return profile representation
     return UserProfile(
         id=new_user.id,
@@ -410,7 +425,7 @@ async def create_new_user(request: UserCreateRequest):
 async def list_users_paginated(page: int, per_page: int):
     offset = (page - 1) * per_page
     users, total = await get_users_paginated(offset, per_page)
-    
+
     # Convert to profile schemas
     user_profiles = [
         UserProfile(
@@ -424,7 +439,7 @@ async def list_users_paginated(page: int, per_page: int):
         )
         for user in users
     ]
-    
+
     return UserListResponse(users=user_profiles, total=total)
 ```
 
@@ -452,14 +467,14 @@ except ValidationError as e:
 # Preference update error handling
 try:
     preferences_update = UserPreferencesUpdate(**preference_data)
-    
+
     # Validate individual preferences
     for key, value in preferences_update.preferences.items():
         if key == "theme" and value not in ["dark", "light"]:
             raise HTTPException(status_code=400, detail=f"Invalid theme: {value}")
         elif key == "locale" and not isinstance(value, str):
             raise HTTPException(status_code=400, detail="Locale must be a string")
-            
+
 except ValidationError as e:
     raise HTTPException(status_code=422, detail="Invalid preference data structure")
 ```
@@ -513,11 +528,11 @@ def test_user_profile_update_validation():
     # Test profile update constraints
     valid_update = UserProfileUpdate(name="Valid Name", bio="Valid bio")
     assert valid_update.name == "Valid Name"
-    
+
     # Test length constraints
     with pytest.raises(ValidationError):
         UserProfileUpdate(name="x" * 129)  # Too long
-    
+
     with pytest.raises(ValidationError):
         UserProfileUpdate(bio="x" * 513)  # Too long
 ```
@@ -529,7 +544,7 @@ def test_user_preferences_theme_validation():
     # Test valid themes
     valid_prefs = UserPreferences(theme="dark", locale="en")
     assert valid_prefs.theme == "dark"
-    
+
     # Test invalid theme (should be caught by Literal type)
     with pytest.raises(ValidationError):
         UserPreferences(theme="blue")  # Invalid theme
@@ -551,25 +566,25 @@ def test_preferences_update_flexibility():
 ```python
 async def test_profile_management_flow():
     # Test complete profile management workflow
-    
+
     # Create user
     create_request = UserCreateRequest(
         email="flow@example.com",
         password="TestPassword123!",
         name="Flow Test User"
     )
-    
+
     # Update profile
     update_request = UserProfileUpdate(
         name="Updated Name",
         bio="Updated biography"
     )
-    
+
     # Update preferences
     prefs_request = UserPreferencesUpdate(
         preferences={"theme": "dark", "locale": "en-US"}
     )
-    
+
     # Verify all schemas validate correctly
     assert create_request.email == "flow@example.com"
     assert update_request.name == "Updated Name"

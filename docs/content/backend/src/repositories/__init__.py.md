@@ -19,7 +19,7 @@ The repositories package is organized by domain entities, with each repository m
 repositories/
 ├── __init__.py                    # Package initialization (empty)
 ├── user.py                       # User data access operations
-├── file.py                       # File metadata operations  
+├── file.py                       # File metadata operations
 └── blacklisted_token.py          # Token blacklist operations
 ```
 
@@ -99,7 +99,7 @@ The repositories in this package follow consistent design principles:
 ```python
 # Each repository handles a specific domain
 user.py          # User domain operations
-file.py          # File domain operations  
+file.py          # File domain operations
 blacklisted_token.py  # Authentication token domain
 ```
 
@@ -170,8 +170,8 @@ from src.repositories.user import get_user_by_id, create_user_with_validation
 @app.post("/users")
 async def create_user(user_data: UserCreate, session: AsyncSession = Depends(get_session)):
     user = await create_user_with_validation(
-        session, 
-        user_data.email, 
+        session,
+        user_data.email,
         user_data.password
     )
     await session.commit()
@@ -185,13 +185,13 @@ async def create_user(user_data: UserCreate, session: AsyncSession = Depends(get
 async def user_service_create_with_file(session: AsyncSession, user_data, file_data):
     # Create user
     user = await create_user_with_validation(session, user_data.email, user_data.password)
-    
+
     # Create initial file
     file = await create_file(session, file_data.filename, file_data.content_type, user.id)
-    
+
     # Commit both operations
     await session.commit()
-    
+
     return user, file
 ```
 
@@ -204,13 +204,13 @@ async def get_user_by_id(session: AsyncSession, user_id: int, use_cache: bool = 
         cached_data = await cache.get(f"user:{user_id}")
         if cached_data:
             return hydrate_from_cache(session, cached_data)
-    
+
     # Fallback to database
     user = await fetch_from_database(session, user_id)
-    
+
     if user and use_cache:
         await cache.set(f"user:{user_id}", user.id, ttl=60)
-    
+
     return user
 ```
 
@@ -285,7 +285,7 @@ async def test_user_repository():
     async with test_session() as session:
         user = await create_user_with_validation(session, "test@example.com", "password")
         await session.commit()
-        
+
         retrieved = await get_user_by_id(session, user.id)
         assert retrieved.email == "test@example.com"
 ```
@@ -316,7 +316,7 @@ async def get_entity_by_id(session: AsyncSession, entity_id: int) -> Entity | No
 async def create_entity(session: AsyncSession, data: dict) -> Entity:
     if not data.get('required_field'):
         raise ValidationError("Required field missing")
-    
+
     entity = Entity(**data)
     session.add(entity)
     await session.flush()
@@ -333,13 +333,13 @@ async def enhanced_list_users(
     new_filter: str | None = None  # New functionality
 ) -> tuple[list[User], int]:
     stmt = select(User)
-    
+
     # ... existing filters ...
-    
+
     # New filter logic
     if new_filter:
         stmt = stmt.where(User.new_field.ilike(f"%{new_filter}%"))
-    
+
     # ... rest of implementation ...
 ```
 

@@ -22,6 +22,7 @@ SanitizedFilename: TypeAlias = str
 ```
 
 **Type Safety Features:**
+
 - Custom type aliases for semantic clarity
 - Strict typing for filename operations
 - Type-safe return values for security operations
@@ -36,6 +37,7 @@ class SanitizedResult(TypedDict):
 ```
 
 **Future-Proof Design:**
+
 - TypedDict for structured sanitization results
 - Extensible for additional metadata
 - Type-safe result handling
@@ -52,6 +54,7 @@ _INVALID_CHARS_PATTERN: Final[Literal[r'[\\/*?:"<>|]']] = r'[\\/*?:"<>|]'
 ```
 
 **Security Configuration:**
+
 - **PATH_SEPARATORS**: Unix and Windows path separators for cross-platform security
 - **DANGEROUS_COMPONENTS**: Path traversal components (parent directory references)
 - **INVALID_CHARS_PATTERN**: Regex pattern for invalid filename characters
@@ -98,6 +101,7 @@ def sanitize_filename(filename: Filename) -> SanitizedFilename:
 ```
 
 **Security Features:**
+
 - Path traversal attack prevention (../, ..\, etc.)
 - Cross-platform path separator handling
 - Invalid character replacement with safe alternatives
@@ -105,6 +109,7 @@ def sanitize_filename(filename: Filename) -> SanitizedFilename:
 - Multiple security layer validation
 
 **Sanitization Process:**
+
 1. **Empty Check**: Returns "unnamed_file" for empty inputs
 2. **Path Split**: Separates filename components using regex
 3. **Dangerous Component Filter**: Removes ".." and "." components
@@ -113,6 +118,7 @@ def sanitize_filename(filename: Filename) -> SanitizedFilename:
 6. **Double-Dot Cleanup**: Final cleanup of any remaining ".." patterns
 
 **Usage Examples:**
+
 ```python
 # Path traversal attack prevention
 assert sanitize_filename("../../../etc/passwd") == "etc_passwd"
@@ -162,6 +168,7 @@ def is_safe_filename(filename: Filename) -> Literal[True, False]:
 ```
 
 **Safety Validation Features:**
+
 - Type checking for string input validation
 - Empty string rejection for security
 - Path separator detection (Unix and Windows)
@@ -170,6 +177,7 @@ def is_safe_filename(filename: Filename) -> Literal[True, False]:
 - Boolean return with literal typing
 
 **Usage Examples:**
+
 ```python
 # Safe filenames
 assert is_safe_filename("document.pdf") == True
@@ -207,29 +215,29 @@ from fastapi import HTTPException, UploadFile
 class UploadService:
     async def upload_file(self, file: UploadFile, user_id: str) -> dict:
         """Secure file upload with filename sanitization."""
-        
+
         # Validate filename presence
         if not file.filename:
             raise HTTPException(
-                status_code=400, 
+                status_code=400,
                 detail="No filename provided"
             )
-        
+
         # Sanitize filename for security
         safe_filename = sanitize_filename(file.filename)
-        
+
         # Double-check safety after sanitization
         if not is_safe_filename(safe_filename):
             raise HTTPException(
-                status_code=400, 
+                status_code=400,
                 detail="Invalid filename after sanitization"
             )
-        
+
         # Generate unique storage filename
         file_id = uuid.uuid4()
         file_extension = Path(safe_filename).suffix
         storage_filename = f"{file_id}{file_extension}"
-        
+
         # Store file with sanitized metadata
         return await self.store_file(
             file_content=await file.read(),
@@ -256,16 +264,16 @@ async def upload_file_endpoint(
     user: User = Depends(get_current_user)
 ) -> dict:
     """Upload file with comprehensive validation."""
-    
+
     # Pre-upload validation
     if not file.filename:
         raise HTTPException(status_code=400, detail="Filename required")
-    
+
     # Check original filename safety
     if not is_safe_filename(file.filename):
         # Attempt sanitization
         sanitized = sanitize_filename(file.filename)
-        
+
         # Inform user of sanitization
         if sanitized != file.filename:
             return {
@@ -273,7 +281,7 @@ async def upload_file_endpoint(
                 "sanitized_filename": sanitized,
                 "action_required": "Please confirm upload with sanitized filename"
             }
-    
+
     # Proceed with upload using sanitized filename
     result = await upload_service.upload_file(file, user.id)
     return {
@@ -288,7 +296,7 @@ async def validate_filename_endpoint(filename: str) -> dict:
     """Validate filename safety without upload."""
     is_safe = is_safe_filename(filename)
     sanitized = sanitize_filename(filename)
-    
+
     return {
         "original": filename,
         "is_safe": is_safe,
@@ -314,7 +322,7 @@ from src.models.base import Base
 
 class File(Base):
     __tablename__ = "files"
-    
+
     id = Column(Integer, primary_key=True)
     original_filename = Column(String(255), nullable=False)
     safe_filename = Column(String(255), nullable=False)
@@ -326,7 +334,7 @@ class File(Base):
 
 class FileRepository:
     async def create_file_record(
-        self, 
+        self,
         session: AsyncSession,
         original_filename: str,
         user_id: int,
@@ -334,15 +342,15 @@ class FileRepository:
         file_size: int
     ) -> File:
         """Create file record with automatic filename sanitization."""
-        
+
         # Sanitize filename for safe storage
         safe_filename = sanitize_filename(original_filename)
-        
+
         # Generate unique storage filename
         file_id = uuid.uuid4()
         file_extension = Path(safe_filename).suffix
         storage_filename = f"{file_id}{file_extension}"
-        
+
         # Create database record
         file_record = File(
             original_filename=original_filename,
@@ -352,7 +360,7 @@ class FileRepository:
             file_size=file_size,
             user_id=user_id
         )
-        
+
         session.add(file_record)
         await session.commit()
         return file_record
@@ -373,26 +381,26 @@ export interface FilenameValidationResult {
 export function validateFilename(filename: string): FilenameValidationResult {
   const warnings: string[] = [];
   let isValid = true;
-  
+
   // Check for path separators
   if (filename.includes('/') || filename.includes('\\')) {
     warnings.push("Filename contains path separators");
     isValid = false;
   }
-  
+
   // Check for parent directory references
   if (filename.includes('..')) {
     warnings.push("Filename contains parent directory references");
     isValid = false;
   }
-  
+
   // Check for invalid characters
   const invalidChars = /[\\/*?:"<>|]/;
   if (invalidChars.test(filename)) {
     warnings.push("Filename contains invalid characters");
     isValid = false;
   }
-  
+
   // Client-side sanitization (matches backend logic)
   const sanitized = filename
     .split(/[\\/]+/)
@@ -400,7 +408,7 @@ export function validateFilename(filename: string): FilenameValidationResult {
     .join('_')
     .replace(/[\\/*?:"<>|]/g, '_')
     .replace(/\.\./g, '_') || 'unnamed_file';
-  
+
   return {
     isValid,
     sanitized,
@@ -412,30 +420,30 @@ export function validateFilename(filename: string): FilenameValidationResult {
 export function FileUploadComponent() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [validationResult, setValidationResult] = useState<FilenameValidationResult | null>(null);
-  
+
   const handleFileSelect = (file: File) => {
     setSelectedFile(file);
     setValidationResult(validateFilename(file.name));
   };
-  
+
   const handleUpload = async () => {
     if (!selectedFile || !validationResult) return;
-    
+
     if (!validationResult.isValid) {
       const confirmed = window.confirm(
         `Filename will be sanitized from "${selectedFile.name}" to "${validationResult.sanitized}". Continue?`
       );
       if (!confirmed) return;
     }
-    
+
     // Proceed with upload
     await uploadFile(selectedFile);
   };
-  
+
   return (
     <div>
       <input type="file" onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])} />
-      
+
       {validationResult && !validationResult.isValid && (
         <div className="warning">
           <p>Filename issues detected:</p>
@@ -447,7 +455,7 @@ export function FileUploadComponent() {
           <p>Sanitized filename: {validationResult.sanitized}</p>
         </div>
       )}
-      
+
       <button onClick={handleUpload} disabled={!selectedFile}>
         Upload File
       </button>
@@ -465,46 +473,46 @@ export function FileUploadComponent() {
 ```python
 def advanced_filename_security_check(filename: str, max_length: int = 255) -> dict:
     """Comprehensive filename security analysis."""
-    
+
     security_issues = []
-    
+
     # Length validation
     if len(filename) > max_length:
         security_issues.append(f"Filename too long ({len(filename)} > {max_length})")
-    
+
     # Path traversal checks
     if '..' in filename:
         security_issues.append("Contains parent directory references")
-    
+
     if any(sep in filename for sep in ['/', '\\']):
         security_issues.append("Contains path separators")
-    
+
     # Null byte injection
     if '\x00' in filename:
         security_issues.append("Contains null bytes")
-    
+
     # Control character check
     if any(ord(char) < 32 for char in filename):
         security_issues.append("Contains control characters")
-    
+
     # Unicode normalization issues
     import unicodedata
     normalized = unicodedata.normalize('NFKC', filename)
     if normalized != filename:
         security_issues.append("Contains non-normalized Unicode")
-    
+
     # Common attack patterns
     dangerous_patterns = [
         'CON', 'PRN', 'AUX', 'NUL',  # Windows reserved names
         'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
         'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
     ]
-    
+
     filename_upper = filename.upper()
     for pattern in dangerous_patterns:
         if filename_upper.startswith(pattern):
             security_issues.append(f"Matches dangerous pattern: {pattern}")
-    
+
     return {
         'is_secure': len(security_issues) == 0,
         'issues': security_issues,
@@ -527,21 +535,21 @@ class SecureFileHandler:
         'application/pdf', 'text/plain', 'application/json',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     }
-    
+
     def validate_file_security(self, filename: str, content: bytes) -> dict:
         """Comprehensive file security validation."""
-        
+
         # Filename security
         filename_safe = is_safe_filename(filename)
         filename_sanitized = sanitize_filename(filename)
-        
+
         # Content type detection
         detected_mime = magic.from_buffer(content, mime=True)
-        
+
         # Extension validation
         extension = Path(filename_sanitized).suffix.lower()
         expected_mime = self._get_mime_for_extension(extension)
-        
+
         return {
             'filename_safe': filename_safe,
             'filename_sanitized': filename_sanitized,
@@ -568,15 +576,15 @@ class FileSecurityConfig:
     # Development - more lenient
     DEV_MAX_FILENAME_LENGTH = 255
     DEV_ALLOW_DANGEROUS_EXTENSIONS = True
-    
+
     # Production - strict security
     PROD_MAX_FILENAME_LENGTH = 100
     PROD_ALLOW_DANGEROUS_EXTENSIONS = False
-    
+
     # File type restrictions
     ALLOWED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.pdf', '.txt', '.docx'}
     DANGEROUS_EXTENSIONS = {'.exe', '.bat', '.sh', '.ps1', '.vbs', '.jar'}
-    
+
     @classmethod
     def get_config(cls, environment: str = 'production'):
         """Get environment-specific configuration."""
@@ -599,7 +607,7 @@ from src.utils.file import sanitize_filename, is_safe_filename
 
 class TestFileUtilities:
     """Comprehensive file utility testing."""
-    
+
     @pytest.mark.parametrize("input_filename,expected", [
         ("document.pdf", "document.pdf"),
         ("../../../etc/passwd", "etc_passwd"),
@@ -610,7 +618,7 @@ class TestFileUtilities:
     ])
     def test_sanitize_filename(self, input_filename, expected):
         assert sanitize_filename(input_filename) == expected
-    
+
     @pytest.mark.parametrize("filename,expected", [
         ("document.pdf", True),
         ("../config.ini", False),
@@ -620,7 +628,7 @@ class TestFileUtilities:
     ])
     def test_is_safe_filename(self, filename, expected):
         assert is_safe_filename(filename) == expected
-    
+
     def test_path_traversal_attacks(self):
         """Test various path traversal attack patterns."""
         attacks = [
@@ -630,13 +638,13 @@ class TestFileUtilities:
             "....//etc/passwd",
             "%2e%2e%2fpasswd",  # URL encoded
         ]
-        
+
         for attack in attacks:
             sanitized = sanitize_filename(attack)
             assert not any(sep in sanitized for sep in ['/', '\\'])
             assert '..' not in sanitized
             assert is_safe_filename(sanitized)
-    
+
     def test_unicode_handling(self):
         """Test Unicode character handling."""
         unicode_filenames = [
@@ -645,7 +653,7 @@ class TestFileUtilities:
             "ファイル.jpg", # Japanese
             "🎉party🎊.gif",  # Emoji
         ]
-        
+
         for filename in unicode_filenames:
             sanitized = sanitize_filename(filename)
             # Should not crash and should be safe

@@ -53,13 +53,16 @@ class ExampleModel(BaseModel):
 **Field Specifications:**
 
 **Primary Key:**
+
 - `id: Mapped[int]` - Auto-incrementing primary key (Integer, autoincrement=True)
 
 **Timestamp Tracking:**
+
 - `created_at: Mapped[datetime]` - Creation timestamp (DateTime with timezone, default=func.now())
 - `updated_at: Mapped[datetime]` - Last update timestamp (DateTime with timezone, onupdate=func.now())
 
 **Configuration:**
+
 - `__abstract__ = True` - Prevents direct table creation
 - `Final[bool]` typing for abstract declaration
 
@@ -68,10 +71,11 @@ class ExampleModel(BaseModel):
 ### Automatic Timestamping
 
 **Creation Tracking:**
+
 ```python
 created_at: Mapped[datetime] = mapped_column(
-    DateTime(timezone=True), 
-    default=func.now(), 
+    DateTime(timezone=True),
+    default=func.now(),
     nullable=False
 )
 ```
@@ -82,11 +86,12 @@ created_at: Mapped[datetime] = mapped_column(
 - **Non-nullable**: Ensures all records have creation timestamps
 
 **Update Tracking:**
+
 ```python
 updated_at: Mapped[datetime] = mapped_column(
-    DateTime(timezone=True), 
-    default=func.now(), 
-    onupdate=func.now(), 
+    DateTime(timezone=True),
+    default=func.now(),
+    onupdate=func.now(),
     nullable=False
 )
 ```
@@ -99,6 +104,7 @@ updated_at: Mapped[datetime] = mapped_column(
 ### Dictionary Conversion
 
 **Complete Model Serialization:**
+
 ```python
 def to_dict(self) -> Mapping[str, Any]:
     """Convert model instance to dictionary, including all mapped columns."""
@@ -129,11 +135,11 @@ from sqlalchemy.orm import Mapped, mapped_column
 class User(BaseModel):
     """User model with automatic base functionality."""
     __tablename__ = "users"
-    
+
     # Custom fields
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    
+
     # BaseModel provides automatically:
     # - id: Primary key
     # - created_at: Creation timestamp
@@ -168,16 +174,16 @@ return {"user": user_dict}
 # Accessing timestamp information
 async def track_user_activity(user_id: int):
     user = await session.get(User, user_id)
-    
+
     # Access creation time
     account_age = datetime.utcnow() - user.created_at
-    
+
     # Access last modification
     last_modified = user.updated_at
-    
+
     # Check if recently updated
     recently_updated = (datetime.utcnow() - user.updated_at).seconds < 3600
-    
+
     return {
         "account_age_days": account_age.days,
         "last_modified": last_modified.isoformat(),
@@ -198,7 +204,7 @@ class ComplexModel(BaseModel):
     __tablename__ = "complex"
     title: Mapped[str] = mapped_column(String(255))
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    
+
     # Relationships work normally
     user: Mapped[User] = relationship("User", back_populates="complex_items")
 ```
@@ -208,6 +214,7 @@ class ComplexModel(BaseModel):
 ### Migration Compatibility
 
 **Alembic Integration:**
+
 ```python
 # Migrations automatically include base fields
 def upgrade() -> None:
@@ -224,6 +231,7 @@ def upgrade() -> None:
 ### Index Optimization
 
 **Automatic Indexing Considerations:**
+
 ```python
 # Primary key automatically indexed
 # Consider additional indexes for timestamps if needed
@@ -238,6 +246,7 @@ class AuditableModel(BaseModel):
 ### Query Patterns
 
 **Common Query Patterns:**
+
 ```python
 # Query by creation time
 recent_users = await session.execute(
@@ -264,6 +273,7 @@ latest_users = await session.execute(
 ### Type Annotations
 
 **Comprehensive Typing:**
+
 ```python
 from typing import Any, Final, cast
 from collections.abc import Mapping
@@ -272,7 +282,7 @@ from collections.abc import Mapping
 class BaseModel(Base):
     __abstract__: Final[bool] = True
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    
+
     def to_dict(self) -> Mapping[str, Any]:
         # Type-safe dictionary conversion
         pass
@@ -281,12 +291,14 @@ class BaseModel(Base):
 ### Type Checking Compatibility
 
 **MyPy Compatibility:**
+
 - All fields properly typed with `Mapped[]`
 - Return types specified for all methods
 - Type casting used appropriately for SQLAlchemy introspection
 - Final declarations for constants
 
 **SQLAlchemy 2.0 Patterns:**
+
 - Modern Mapped annotations
 - Proper typing for database columns
 - Type-safe relationship declarations
@@ -296,6 +308,7 @@ class BaseModel(Base):
 ### Memory Efficiency
 
 **Optimized Base Class:**
+
 - Minimal memory footprint with only essential fields
 - Efficient datetime handling with database-level functions
 - No unnecessary instance variables or methods
@@ -304,10 +317,11 @@ class BaseModel(Base):
 ### Database Performance
 
 **Efficient Operations:**
+
 ```python
 # Optimized timestamp handling
 created_at: Mapped[datetime] = mapped_column(
-    DateTime(timezone=True), 
+    DateTime(timezone=True),
     default=func.now(),  # Database-level default
     nullable=False
 )
@@ -377,12 +391,12 @@ except ValueError as e:
 ```python
 def test_base_model_inheritance():
     """Test that BaseModel provides required functionality."""
-    
+
     # Create test model class
     class TestModel(BaseModel):
         __tablename__ = "test_model"
         name: Mapped[str] = mapped_column(String(100))
-    
+
     # Verify inheritance
     assert hasattr(TestModel, 'id')
     assert hasattr(TestModel, 'created_at')
@@ -391,16 +405,16 @@ def test_base_model_inheritance():
 
 def test_to_dict_conversion():
     """Test dictionary conversion functionality."""
-    
+
     # Create model instance
     instance = TestModel(name="test")
     instance.id = 1
     instance.created_at = datetime.utcnow()
     instance.updated_at = datetime.utcnow()
-    
+
     # Convert to dictionary
     result = instance.to_dict()
-    
+
     # Verify conversion
     assert isinstance(result, dict)
     assert result['id'] == 1
@@ -414,25 +428,25 @@ def test_to_dict_conversion():
 ```python
 async def test_timestamp_functionality():
     """Test automatic timestamp functionality."""
-    
+
     # Create new record
     model = TestModel(name="timestamp_test")
     session.add(model)
     await session.commit()
-    
+
     # Verify creation timestamp
     assert model.created_at is not None
     assert model.updated_at is not None
     assert model.created_at == model.updated_at
-    
+
     # Update record
     original_created_at = model.created_at
     original_updated_at = model.updated_at
-    
+
     await asyncio.sleep(0.1)  # Ensure time difference
     model.name = "updated_name"
     await session.commit()
-    
+
     # Verify update timestamp
     assert model.created_at == original_created_at  # Unchanged
     assert model.updated_at > original_updated_at  # Updated
@@ -443,18 +457,18 @@ async def test_timestamp_functionality():
 ```python
 async def test_database_integration():
     """Test base model database integration."""
-    
+
     # Test creation
     model = TestModel(name="db_test")
     session.add(model)
     await session.commit()
-    
+
     # Verify database storage
     stored_model = await session.get(TestModel, model.id)
     assert stored_model is not None
     assert stored_model.name == "db_test"
     assert stored_model.created_at is not None
-    
+
     # Test dictionary conversion with database data
     model_dict = stored_model.to_dict()
     assert model_dict['id'] == stored_model.id

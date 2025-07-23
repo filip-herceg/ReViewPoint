@@ -1,0 +1,76 @@
+# Prettier ignore file for ReViewPoint project
+# This file ensures Prettier skips these directories and files permanently
+
+# Python virtual environments
+.venv/
+venv/
+docs/.venv/
+docs/venv/
+backend/.venv/
+backend/venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Build outputs
+site/
+dist/
+build/
+docs/site/
+frontend/dist/
+backend/dist/
+
+# Node modules
+node_modules/
+frontend/node_modules/
+
+# Documentation build artifacts
+htmlcov/
+coverage/
+.coverage
+.nyc_output/
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Testing artifacts
+.pytest_cache/
+.ruff_cache/
+test-results/
+playwright-report/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads directory
+uploads/

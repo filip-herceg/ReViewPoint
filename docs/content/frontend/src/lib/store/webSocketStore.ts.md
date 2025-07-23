@@ -11,69 +11,76 @@ The `webSocketStore.ts` file provides centralized state management for WebSocket
 ```typescript
 interface WebSocketState {
   // Connection Management
-  connectionState: ConnectionState;      // Current connection status
-  connectionId: string | null;          // Unique connection identifier
-  isConnected: boolean;                  // Simple connection flag
-  reconnectAttempts: number;             // Retry attempt counter
-  lastError: string | null;             // Last connection error
+  connectionState: ConnectionState; // Current connection status
+  connectionId: string | null; // Unique connection identifier
+  isConnected: boolean; // Simple connection flag
+  reconnectAttempts: number; // Retry attempt counter
+  lastError: string | null; // Last connection error
 
   // Real-time Data
-  notifications: Notification[];         // Live notification queue
+  notifications: Notification[]; // Live notification queue
   uploadProgress: Map<string, UploadProgress>; // Upload tracking
-  activeUploads: string[];              // Currently active uploads
+  activeUploads: string[]; // Currently active uploads
 }
 ```
 
 ### **Core Data Types**
 
 #### **Notification Interface**
+
 ```typescript
 interface Notification {
-  id: string;                   // Unique notification ID
+  id: string; // Unique notification ID
   type: "info" | "success" | "warning" | "error";
-  title: string;               // Notification headline
-  message: string;             // Detailed notification content
-  timestamp: Date;             // Creation timestamp
-  read: boolean;               // Read status flag
-  persistent?: boolean;        // Whether notification persists
+  title: string; // Notification headline
+  message: string; // Detailed notification content
+  timestamp: Date; // Creation timestamp
+  read: boolean; // Read status flag
+  persistent?: boolean; // Whether notification persists
 }
 ```
 
 #### **Upload Progress Interface**
+
 ```typescript
 interface UploadProgress {
-  uploadId: string;            // Unique upload identifier
-  progress: number;            // Upload percentage (0-100)
+  uploadId: string; // Unique upload identifier
+  progress: number; // Upload percentage (0-100)
   status: "uploading" | "completed" | "error";
-  error?: string;              // Error message if failed
-  timestamp: Date;             // Last update timestamp
+  error?: string; // Error message if failed
+  timestamp: Date; // Last update timestamp
 }
 ```
 
 ## State Management Actions
 
 ### **Connection Management**
+
 - `connect()` - Establish WebSocket connection
 - `disconnect()` - Close WebSocket connection
 - `subscribe(events)` - Subscribe to specific event types
 
 ### **Notification Management**
+
 - `clearNotifications()` - Remove all notifications
 - `markNotificationRead(id)` - Mark specific notification as read
 - `removeNotification(id)` - Remove specific notification
 
 ### **Upload Tracking**
+
 - `getUploadProgress(uploadId)` - Retrieve upload progress data
 - Real-time upload status updates via WebSocket events
 
 ## Dependencies
 
 ### **Core Dependencies**
+
 - `zustand` - State management library
 - `@/lib/websocket/webSocketService` - WebSocket service integration
 - `@/logger` - Event logging and error tracking
 
 ### **Type Definitions**
+
 - [ConnectionState](../websocket/config.ts.md) - WebSocket connection state types
 - [WebSocketEventType](../websocket/config.ts.md) - Event type definitions
 
@@ -85,19 +92,19 @@ The store automatically sets up WebSocket event listeners:
 
 ```typescript
 // Connection state tracking
-webSocketService.on('connect', (connectionId) => {
-  set({ 
-    isConnected: true, 
+webSocketService.on("connect", (connectionId) => {
+  set({
+    isConnected: true,
     connectionId,
-    connectionState: 'connected',
-    reconnectAttempts: 0 
+    connectionState: "connected",
+    reconnectAttempts: 0,
   });
 });
 
 // Real-time notification handling
-webSocketService.on('notification', (notification) => {
-  set(state => ({
-    notifications: [notification, ...state.notifications]
+webSocketService.on("notification", (notification) => {
+  set((state) => ({
+    notifications: [notification, ...state.notifications],
   }));
 });
 ```
@@ -106,8 +113,8 @@ webSocketService.on('notification', (notification) => {
 
 ```typescript
 // Real-time upload progress updates
-webSocketService.on('upload_progress', (progress) => {
-  set(state => {
+webSocketService.on("upload_progress", (progress) => {
+  set((state) => {
     const newProgress = new Map(state.uploadProgress);
     newProgress.set(progress.uploadId, progress);
     return { uploadProgress: newProgress };
@@ -119,11 +126,11 @@ webSocketService.on('upload_progress', (progress) => {
 
 ```typescript
 // Automatic reconnection handling
-webSocketService.on('disconnect', () => {
-  set(state => ({
+webSocketService.on("disconnect", () => {
+  set((state) => ({
     isConnected: false,
-    connectionState: 'disconnected',
-    reconnectAttempts: state.reconnectAttempts + 1
+    connectionState: "disconnected",
+    reconnectAttempts: state.reconnectAttempts + 1,
   }));
 });
 ```
@@ -136,16 +143,16 @@ webSocketService.on('disconnect', () => {
 import { useWebSocketStore } from '@/lib/store/webSocketStore';
 
 function NotificationCenter() {
-  const { 
-    notifications, 
-    markNotificationRead, 
-    removeNotification 
+  const {
+    notifications,
+    markNotificationRead,
+    removeNotification
   } = useWebSocketStore();
 
   return (
     <div>
       {notifications.map(notification => (
-        <NotificationItem 
+        <NotificationItem
           key={notification.id}
           notification={notification}
           onRead={() => markNotificationRead(notification.id)}
@@ -200,10 +207,10 @@ function ConnectionIndicator() {
 const { subscribe } = useWebSocketStore();
 
 // Subscribe to upload-related events only
-subscribe(['upload_progress', 'upload_complete', 'upload_error']);
+subscribe(["upload_progress", "upload_complete", "upload_error"]);
 
 // Subscribe to notification events
-subscribe(['notification', 'user_message']);
+subscribe(["notification", "user_message"]);
 ```
 
 ### **Event Type Management**
@@ -221,8 +228,8 @@ The store handles various WebSocket event types:
 
 ```typescript
 // Optimized notification updates
-set(state => ({
-  notifications: [newNotification, ...state.notifications.slice(0, 99)]
+set((state) => ({
+  notifications: [newNotification, ...state.notifications.slice(0, 99)],
 })); // Limit to 100 notifications for performance
 ```
 
@@ -230,9 +237,9 @@ set(state => ({
 
 ```typescript
 // Cleanup completed uploads
-set(state => {
-  const activeUploads = state.activeUploads.filter(id => 
-    state.uploadProgress.get(id)?.status === 'uploading'
+set((state) => {
+  const activeUploads = state.activeUploads.filter(
+    (id) => state.uploadProgress.get(id)?.status === "uploading",
   );
   return { activeUploads };
 });
@@ -259,11 +266,11 @@ The WebSocket store uses in-memory state only and does not persist data:
 
 ```typescript
 // Comprehensive error handling
-webSocketService.on('error', (error) => {
-  logger.error('WebSocket error:', error);
-  set({ 
+webSocketService.on("error", (error) => {
+  logger.error("WebSocket error:", error);
+  set({
     lastError: error.message,
-    connectionState: 'error' 
+    connectionState: "error",
   });
 });
 ```

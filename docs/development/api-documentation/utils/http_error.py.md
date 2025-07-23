@@ -34,6 +34,7 @@ class ExtraLogInfo(TypedDict, total=False):
 ```
 
 **Design Features:**
+
 - **Structured Context**: Predefined fields for common error context
 - **Type Safety**: Literal types for action values prevent typos
 - **Extensible**: Easy to add new fields while maintaining type safety
@@ -51,6 +52,7 @@ DEFAULT_LOGGER_FUNC: Final[Callable[[str], None]] = logger.error
 ```
 
 **Integration Features:**
+
 - **Flexible Logging**: Compatible with different logging frameworks
 - **Default Behavior**: Uses loguru error logging by default
 - **Customizable**: Can be overridden for specific error types
@@ -72,14 +74,14 @@ def http_error(
 ) -> None:
     """
     Raises an HTTPException with logging.
-    
+
     Args:
         status_code (int): HTTP status code to raise.
         detail (str): Error detail message.
         logger_func (Callable[[str], None]): Logging function to use.
         extra (Optional[Mapping[str, object]]): Additional log info.
         exc (Optional[Exception]): Exception to chain.
-    
+
     Raises:
         HTTPException: Always raised with the given status and detail.
         TypeError: If logger_func signature is incompatible with extra.
@@ -89,6 +91,7 @@ def http_error(
 **Implementation Details:**
 
 1. **Structured Logging with Extra Context:**
+
    ```python
    if extra is not None:
        try:
@@ -98,6 +101,7 @@ def http_error(
    ```
 
 2. **Simple Logging:**
+
    ```python
    else:
        logger_func(detail)
@@ -109,6 +113,7 @@ def http_error(
    ```
 
 **Key Features:**
+
 - **Automatic Logging**: Every HTTP error is automatically logged
 - **Fallback Logging**: Handles loggers that don't support extra parameters
 - **Exception Chaining**: Preserves original exception context
@@ -131,7 +136,7 @@ async def get_user(
     current_user: User = Depends(get_current_user)
 ) -> UserResponse:
     """Get user endpoint with standardized error handling."""
-    
+
     try:
         # Validate user ID format
         if not user_id or not isinstance(user_id, str):
@@ -144,10 +149,10 @@ async def get_user(
                     error_code=4001
                 )
             )
-        
+
         # Get user from repository
         user = await user_repository.get_user_by_id(user_id)
-        
+
         if not user:
             http_error(
                 status_code=404,
@@ -158,7 +163,7 @@ async def get_user(
                     error_code=4041
                 )
             )
-        
+
         # Check access permissions
         if not await can_access_user(current_user.id, user_id):
             http_error(
@@ -170,9 +175,9 @@ async def get_user(
                     error_code=4031
                 )
             )
-        
+
         return UserResponse.from_user(user)
-        
+
     except HTTPException:
         # Re-raise HTTP exceptions from http_error
         raise
@@ -195,7 +200,7 @@ async def create_user(
     current_user: User = Depends(get_current_admin)
 ) -> UserResponse:
     """Create user endpoint with comprehensive error handling."""
-    
+
     try:
         # Validate request data
         if not user_request.email:
@@ -208,7 +213,7 @@ async def create_user(
                     error_code=4002
                 )
             )
-        
+
         # Check if user already exists
         existing_user = await user_repository.get_user_by_email(user_request.email)
         if existing_user:
@@ -221,19 +226,19 @@ async def create_user(
                     error_code=4091
                 )
             )
-        
+
         # Create user
         user_data = user_request.dict()
         user = await user_repository.create_user(user_data)
-        
+
         logger.info(f"User created successfully: {user.email}", extra={
             "user_id": current_user.id,
             "action": "create",
             "created_user_id": user.id
         })
-        
+
         return UserResponse.from_user(user)
-        
+
     except HTTPException:
         # Re-raise HTTP exceptions
         raise
@@ -260,10 +265,10 @@ from src.utils.http_error import http_error, ExtraLogInfo
 
 class UserService:
     """User service with standardized error handling."""
-    
+
     def __init__(self, user_repository: UserRepository):
         self.user_repository = user_repository
-    
+
     async def update_user_profile(
         self,
         user_id: str,
@@ -271,7 +276,7 @@ class UserService:
         requester_id: str
     ) -> User:
         """Update user profile with comprehensive error handling."""
-        
+
         try:
             # Validate user exists
             user = await self.user_repository.get_user_by_id(user_id)
@@ -285,7 +290,7 @@ class UserService:
                         error_code=4042
                     )
                 )
-            
+
             # Check permissions
             if not await self.can_update_user(requester_id, user_id):
                 http_error(
@@ -297,7 +302,7 @@ class UserService:
                         error_code=4032
                     )
                 )
-            
+
             # Validate update data
             validation_errors = await self.validate_user_update(update_data)
             if validation_errors:
@@ -310,19 +315,19 @@ class UserService:
                         error_code=4221
                     )
                 )
-            
+
             # Update user
             updated_user = await self.user_repository.update_user(user_id, update_data)
-            
+
             logger.info(f"User profile updated: {user_id}", extra={
                 "user_id": requester_id,
                 "action": "update",
                 "updated_user_id": user_id,
                 "updated_fields": list(update_data.keys())
             })
-            
+
             return updated_user
-            
+
         except HTTPException:
             # Re-raise HTTP exceptions
             raise
@@ -338,10 +343,10 @@ class UserService:
                 ),
                 exc=e
             )
-    
+
     async def delete_user(self, user_id: str, requester_id: str) -> bool:
         """Delete user with audit logging."""
-        
+
         try:
             # Validate user exists
             user = await self.user_repository.get_user_by_id(user_id)
@@ -355,7 +360,7 @@ class UserService:
                         error_code=4043
                     )
                 )
-            
+
             # Check if user can be deleted
             if user.is_admin and not await self.is_super_admin(requester_id):
                 http_error(
@@ -367,7 +372,7 @@ class UserService:
                         error_code=4033
                     )
                 )
-            
+
             # Check for dependencies
             user_dependencies = await self.check_user_dependencies(user_id)
             if user_dependencies:
@@ -380,19 +385,19 @@ class UserService:
                         error_code=4092
                     )
                 )
-            
+
             # Perform deletion
             await self.user_repository.delete_user(user_id)
-            
+
             logger.warning(f"User deleted: {user.email}", extra={
                 "user_id": requester_id,
                 "action": "delete",
                 "deleted_user_id": user_id,
                 "deleted_user_email": user.email
             })
-            
+
             return True
-            
+
         except HTTPException:
             # Re-raise HTTP exceptions
             raise
@@ -419,11 +424,11 @@ from src.utils.http_error import http_error, ExtraLogInfo
 
 async def authenticate_user(email: str, password: str, request_id: str) -> dict:
     """Authenticate user with detailed error tracking."""
-    
+
     try:
         # Get user by email
         user = await user_repository.get_user_by_email(email)
-        
+
         if not user:
             http_error(
                 status_code=401,
@@ -434,7 +439,7 @@ async def authenticate_user(email: str, password: str, request_id: str) -> dict:
                     error_code=4011
                 )
             )
-        
+
         # Check if account is active
         if not user.is_active:
             http_error(
@@ -447,7 +452,7 @@ async def authenticate_user(email: str, password: str, request_id: str) -> dict:
                     error_code=4012
                 )
             )
-        
+
         # Check account lockout
         if await is_account_locked(user.id):
             http_error(
@@ -460,12 +465,12 @@ async def authenticate_user(email: str, password: str, request_id: str) -> dict:
                     error_code=4291
                 )
             )
-        
+
         # Verify password
         if not verify_password(password, user.password_hash):
             # Increment failed attempts
             await increment_failed_login_attempts(user.id)
-            
+
             http_error(
                 status_code=401,
                 detail="Invalid email or password",
@@ -476,25 +481,25 @@ async def authenticate_user(email: str, password: str, request_id: str) -> dict:
                     error_code=4013
                 )
             )
-        
+
         # Reset failed attempts on successful login
         await reset_failed_login_attempts(user.id)
-        
+
         # Create session
         access_token = create_access_token(data={"sub": user.id})
-        
+
         logger.info(f"User authenticated successfully: {email}", extra={
             "user_id": user.id,
             "action": "login",
             "request_id": request_id
         })
-        
+
         return {
             "access_token": access_token,
             "token_type": "bearer",
             "user_id": user.id
         }
-        
+
     except HTTPException:
         # Re-raise HTTP exceptions
         raise
@@ -517,20 +522,20 @@ async def logout_user(
     request_id: str = Depends(get_request_id)
 ):
     """Logout endpoint with error handling."""
-    
+
     try:
         # Blacklist current token
         token = await get_current_token()
         await token_repository.blacklist_token(token)
-        
+
         logger.info(f"User logged out: {current_user.email}", extra={
             "user_id": current_user.id,
             "action": "logout",
             "request_id": request_id
         })
-        
+
         return {"message": "Logged out successfully"}
-        
+
     except Exception as e:
         # Handle logout errors
         http_error(
@@ -556,31 +561,31 @@ from typing import Callable
 
 def create_security_logger() -> Callable[[str], None]:
     """Create specialized logger for security-related errors."""
-    
+
     def security_log(message: str, **kwargs) -> None:
         """Log security errors with special handling."""
-        
+
         # Add security context
         extra = kwargs.get('extra', {})
         extra['security_event'] = True
         extra['severity'] = 'high'
-        
+
         logger.warning(f"SECURITY: {message}", extra=extra)
-    
+
     return security_log
 
 def create_audit_logger() -> Callable[[str], None]:
     """Create specialized logger for audit events."""
-    
+
     def audit_log(message: str, **kwargs) -> None:
         """Log audit events for compliance."""
-        
+
         extra = kwargs.get('extra', {})
         extra['audit_event'] = True
         extra['timestamp'] = datetime.utcnow().isoformat()
-        
+
         logger.info(f"AUDIT: {message}", extra=extra)
-    
+
     return audit_log
 
 # Usage with custom loggers
@@ -589,7 +594,7 @@ audit_logger = create_audit_logger()
 
 async def handle_security_violation(user_id: str, violation_type: str):
     """Handle security violations with specialized logging."""
-    
+
     http_error(
         status_code=403,
         detail=f"Security violation detected: {violation_type}",
@@ -603,19 +608,19 @@ async def handle_security_violation(user_id: str, violation_type: str):
 
 async def handle_audit_required_action(user_id: str, action: str):
     """Handle actions requiring audit logging."""
-    
+
     try:
         # Perform action
         result = await perform_sensitive_action(user_id, action)
-        
+
         audit_logger(f"Sensitive action completed: {action}", extra={
             "user_id": user_id,
             "action": action,
             "result": "success"
         })
-        
+
         return result
-        
+
     except Exception as e:
         http_error(
             status_code=500,
@@ -639,37 +644,37 @@ from enum import IntEnum
 
 class ErrorCodes(IntEnum):
     """Standardized error codes for tracking and analysis."""
-    
+
     # 4xxx - Client errors
     INVALID_USER_ID_FORMAT = 4001
     EMAIL_REQUIRED = 4002
-    
+
     # Authentication errors (401x)
     INVALID_CREDENTIALS = 4011
     ACCOUNT_DEACTIVATED = 4012
     INVALID_PASSWORD = 4013
-    
+
     # Authorization errors (403x)
     ACCESS_DENIED_PROFILE = 4031
     INSUFFICIENT_UPDATE_PERMISSIONS = 4032
     CANNOT_DELETE_ADMIN = 4033
     SECURITY_VIOLATION = 4034
-    
+
     # Not found errors (404x)
     USER_NOT_FOUND_GET = 4041
     USER_NOT_FOUND_UPDATE = 4042
     USER_NOT_FOUND_DELETE = 4043
-    
+
     # Conflict errors (409x)
     USER_ALREADY_EXISTS = 4091
     USER_HAS_DEPENDENCIES = 4092
-    
+
     # Validation errors (422x)
     VALIDATION_FAILED = 4221
-    
+
     # Rate limiting errors (429x)
     ACCOUNT_LOCKED = 4291
-    
+
     # 5xxx - Server errors
     INTERNAL_SERVER_ERROR = 5001
     USER_CREATION_FAILED = 5002
@@ -681,7 +686,7 @@ class ErrorCodes(IntEnum):
 
 def get_error_category(error_code: int) -> str:
     """Get error category from error code."""
-    
+
     if 4000 <= error_code < 4100:
         return "client_error"
     elif 4100 <= error_code < 4200:
@@ -712,17 +717,17 @@ def validated_http_error(
     exc: BaseException = None
 ) -> None:
     """HTTP error with validated error codes and automatic context."""
-    
+
     extra = ExtraLogInfo(
         error_code=error_code.value,
         user_id=user_id,
         action=action,
         request_id=request_id
     )
-    
+
     # Add error category for analytics
     extra['error_category'] = get_error_category(error_code.value)
-    
+
     http_error(
         status_code=status_code,
         detail=detail,
@@ -733,9 +738,9 @@ def validated_http_error(
 # Usage with validated error codes
 async def example_with_error_codes(user_id: str, requester_id: int):
     """Example using validated error codes."""
-    
+
     user = await user_repository.get_user_by_id(user_id)
-    
+
     if not user:
         validated_http_error(
             status_code=404,
@@ -744,7 +749,7 @@ async def example_with_error_codes(user_id: str, requester_id: int):
             user_id=requester_id,
             action="get"
         )
-    
+
     return user
 ```
 
@@ -760,21 +765,21 @@ from datetime import datetime, timedelta
 
 class ErrorAnalytics:
     """Collect and analyze error patterns."""
-    
+
     def __init__(self):
         self.error_counts = Counter()
         self.error_timeline = defaultdict(list)
         self.user_error_patterns = defaultdict(Counter)
-    
+
     def record_error(self, extra: ExtraLogInfo, status_code: int, detail: str):
         """Record error for analytics."""
-        
+
         error_key = f"{status_code}_{extra.get('error_code', 'unknown')}"
         timestamp = datetime.utcnow()
-        
+
         # Count errors
         self.error_counts[error_key] += 1
-        
+
         # Timeline tracking
         self.error_timeline[timestamp.date()].append({
             'error_key': error_key,
@@ -783,27 +788,27 @@ class ErrorAnalytics:
             'action': extra.get('action'),
             'detail': detail
         })
-        
+
         # User pattern tracking
         if extra.get('user_id'):
             self.user_error_patterns[extra['user_id']][error_key] += 1
-    
+
     def get_error_summary(self, days: int = 7) -> dict:
         """Get error summary for specified days."""
-        
+
         cutoff_date = datetime.utcnow().date() - timedelta(days=days)
-        
+
         recent_errors = []
         for date, errors in self.error_timeline.items():
             if date >= cutoff_date:
                 recent_errors.extend(errors)
-        
+
         return {
             'total_errors': len(recent_errors),
             'error_types': dict(Counter(e['error_key'] for e in recent_errors)),
             'error_by_day': {
-                str(date): len(errors) 
-                for date, errors in self.error_timeline.items() 
+                str(date): len(errors)
+                for date, errors in self.error_timeline.items()
                 if date >= cutoff_date
             },
             'top_error_users': dict(
@@ -823,11 +828,11 @@ def analytics_http_error(
     exc: BaseException = None
 ) -> None:
     """HTTP error with analytics recording."""
-    
+
     # Record for analytics
     if extra:
         error_analytics.record_error(extra, status_code, detail)
-    
+
     # Standard error handling
     http_error(status_code, detail, logger_func, extra, exc)
 ```
@@ -846,99 +851,99 @@ from fastapi import HTTPException
 
 class TestHTTPError:
     """Test suite for HTTP error utilities."""
-    
+
     def test_basic_http_error(self):
         """Test basic HTTP error functionality."""
-        
+
         with pytest.raises(HTTPException) as exc_info:
             http_error(
                 status_code=404,
                 detail="Resource not found"
             )
-        
+
         assert exc_info.value.status_code == 404
         assert exc_info.value.detail == "Resource not found"
-    
+
     def test_http_error_with_extra_info(self):
         """Test HTTP error with extra logging information."""
-        
+
         extra = ExtraLogInfo(
             user_id=123,
             action="get",
             error_code=4041
         )
-        
+
         with pytest.raises(HTTPException) as exc_info:
             http_error(
                 status_code=404,
                 detail="User not found",
                 extra=extra
             )
-        
+
         assert exc_info.value.status_code == 404
         assert exc_info.value.detail == "User not found"
-    
+
     def test_http_error_with_exception_chaining(self):
         """Test HTTP error with exception chaining."""
-        
+
         original_exception = ValueError("Database connection failed")
-        
+
         with pytest.raises(HTTPException) as exc_info:
             http_error(
                 status_code=500,
                 detail="Internal server error",
                 exc=original_exception
             )
-        
+
         assert exc_info.value.status_code == 500
         assert exc_info.value.__cause__ == original_exception
-    
+
     @patch('src.utils.http_error.logger')
     def test_logging_integration(self, mock_logger):
         """Test that errors are properly logged."""
-        
+
         extra = ExtraLogInfo(
             user_id=123,
             action="update",
             error_code=4221
         )
-        
+
         with pytest.raises(HTTPException):
             http_error(
                 status_code=422,
                 detail="Validation failed",
                 extra=extra
             )
-        
+
         # Verify logging was called
         mock_logger.error.assert_called_once()
-    
+
     def test_custom_logger_function(self):
         """Test HTTP error with custom logger function."""
-        
+
         mock_logger = Mock()
-        
+
         with pytest.raises(HTTPException):
             http_error(
                 status_code=400,
                 detail="Bad request",
                 logger_func=mock_logger
             )
-        
+
         # Verify custom logger was used
         mock_logger.assert_called_once_with("Bad request")
-    
+
     def test_logger_fallback(self):
         """Test fallback behavior when logger doesn't support extra."""
-        
+
         def simple_logger(message: str):
             # Logger that doesn't accept extra parameter
             pass
-        
+
         mock_simple_logger = Mock(side_effect=simple_logger)
-        
+
         extra = ExtraLogInfo(user_id=123)
-        
+
         with pytest.raises(HTTPException):
             http_error(
                 status_code=500,
@@ -946,7 +951,7 @@ class TestHTTPError:
                 logger_func=mock_simple_logger,
                 extra=extra
             )
-        
+
         # Should handle the TypeError and fall back
         mock_simple_logger.assert_called()
 ```

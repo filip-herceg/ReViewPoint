@@ -21,13 +21,13 @@ from sqlalchemy.orm import Session, sessionmaker
 def _validate_sync_engine(engine: Engine | AsyncEngine | None) -> Engine:
     """
     Helper function to validate and return a sync engine.
-    
+
     Args:
         engine: SQLAlchemy engine instance to validate
-        
+
     Returns:
         Validated synchronous Engine instance
-        
+
     Raises:
         RuntimeError: If engine is None or is an AsyncEngine
     """
@@ -47,26 +47,26 @@ def _validate_sync_engine(engine: Engine | AsyncEngine | None) -> Engine:
 
 #### Synchronous Session Factory Creation
 
-```python
+````python
 def get_sync_session_factory() -> sessionmaker[Session]:
     """
     Returns a sessionmaker for synchronous SQLAlchemy engines.
-    
+
     This function creates a session factory configured for synchronous
     database operations. It validates that the configured engine is
     synchronous and raises appropriate errors if misconfigured.
-    
+
     Returns:
         sessionmaker[Session]: Configured session factory for sync operations
-        
+
     Raises:
         RuntimeError: If the engine is not a synchronous Engine or not configured
-        
+
     Example:
         ```python
         # Get session factory
         SessionLocal = get_sync_session_factory()
-        
+
         # Create session
         session = SessionLocal()
         try:
@@ -83,35 +83,35 @@ def get_sync_session_factory() -> sessionmaker[Session]:
 
     # Create and return sessionmaker
     return sessionmaker(bind=sync_engine)
-```
+````
 
 ### Session Context Management
 
 #### Session Lifecycle Management
 
-```python
+````python
 def get_session() -> Generator[Session, None, None]:
     """
     Yields a SQLAlchemy Session object with automatic cleanup.
-    
+
     This function provides a context-managed session that automatically
     closes after use, ensuring proper resource cleanup. It's designed
     for use with dependency injection or context managers.
-    
+
     Yields:
         Session: The SQLAlchemy session object for database operations
-        
+
     Raises:
         Exception: Any exception raised during session usage is propagated
         RuntimeError: If SessionLocal is not initialized or engine is not sync
-        
+
     Example:
         ```python
         # Using as generator
         for session in get_session():
             users = session.query(User).all()
             break  # Session automatically closed
-        
+
         # Using with dependency injection
         def process_users(session: Session = Depends(get_session)):
             return session.query(User).all()
@@ -123,13 +123,13 @@ def get_session() -> Generator[Session, None, None]:
         yield db
     finally:
         db.close()
-```
+````
 
 ### Advanced Session Management
 
 #### Enhanced Session Utilities
 
-```python
+````python
 from typing import Optional, Any, Dict, Callable, TypeVar, Generic
 from contextlib import contextmanager
 from sqlalchemy.exc import SQLAlchemyError
@@ -141,36 +141,36 @@ T = TypeVar('T')
 
 class SyncDatabaseManager:
     """Enhanced synchronous database session management"""
-    
+
     def __init__(self, engine: Optional[Engine] = None):
         """
         Initialize database manager.
-        
+
         Args:
             engine: Optional SQLAlchemy engine. If None, uses global engine.
         """
         if engine is None:
             from src.core.database import engine as global_engine
             engine = global_engine
-            
+
         self.engine = _validate_sync_engine(engine)
         self.SessionLocal = sessionmaker(bind=self.engine)
-        
+
     @contextmanager
     def session_scope(self):
         """
         Provide a transactional scope around a series of operations.
-        
+
         This context manager handles session creation, transaction management,
         and cleanup automatically. It commits on success and rolls back on error.
-        
+
         Yields:
             Session: Database session within transaction scope
-            
+
         Example:
             ```python
             manager = SyncDatabaseManager()
-            
+
             with manager.session_scope() as session:
                 user = User(name="John Doe", email="john@example.com")
                 session.add(user)
@@ -186,49 +186,49 @@ class SyncDatabaseManager:
             raise
         finally:
             session.close()
-    
+
     def execute_with_session(self, operation: Callable[[Session], T]) -> T:
         """
         Execute an operation with a managed session.
-        
+
         Args:
             operation: Function that takes a session and returns a result
-            
+
         Returns:
             Result of the operation
-            
+
         Example:
             ```python
             def get_user_count(session: Session) -> int:
                 return session.query(User).count()
-            
+
             manager = SyncDatabaseManager()
             count = manager.execute_with_session(get_user_count)
             ```
         """
         with self.session_scope() as session:
             return operation(session)
-    
+
     def bulk_execute(
-        self, 
+        self,
         operations: list[Callable[[Session], Any]],
         stop_on_error: bool = True
     ) -> list[Any]:
         """
         Execute multiple operations in a single transaction.
-        
+
         Args:
             operations: List of functions that take a session
             stop_on_error: Whether to stop on first error
-            
+
         Returns:
             List of operation results
-            
+
         Raises:
             SQLAlchemyError: If any operation fails and stop_on_error is True
         """
         results = []
-        
+
         with self.session_scope() as session:
             for i, operation in enumerate(operations):
                 try:
@@ -236,18 +236,18 @@ class SyncDatabaseManager:
                     results.append(result)
                 except Exception as e:
                     logger.error(f"Operation {i} failed: {e}")
-                    
+
                     if stop_on_error:
                         raise
                     else:
                         results.append(None)
-        
+
         return results
-    
+
     def health_check(self) -> Dict[str, Any]:
         """
         Perform database health check.
-        
+
         Returns:
             Health check results including connectivity and basic metrics
         """
@@ -255,7 +255,7 @@ class SyncDatabaseManager:
             with self.session_scope() as session:
                 # Test basic connectivity
                 result = session.execute("SELECT 1 as test").fetchone()
-                
+
                 if result and result[0] == 1:
                     return {
                         "status": "healthy",
@@ -271,7 +271,7 @@ class SyncDatabaseManager:
                         "status": "unhealthy",
                         "error": "Failed to execute test query"
                     }
-                    
+
         except Exception as e:
             return {
                 "status": "unhealthy",
@@ -284,22 +284,22 @@ _database_manager: Optional[SyncDatabaseManager] = None
 def get_database_manager() -> SyncDatabaseManager:
     """
     Get or create the global database manager instance.
-    
+
     Returns:
         Configured SyncDatabaseManager instance
     """
     global _database_manager
-    
+
     if _database_manager is None:
         _database_manager = SyncDatabaseManager()
-    
+
     return _database_manager
 
 def reset_database_manager() -> None:
     """Reset the global database manager (useful for testing)"""
     global _database_manager
     _database_manager = None
-```
+````
 
 ### Repository Pattern Support
 
@@ -315,18 +315,18 @@ T = TypeVar('T')
 
 class SyncBaseRepository(Generic[T], ABC):
     """Base repository class for synchronous database operations"""
-    
+
     def __init__(self, model_class: Type[T], session_factory: sessionmaker[Session]):
         """
         Initialize repository with model class and session factory.
-        
+
         Args:
             model_class: SQLAlchemy model class
             session_factory: Session factory for database operations
         """
         self.model_class = model_class
         self.session_factory = session_factory
-    
+
     @contextmanager
     def _get_session(self):
         """Get session with automatic cleanup"""
@@ -339,14 +339,14 @@ class SyncBaseRepository(Generic[T], ABC):
             raise
         finally:
             session.close()
-    
+
     def create(self, **kwargs) -> T:
         """
         Create new entity.
-        
+
         Args:
             **kwargs: Entity attributes
-            
+
         Returns:
             Created entity instance
         """
@@ -356,103 +356,103 @@ class SyncBaseRepository(Generic[T], ABC):
             session.flush()
             session.refresh(entity)
             return entity
-    
+
     def get_by_id(self, entity_id: Any) -> Optional[T]:
         """
         Get entity by ID.
-        
+
         Args:
             entity_id: Entity identifier
-            
+
         Returns:
             Entity instance or None if not found
         """
         with self._get_session() as session:
             return session.query(self.model_class).get(entity_id)
-    
+
     def get_all(self, limit: Optional[int] = None, offset: int = 0) -> List[T]:
         """
         Get all entities with optional pagination.
-        
+
         Args:
             limit: Maximum number of entities to return
             offset: Number of entities to skip
-            
+
         Returns:
             List of entity instances
         """
         with self._get_session() as session:
             query = session.query(self.model_class)
-            
+
             if offset > 0:
                 query = query.offset(offset)
-            
+
             if limit is not None:
                 query = query.limit(limit)
-            
+
             return query.all()
-    
+
     def update(self, entity_id: Any, **kwargs) -> Optional[T]:
         """
         Update entity by ID.
-        
+
         Args:
             entity_id: Entity identifier
             **kwargs: Updated attributes
-            
+
         Returns:
             Updated entity instance or None if not found
         """
         with self._get_session() as session:
             entity = session.query(self.model_class).get(entity_id)
-            
+
             if entity is None:
                 return None
-            
+
             for key, value in kwargs.items():
                 if hasattr(entity, key):
                     setattr(entity, key, value)
-            
+
             session.flush()
             session.refresh(entity)
             return entity
-    
+
     def delete(self, entity_id: Any) -> bool:
         """
         Delete entity by ID.
-        
+
         Args:
             entity_id: Entity identifier
-            
+
         Returns:
             True if entity was deleted, False if not found
         """
         with self._get_session() as session:
             entity = session.query(self.model_class).get(entity_id)
-            
+
             if entity is None:
                 return False
-            
+
             session.delete(entity)
             return True
-    
+
     def count(self) -> int:
         """
         Count total number of entities.
-        
+
         Returns:
             Total entity count
         """
         with self._get_session() as session:
             return session.query(self.model_class).count()
-    
+
     def exists(self, entity_id: Any) -> bool:
         """
         Check if entity exists by ID.
-        
+
         Args:
             entity_id: Entity identifier
-            
+
         Returns:
             True if entity exists, False otherwise
         """
@@ -460,34 +460,34 @@ class SyncBaseRepository(Generic[T], ABC):
             return session.query(self.model_class).filter(
                 self.model_class.id == entity_id
             ).first() is not None
-    
+
     def find_by(self, **criteria) -> List[T]:
         """
         Find entities by criteria.
-        
+
         Args:
             **criteria: Search criteria as keyword arguments
-            
+
         Returns:
             List of matching entities
         """
         with self._get_session() as session:
             query = session.query(self.model_class)
-            
+
             for key, value in criteria.items():
                 if hasattr(self.model_class, key):
                     column = getattr(self.model_class, key)
                     query = query.filter(column == value)
-            
+
             return query.all()
-    
+
     def find_one_by(self, **criteria) -> Optional[T]:
         """
         Find single entity by criteria.
-        
+
         Args:
             **criteria: Search criteria as keyword arguments
-            
+
         Returns:
             First matching entity or None
         """
@@ -496,35 +496,35 @@ class SyncBaseRepository(Generic[T], ABC):
 
 class SyncRepositoryFactory:
     """Factory for creating repository instances"""
-    
+
     def __init__(self, session_factory: sessionmaker[Session]):
         """
         Initialize factory with session factory.
-        
+
         Args:
             session_factory: SQLAlchemy session factory
         """
         self.session_factory = session_factory
         self._repositories: Dict[Type, SyncBaseRepository] = {}
-    
+
     def get_repository(self, model_class: Type[T]) -> SyncBaseRepository[T]:
         """
         Get or create repository for model class.
-        
+
         Args:
             model_class: SQLAlchemy model class
-            
+
         Returns:
             Repository instance for the model class
         """
         if model_class not in self._repositories:
             self._repositories[model_class] = SyncBaseRepository(
-                model_class, 
+                model_class,
                 self.session_factory
             )
-        
+
         return self._repositories[model_class]
-    
+
     def clear_cache(self) -> None:
         """Clear repository cache"""
         self._repositories.clear()
@@ -535,25 +535,25 @@ _repository_factory: Optional[SyncRepositoryFactory] = None
 def get_repository_factory() -> SyncRepositoryFactory:
     """
     Get or create the global repository factory.
-    
+
     Returns:
         Configured SyncRepositoryFactory instance
     """
     global _repository_factory
-    
+
     if _repository_factory is None:
         session_factory = get_sync_session_factory()
         _repository_factory = SyncRepositoryFactory(session_factory)
-    
+
     return _repository_factory
 
 def get_repository(model_class: Type[T]) -> SyncBaseRepository[T]:
     """
     Get repository for model class.
-    
+
     Args:
         model_class: SQLAlchemy model class
-        
+
     Returns:
         Repository instance for the model class
     """
@@ -573,11 +573,11 @@ import os
 
 class SyncDatabaseMigrator:
     """Synchronous database migration utilities"""
-    
+
     def __init__(self, alembic_config_path: Optional[str] = None):
         """
         Initialize migrator with Alembic configuration.
-        
+
         Args:
             alembic_config_path: Path to alembic.ini file
         """
@@ -588,27 +588,27 @@ class SyncDatabaseMigrator:
                 "backend/alembic.ini",
                 "../alembic.ini"
             ]
-            
+
             for path in possible_paths:
                 if Path(path).exists():
                     alembic_config_path = path
                     break
-            
+
             if alembic_config_path is None:
                 raise RuntimeError("Could not find alembic.ini configuration file")
-        
+
         self.config = Config(alembic_config_path)
-        
+
         # Set SQLAlchemy URL if not already set
         if not self.config.get_main_option("sqlalchemy.url"):
             from src.core.database import engine
             sync_engine = _validate_sync_engine(engine)
             self.config.set_main_option("sqlalchemy.url", str(sync_engine.url))
-    
+
     def upgrade_to_head(self) -> None:
         """
         Upgrade database to the latest migration.
-        
+
         Raises:
             Exception: If migration fails
         """
@@ -618,14 +618,14 @@ class SyncDatabaseMigrator:
         except Exception as e:
             logger.error(f"Database upgrade failed: {e}")
             raise
-    
+
     def downgrade_by_steps(self, steps: int = 1) -> None:
         """
         Downgrade database by specified number of steps.
-        
+
         Args:
             steps: Number of migration steps to downgrade
-            
+
         Raises:
             Exception: If migration fails
         """
@@ -636,76 +636,76 @@ class SyncDatabaseMigrator:
         except Exception as e:
             logger.error(f"Database downgrade failed: {e}")
             raise
-    
+
     def create_migration(
-        self, 
-        message: str, 
+        self,
+        message: str,
         autogenerate: bool = True
     ) -> str:
         """
         Create new migration file.
-        
+
         Args:
             message: Migration message/description
             autogenerate: Whether to auto-generate migration content
-            
+
         Returns:
             Generated migration revision ID
-            
+
         Raises:
             Exception: If migration creation fails
         """
         try:
             if autogenerate:
                 revision = command.revision(
-                    self.config, 
-                    message=message, 
+                    self.config,
+                    message=message,
                     autogenerate=True
                 )
             else:
                 revision = command.revision(self.config, message=message)
-                
+
             logger.info(f"Migration created: {revision}")
             return revision
         except Exception as e:
             logger.error(f"Migration creation failed: {e}")
             raise
-    
+
     def get_current_revision(self) -> Optional[str]:
         """
         Get current database revision.
-        
+
         Returns:
             Current revision ID or None if no migrations applied
         """
         try:
             from alembic.runtime.migration import MigrationContext
             from src.core.database import engine
-            
+
             sync_engine = _validate_sync_engine(engine)
-            
+
             with sync_engine.connect() as connection:
                 context = MigrationContext.configure(connection)
                 return context.get_current_revision()
         except Exception as e:
             logger.error(f"Failed to get current revision: {e}")
             return None
-    
+
     def check_migration_status(self) -> Dict[str, Any]:
         """
         Check database migration status.
-        
+
         Returns:
             Migration status information
         """
         try:
             current_revision = self.get_current_revision()
-            
+
             # Get head revision
             from alembic.script import ScriptDirectory
             script = ScriptDirectory.from_config(self.config)
             head_revision = script.get_current_head()
-            
+
             return {
                 "current_revision": current_revision,
                 "head_revision": head_revision,
@@ -722,7 +722,7 @@ class SyncDatabaseMigrator:
 def get_migrator() -> SyncDatabaseMigrator:
     """
     Get database migrator instance.
-    
+
     Returns:
         Configured SyncDatabaseMigrator instance
     """
@@ -740,22 +740,22 @@ from typing import Generator, Any
 
 class TestDatabaseManager:
     """Database manager for testing with isolation"""
-    
+
     def __init__(self, test_engine: Engine):
         """
         Initialize test database manager.
-        
+
         Args:
             test_engine: SQLAlchemy engine for testing (usually in-memory)
         """
         self.engine = test_engine
         self.SessionLocal = sessionmaker(bind=test_engine)
-    
+
     @contextmanager
     def isolated_session(self):
         """
         Create isolated session for testing.
-        
+
         Each test gets a fresh session with automatic rollback.
         """
         session = self.SessionLocal()
@@ -765,15 +765,15 @@ class TestDatabaseManager:
         finally:
             transaction.rollback()
             session.close()
-    
+
     def create_test_data(self, model_class: Type[T], **kwargs) -> T:
         """
         Create test data instance.
-        
+
         Args:
             model_class: Model class to create
             **kwargs: Model attributes
-            
+
         Returns:
             Created test instance
         """
@@ -783,11 +783,11 @@ class TestDatabaseManager:
             session.flush()
             session.refresh(instance)
             return instance
-    
+
     def cleanup_test_data(self, model_class: Type[T]) -> None:
         """
         Clean up test data for model class.
-        
+
         Args:
             model_class: Model class to clean up
         """
@@ -805,60 +805,60 @@ def test_database_manager() -> TestDatabaseManager:
     """Pytest fixture for test database manager"""
     from sqlalchemy import create_engine
     from src.models.base import Base
-    
+
     # Create in-memory test database
     test_engine = create_engine("sqlite:///:memory:", echo=False)
-    
+
     # Create all tables
     Base.metadata.create_all(test_engine)
-    
+
     return TestDatabaseManager(test_engine)
 
 # Usage example in tests
 def test_user_creation(test_database_manager):
     """Example test using test database manager"""
     from src.models.user import User
-    
+
     # Create test user
     user = test_database_manager.create_test_data(
         User,
         email="test@example.com",
         name="Test User"
     )
-    
+
     assert user.id is not None
     assert user.email == "test@example.com"
-    
+
     # Cleanup happens automatically
 
 def test_repository_pattern():
     """Example test for repository pattern"""
     from src.models.user import User
-    
+
     # Get repository
     user_repo = get_repository(User)
-    
+
     # Test create
     user = user_repo.create(
         email="test@example.com",
         name="Test User"
     )
-    
+
     assert user.id is not None
-    
+
     # Test get by id
     retrieved_user = user_repo.get_by_id(user.id)
     assert retrieved_user is not None
     assert retrieved_user.email == "test@example.com"
-    
+
     # Test update
     updated_user = user_repo.update(user.id, name="Updated Name")
     assert updated_user.name == "Updated Name"
-    
+
     # Test delete
     deleted = user_repo.delete(user.id)
     assert deleted is True
-    
+
     # Verify deletion
     assert user_repo.get_by_id(user.id) is None
 ```

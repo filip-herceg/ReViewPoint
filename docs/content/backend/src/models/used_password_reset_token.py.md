@@ -9,6 +9,7 @@ The used password reset token model provides comprehensive security for password
 ### UsedPasswordResetToken Entity
 
 **`UsedPasswordResetToken`** class inheriting from `BaseModel`:
+
 - Email and nonce tracking for password reset operations
 - Timezone-aware timestamp management with UTC enforcement
 - Comprehensive validation for email and nonce fields
@@ -17,11 +18,13 @@ The used password reset token model provides comprehensive security for password
 ### Core Attributes
 
 #### Password Reset Tracking
+
 - `email` - User email address with database index
 - `nonce` - Unique password reset token nonce with index
 - `used_at` - Timezone-aware timestamp of token usage
 
 #### Inherited Attributes
+
 - `id` - Primary key from BaseModel
 - `created_at` - Record creation timestamp
 - `updated_at` - Last modification timestamp
@@ -37,6 +40,7 @@ __tablename__ = "used_password_reset_tokens"
 ### Column Definitions
 
 #### Token Tracking Fields
+
 ```python
 email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
 nonce: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
@@ -46,6 +50,7 @@ used_at: Mapped[datetime] = mapped_column(
 ```
 
 **Performance Features:**
+
 - **Email Index**: Fast lookup by user email for token validation
 - **Nonce Index**: Efficient nonce verification during reset operations
 - **Timezone Storage**: UTC-based datetime storage for consistency
@@ -77,6 +82,7 @@ def _validate_used_at(self, key: str, value: datetime | None) -> datetime:
 ```
 
 **Security Features:**
+
 - **Non-null Enforcement**: used_at cannot be None for security audit
 - **Timezone Conversion**: Naive datetimes automatically converted to UTC
 - **Consistency Guarantee**: All timestamps stored in UTC timezone
@@ -114,6 +120,7 @@ def validate_not_empty(self, key: str, value: str) -> str:
 ```
 
 **Validation Features:**
+
 - **Type Checking**: Ensures string types for key and value
 - **Empty String Prevention**: Rejects empty or whitespace-only values
 - **Field-Specific Errors**: Clear error messages identifying the field
@@ -134,6 +141,7 @@ def __init__(self, *args: object, **kwargs: object) -> None:
 ```
 
 **Initialization Features:**
+
 - **Timezone Conversion**: Naive datetimes converted during creation
 - **Kwargs Processing**: Safe handling of used_at parameter
 - **Parent Initialization**: Proper BaseModel initialization chain
@@ -165,6 +173,7 @@ Password reset security workflow:
 ### Database Indexing
 
 Strategic indexing for password reset operations:
+
 - **Email Index**: Fast lookup by user email during reset
 - **Nonce Index**: Efficient nonce verification to prevent reuse
 - **Composite Queries**: Efficient email + nonce combination queries
@@ -173,6 +182,7 @@ Strategic indexing for password reset operations:
 ### Query Patterns
 
 Common password reset query optimizations:
+
 - **Token Existence Check**: Index-based nonce verification
 - **User Reset History**: Email-based reset history queries
 - **Cleanup Operations**: Timestamp-based expired token removal
@@ -183,6 +193,7 @@ Common password reset query optimizations:
 ### Validation Errors
 
 Comprehensive error handling for security validation:
+
 - **Empty Field Errors**: Clear messages for missing email/nonce
 - **Type Errors**: Type validation for all input parameters
 - **Timezone Errors**: Used_at cannot be None validation
@@ -191,6 +202,7 @@ Comprehensive error handling for security validation:
 ### Database Constraints
 
 Model-level constraint handling:
+
 - **Index Violations**: Efficient handling of duplicate attempts
 - **Non-null Constraints**: Required field validation
 - **Type Constraints**: String length and type enforcement
@@ -201,6 +213,7 @@ Model-level constraint handling:
 ### Audit Trail Support
 
 The model provides comprehensive audit capabilities:
+
 - **Usage Tracking**: When each password reset token was used
 - **Email Patterns**: Reset attempt patterns by email address
 - **Nonce Analysis**: Token generation and usage correlation
@@ -209,6 +222,7 @@ The model provides comprehensive audit capabilities:
 ### Attack Detection
 
 Security monitoring through model data:
+
 - **Replay Attempts**: Detection of token reuse attempts
 - **Frequency Analysis**: Unusual reset pattern identification
 - **Time-based Attacks**: Timing attack detection through timestamps
@@ -219,6 +233,7 @@ Security monitoring through model data:
 ### Test-Friendly Design
 
 The model supports comprehensive security testing:
+
 - **Timezone Testing**: Multiple timezone scenario validation
 - **Validation Testing**: Comprehensive field validation coverage
 - **Edge Case Testing**: Empty string and None value handling
@@ -236,7 +251,7 @@ used_token = UsedPasswordResetToken(
 # Test timezone handling
 naive_datetime = datetime(2024, 1, 1, 12, 0, 0)
 used_token = UsedPasswordResetToken(
-    email="user@example.com", 
+    email="user@example.com",
     nonce="nonce",
     used_at=naive_datetime
 )
@@ -252,6 +267,7 @@ with pytest.raises(ValueError):
 ### Repository Layer
 
 Used password reset token repository provides:
+
 - **Creation Operations**: Recording used tokens after successful reset
 - **Lookup Operations**: Checking if nonce already used
 - **Cleanup Operations**: Removing old used tokens
@@ -260,6 +276,7 @@ Used password reset token repository provides:
 ### Security Service Integration
 
 Password reset services leverage the model:
+
 - **Token Validation**: Checking nonce usage before reset
 - **Usage Recording**: Creating records after successful reset
 - **Security Monitoring**: Analyzing reset patterns
@@ -278,6 +295,7 @@ def __repr__(self: "UsedPasswordResetToken") -> str:
 ```
 
 **Features:**
+
 - **Email Display**: User identification for debugging
 - **Nonce Display**: Token identification for analysis
 - **Timestamp Display**: Usage time for security investigation

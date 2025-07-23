@@ -37,15 +37,18 @@ return {"file": file_metadata.model_dump()}
 **Field Specifications:**
 
 **Primary Identification:**
+
 - `id: int` - Unique file identifier (primary key)
 - `filename: str` - Stored filename (max 255 characters)
 - `user_id: int` - Owner user ID (foreign key relationship)
 
 **File Metadata:**
+
 - `content_type: str` - MIME type specification (max 128 characters)
 - `created_at: datetime` - File creation timestamp
 
 **Field Documentation:**
+
 ```python
 id: int = Field(..., description="Unique identifier for the file")
 filename: str = Field(..., max_length=255, description="Name of the file")
@@ -59,6 +62,7 @@ created_at: datetime = Field(..., description="Timestamp when the file was creat
 ### Field Constraints
 
 **Filename Validation:**
+
 ```python
 filename: str = Field(..., max_length=255, description="Name of the file")
 ```
@@ -69,6 +73,7 @@ filename: str = Field(..., max_length=255, description="Name of the file")
 - **Cross-Platform**: Works with all major filesystems
 
 **Content Type Validation:**
+
 ```python
 content_type: str = Field(..., max_length=128, description="MIME type of the file")
 ```
@@ -79,6 +84,7 @@ content_type: str = Field(..., max_length=128, description="MIME type of the fil
 - **Security**: Enables proper content handling and validation
 
 **User Ownership:**
+
 ```python
 user_id: int = Field(..., description="ID of the user who owns the file")
 ```
@@ -91,6 +97,7 @@ user_id: int = Field(..., description="ID of the user who owns the file")
 ### Configuration Features
 
 **ORM Integration:**
+
 ```python
 model_config = ConfigDict(from_attributes=True)
 ```
@@ -108,7 +115,7 @@ model_config = ConfigDict(from_attributes=True)
 async def upload_file_endpoint(file: UploadFile, current_user: User):
     # Process file upload
     uploaded_file = await upload_service.upload_file(file, current_user.id)
-    
+
     # Convert to schema for response
     file_response = FileSchema(
         id=uploaded_file.id,
@@ -117,7 +124,7 @@ async def upload_file_endpoint(file: UploadFile, current_user: User):
         user_id=uploaded_file.user_id,
         created_at=uploaded_file.created_at
     )
-    
+
     return {"message": "File uploaded successfully", "file": file_response}
 ```
 
@@ -131,7 +138,7 @@ async def list_user_files(user_id: int, page: int = 1, per_page: int = 20):
         offset=(page - 1) * per_page,
         limit=per_page
     )
-    
+
     # Convert to schemas
     file_schemas = [
         FileSchema(
@@ -143,7 +150,7 @@ async def list_user_files(user_id: int, page: int = 1, per_page: int = 20):
         )
         for file in files
     ]
-    
+
     return {
         "files": file_schemas,
         "pagination": {
@@ -161,14 +168,14 @@ async def list_user_files(user_id: int, page: int = 1, per_page: int = 20):
 async def get_file_metadata(filename: str, current_user: User):
     # Retrieve file from repository
     file_record = await file_repository.get_file_by_filename(filename)
-    
+
     if not file_record:
         raise HTTPException(status_code=404, detail="File not found")
-    
+
     # Check ownership
     if file_record.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Access denied")
-    
+
     # Return validated schema
     return FileSchema(
         id=file_record.id,
@@ -200,12 +207,14 @@ def convert_file_models_to_schemas(file_models: list[File]) -> list[FileSchema]:
 ### Data Validation
 
 **Input Sanitization:**
+
 - Field length limits prevent buffer overflow attacks
 - Required field validation prevents null pointer issues
 - Type validation ensures data integrity
 - MIME type validation enables security checks
 
 **Access Control Support:**
+
 - User ID field enables ownership verification
 - File ID provides unique resource identification
 - Created timestamp supports audit trails
@@ -214,12 +223,14 @@ def convert_file_models_to_schemas(file_models: list[File]) -> list[FileSchema]:
 ### Privacy Protection
 
 **Metadata Security:**
+
 - Only essential metadata exposed in schema
 - No sensitive file content in metadata
 - User ownership clearly identified
 - Timestamps support compliance requirements
 
 **API Security:**
+
 - Schema validation prevents injection attacks
 - Field constraints limit resource consumption
 - Type safety prevents data corruption
@@ -230,6 +241,7 @@ def convert_file_models_to_schemas(file_models: list[File]) -> list[FileSchema]:
 ### Serialization Optimization
 
 **Efficient Conversion:**
+
 ```python
 # Fast ORM to schema conversion
 file_schema = FileSchema.model_validate(file_orm_object)
@@ -239,6 +251,7 @@ file_schemas = [FileSchema.model_validate(f) for f in file_list]
 ```
 
 **Memory Management:**
+
 - Minimal memory footprint with only essential fields
 - Efficient datetime handling
 - String field length optimization
@@ -247,6 +260,7 @@ file_schemas = [FileSchema.model_validate(f) for f in file_list]
 ### Database Integration
 
 **Query Optimization:**
+
 - Schema aligns with database indexes
 - Efficient foreign key relationships
 - Minimal data transfer requirements
@@ -265,10 +279,10 @@ except ValidationError as e:
     for error in e.errors():
         field = error["loc"][-1]
         error_type = error["type"]
-        
+
         if field == "filename" and "max_length" in error_type:
             raise HTTPException(
-                status_code=400, 
+                status_code=400,
                 detail="Filename too long (maximum 255 characters)"
             )
         elif field == "content_type" and "max_length" in error_type:
@@ -336,7 +350,7 @@ def test_file_schema_creation():
         "user_id": 123,
         "created_at": datetime(2024, 1, 1, 12, 0, 0)
     }
-    
+
     file_schema = FileSchema(**file_data)
     assert file_schema.id == 1
     assert file_schema.filename == "test.pdf"
@@ -353,7 +367,7 @@ def test_file_schema_validation():
             user_id=123,
             created_at=datetime.now()
         )
-    
+
     # Test content type length constraint
     with pytest.raises(ValidationError):
         FileSchema(
@@ -371,7 +385,7 @@ def test_file_schema_validation():
 def test_orm_to_schema_conversion():
     # Test conversion from ORM model
     from src.models.file import File
-    
+
     # Create mock ORM object
     file_orm = File(
         id=1,
@@ -380,10 +394,10 @@ def test_orm_to_schema_conversion():
         user_id=123,
         created_at=datetime(2024, 1, 1, 12, 0, 0)
     )
-    
+
     # Convert to schema
     file_schema = FileSchema.model_validate(file_orm)
-    
+
     # Verify conversion
     assert file_schema.id == file_orm.id
     assert file_schema.filename == file_orm.filename
@@ -402,13 +416,13 @@ async def test_file_upload_response_schema():
         "content_type": "application/pdf",
         "user_id": 123
     }
-    
+
     # Simulate file upload
     uploaded_file = await upload_file_service(upload_data)
-    
+
     # Convert to schema
     file_response = FileSchema.model_validate(uploaded_file)
-    
+
     # Verify response structure
     assert isinstance(file_response.id, int)
     assert file_response.filename == "integration_test.pdf"
@@ -466,7 +480,7 @@ REQUIRED_FIELDS = ["id", "filename", "content_type", "user_id", "created_at"]
 # Common supported MIME types
 SUPPORTED_MIME_TYPES = [
     "application/pdf",
-    "application/msword", 
+    "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "text/plain",
     "image/jpeg",

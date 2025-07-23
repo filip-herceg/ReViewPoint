@@ -9,6 +9,7 @@ The http_error module provides a centralized utility for handling HTTP errors wi
 ### Core Function
 
 **`http_error()`** - Centralized HTTP error handler with logging
+
 - Raises HTTPException with automatic logging integration
 - Supports custom logging functions and extra metadata
 - Provides exception chaining for better error traceability
@@ -17,12 +18,14 @@ The http_error module provides a centralized utility for handling HTTP errors wi
 ### Type Definitions
 
 **`ExtraLogInfo`** - TypedDict for structured logging metadata
+
 - Supports user_id, request_id, action, error_code fields
 - Extensible design for additional context information
 - Uses Literal types for action enumeration (login, logout, create, update, delete)
 - Total=False allows partial information in log entries
 
 **`DEFAULT_LOGGER_FUNC`** - Standard logging function reference
+
 - Uses loguru.logger.error as the default logging mechanism
 - Provides consistent logging behavior across the application
 - Can be overridden for specific use cases or testing
@@ -42,6 +45,7 @@ def http_error(
 ## Usage Patterns
 
 ### Basic Error Handling
+
 ```python
 # Simple HTTP error with automatic logging
 http_error(404, "User not found")
@@ -51,6 +55,7 @@ http_error(403, "Insufficient permissions")
 ```
 
 ### Enhanced Error Context
+
 ```python
 # Error with structured logging metadata
 http_error(
@@ -65,6 +70,7 @@ http_error(
 ```
 
 ### Exception Chaining
+
 ```python
 # Chain original exception for debugging
 try:
@@ -80,12 +86,14 @@ except ValueError as e:
 ## Error Handling Strategy
 
 ### Logging Behavior
+
 - **Structured Logging**: Attempts loguru-style extra parameter logging first
 - **Fallback Logging**: Falls back to string concatenation if structured logging fails
 - **Flexible Integration**: Accepts custom logger functions for testing or special cases
 - **Context Preservation**: Maintains original exception context through chaining
 
 ### Exception Flow
+
 1. Log error details with provided or default logger function
 2. Include structured metadata when available
 3. Raise HTTPException with specified status code and detail message
@@ -94,12 +102,14 @@ except ValueError as e:
 ## Integration Points
 
 ### API Layer Integration
+
 - Used by all API endpoints for consistent error responses
 - Integrates with FastAPI's exception handling system
 - Provides automatic HTTP status code mapping
 - Maintains request context through structured logging
 
 ### Middleware Integration
+
 - Referenced by logging middleware for error tracking
 - Supports request ID correlation for distributed tracing
 - Enables user action tracking for security monitoring
@@ -108,12 +118,14 @@ except ValueError as e:
 ## Security Considerations
 
 ### Information Disclosure
+
 - Error details are sanitized for external consumption
 - Internal error context is preserved in logs only
 - User-specific information is tracked but not exposed in responses
 - Exception chaining maintains debugging context internally
 
 ### Audit Trail
+
 - All HTTP errors are automatically logged with context
 - User actions are tracked for security monitoring
 - Request correlation enables attack pattern detection
@@ -122,12 +134,14 @@ except ValueError as e:
 ## Performance Characteristics
 
 ### Logging Efficiency
+
 - Lazy evaluation of extra information to minimize overhead
 - Efficient fallback mechanism for unsupported logging formats
 - Minimal string formatting for performance-critical paths
 - Optimized for high-frequency error scenarios
 
 ### Memory Management
+
 - No persistent state maintained between calls
 - Automatic cleanup of logging context
 - Efficient TypedDict usage for metadata structures
@@ -136,12 +150,14 @@ except ValueError as e:
 ## Testing Considerations
 
 ### Mock Integration
+
 - Supports custom logger functions for testing isolation
 - Predictable exception raising behavior for test assertions
 - Structured metadata enables test verification of log content
 - Exception chaining allows verification of error causes
 
 ### Error Simulation
+
 - Consistent error format enables automated testing
 - Supports both positive and negative test cases
 - Enables integration testing of error handling workflows
@@ -158,12 +174,14 @@ except ValueError as e:
 ## Future Enhancements
 
 ### Advanced Features
+
 - Automatic error categorization and classification
 - Integration with external monitoring and alerting systems
 - Rate limiting for error logging to prevent log flooding
 - Custom error templates for different error types
 
 ### Monitoring Integration
+
 - Metrics collection for error frequency and patterns
 - Health check integration for error rate monitoring
 - Dashboard integration for real-time error analysis

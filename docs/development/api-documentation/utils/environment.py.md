@@ -38,6 +38,7 @@ TEST_MODE_LITERAL: Final[str] = "1"
 - **`TEST_MODE_LITERAL`**: Expected value for boolean-style test mode flags
 
 **Usage Benefits:**
+
 - **Maintainability**: Single source of truth for environment variable names
 - **Type Safety**: Final annotation prevents runtime modification
 - **Consistency**: Standardized naming across application
@@ -104,13 +105,14 @@ export ENVIRONMENT=production
 def environment_detection_example():
     os.environ["ENVIRONMENT"] = "test"
     assert is_test_mode() == True
-    
+
     os.environ["ENVIRONMENT"] = "production"
     # Will still be True if other test indicators are present
     result = is_test_mode()
 ```
 
 **Production Environment Safety:**
+
 - Production deployments should never set `ENVIRONMENT=test`
 - Multiple detection methods prevent false positives
 - Clear separation between deployment and testing modes
@@ -123,26 +125,27 @@ def environment_detection_example():
 # pytest automatically sets PYTEST_CURRENT_TEST when running tests
 def test_automatic_detection():
     """This test will automatically be detected as test mode."""
-    
+
     # pytest sets PYTEST_CURRENT_TEST to something like:
     # "tests/test_environment.py::test_automatic_detection (setup)"
-    
+
     assert is_test_mode() == True
     assert os.environ.get("PYTEST_CURRENT_TEST") is not None
 
 # Manual pytest simulation
 def simulate_pytest_environment():
     """Simulate pytest environment for testing."""
-    
+
     os.environ["PYTEST_CURRENT_TEST"] = "tests/test_example.py::test_function"
     assert is_test_mode() == True
-    
+
     # Cleanup
     del os.environ["PYTEST_CURRENT_TEST"]
     # is_test_mode() may still be True due to other indicators
 ```
 
 **Benefits of pytest Detection:**
+
 - **Automatic**: No manual configuration required
 - **Reliable**: Set by pytest framework itself
 - **Specific**: Only present during actual test execution
@@ -156,22 +159,23 @@ def simulate_pytest_environment():
 # Manual test mode activation
 def activate_manual_test_mode():
     """Activate test mode manually for debugging or development."""
-    
+
     os.environ["REVIEWPOINT_TEST_MODE"] = "1"
     assert is_test_mode() == True
-    
+
     # Use case: debugging with test database
     if is_test_mode():
         database.connect("test_database")
-    
+
 def deactivate_manual_test_mode():
     """Deactivate manual test mode."""
-    
+
     os.environ["REVIEWPOINT_TEST_MODE"] = "0"  # or del os.environ["REVIEWPOINT_TEST_MODE"]
     # Result depends on other environment indicators
 ```
 
 **Manual Override Use Cases:**
+
 - **Development Testing**: Test with production-like setup but test database
 - **Debugging**: Enable test mode for specific debugging sessions
 - **CI/CD Flexibility**: Override detection in complex deployment scenarios
@@ -189,7 +193,7 @@ from src.core.config import settings
 
 def get_database_url() -> str:
     """Get database URL based on environment."""
-    
+
     if is_test_mode():
         # Use in-memory SQLite for tests
         return "sqlite:///:memory:"
@@ -199,7 +203,7 @@ def get_database_url() -> str:
 
 def get_cache_configuration() -> dict:
     """Configure caching based on environment."""
-    
+
     if is_test_mode():
         return {
             "backend": "memory",
@@ -225,7 +229,7 @@ from src.utils.environment import is_test_mode
 
 def configure_logging():
     """Configure logging based on environment."""
-    
+
     if is_test_mode():
         # Detailed logging for tests
         logging.basicConfig(
@@ -233,11 +237,11 @@ def configure_logging():
             format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
             handlers=[logging.StreamHandler()]
         )
-        
+
         # Suppress external library noise in tests
         logging.getLogger("urllib3").setLevel(logging.WARNING)
         logging.getLogger("requests").setLevel(logging.WARNING)
-        
+
     else:
         # Production logging configuration
         logging.basicConfig(
@@ -252,7 +256,7 @@ def configure_logging():
 # Usage in application startup
 def initialize_application():
     configure_logging()
-    
+
     if is_test_mode():
         logger.info("Application started in TEST mode")
     else:
@@ -268,12 +272,12 @@ from src.utils.environment import is_test_mode
 
 def get_jwt_settings() -> dict:
     """JWT configuration with test mode considerations."""
-    
+
     base_settings = {
         "algorithm": "HS256",
         "access_token_expire_minutes": 30,
     }
-    
+
     if is_test_mode():
         # Simplified JWT for tests
         base_settings.update({
@@ -286,12 +290,12 @@ def get_jwt_settings() -> dict:
             "secret_key": os.environ["JWT_SECRET_KEY"],
             "access_token_expire_minutes": 30,
         })
-    
+
     return base_settings
 
 def bypass_rate_limiting() -> bool:
     """Determine if rate limiting should be bypassed."""
-    
+
     # Bypass rate limiting in test mode
     return is_test_mode()
 
@@ -300,7 +304,7 @@ async def rate_limit_middleware(request, call_next):
     if not bypass_rate_limiting():
         # Apply rate limiting logic
         await apply_rate_limiting(request)
-    
+
     response = await call_next(request)
     return response
 ```
@@ -314,20 +318,20 @@ from src.utils.environment import is_test_mode
 
 class FeatureFlags:
     """Feature flag management with test mode support."""
-    
+
     def __init__(self):
         self.flags = self._load_feature_flags()
-    
+
     def _load_feature_flags(self) -> dict:
         """Load feature flags with test mode overrides."""
-        
+
         base_flags = {
             "enable_email_verification": True,
             "enable_file_upload": True,
             "enable_analytics": True,
             "enable_rate_limiting": True,
         }
-        
+
         if is_test_mode():
             # Override flags for testing
             base_flags.update({
@@ -336,9 +340,9 @@ class FeatureFlags:
                 "enable_rate_limiting": False,       # No limits in tests
                 "enable_debug_endpoints": True,      # Enable test endpoints
             })
-        
+
         return base_flags
-    
+
     def is_enabled(self, flag_name: str) -> bool:
         """Check if a feature flag is enabled."""
         return self.flags.get(flag_name, False)
@@ -366,19 +370,19 @@ from alembic.config import Config
 
 async def setup_database():
     """Set up database based on environment."""
-    
+
     if is_test_mode():
         # Create fresh test database
         await create_test_database()
-        
+
         # Run migrations on test database
         alembic_cfg = Config("alembic.ini")
         alembic_cfg.set_main_option("sqlalchemy.url", "sqlite:///:memory:")
         command.upgrade(alembic_cfg, "head")
-        
+
         # Seed test data
         await seed_test_data()
-        
+
     else:
         # Production database setup
         alembic_cfg = Config("alembic.ini")
@@ -386,7 +390,7 @@ async def setup_database():
 
 async def cleanup_database():
     """Clean up database after operations."""
-    
+
     if is_test_mode():
         # Drop test database
         await drop_test_database()
@@ -407,18 +411,18 @@ from src.utils.environment import is_test_mode
 
 class TestEnvironmentDetection:
     """Test suite for environment detection."""
-    
+
     def setup_method(self):
         """Clean environment before each test."""
         # Store original values
         self.original_env = {}
         vars_to_clean = ["ENVIRONMENT", "PYTEST_CURRENT_TEST", "REVIEWPOINT_TEST_MODE"]
-        
+
         for var in vars_to_clean:
             self.original_env[var] = os.environ.get(var)
             if var in os.environ:
                 del os.environ[var]
-    
+
     def teardown_method(self):
         """Restore original environment."""
         for var, value in self.original_env.items():
@@ -426,76 +430,76 @@ class TestEnvironmentDetection:
                 os.environ[var] = value
             elif var in os.environ:
                 del os.environ[var]
-    
+
     def test_environment_variable_detection(self):
         """Test ENVIRONMENT variable detection."""
-        
+
         # Test mode
         os.environ["ENVIRONMENT"] = "test"
         assert is_test_mode() == True
-        
+
         # Non-test mode
         os.environ["ENVIRONMENT"] = "production"
         assert is_test_mode() == False
-        
+
         os.environ["ENVIRONMENT"] = "development"
         assert is_test_mode() == False
-    
+
     def test_pytest_detection(self):
         """Test pytest-specific detection."""
-        
+
         # Simulate pytest environment
         os.environ["PYTEST_CURRENT_TEST"] = "tests/test_example.py::test_function"
         assert is_test_mode() == True
-        
+
         # Empty pytest variable should still trigger test mode
         os.environ["PYTEST_CURRENT_TEST"] = ""
         assert is_test_mode() == False  # Empty string is falsy
-    
+
     def test_manual_override(self):
         """Test manual test mode override."""
-        
+
         # Enable manual test mode
         os.environ["REVIEWPOINT_TEST_MODE"] = "1"
         assert is_test_mode() == True
-        
+
         # Disable manual test mode
         os.environ["REVIEWPOINT_TEST_MODE"] = "0"
         assert is_test_mode() == False
-    
+
     def test_multiple_indicators(self):
         """Test behavior with multiple indicators."""
-        
+
         # Set both environment and pytest
         os.environ["ENVIRONMENT"] = "production"  # Not test
         os.environ["PYTEST_CURRENT_TEST"] = "test_file.py::test_func"  # Is test
-        
+
         # Should still return True due to pytest indicator
         assert is_test_mode() == True
-        
+
         # Set conflicting indicators
         os.environ["ENVIRONMENT"] = "test"
         os.environ["REVIEWPOINT_TEST_MODE"] = "0"  # Not test
-        
+
         # Should return True due to ENVIRONMENT
         assert is_test_mode() == True
-    
+
     def test_no_indicators(self):
         """Test behavior with no test indicators."""
-        
+
         # No environment variables set
         assert is_test_mode() == False
-        
+
         # Set non-test values
         os.environ["ENVIRONMENT"] = "production"
         os.environ["REVIEWPOINT_TEST_MODE"] = "0"
-        
+
         assert is_test_mode() == False
-    
+
     @patch.dict(os.environ, {}, clear=True)
     def test_clean_environment(self):
         """Test behavior in completely clean environment."""
-        
+
         assert is_test_mode() == False
 ```
 
@@ -510,7 +514,7 @@ from src.core.config import get_database_url, get_cache_configuration
 
 class TestEnvironmentIntegration:
     """Test environment detection integration with application components."""
-    
+
     @pytest.mark.parametrize("env_vars,expected_test_mode", [
         ({"ENVIRONMENT": "test"}, True),
         ({"PYTEST_CURRENT_TEST": "test.py::test_func"}, True),
@@ -520,18 +524,18 @@ class TestEnvironmentIntegration:
     ])
     def test_configuration_changes(self, env_vars, expected_test_mode, monkeypatch):
         """Test that configuration changes based on environment detection."""
-        
+
         # Clear environment
         for var in ["ENVIRONMENT", "PYTEST_CURRENT_TEST", "REVIEWPOINT_TEST_MODE"]:
             monkeypatch.delenv(var, raising=False)
-        
+
         # Set test environment
         for var, value in env_vars.items():
             monkeypatch.setenv(var, value)
-        
+
         # Verify detection
         assert is_test_mode() == expected_test_mode
-        
+
         # Verify configuration changes
         if expected_test_mode:
             assert "sqlite" in get_database_url().lower()
@@ -580,10 +584,10 @@ _test_mode_cache: bool | None = None
 def optimized_is_test_mode() -> bool:
     """Optimized version with module-level caching."""
     global _test_mode_cache
-    
+
     if _test_mode_cache is None:
         _test_mode_cache = is_test_mode()
-    
+
     return _test_mode_cache
 
 def reset_test_mode_cache():

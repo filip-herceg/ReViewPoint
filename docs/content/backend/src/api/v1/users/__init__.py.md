@@ -35,6 +35,7 @@ all_routers = [
 ### Router Components
 
 #### Core User Router
+
 **Primary User Operations**:
 
 - **User Registration** - Account creation and onboarding
@@ -44,6 +45,7 @@ all_routers = [
 - **User Details** - Individual user information retrieval
 
 #### Exports Router
+
 **Data Export Operations**:
 
 - **User Data Export** - CSV/JSON export of user information
@@ -52,6 +54,7 @@ all_routers = [
 - **Audit Trail Export** - User activity and compliance data
 
 #### Test-Only Router
+
 **Development Support**:
 
 - **Integration Testing** - Endpoint validation and testing

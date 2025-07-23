@@ -19,53 +19,53 @@ pnpm run dev:postgres  # Starts everything: DB + Backend + Frontend
 
 <div class="grid cards" markdown>
 
--   :material-cog: **Development Guidelines**
+- :material-cog: **Development Guidelines**
 
-    ---
+  ***
 
-    Code standards, testing, Git workflow, environment setup
+  Code standards, testing, Git workflow, environment setup
 
-    [View Guidelines →](resources/guidelines.md)
+  [View Guidelines →](resources/guidelines.md)
 
--   :material-test-tube: **Testing Guide**
+- :material-test-tube: **Testing Guide**
 
-    ---
+  ***
 
-    Backend tests, frontend tests, E2E tests, coverage reports
+  Backend tests, frontend tests, E2E tests, coverage reports
 
-    [Testing Docs →](resources/testing.md)
+  [Testing Docs →](resources/testing.md)
 
--   :material-api: **API Reference**
+- :material-api: **API Reference**
 
-    ---
+  ***
 
-    Complete REST API documentation with examples
+  Complete REST API documentation with examples
 
-    [API Docs →](resources/api-reference.md)
+  [API Docs →](resources/api-reference.md)
 
--   :material-account-plus: **Contributing**
+- :material-account-plus: **Contributing**
 
-    ---
+  ***
 
-    How to contribute code, documentation, and report issues
+  How to contribute code, documentation, and report issues
 
-    [Contributing Guide →](resources/contributing.md)
+  [Contributing Guide →](resources/contributing.md)
 
--   :material-help-circle: **FAQ**
+- :material-help-circle: **FAQ**
 
-    ---
+  ***
 
-    Common questions, troubleshooting, and solutions
+  Common questions, troubleshooting, and solutions
 
-    [Browse FAQ →](resources/faq.md)
+  [Browse FAQ →](resources/faq.md)
 
--   :material-folder-cog: **Architecture Deep Dive**
+- :material-folder-cog: **Architecture Deep Dive**
 
-    ---
+  ***
 
-    Backend and frontend architecture, code organization
+  Backend and frontend architecture, code organization
 
-    [Backend →](backend/index.md) · [Frontend →](frontend/index.md)
+  [Backend →](backend/index.md) · [Frontend →](frontend/index.md)
 
 </div>
 
@@ -75,13 +75,13 @@ pnpm run dev:postgres  # Starts everything: DB + Backend + Frontend
 
 ### **Tech Stack**
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| **Frontend** | React 18 + TypeScript + Vite | Modern UI with hot reload |
-| **Backend** | FastAPI + Python 3.11+ | High-performance async API |
-| **Database** | PostgreSQL / SQLite | Reliable data persistence |
-| **Testing** | Pytest + Vitest + Playwright | Comprehensive test coverage |
-| **CI/CD** | GitHub Actions | Automated quality gates |
+| Layer        | Technology                   | Purpose                     |
+| ------------ | ---------------------------- | --------------------------- |
+| **Frontend** | React 18 + TypeScript + Vite | Modern UI with hot reload   |
+| **Backend**  | FastAPI + Python 3.11+       | High-performance async API  |
+| **Database** | PostgreSQL / SQLite          | Reliable data persistence   |
+| **Testing**  | Pytest + Vitest + Playwright | Comprehensive test coverage |
+| **CI/CD**    | GitHub Actions               | Automated quality gates     |
 
 ### **Project Structure**
 
@@ -91,7 +91,7 @@ ReViewPoint/
 │   ├── src/              # Source code
 │   ├── tests/            # Backend tests (135+ tests)
 │   └── alembic/          # Database migrations
-├── frontend/             # React frontend  
+├── frontend/             # React frontend
 │   ├── src/              # Source code
 │   ├── tests/            # Frontend tests (672+ tests)
 │   └── e2e/              # End-to-end tests
@@ -124,18 +124,18 @@ ReViewPoint includes **24 VS Code tasks** for streamlined development:
 - **`ReViewPoint: Install Dependencies`** - One-command setup
 - **`ReViewPoint: Format All Code`** - Backend + Frontend formatting
 
-*Access via `Ctrl+Shift+P` → "Tasks: Run Task"*
+_Access via `Ctrl+Shift+P` → "Tasks: Run Task"_
 
 ---
 
 ## 🧪 **Testing Strategy**
 
-| Test Type | Framework | Coverage | Command |
-|-----------|-----------|----------|---------|
-| **Backend Unit** | pytest | 86%+ | `pnpm run test:backend` |
-| **Frontend Unit** | Vitest | 80%+ | `cd frontend && pnpm test` |
-| **E2E Tests** | Playwright | Critical paths | `cd frontend && pnpm run test:e2e` |
-| **All Tests** | Combined | Full suite | `pnpm run test:all` |
+| Test Type         | Framework  | Coverage       | Command                            |
+| ----------------- | ---------- | -------------- | ---------------------------------- |
+| **Backend Unit**  | pytest     | 86%+           | `pnpm run test:backend`            |
+| **Frontend Unit** | Vitest     | 80%+           | `cd frontend && pnpm test`         |
+| **E2E Tests**     | Playwright | Critical paths | `cd frontend && pnpm run test:e2e` |
+| **All Tests**     | Combined   | Full suite     | `pnpm run test:all`                |
 
 ---
 
@@ -144,7 +144,7 @@ ReViewPoint includes **24 VS Code tasks** for streamlined development:
 ### **Prerequisites**
 
 - **Node.js** 18+ with **pnpm** 8+
-- **Python** 3.11+ with **Hatch**  
+- **Python** 3.11+ with **Hatch**
 - **Docker** (for PostgreSQL)
 - **VS Code** (recommended)
 
@@ -185,7 +185,7 @@ Both backend and frontend support hot reload:
 # Backend debugging with logs
 cd backend && hatch run python -m debugpy --listen 5678 --wait-for-client -m uvicorn src.main:app --reload
 
-# Frontend debugging  
+# Frontend debugging
 cd frontend && pnpm run dev --debug
 
 # Database debugging
@@ -211,7 +211,7 @@ cd frontend && pnpm run type-check
 ReViewPoint is production-ready with:
 
 - **Docker containerization** for easy deployment
-- **Environment-specific configs** for dev/staging/prod  
+- **Environment-specific configs** for dev/staging/prod
 - **Automated CI/CD** with GitHub Actions
 - **Health checks** and monitoring endpoints
 - **Security best practices** (JWT, rate limiting, CORS)
@@ -223,7 +223,7 @@ ReViewPoint is production-ready with:
 **Stuck? Here's where to get help:**
 
 1. **Check the [FAQ](resources/faq.md)** - Common issues and solutions
-2. **Browse [Testing Guide](resources/testing.md)** - For test-related questions  
+2. **Browse [Testing Guide](resources/testing.md)** - For test-related questions
 3. **Review [Contributing Guide](resources/contributing.md)** - For contribution process
 4. **Create GitHub Issue** - For bugs or feature requests
 5. **Search the codebase** - Well-documented inline comments
@@ -243,19 +243,19 @@ graph TB
         Components[Component Library]
         State[Zustand State Management]
     end
-    
+
     subgraph "API Layer"
         REST[FastAPI REST API]
         Auth[JWT Authentication]
         Upload[File Upload Service]
     end
-    
+
     subgraph "Data Layer"
         DB[(PostgreSQL Database)]
         Files[File Storage System]
         Cache[Redis Cache]
     end
-    
+
     UI --> REST
     Components --> REST
     State --> REST
@@ -279,7 +279,7 @@ graph TB
 ```
 ReViewPoint/
 ├── backend/          # FastAPI Python backend
-├── frontend/         # React TypeScript frontend  
+├── frontend/         # React TypeScript frontend
 ├── docs/            # Documentation (MkDocs)
 ├── scripts/         # Development automation
 ├── tests/           # Integration tests
@@ -384,7 +384,7 @@ pnpm run backend
 # Run tests (fast SQLite mode)
 cd backend && hatch run fast:test
 
-# Run tests (full PostgreSQL mode) 
+# Run tests (full PostgreSQL mode)
 cd backend && hatch run pytest
 
 # Lint and format
@@ -416,11 +416,13 @@ We maintain **comprehensive testing** at multiple levels:
 #### Backend Testing (135+ tests)
 
 1. **Fast Tests** (SQLite in-memory, 30-60 seconds)
+
    ```bash
    cd backend && hatch run fast:test
    ```
 
 2. **Full Tests** (PostgreSQL, 2-5 minutes)
+
    ```bash
    cd backend && hatch run pytest
    ```
@@ -433,11 +435,13 @@ We maintain **comprehensive testing** at multiple levels:
 #### Frontend Testing
 
 1. **Unit Tests** (Vitest)
+
    ```bash
    cd frontend && pnpm run test
    ```
 
 2. **E2E Tests** (Playwright)
+
    ```bash
    cd frontend && pnpm run test:e2e
    ```
@@ -484,7 +488,7 @@ erDiagram
         timestamp created_at
         timestamp updated_at
     }
-    
+
     File {
         uuid id PK
         uuid user_id FK
@@ -494,14 +498,14 @@ erDiagram
         string file_path
         timestamp uploaded_at
     }
-    
+
     UsedPasswordResetToken {
         uuid id PK
         uuid user_id FK
         string token_hash
         timestamp used_at
     }
-    
+
     User ||--o{ File : uploads
     User ||--o{ UsedPasswordResetToken : uses
 ```
@@ -653,6 +657,7 @@ This ensures **compile-time type safety** between frontend and backend.
 ### Database Issues
 
 **PostgreSQL won't start:**
+
 ```bash
 # Check Docker status
 docker ps
@@ -663,6 +668,7 @@ pnpm run postgres:start
 ```
 
 **Migration errors:**
+
 ```bash
 # Reset database (destroys data!)
 cd backend && hatch run alembic downgrade base
@@ -672,16 +678,19 @@ cd backend && hatch run alembic upgrade head
 ### Development Server Issues
 
 **Port conflicts:**
+
 - Backend: Change port in `backend/config/.env`
 - Frontend: Change port in `frontend/vite.config.ts`
 
 **Hot reload not working:**
+
 - Restart the development server
 - Check file watchers (VS Code settings)
 
 ### Testing Issues
 
 **Tests failing:**
+
 ```bash
 # Clear test cache
 cd backend && hatch run pytest --cache-clear

@@ -30,6 +30,7 @@ class SettingsProtocol(Protocol):
 ```
 
 **Features:**
+
 - Protocol-based typing for configuration settings
 - Ensures required bcrypt configuration attributes
 - Compile-time type checking for settings access
@@ -44,6 +45,7 @@ DEPRECATED_POLICY: Final = "auto"
 ```
 
 **Configuration Parameters:**
+
 - **SCHEME_BCRYPT**: Primary hashing scheme identifier
 - **SCHEMES**: Tuple of supported hashing schemes
 - **DEPRECATED_POLICY**: Automatic deprecation handling policy
@@ -77,6 +79,7 @@ def _get_pwd_context() -> CryptContext:
 ```
 
 **Key Features:**
+
 - Dynamic configuration from application settings
 - Configurable bcrypt rounds for security vs. performance tuning
 - Configurable bcrypt identifier (2a, 2b, 2x, 2y variants)
@@ -84,6 +87,7 @@ def _get_pwd_context() -> CryptContext:
 - Type-safe configuration access with runtime validation
 
 **Security Considerations:**
+
 - Bcrypt rounds default to 12 (industry recommended minimum)
 - 2b identifier for maximum compatibility and security
 - Automatic deprecation handling for future algorithm updates
@@ -115,6 +119,7 @@ def hash_password(password: str) -> str:
 ```
 
 **Security Features:**
+
 - Industry-standard bcrypt hashing algorithm
 - Configurable work factor (rounds) for future-proofing
 - Automatic salt generation for each password
@@ -122,6 +127,7 @@ def hash_password(password: str) -> str:
 - Type-safe string input/output handling
 
 **Usage Examples:**
+
 ```python
 # Basic password hashing
 plain_password = "user_password_123"
@@ -165,6 +171,7 @@ def verify_password(plain: str, hashed: str) -> bool:
 ```
 
 **Security Features:**
+
 - Constant-time verification to prevent timing attacks
 - Secure handling of verification failures
 - No plaintext password logging or exposure
@@ -172,6 +179,7 @@ def verify_password(plain: str, hashed: str) -> bool:
 - Type-safe boolean return for clear success/failure indication
 
 **Usage Examples:**
+
 ```python
 # User login verification
 stored_hash = "$2b$12$stored_hash_from_database..."
@@ -205,15 +213,15 @@ from src.utils.validation import validate_password, get_password_validation_erro
 
 async def create_user(email: str, password: str, name: str | None = None) -> User:
     """Create a new user with secure password hashing."""
-    
+
     # Validate password strength
     password_error = get_password_validation_error(password)
     if password_error:
         raise ValidationError(password_error)
-    
+
     # Hash the password securely
     password_hash = hash_password(password)
-    
+
     # Create user with hashed password
     user = User(
         email=email,
@@ -221,7 +229,7 @@ async def create_user(email: str, password: str, name: str | None = None) -> Use
         name=name,
         created_at=datetime.utcnow()
     )
-    
+
     db.add(user)
     await db.commit()
     return user
@@ -237,20 +245,20 @@ from src.utils.errors import AuthenticationError
 
 async def authenticate_user(email: str, password: str) -> User:
     """Authenticate user with email and password."""
-    
+
     # Find user by email
     user = await user_repository.get_by_email(email)
     if not user:
         raise AuthenticationError("Invalid credentials")
-    
+
     # Verify password
     if not verify_password(password, user.password_hash):
         raise AuthenticationError("Invalid credentials")
-    
+
     # Update last login time
     user.last_login = datetime.utcnow()
     await user_repository.update(user)
-    
+
     return user
 ```
 
@@ -262,29 +270,29 @@ async def authenticate_user(email: str, password: str) -> User:
 from src.utils.hashing import hash_password, verify_password
 
 async def change_password(
-    user_id: int, 
-    current_password: str, 
+    user_id: int,
+    current_password: str,
     new_password: str
 ) -> None:
     """Change user password with current password verification."""
-    
+
     # Get user
     user = await user_repository.get_by_id(user_id)
     if not user:
         raise UserNotFoundError("User not found")
-    
+
     # Verify current password
     if not verify_password(current_password, user.password_hash):
         raise AuthenticationError("Current password incorrect")
-    
+
     # Validate new password
     password_error = get_password_validation_error(new_password)
     if password_error:
         raise ValidationError(password_error)
-    
+
     # Hash new password
     new_password_hash = hash_password(new_password)
-    
+
     # Update user
     user.password_hash = new_password_hash
     user.password_changed_at = datetime.utcnow()
@@ -306,22 +314,22 @@ async def login(credentials: LoginRequest) -> TokenResponse:
     """User login endpoint."""
     try:
         user = await authenticate_user(
-            credentials.email, 
+            credentials.email,
             credentials.password
         )
-        
+
         # Generate access token
         access_token = create_access_token(user.id)
-        
+
         return TokenResponse(
             access_token=access_token,
             token_type="bearer",
             user_id=user.id
         )
-        
+
     except AuthenticationError:
         raise HTTPException(
-            status_code=401, 
+            status_code=401,
             detail="Invalid credentials"
         )
 
@@ -337,9 +345,9 @@ async def change_password_endpoint(
             request.current_password,
             request.new_password
         )
-        
+
         return {"message": "Password changed successfully"}
-        
+
     except (AuthenticationError, ValidationError) as e:
         raise HTTPException(status_code=422, detail=str(e))
 ```
@@ -359,6 +367,7 @@ HIGH_SECURITY_ROUNDS = 16  # Maximum security applications
 ```
 
 **Work Factor Guidelines:**
+
 - **Rounds 10**: Development environments, ~100ms
 - **Rounds 12**: Production standard, ~300ms
 - **Rounds 14**: High-security applications, ~1.2s
@@ -394,10 +403,10 @@ from src.utils.hashing import verify_password
 
 async def secure_login_attempt(email: str, password: str) -> User | None:
     """Login with timing attack protection."""
-    
+
     # Always retrieve user (even if email doesn't exist)
     user = await user_repository.get_by_email(email)
-    
+
     if user:
         # Verify actual password hash
         is_valid = verify_password(password, user.password_hash)
@@ -406,7 +415,7 @@ async def secure_login_attempt(email: str, password: str) -> User | None:
         dummy_hash = "$2b$12$dummy.hash.to.maintain.constant.timing"
         verify_password(password, dummy_hash)
         is_valid = False
-    
+
     return user if is_valid else None
 ```
 
@@ -420,30 +429,30 @@ from src.utils.hashing import hash_password
 
 class PasswordPolicy:
     """Centralized password policy enforcement."""
-    
+
     def __init__(self, min_length: int = 12, require_special: bool = True):
         self.min_length = min_length
         self.require_special = require_special
-    
+
     def validate(self, password: str) -> str | None:
         """Validate password against policy."""
         # Basic validation
         error = get_password_validation_error(password, self.min_length)
         if error:
             return error
-        
+
         # Additional policy checks
         if self.require_special and not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
             return "Password must contain at least one special character."
-        
+
         return None
-    
+
     def hash_if_valid(self, password: str) -> str:
         """Validate and hash password."""
         error = self.validate(password)
         if error:
             raise ValidationError(error)
-        
+
         return hash_password(password)
 
 # Usage
@@ -461,11 +470,11 @@ class SecuritySettings:
     # Development
     DEV_BCRYPT_ROUNDS = 10
     DEV_BCRYPT_IDENT = "2b"
-    
+
     # Production
     PROD_BCRYPT_ROUNDS = 14
     PROD_BCRYPT_IDENT = "2b"
-    
+
     # High-security applications
     HIGH_SEC_BCRYPT_ROUNDS = 16
     HIGH_SEC_BCRYPT_IDENT = "2b"
@@ -482,9 +491,9 @@ def safe_hash_password(password: str) -> str:
     try:
         if not password or len(password.strip()) == 0:
             raise ValueError("Password cannot be empty")
-        
+
         return hash_password(password)
-        
+
     except Exception as e:
         logging.error(f"Password hashing failed: {type(e).__name__}")
         raise ValueError("Password hashing failed") from e
@@ -494,9 +503,9 @@ def safe_verify_password(plain: str, hashed: str) -> bool:
     try:
         if not plain or not hashed:
             return False
-        
+
         return verify_password(plain, hashed)
-        
+
     except Exception as e:
         logging.error(f"Password verification failed: {type(e).__name__}")
         return False
@@ -510,38 +519,38 @@ from src.utils.hashing import hash_password, verify_password
 
 class TestPasswordHashing:
     """Comprehensive password hashing tests."""
-    
+
     def test_password_hashing_basic(self):
         """Test basic password hashing functionality."""
         password = "test_password_123"
         hashed = hash_password(password)
-        
+
         # Verify hash format
         assert hashed.startswith("$2b$")
         assert len(hashed) == 60  # Standard bcrypt hash length
-        
+
         # Verify password verification
         assert verify_password(password, hashed) is True
         assert verify_password("wrong_password", hashed) is False
-    
+
     def test_unique_salts(self):
         """Test that each hash generates unique salts."""
         password = "same_password"
         hash1 = hash_password(password)
         hash2 = hash_password(password)
-        
+
         assert hash1 != hash2  # Different due to unique salts
         assert verify_password(password, hash1) is True
         assert verify_password(password, hash2) is True
-    
+
     def test_empty_password_handling(self):
         """Test handling of edge cases."""
         with pytest.raises(ValueError):
             hash_password("")
-        
+
         assert verify_password("", "any_hash") is False
         assert verify_password("password", "") is False
-    
+
     @pytest.mark.parametrize("password", [
         "simple",
         "Complex123!",

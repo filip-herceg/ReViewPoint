@@ -30,6 +30,7 @@ class UserNotFoundError(UserRepositoryError):
 ```
 
 **Usage Example:**
+
 ```python
 # In repository layer
 async def get_user_by_id(session: AsyncSession, user_id: int) -> User:
@@ -56,13 +57,14 @@ class UserAlreadyExistsError(UserRepositoryError):
 ```
 
 **Usage Example:**
+
 ```python
 # In service layer
 async def register_user(session: AsyncSession, email: str, password: str) -> User:
     existing_user = await user_repo.get_user_by_email(session, email)
     if existing_user:
         raise UserAlreadyExistsError(f"User with email {email} already exists")
-    
+
     return await user_repo.create_user(session, email, password)
 
 # In API layer
@@ -85,6 +87,7 @@ class ValidationError(UserRepositoryError):
 ```
 
 **Usage Example:**
+
 ```python
 # In validation utilities
 def validate_email(email: str) -> None:
@@ -110,12 +113,13 @@ class InvalidDataError(UserRepositoryError):
 ```
 
 **Usage Example:**
+
 ```python
 # For malformed or structurally invalid data
 async def process_user_data(data: dict) -> None:
     if not isinstance(data, dict):
         raise InvalidDataError("Expected dictionary data structure")
-    
+
     required_fields = ["email", "name"]
     missing_fields = [field for field in required_fields if field not in data]
     if missing_fields:
@@ -135,6 +139,7 @@ class RateLimitExceededError(UserRepositoryError):
 ```
 
 **Usage Example:**
+
 ```python
 # In rate limiting middleware or service
 async def check_rate_limit(user_id: int, action: str) -> None:
@@ -165,6 +170,7 @@ INVALID_DATA_ERROR_CODE: Final[int] = 400
 ```
 
 **Usage Example:**
+
 ```python
 # In error handler middleware
 def get_http_status_for_exception(exc: Exception) -> int:
@@ -175,7 +181,7 @@ def get_http_status_for_exception(exc: Exception) -> int:
         RateLimitExceededError: RATE_LIMIT_EXCEEDED_CODE,
         InvalidDataError: INVALID_DATA_ERROR_CODE,
     }
-    
+
     return error_mapping.get(type(exc), 500)  # Default to 500 for unknown errors
 ```
 
@@ -191,6 +197,7 @@ def get_http_status_for_exception(exc: Exception) -> int:
 ### Error Handling Patterns
 
 **Service Layer Pattern:**
+
 ```python
 # Service layer catches repository exceptions and re-raises as appropriate
 async def update_user_profile(user_id: int, updates: dict) -> User:
@@ -205,6 +212,7 @@ async def update_user_profile(user_id: int, updates: dict) -> User:
 ```
 
 **API Layer Pattern:**
+
 ```python
 # API layer converts exceptions to HTTP responses
 @app.put("/users/{user_id}")
@@ -231,6 +239,7 @@ async def update_user(user_id: int, updates: UserUpdate):
 ### Logging and Monitoring
 
 **Structured Error Logging:**
+
 ```python
 import structlog
 
@@ -252,6 +261,7 @@ except UserRepositoryError as e:
 ### Testing Exception Handling
 
 **Exception Testing Pattern:**
+
 ```python
 import pytest
 
@@ -268,6 +278,7 @@ async def test_api_returns_correct_status_for_user_not_found():
 ### Integration with FastAPI
 
 **Custom Exception Handler:**
+
 ```python
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse

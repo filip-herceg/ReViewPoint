@@ -38,6 +38,7 @@ await session.commit()
 ```
 
 **Table Configuration:**
+
 - `__tablename__ = "users"` - Database table name
 - Inherits from `BaseModel` (id, created_at, updated_at)
 
@@ -46,6 +47,7 @@ await session.commit()
 ### Authentication Fields
 
 **Email Identity:**
+
 ```python
 email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
 ```
@@ -56,6 +58,7 @@ email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, ind
 - **Length Limit**: 255 characters for comprehensive email support
 
 **Password Security:**
+
 ```python
 hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
 ```
@@ -68,6 +71,7 @@ hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
 ### Account Status Fields
 
 **Active Status:**
+
 ```python
 is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 ```
@@ -78,6 +82,7 @@ is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 - **Login Control**: Inactive users cannot authenticate
 
 **Soft Delete:**
+
 ```python
 is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 ```
@@ -88,6 +93,7 @@ is_deleted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 - **Compliance**: Supports GDPR and data retention requirements
 
 **Activity Tracking:**
+
 ```python
 last_login_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 ```
@@ -100,6 +106,7 @@ last_login_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 ### Profile Fields
 
 **Display Name:**
+
 ```python
 name: Mapped[str | None] = mapped_column(String(128), nullable=True)
 ```
@@ -110,6 +117,7 @@ name: Mapped[str | None] = mapped_column(String(128), nullable=True)
 - **Display**: Used for user interface and identification
 
 **Biography:**
+
 ```python
 bio: Mapped[str | None] = mapped_column(String(512), nullable=True)
 ```
@@ -120,6 +128,7 @@ bio: Mapped[str | None] = mapped_column(String(512), nullable=True)
 - **Professional Use**: Suitable for academic and professional contexts
 
 **Avatar Image:**
+
 ```python
 avatar_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
 ```
@@ -132,6 +141,7 @@ avatar_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
 ### Preferences and Settings
 
 **User Preferences:**
+
 ```python
 preferences: Mapped[Mapping[str, Any] | None] = mapped_column(JSON, nullable=True)
 ```
@@ -142,6 +152,7 @@ preferences: Mapped[Mapping[str, Any] | None] = mapped_column(JSON, nullable=Tru
 - **Type Safety**: Proper typing with Mapping[str, Any]
 
 **Example Preferences Structure:**
+
 ```python
 {
     "theme": "dark",
@@ -160,6 +171,7 @@ preferences: Mapped[Mapping[str, Any] | None] = mapped_column(JSON, nullable=Tru
 ### Role Management
 
 **Administrative Access:**
+
 ```python
 is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 ```
@@ -174,6 +186,7 @@ is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 ### Role Property
 
 **Dynamic Role Access:**
+
 ```python
 @property
 def role(self: User) -> Literal["admin", "user"]:
@@ -187,6 +200,7 @@ def role(self: User, value: str) -> None:
 ```
 
 **Usage Examples:**
+
 ```python
 # Check user role
 if user.role == "admin":
@@ -201,6 +215,7 @@ user.role = "user"   # Sets is_admin = False
 ### String Representation
 
 **Debug-Friendly Representation:**
+
 ```python
 def __repr__(self: User) -> str:
     """Return a string representation of the User instance."""
@@ -217,6 +232,7 @@ def __repr__(self: User) -> str:
 ### File Ownership
 
 **User-File Relationship:**
+
 ```python
 files: WriteOnlyMapped[File] = relationship(
     "File", back_populates="user", passive_deletes=True
@@ -229,6 +245,7 @@ files: WriteOnlyMapped[File] = relationship(
 - **Performance**: Lazy loading for efficient memory usage
 
 **Usage Patterns:**
+
 ```python
 # Access user files (requires explicit query)
 user_files = await session.execute(
@@ -248,17 +265,17 @@ file_count = await session.scalar(
 ```python
 async def register_user(email: str, password: str, name: str = None) -> User:
     """Register a new user with secure password hashing."""
-    
+
     # Check if user already exists
     existing_user = await session.execute(
         select(User).where(User.email == email)
     )
     if existing_user.scalar_one_or_none():
         raise ValueError("User already exists")
-    
+
     # Hash password securely
     hashed_password = hash_password(password)
-    
+
     # Create user
     user = User(
         email=email,
@@ -267,7 +284,7 @@ async def register_user(email: str, password: str, name: str = None) -> User:
         is_active=True,
         preferences={"theme": "light", "language": "en"}
     )
-    
+
     session.add(user)
     await session.commit()
     return user
@@ -278,7 +295,7 @@ async def register_user(email: str, password: str, name: str = None) -> User:
 ```python
 async def authenticate_user(email: str, password: str) -> User | None:
     """Authenticate user with email and password."""
-    
+
     # Find user by email
     result = await session.execute(
         select(User).where(
@@ -288,18 +305,18 @@ async def authenticate_user(email: str, password: str) -> User | None:
         )
     )
     user = result.scalar_one_or_none()
-    
+
     if not user:
         return None
-    
+
     # Verify password
     if not verify_password(password, user.hashed_password):
         return None
-    
+
     # Update last login
     user.last_login_at = datetime.utcnow()
     await session.commit()
-    
+
     return user
 ```
 
@@ -307,18 +324,18 @@ async def authenticate_user(email: str, password: str) -> User | None:
 
 ```python
 async def update_user_profile(
-    user_id: int, 
+    user_id: int,
     name: str = None,
     bio: str = None,
     avatar_url: str = None,
     preferences: dict = None
 ) -> User:
     """Update user profile information."""
-    
+
     user = await session.get(User, user_id)
     if not user:
         raise ValueError("User not found")
-    
+
     # Update provided fields
     if name is not None:
         user.name = name
@@ -331,7 +348,7 @@ async def update_user_profile(
         current_prefs = user.preferences or {}
         current_prefs.update(preferences)
         user.preferences = current_prefs
-    
+
     await session.commit()
     return user
 ```
@@ -341,19 +358,19 @@ async def update_user_profile(
 ```python
 async def manage_user_roles(user_id: int, is_admin: bool) -> User:
     """Manage user administrative privileges."""
-    
+
     user = await session.get(User, user_id)
     if not user:
         raise ValueError("User not found")
-    
+
     # Update role
     user.is_admin = is_admin
-    
+
     # Log role change
     logger.info(
         f"User {user.email} role changed to {'admin' if is_admin else 'user'}"
     )
-    
+
     await session.commit()
     return user
 ```
@@ -362,27 +379,27 @@ async def manage_user_roles(user_id: int, is_admin: bool) -> User:
 
 ```python
 async def manage_account_status(
-    user_id: int, 
+    user_id: int,
     is_active: bool = None,
     is_deleted: bool = None
 ) -> User:
     """Manage user account status."""
-    
+
     user = await session.get(User, user_id)
     if not user:
         raise ValueError("User not found")
-    
+
     # Update status fields
     if is_active is not None:
         user.is_active = is_active
         logger.info(f"User {user.email} active status: {is_active}")
-    
+
     if is_deleted is not None:
         user.is_deleted = is_deleted
         if is_deleted:
             user.is_active = False  # Deleted users should be inactive
         logger.info(f"User {user.email} deleted status: {is_deleted}")
-    
+
     await session.commit()
     return user
 ```
@@ -392,12 +409,14 @@ async def manage_account_status(
 ### Password Security
 
 **Secure Storage:**
+
 - Never store plain text passwords
 - Use bcrypt, Argon2, or equivalent secure hashing
 - Salt passwords to prevent rainbow table attacks
 - Implement proper password complexity requirements
 
 **Authentication Security:**
+
 ```python
 # Secure password verification
 def verify_user_password(user: User, password: str) -> bool:
@@ -406,19 +425,21 @@ def verify_user_password(user: User, password: str) -> bool:
         # Still hash to prevent timing attacks
         hash_password("dummy_password")
         return False
-    
+
     return verify_password(password, user.hashed_password)
 ```
 
 ### Account Security
 
 **Account Lockout:**
+
 - Implement failed login attempt tracking
 - Temporary account lockout after failed attempts
 - Email notifications for suspicious activity
 - IP-based rate limiting for login attempts
 
 **Session Security:**
+
 - Update last_login_at for audit trails
 - Implement session timeout mechanisms
 - Track concurrent sessions per user
@@ -427,6 +448,7 @@ def verify_user_password(user: User, password: str) -> bool:
 ### Data Privacy
 
 **Personal Information:**
+
 - Optional profile fields protect user privacy
 - Configurable privacy settings in preferences
 - Data anonymization for deleted accounts
@@ -437,6 +459,7 @@ def verify_user_password(user: User, password: str) -> bool:
 ### Database Optimization
 
 **Indexing Strategy:**
+
 ```python
 # Current indexes
 email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
@@ -450,6 +473,7 @@ __table_args__ = (
 ```
 
 **Query Optimization:**
+
 ```python
 # Efficient user lookups
 active_users = await session.execute(
@@ -463,6 +487,7 @@ active_users = await session.execute(
 ### Memory Management
 
 **Relationship Optimization:**
+
 - Use `WriteOnlyMapped` for large collections
 - Implement pagination for user file listings
 - Use `selectinload` for controlled eager loading
@@ -471,6 +496,7 @@ active_users = await session.execute(
 ### Caching Strategies
 
 **User Session Caching:**
+
 ```python
 # Cache frequently accessed user data
 @cache.memoize(timeout=300)  # 5 minutes
@@ -497,20 +523,20 @@ async def create_user_safely(user_data: dict) -> User:
         # Validate email format
         if not is_valid_email(user_data["email"]):
             raise ValueError("Invalid email format")
-        
+
         # Check email uniqueness
         existing = await session.execute(
             select(User).where(User.email == user_data["email"])
         )
         if existing.scalar_one_or_none():
             raise ValueError("Email already registered")
-        
+
         # Create user
         user = User(**user_data)
         session.add(user)
         await session.commit()
         return user
-        
+
     except IntegrityError as e:
         await session.rollback()
         if "unique constraint" in str(e).lower():
@@ -536,7 +562,7 @@ async def authenticate_user_safely(email: str, password: str) -> User | None:
             # Log failed authentication (without exposing why)
             logger.warning(f"Failed authentication attempt for {email}")
         return user
-        
+
     except Exception as e:
         logger.error(f"Authentication error for {email}: {e}")
         return None
@@ -581,7 +607,7 @@ def test_user_model_creation():
         name="Test User",
         is_active=True
     )
-    
+
     assert user.email == "test@example.com"
     assert user.name == "Test User"
     assert user.is_active is True
@@ -591,16 +617,16 @@ def test_user_model_creation():
 def test_user_role_property():
     """Test dynamic role property."""
     user = User(email="test@example.com", hashed_password="hash")
-    
+
     # Test default role
     assert user.role == "user"
     assert user.is_admin is False
-    
+
     # Test admin role
     user.role = "admin"
     assert user.role == "admin"
     assert user.is_admin is True
-    
+
     # Test back to user role
     user.role = "user"
     assert user.role == "user"
@@ -612,7 +638,7 @@ def test_user_role_property():
 ```python
 async def test_user_database_operations():
     """Test user database operations."""
-    
+
     # Create user
     user = User(
         email="integration@example.com",
@@ -620,24 +646,24 @@ async def test_user_database_operations():
         name="Integration Test",
         preferences={"theme": "dark"}
     )
-    
+
     session.add(user)
     await session.commit()
-    
+
     # Verify creation
     assert user.id is not None
     assert user.created_at is not None
     assert user.updated_at is not None
-    
+
     # Test retrieval
     retrieved_user = await session.get(User, user.id)
     assert retrieved_user.email == "integration@example.com"
     assert retrieved_user.preferences["theme"] == "dark"
-    
+
     # Test update
     retrieved_user.name = "Updated Name"
     await session.commit()
-    
+
     # Verify update
     updated_user = await session.get(User, user.id)
     assert updated_user.name == "Updated Name"
@@ -649,7 +675,7 @@ async def test_user_database_operations():
 ```python
 async def test_user_authentication_security():
     """Test user authentication security features."""
-    
+
     # Create test user
     user = User(
         email="security@example.com",
@@ -659,20 +685,20 @@ async def test_user_authentication_security():
     )
     session.add(user)
     await session.commit()
-    
+
     # Test successful authentication
     auth_user = await authenticate_user("security@example.com", "secure_password")
     assert auth_user is not None
     assert auth_user.id == user.id
-    
+
     # Test failed authentication
     auth_user = await authenticate_user("security@example.com", "wrong_password")
     assert auth_user is None
-    
+
     # Test inactive user
     user.is_active = False
     await session.commit()
-    
+
     auth_user = await authenticate_user("security@example.com", "secure_password")
     assert auth_user is None
 ```

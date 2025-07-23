@@ -15,7 +15,7 @@ The main middleware class that processes all HTTP requests and responses:
 ```python
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     """Middleware for logging HTTP requests with unique request IDs."""
-    
+
     def __init__(
         self,
         app: ASGIApp,
@@ -27,6 +27,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 ```
 
 #### Configuration Parameters
+
 - **exclude_paths** - Paths to skip logging (default: `/health`, `/metrics`)
 - **logger_instance** - Custom logger or default middleware logger
 - **header_name** - HTTP header for request ID (default: `X-Request-ID`)
@@ -45,6 +46,7 @@ def get_request_id() -> str | None:
 ```
 
 #### Correlation Features
+
 - **Context Variables** - Thread-local request ID storage
 - **UUID Generation** - Unique identifier creation for each request
 - **Header Propagation** - Request ID transmission via HTTP headers
@@ -71,6 +73,7 @@ The middleware implements a comprehensive request/response processing pipeline:
 Sophisticated request ID management for distributed systems:
 
 #### ID Generation Strategy
+
 ```python
 # Generate or extract request ID
 request_id: str = request.headers.get(self.header_name, str(uuid.uuid4()))
@@ -79,6 +82,7 @@ token: Token[str | None] = request_id_var.set(request_id)
 ```
 
 #### Benefits
+
 - **Client Correlation** - Accept existing request IDs from clients
 - **Automatic Generation** - Create new IDs when not provided
 - **Context Propagation** - Make request ID available throughout request lifecycle
@@ -91,16 +95,18 @@ token: Token[str | None] = request_id_var.set(request_id)
 Comprehensive sensitive data filtering for secure logging:
 
 #### Sensitive Fields Configuration
+
 ```python
 SENSITIVE_FIELDS: Final[frozenset[str]] = frozenset({
     "password",
-    "token", 
+    "token",
     "access_token",
     "refresh_token",
 })
 ```
 
 #### Data Filtering Process
+
 ```python
 # Filter sensitive fields from query params
 filtered_query: list[tuple[str, str]] = [
@@ -114,6 +120,7 @@ filtered_query: list[tuple[str, str]] = [
 Robust privacy protection in logging:
 
 #### Protection Mechanisms
+
 - **Query Parameter Filtering** - Remove sensitive data from URLs
 - **Header Protection** - Filter authentication and sensitive headers
 - **Automatic Detection** - Pattern-based sensitive data identification
@@ -126,6 +133,7 @@ Robust privacy protection in logging:
 Comprehensive request performance tracking:
 
 #### Timing Implementation
+
 ```python
 start_time: float = time.time()
 # ... process request ...
@@ -134,6 +142,7 @@ process_time_ms: int = round(process_time * 1000)
 ```
 
 #### Performance Metrics
+
 - **Request Duration** - End-to-end request processing time
 - **Response Time Distribution** - Percentile analysis support
 - **Slow Request Detection** - Performance bottleneck identification
@@ -144,6 +153,7 @@ process_time_ms: int = round(process_time * 1000)
 Structured logging for monitoring systems:
 
 #### Log Structure
+
 ```python
 log_extra: dict[str, Any] = {
     "request_id": request_id,
@@ -162,12 +172,13 @@ log_extra: dict[str, Any] = {
 Comprehensive error tracking with full request context:
 
 #### Error Processing
+
 ```python
 except Exception as exc:
     # Log exceptions with request context
     error_process_time: float = time.time() - start_time
     error_process_time_ms: int = round(error_process_time * 1000)
-    
+
     cast("Logger", self.logger.bind(**log_extra, error=str(exc))).exception(
         f"Error processing request {request.method} {request.url.path}: {exc}",
     )
@@ -175,6 +186,7 @@ except Exception as exc:
 ```
 
 #### Error Handling Features
+
 - **Context Preservation** - Full request context in error logs
 - **Exception Re-raising** - Proper error propagation to clients
 - **Timing Tracking** - Error response time measurement
@@ -185,6 +197,7 @@ except Exception as exc:
 Robust middleware operation under various conditions:
 
 #### Resilience Features
+
 - **Graceful Degradation** - Continue operation despite logging failures
 - **Resource Cleanup** - Proper context variable cleanup on errors
 - **Memory Management** - Efficient handling of large request volumes
@@ -197,6 +210,7 @@ Robust middleware operation under various conditions:
 Consistent, machine-readable log output:
 
 #### Request Logging Format
+
 ```python
 self.logger.info(
     f"Request {request.method} {request.url.path} | query: {filtered_query_str}"
@@ -204,6 +218,7 @@ self.logger.info(
 ```
 
 #### Response Logging Format
+
 ```python
 self.logger.info(
     f"Response {request.method} {request.url.path} completed with status {response.status_code} in {process_time_ms}ms"
@@ -215,6 +230,7 @@ self.logger.info(
 Enhanced log entries with contextual information:
 
 #### Enrichment Features
+
 - **Request Correlation** - Unique request ID in every log entry
 - **HTTP Method** - Request method for filtering and analysis
 - **URL Path** - Request path without sensitive query parameters
@@ -228,6 +244,7 @@ Enhanced log entries with contextual information:
 Seamless integration with FastAPI's middleware system:
 
 #### Middleware Registration
+
 ```python
 from fastapi import FastAPI
 from middlewares.logging import RequestLoggingMiddleware
@@ -237,6 +254,7 @@ app.add_middleware(RequestLoggingMiddleware)
 ```
 
 #### Configuration Options
+
 ```python
 app.add_middleware(
     RequestLoggingMiddleware,
@@ -251,6 +269,7 @@ app.add_middleware(
 Integration with external services and systems:
 
 #### Service Features
+
 - **Load Balancer Integration** - Health check path exclusion
 - **Monitoring System** - Structured log format for ingestion
 - **API Gateway** - Request ID propagation support
@@ -263,6 +282,7 @@ Integration with external services and systems:
 Excellent development and debugging support:
 
 #### Development Features
+
 - **Local Debugging** - Detailed request information
 - **Request Tracing** - Complete request lifecycle visibility
 - **Performance Profiling** - Request timing analysis
@@ -273,6 +293,7 @@ Excellent development and debugging support:
 Comprehensive testing capabilities:
 
 #### Testing Features
+
 - **Middleware Isolation** - Independent middleware testing
 - **Mock Integration** - Easy mocking for unit tests
 - **Request Simulation** - Test request/response logging
@@ -285,6 +306,7 @@ Comprehensive testing capabilities:
 Comprehensive configuration options for different environments:
 
 #### Configuration Parameters
+
 - **Path Exclusions** - Skip specific endpoints from logging
 - **Custom Loggers** - Integration with different logging frameworks
 - **Header Customization** - Configurable request ID headers
@@ -295,6 +317,7 @@ Comprehensive configuration options for different environments:
 Different configurations for various environments:
 
 #### Environment Configurations
+
 - **Development** - Verbose logging with full request details
 - **Staging** - Production-like logging with testing features
 - **Production** - Optimized logging with security filtering
@@ -307,6 +330,7 @@ Different configurations for various environments:
 Full observability into application request patterns:
 
 #### Observability Features
+
 - **Request Rate Monitoring** - Track application throughput
 - **Error Rate Analysis** - Monitor application health
 - **Performance Metrics** - Response time percentiles
@@ -317,6 +341,7 @@ Full observability into application request patterns:
 Designed for integration with modern monitoring stacks:
 
 #### Integration Support
+
 - **Prometheus Metrics** - Structured logging for metric extraction
 - **ELK Stack** - JSON log format for Elasticsearch ingestion
 - **APM Integration** - Application Performance Monitoring support
@@ -329,6 +354,7 @@ Designed for integration with modern monitoring stacks:
 Security-first approach to request logging:
 
 #### Security Features
+
 - **Data Protection** - Comprehensive sensitive data filtering
 - **Audit Trail** - Complete request audit logging
 - **Compliance Support** - GDPR and privacy regulation compliance
@@ -339,6 +365,7 @@ Security-first approach to request logging:
 Advanced security monitoring capabilities:
 
 #### Detection Features
+
 - **Anomaly Detection** - Unusual request pattern identification
 - **Rate Limiting Support** - Integration with abuse prevention
 - **Authentication Tracking** - User session monitoring
@@ -351,6 +378,7 @@ Advanced security monitoring capabilities:
 High-performance middleware with minimal overhead:
 
 #### Performance Features
+
 - **Async Operations** - Non-blocking request processing
 - **Memory Efficiency** - Minimal memory footprint
 - **CPU Optimization** - Efficient string processing
@@ -361,6 +389,7 @@ High-performance middleware with minimal overhead:
 Designed for high-throughput production environments:
 
 #### Scalability Features
+
 - **Horizontal Scaling** - Stateless design for multi-instance deployment
 - **Load Distribution** - Efficient processing across instances
 - **Resource Management** - Optimal CPU and memory usage

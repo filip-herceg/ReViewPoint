@@ -42,6 +42,7 @@ Models Layer (ORM entities)
 ### Dependency Management
 
 Services coordinate multiple lower-level components:
+
 - **Repositories** for data access operations
 - **Models** for entity definitions and relationships
 - **Schemas** for data validation and serialization
@@ -74,6 +75,7 @@ async def authenticate_user(session: AsyncSession, email: str, password: str) ->
 ### Error Handling Strategy
 
 Services implement comprehensive error handling:
+
 - **Business validation errors** - Custom exceptions for business rule violations
 - **External system errors** - Graceful handling of third-party service failures
 - **Transaction rollback** - Proper cleanup on operation failures
@@ -84,6 +86,7 @@ Services implement comprehensive error handling:
 ### User Management
 
 The user service domain includes:
+
 - **Registration workflows** with validation and verification
 - **Authentication operations** including JWT token management
 - **Profile management** with preferences and avatar handling
@@ -94,6 +97,7 @@ The user service domain includes:
 ### File Management
 
 The upload service domain includes:
+
 - **File upload operations** with security validation and storage
 - **File metadata management** with database coordination
 - **Access control** ensuring users can only access their files
@@ -105,6 +109,7 @@ The upload service domain includes:
 ### Authentication Security
 
 Services implement comprehensive authentication security:
+
 - **Password validation** with strength requirements and character restrictions
 - **JWT token management** with proper expiration and blacklisting
 - **Rate limiting** for authentication attempts and token refresh
@@ -113,6 +118,7 @@ Services implement comprehensive authentication security:
 ### Authorization Patterns
 
 Services enforce authorization through:
+
 - **Role-based access control** with hierarchical permissions
 - **Resource ownership** verification for user-specific operations
 - **Operation-level permissions** for fine-grained access control
@@ -121,6 +127,7 @@ Services enforce authorization through:
 ### Data Protection
 
 Services implement data protection measures:
+
 - **Input validation** and sanitization for all user inputs
 - **Output filtering** to prevent information disclosure
 - **Audit trails** for compliance and security monitoring
@@ -131,6 +138,7 @@ Services implement data protection measures:
 ### Database Transactions
 
 Services manage database transactions properly:
+
 - **Atomic operations** ensuring data consistency across multiple tables
 - **Rollback handling** for failed operations with proper cleanup
 - **Session management** with proper connection lifecycle
@@ -139,6 +147,7 @@ Services manage database transactions properly:
 ### External System Coordination
 
 Services coordinate with external systems:
+
 - **Compensation patterns** for distributed transaction scenarios
 - **Idempotency** ensuring operations can be safely retried
 - **Circuit breaker patterns** for resilient external service integration
@@ -149,6 +158,7 @@ Services coordinate with external systems:
 ### Async Operations
 
 Services leverage async patterns for performance:
+
 - **Non-blocking I/O** for database and external API operations
 - **Concurrent processing** for independent operations
 - **Connection pooling** for efficient resource utilization
@@ -157,6 +167,7 @@ Services leverage async patterns for performance:
 ### Resource Management
 
 Services implement efficient resource usage:
+
 - **Memory management** with proper object lifecycle
 - **File handling** with cleanup and temporary storage management
 - **Connection management** with proper session handling
@@ -167,6 +178,7 @@ Services implement efficient resource usage:
 ### Business Logic Testing
 
 Services support comprehensive testing:
+
 - **Unit testing** for individual business operations
 - **Integration testing** for multi-component workflows
 - **Mock support** for external dependencies
@@ -175,6 +187,7 @@ Services support comprehensive testing:
 ### Test Isolation
 
 Services enable proper test isolation:
+
 - **Transaction rollback** for database test isolation
 - **Mock external services** to prevent side effects
 - **Deterministic behavior** for repeatable test results
@@ -185,6 +198,7 @@ Services enable proper test isolation:
 ### Settings Integration
 
 Services integrate with application configuration:
+
 - **Environment-specific behavior** through settings injection
 - **Feature flags** for conditional business logic
 - **External service configuration** with proper secret management
@@ -193,6 +207,7 @@ Services integrate with application configuration:
 ### Development vs Production
 
 Services adapt behavior for different environments:
+
 - **Development shortcuts** for faster development cycles
 - **Production security** with full validation and logging
 - **Test configurations** with mock services and deterministic behavior
@@ -203,6 +218,7 @@ Services adapt behavior for different environments:
 ### Business Metrics
 
 Services provide business-level monitoring:
+
 - **Operation success rates** for business workflow monitoring
 - **Performance metrics** for business operation timing
 - **Error rates** and categorization for operational insights
@@ -211,6 +227,7 @@ Services provide business-level monitoring:
 ### Audit and Compliance
 
 Services support audit and compliance requirements:
+
 - **Audit logging** for all sensitive operations
 - **Data access logging** for privacy compliance
 - **Change tracking** for regulatory requirements
@@ -221,6 +238,7 @@ Services support audit and compliance requirements:
 ### API Layer Integration
 
 Services integrate cleanly with the API layer:
+
 - **DTO conversion** between API schemas and service models
 - **Error translation** from service exceptions to HTTP responses
 - **Async support** for non-blocking API operations
@@ -229,6 +247,7 @@ Services integrate cleanly with the API layer:
 ### Repository Layer Coordination
 
 Services coordinate effectively with repositories:
+
 - **Transaction boundaries** spanning multiple repository operations
 - **Query coordination** for complex data retrieval needs
 - **Bulk operations** for performance optimization
@@ -239,6 +258,7 @@ Services coordinate effectively with repositories:
 ### Business Exception Hierarchy
 
 Services define clear exception hierarchies:
+
 - **ValidationError** for business rule violations
 - **UserNotFoundError** for entity lookup failures
 - **UserAlreadyExistsError** for uniqueness constraint violations
@@ -247,6 +267,7 @@ Services define clear exception hierarchies:
 ### Error Recovery
 
 Services implement error recovery patterns:
+
 - **Retry mechanisms** for transient failures
 - **Fallback strategies** for degraded functionality
 - **Circuit breaker patterns** for external service failures

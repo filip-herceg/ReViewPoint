@@ -36,6 +36,7 @@ await session.commit()
 ```
 
 **Table Configuration:**
+
 - `__tablename__ = "files"` - Database table name
 - `__table_args__` - Custom indexing for performance optimization
 - Inherits from `BaseModel` (id, created_at, updated_at)
@@ -45,6 +46,7 @@ await session.commit()
 ### File Identification
 
 **Filename Storage:**
+
 ```python
 filename: Mapped[str] = mapped_column(String(255), nullable=False)
 ```
@@ -57,6 +59,7 @@ filename: Mapped[str] = mapped_column(String(255), nullable=False)
 ### File Type Management
 
 **Content Type Classification:**
+
 ```python
 content_type: Mapped[str] = mapped_column(String(128), nullable=False)
 ```
@@ -67,6 +70,7 @@ content_type: Mapped[str] = mapped_column(String(128), nullable=False)
 - **Security**: Enables content validation and security filtering
 
 **Common Content Types:**
+
 - `application/pdf` - PDF documents
 - `application/msword` - Microsoft Word documents
 - `text/plain` - Plain text files
@@ -76,6 +80,7 @@ content_type: Mapped[str] = mapped_column(String(128), nullable=False)
 ### File Size Tracking
 
 **Size Monitoring:**
+
 ```python
 size: Mapped[int] = mapped_column(BigInteger, nullable=True, default=0)
 ```
@@ -86,6 +91,7 @@ size: Mapped[int] = mapped_column(BigInteger, nullable=True, default=0)
 - **Default Value**: Defaults to 0 for unknown sizes
 
 **Size Usage Examples:**
+
 ```python
 # Convert bytes to human-readable format
 def format_file_size(size_bytes: int) -> str:
@@ -101,6 +107,7 @@ def format_file_size(size_bytes: int) -> str:
 ### Ownership Management
 
 **User Relationship:**
+
 ```python
 user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 ```
@@ -111,6 +118,7 @@ user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 - **Cascade Support**: Supports cascading operations
 
 **Bidirectional Relationship:**
+
 ```python
 user: Mapped[User] = relationship("User", back_populates="files")
 ```
@@ -125,6 +133,7 @@ user: Mapped[User] = relationship("User", back_populates="files")
 ### Indexing Strategy
 
 **Performance Indexes:**
+
 ```python
 __table_args__ = (Index("ix_files_user_id", "user_id"),)
 ```
@@ -135,6 +144,7 @@ __table_args__ = (Index("ix_files_user_id", "user_id"),)
 - **Query Optimization**: Enables efficient file listing and filtering
 
 **Additional Recommended Indexes:**
+
 ```python
 # For large-scale deployments
 __table_args__ = (
@@ -148,6 +158,7 @@ __table_args__ = (
 ### Query Patterns
 
 **Efficient File Queries:**
+
 ```python
 # Get files by user
 user_files = await session.execute(
@@ -177,17 +188,17 @@ async def create_file_record(
     user_id: int
 ) -> File:
     """Create a new file record in the database."""
-    
+
     # Validate inputs
     if not filename or len(filename) > 255:
         raise ValueError("Invalid filename")
-    
+
     if not content_type or len(content_type) > 128:
         raise ValueError("Invalid content type")
-    
+
     if size < 0:
         raise ValueError("Invalid file size")
-    
+
     # Create file record
     file = File(
         filename=filename,
@@ -195,10 +206,10 @@ async def create_file_record(
         size=size,
         user_id=user_id
     )
-    
+
     session.add(file)
     await session.commit()
-    
+
     logger.info(f"File record created: {file.filename} ({file.size} bytes)")
     return file
 ```
@@ -213,16 +224,16 @@ async def get_user_files(
     offset: int = 0
 ) -> list[File]:
     """Retrieve files for a specific user with optional filtering."""
-    
+
     query = select(File).where(File.user_id == user_id)
-    
+
     # Apply content type filter if provided
     if content_type:
         query = query.where(File.content_type == content_type)
-    
+
     # Apply pagination
     query = query.order_by(File.created_at.desc()).offset(offset).limit(limit)
-    
+
     result = await session.execute(query)
     return list(result.scalars().all())
 ```
@@ -232,31 +243,31 @@ async def get_user_files(
 ```python
 async def get_file_statistics(user_id: int) -> dict:
     """Get comprehensive file statistics for a user."""
-    
+
     # Total file count
     total_files = await session.scalar(
         select(func.count(File.id)).where(File.user_id == user_id)
     )
-    
+
     # Total storage used
     total_size = await session.scalar(
         select(func.sum(File.size)).where(File.user_id == user_id)
     ) or 0
-    
+
     # Files by content type
     content_type_stats = await session.execute(
         select(File.content_type, func.count(File.id))
         .where(File.user_id == user_id)
         .group_by(File.content_type)
     )
-    
+
     # Recent files (last 30 days)
     recent_date = datetime.utcnow() - timedelta(days=30)
     recent_files = await session.scalar(
         select(func.count(File.id))
         .where(File.user_id == user_id, File.created_at >= recent_date)
     )
-    
+
     return {
         "total_files": total_files,
         "total_size_bytes": total_size,
@@ -275,39 +286,39 @@ async def update_file_metadata(
     content_type: str = None
 ) -> File:
     """Update file metadata."""
-    
+
     file = await session.get(File, file_id)
     if not file:
         raise ValueError("File not found")
-    
+
     # Update provided fields
     if filename is not None:
         if len(filename) > 255:
             raise ValueError("Filename too long")
         file.filename = filename
-    
+
     if content_type is not None:
         if len(content_type) > 128:
             raise ValueError("Content type too long")
         file.content_type = content_type
-    
+
     await session.commit()
     return file
 
 async def delete_file_record(file_id: int, user_id: int) -> bool:
     """Delete a file record (ownership check included)."""
-    
+
     file = await session.execute(
         select(File).where(File.id == file_id, File.user_id == user_id)
     )
     file = file.scalar_one_or_none()
-    
+
     if not file:
         return False
-    
+
     await session.delete(file)
     await session.commit()
-    
+
     logger.info(f"File record deleted: {file.filename}")
     return True
 ```
@@ -317,10 +328,11 @@ async def delete_file_record(file_id: int, user_id: int) -> bool:
 ### Access Control
 
 **Ownership Verification:**
+
 ```python
 async def verify_file_ownership(file_id: int, user_id: int) -> bool:
     """Verify that a user owns a specific file."""
-    
+
     file = await session.execute(
         select(File).where(File.id == file_id, File.user_id == user_id)
     )
@@ -328,10 +340,11 @@ async def verify_file_ownership(file_id: int, user_id: int) -> bool:
 ```
 
 **Secure File Access:**
+
 ```python
 async def get_file_for_user(file_id: int, user_id: int) -> File | None:
     """Securely retrieve file with ownership check."""
-    
+
     result = await session.execute(
         select(File).where(File.id == file_id, File.user_id == user_id)
     )
@@ -341,6 +354,7 @@ async def get_file_for_user(file_id: int, user_id: int) -> File | None:
 ### Content Validation
 
 **Content Type Security:**
+
 ```python
 ALLOWED_CONTENT_TYPES = {
     "application/pdf",
@@ -359,6 +373,7 @@ def validate_content_type(content_type: str) -> bool:
 ```
 
 **Size Limits:**
+
 ```python
 MAX_FILE_SIZE = 100 * 1024 * 1024  # 100MB
 
@@ -372,6 +387,7 @@ def validate_file_size(size: int) -> bool:
 ### Database Performance
 
 **Efficient Queries:**
+
 ```python
 # Use indexes for filtering
 async def get_files_by_type_efficiently(content_type: str, limit: int = 100):
@@ -394,6 +410,7 @@ async def update_files_batch(file_updates: list[dict]):
 ### Memory Management
 
 **Large File Handling:**
+
 ```python
 # Stream large file lists instead of loading all at once
 async def stream_user_files(user_id: int, batch_size: int = 1000):
@@ -406,10 +423,10 @@ async def stream_user_files(user_id: int, batch_size: int = 1000):
             .limit(batch_size)
         )
         file_batch = list(files.scalars())
-        
+
         if not file_batch:
             break
-            
+
         yield file_batch
         offset += batch_size
 ```
@@ -426,7 +443,7 @@ async def create_file_safely(file_data: dict) -> File:
         session.add(file)
         await session.commit()
         return file
-        
+
     except IntegrityError as e:
         await session.rollback()
         if "foreign key constraint" in str(e).lower():
@@ -434,7 +451,7 @@ async def create_file_safely(file_data: dict) -> File:
         elif "check constraint" in str(e).lower():
             raise ValueError("Invalid file data")
         raise
-        
+
     except Exception as e:
         await session.rollback()
         logger.error(f"File creation failed: {e}")
@@ -446,21 +463,21 @@ async def create_file_safely(file_data: dict) -> File:
 ```python
 def validate_file_data(filename: str, content_type: str, size: int) -> None:
     """Comprehensive file data validation."""
-    
+
     errors = []
-    
+
     if not filename or len(filename) > 255:
         errors.append("Invalid filename length")
-    
+
     if not content_type or len(content_type) > 128:
         errors.append("Invalid content type length")
-    
+
     if not validate_content_type(content_type):
         errors.append("Content type not allowed")
-    
+
     if size < 0 or size > MAX_FILE_SIZE:
         errors.append("Invalid file size")
-    
+
     if errors:
         raise ValueError("; ".join(errors))
 ```
@@ -504,7 +521,7 @@ def test_file_model_creation():
         size=1024,
         user_id=1
     )
-    
+
     assert file.filename == "test.pdf"
     assert file.content_type == "application/pdf"
     assert file.size == 1024
@@ -514,7 +531,7 @@ def test_file_string_representation():
     """Test file string representation."""
     file = File(filename="test.pdf", content_type="application/pdf", user_id=1)
     file.id = 123
-    
+
     repr_str = repr(file)
     assert "File id=123 filename=test.pdf" in repr_str
 ```
@@ -524,12 +541,12 @@ def test_file_string_representation():
 ```python
 async def test_file_database_operations():
     """Test file database operations."""
-    
+
     # Create user first
     user = User(email="test@example.com", hashed_password="hash")
     session.add(user)
     await session.commit()
-    
+
     # Create file
     file = File(
         filename="integration_test.pdf",
@@ -539,14 +556,14 @@ async def test_file_database_operations():
     )
     session.add(file)
     await session.commit()
-    
+
     # Verify creation
     assert file.id is not None
     assert file.created_at is not None
-    
+
     # Test relationship
     assert file.user.email == "test@example.com"
-    
+
     # Test file retrieval
     retrieved_file = await session.get(File, file.id)
     assert retrieved_file.filename == "integration_test.pdf"
@@ -557,23 +574,23 @@ async def test_file_database_operations():
 ```python
 async def test_file_query_performance():
     """Test file query performance with indexes."""
-    
+
     # Create multiple files
     files = [
-        File(filename=f"test_{i}.pdf", content_type="application/pdf", 
+        File(filename=f"test_{i}.pdf", content_type="application/pdf",
              size=1024*i, user_id=1)
         for i in range(1000)
     ]
     session.add_all(files)
     await session.commit()
-    
+
     # Test indexed query performance
     start_time = time.time()
     user_files = await session.execute(
         select(File).where(File.user_id == 1).limit(100)
     )
     query_time = time.time() - start_time
-    
+
     # Verify performance (should be fast with index)
     assert query_time < 0.1  # Less than 100ms
     assert len(list(user_files.scalars())) == 100
@@ -633,7 +650,7 @@ ALLOWED_CONTENT_TYPES = {
     ],
     "images": [
         "image/jpeg",
-        "image/png", 
+        "image/png",
         "image/gif"
     ],
     "data": [

@@ -14,11 +14,11 @@ The main SQLAlchemy model that defines the file entity structure:
 class File(BaseModel):
     """
     SQLAlchemy model for uploaded files.
-    
+
     Represents files uploaded by users with comprehensive metadata,
     security tracking, and relationship management.
     """
-    
+
     __tablename__ = "files"
     __table_args__ = (
         Index('ix_files_uploaded_by', 'uploaded_by'),
@@ -30,7 +30,7 @@ class File(BaseModel):
         CheckConstraint('file_size > 0', name='ck_files_size_positive'),
         CheckConstraint('char_length(filename) > 0', name='ck_files_filename_not_empty')
     )
-    
+
     # Primary identification
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -39,33 +39,33 @@ class File(BaseModel):
         server_default=text("gen_random_uuid()"),
         comment="Unique file identifier"
     )
-    
+
     # File metadata
     filename: Mapped[str] = mapped_column(
         String(255),
         nullable=False,
         comment="Original filename as uploaded"
     )
-    
+
     file_path: Mapped[str] = mapped_column(
         String(500),
         nullable=False,
         unique=True,
         comment="Unique storage path for the file"
     )
-    
+
     file_size: Mapped[int] = mapped_column(
         BigInteger,
         nullable=False,
         comment="File size in bytes"
     )
-    
+
     mime_type: Mapped[str] = mapped_column(
         String(100),
         nullable=False,
         comment="MIME type of the file"
     )
-    
+
     file_hash: Mapped[Optional[str]] = mapped_column(
         String(64),  # SHA-256 hash
         nullable=True,
@@ -78,7 +78,7 @@ class File(BaseModel):
 ```python
 class FileStatus(str, Enum):
     """File processing status enumeration."""
-    
+
     UPLOADING = "uploading"      # File upload in progress
     UPLOADED = "uploaded"        # Successfully uploaded, ready for processing
     PROCESSING = "processing"    # File being processed/analyzed
@@ -89,7 +89,7 @@ class FileStatus(str, Enum):
 
 class FileType(str, Enum):
     """Supported file type categories."""
-    
+
     PDF = "pdf"
     DOCUMENT = "document"  # Word, RTF, etc.
     TEXT = "text"         # Plain text files
@@ -315,7 +315,7 @@ uploaded_at: Mapped[datetime] = mapped_column(
 def get_file_extension(self) -> str:
     """
     Get file extension from filename.
-    
+
     Returns:
         File extension in lowercase (without dot)
     """
@@ -326,7 +326,7 @@ def get_file_extension(self) -> str:
 def get_display_name(self) -> str:
     """
     Get display-friendly filename.
-    
+
     Returns:
         Title if available, otherwise filename
     """
@@ -335,7 +335,7 @@ def get_display_name(self) -> str:
 def is_pdf(self) -> bool:
     """Check if file is a PDF document."""
     return (
-        self.mime_type == 'application/pdf' or 
+        self.mime_type == 'application/pdf' or
         self.get_file_extension() == 'pdf'
     )
 
@@ -374,7 +374,7 @@ def mark_processing_completed(self, results: Optional[Dict[str, Any]] = None) ->
     self.status = FileStatus.PROCESSED
     self.processing_completed_at = datetime.utcnow()
     self.processing_error = None
-    
+
     if results:
         self.analysis_results = results
 
@@ -396,31 +396,31 @@ def quarantine(self, reason: str) -> None:
 def is_safe_to_process(self) -> bool:
     """
     Check if file is safe for processing.
-    
+
     Returns:
         True if file can be safely processed
     """
     # Check virus scan status
     if self.virus_scan_status == "infected":
         return False
-    
+
     # Check if quarantined
     if self.status == FileStatus.QUARANTINED:
         return False
-    
+
     # Check file size limits
     if self.file_size > get_setting("MAX_FILE_SIZE", 100 * 1024 * 1024):  # 100MB default
         return False
-    
+
     return True
 
 def validate_file_hash(self, expected_hash: str) -> bool:
     """
     Validate file integrity using hash.
-    
+
     Args:
         expected_hash: Expected SHA-256 hash
-        
+
     Returns:
         True if hash matches
     """
@@ -438,64 +438,64 @@ def increment_download_count(self) -> None:
 def get_searchable_content(self) -> str:
     """
     Get content for full-text search indexing.
-    
+
     Returns:
         Combined searchable text
     """
     content_parts = []
-    
+
     # Add basic metadata
     content_parts.append(self.filename)
     if self.title:
         content_parts.append(self.title)
     if self.description:
         content_parts.append(self.description)
-    
+
     # Add extracted text
     if self.extracted_text:
         content_parts.append(self.extracted_text)
-    
+
     # Add tags
     if self.tags:
         content_parts.extend(self.tags)
-    
+
     # Add authors and journal
     if self.authors:
         content_parts.extend(self.authors)
     if self.journal:
         content_parts.append(self.journal)
-    
+
     return ' '.join(content_parts)
 
 def has_analysis_result(self, analysis_type: str) -> bool:
     """
     Check if specific analysis result exists.
-    
+
     Args:
         analysis_type: Type of analysis to check
-        
+
     Returns:
         True if analysis result exists
     """
     if not self.analysis_results:
         return False
-    
+
     return analysis_type in self.analysis_results
 
 def get_analysis_result(self, analysis_type: str, default=None):
     """
     Get specific analysis result.
-    
+
     Args:
         analysis_type: Type of analysis result
         default: Default value if not found
-        
+
     Returns:
         Analysis result or default
     """
     if not self.analysis_results:
         return default
-    
+
     return self.analysis_results.get(analysis_type, default)
 ```
 
@@ -512,7 +512,7 @@ def processing_duration(self) -> Optional[timedelta]:
     """Duration of file processing."""
     if not self.processing_started_at or not self.processing_completed_at:
         return None
-    
+
     return self.processing_completed_at - self.processing_started_at
 
 @hybrid_property
@@ -687,7 +687,7 @@ def test_file_creation():
         mime_type="application/pdf",
         uploaded_by=user_id
     )
-    
+
     assert file.filename == "test.pdf"
     assert file.file_size_mb == 0.001
     assert file.is_pdf() is True
@@ -702,20 +702,20 @@ def test_file_status_transitions():
         mime_type="application/pdf",
         uploaded_by=user_id
     )
-    
+
     # Initial status
     assert file.status == FileStatus.UPLOADING
-    
+
     # Mark as uploaded
     file.mark_as_uploaded()
     assert file.status == FileStatus.UPLOADED
     assert file.uploaded_at is not None
-    
+
     # Start processing
     file.mark_processing_started()
     assert file.status == FileStatus.PROCESSING
     assert file.processing_started_at is not None
-    
+
     # Complete processing
     results = {"test": "data"}
     file.mark_processing_completed(results)
@@ -733,10 +733,10 @@ def test_file_security_validation():
         uploaded_by=user_id,
         virus_scan_status="clean"
     )
-    
+
     # Should be safe to process
     assert file.is_safe_to_process() is True
-    
+
     # Quarantine file
     file.quarantine("Suspicious content detected")
     assert file.status == FileStatus.QUARANTINED
@@ -757,7 +757,7 @@ async def test_file_with_user_relationship(async_db_session):
     )
     async_db_session.add(user)
     await async_db_session.commit()
-    
+
     # Create file
     file = File(
         filename="test.pdf",
@@ -768,7 +768,7 @@ async def test_file_with_user_relationship(async_db_session):
     )
     async_db_session.add(file)
     await async_db_session.commit()
-    
+
     # Test relationship
     await async_db_session.refresh(file, ["user"])
     assert file.user.email == "test@example.com"

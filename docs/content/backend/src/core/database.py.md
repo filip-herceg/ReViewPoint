@@ -139,13 +139,13 @@ def _log_engine_pool_state(engine: AsyncEngine, context: str) -> None:
         checked_in = safe_call("checkedin")
         overflow = safe_call("overflow")
         invalidated = safe_call("invalidated")
-        
+
         logger.info(f"[DB_POOL_STATE] Pool size: {pool_size}")
         logger.info(f"[DB_POOL_STATE] Checked out: {checked_out}")
         logger.info(f"[DB_POOL_STATE] Checked in: {checked_in}")
         logger.info(f"[DB_POOL_STATE] Overflow: {overflow}")
         logger.info(f"[DB_POOL_STATE] Invalid: {invalidated}")
-        
+
         # Log connection URL (sanitized)
         db_url: str = str(engine.url)
         sanitized_url: str = db_url.split("@")[1] if "@" in db_url else db_url
@@ -179,27 +179,27 @@ def get_engine_and_sessionmaker() -> (
     with _creation_lock:
         _engine_creation_count += 1
         creation_count: int = _engine_creation_count
-    
+
     worker_id, process_id, thread_id = _log_worker_info()
     logger.info(f"[DB_ENGINE_CREATE] Starting engine creation #{creation_count}")
     logger.info(
         f"[DB_ENGINE_CREATE] Worker: {worker_id}, PID: {process_id}, Thread: {thread_id}"
     )
-    
+
     start_time: float = time.time()
     try:
         settings = get_settings()
         url_obj: URL = make_url(settings.async_db_url)
-        
+
         logger.info(f"[DB_ENGINE_CREATE] Database: {url_obj.database}")
         logger.info(f"[DB_ENGINE_CREATE] Host: {url_obj.host}:{url_obj.port}")
         logger.info(f"[DB_ENGINE_CREATE] Driver: {url_obj.drivername}")
-        
+
         engine_kwargs: dict[str, object] = {
             "pool_pre_ping": True,
             "future": True,
         }
-        
+
         # PostgreSQL-specific configuration
         if url_obj.drivername.startswith("postgresql"):
             if os.environ.get("PYTEST_XDIST_WORKER"):
@@ -226,7 +226,7 @@ def get_engine_and_sessionmaker() -> (
                 logger.info(
                     f"[DB_ENGINE_CREATE] Using standard pool settings: size={engine_kwargs['pool_size']}, overflow={engine_kwargs['max_overflow']}"
                 )
-        
+
         # SQLite-specific configuration
         elif url_obj.drivername.startswith("sqlite"):
             connect_args = engine_kwargs.get("connect_args", {})
@@ -241,15 +241,15 @@ def get_engine_and_sessionmaker() -> (
             logger.info(
                 f"[DB_ENGINE_CREATE] Unknown database type: {url_obj.drivername}, using default settings"
             )
-        
+
         logger.info(f"[DB_ENGINE_CREATE] Engine kwargs: {engine_kwargs}")
-        
+
         # Create async engine
         engine: AsyncEngine = create_async_engine(
             settings.async_db_url,
             **engine_kwargs,
         )
-        
+
         # Create session factory
         AsyncSessionLocal: async_sessionmaker[AsyncSession] = async_sessionmaker(
             bind=engine,
@@ -257,15 +257,15 @@ def get_engine_and_sessionmaker() -> (
             autoflush=False,
             autocommit=False,
         )
-        
+
         creation_time: float = time.time() - start_time
         logger.info(
             f"[DB_ENGINE_CREATE] Engine #{creation_count} created successfully in {creation_time:.3f}s"
         )
-        
+
         _log_engine_pool_state(engine, f"After creation #{creation_count}")
         return engine, AsyncSessionLocal
-        
+
     except Exception as exc:
         creation_time = time.time() - start_time
         logger.error(
@@ -323,18 +323,18 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
         Exception: For any other error.
     """
     global AsyncSessionLocal, _session_creation_count, _connection_failures
-    
+
     with _creation_lock:
         _session_creation_count += 1
         session_count: int = _session_creation_count
-    
+
     worker_id, process_id, thread_id = _log_worker_info()
     logger.debug(
         f"[DB_SESSION] Creating session #{session_count} - Worker: {worker_id}"
     )
-    
+
     session_start_time: float = time.time()
-    
+
     if AsyncSessionLocal is None:
         logger.info(
             "[DB_SESSION] SessionLocal not initialized, creating engine/sessionmaker"
@@ -344,7 +344,7 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
         except Exception as exc:
             logger.error(f"[DB_SESSION] Failed to initialize SessionLocal: {exc}")
             raise
-    
+
     session: AsyncSession | None = None
     try:
         # Create session
@@ -357,7 +357,7 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
         logger.debug(
             f"[DB_SESSION] Session #{session_count} created in {session_creation_time:.3f}s"
         )
-        
+
         # Test the connection immediately
         connection_test_start: float = time.time()
         try:
@@ -372,27 +372,27 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
                 f"[DB_SESSION] Session #{session_count} connection test failed in {connection_test_time:.3f}s: {exc}"
             )
             raise
-        
+
         yield session
-        
+
         # Log successful session completion
         total_session_time = time.time() - session_start_time
         logger.debug(
             f"[DB_SESSION] Session #{session_count} completed successfully in {total_session_time:.3f}s"
         )
-        
+
     except SQLAlchemyError as exc:
         with _creation_lock:
             _connection_failures += 1
             failure_count = _connection_failures
-        
+
         total_session_time = time.time() - session_start_time
         logger.error(
             f"[DB_SESSION] Session #{session_count} SQLAlchemy error #{failure_count} after {total_session_time:.3f}s: {exc}"
         )
         logger.error(f"[DB_SESSION] Error type: {type(exc).__name__}")
         logger.error(f"[DB_SESSION] Worker: {worker_id}, PID: {process_id}")
-        
+
         if session:
             try:
                 await session.rollback()
@@ -404,12 +404,12 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
                     f"[DB_SESSION] Session #{session_count} rollback failed: {rollback_error}"
                 )
         raise
-        
+
     except Exception as exc:
         with _creation_lock:
             _connection_failures += 1
             failure_count = _connection_failures
-        
+
         total_session_time = time.time() - session_start_time
         logger.error(
             f"[DB_SESSION] Session #{session_count} unexpected error #{failure_count} after {total_session_time:.3f}s: {exc}"
@@ -417,7 +417,7 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
         logger.error(f"[DB_SESSION] Error type: {type(exc).__name__}")
         logger.error(f"[DB_SESSION] Worker: {worker_id}, PID: {process_id}")
         raise
-        
+
     finally:
         if session:
             try:
@@ -454,12 +454,12 @@ async def db_healthcheck() -> bool:
         Exception: If connection or query fails.
     """
     global engine
-    
+
     worker_id, process_id, thread_id = _log_worker_info()
     logger.info(f"[DB_HEALTHCHECK] Starting healthcheck - Worker: {worker_id}")
-    
+
     healthcheck_start_time: float = time.time()
-    
+
     if engine is None:
         logger.info("[DB_HEALTHCHECK] Engine not initialized, creating new engine")
         try:
@@ -470,7 +470,7 @@ async def db_healthcheck() -> bool:
                 f"[DB_HEALTHCHECK] Failed to create engine in {healthcheck_time:.3f}s: {exc}"
             )
             return False
-    
+
     try:
         connection_start_time: float = time.time()
         async with engine.connect() as conn:
@@ -478,19 +478,19 @@ async def db_healthcheck() -> bool:
             logger.debug(
                 f"[DB_HEALTHCHECK] Connection established in {connection_time:.3f}s"
             )
-            
+
             query_start_time: float = time.time()
             await conn.execute(text("SELECT 1"))
             query_time = time.time() - query_start_time
-            
+
             total_healthcheck_time = time.time() - healthcheck_start_time
             logger.info(
                 f"[DB_HEALTHCHECK] SUCCESS - Total: {total_healthcheck_time:.3f}s, Query: {query_time:.3f}s"
             )
-        
+
         _log_engine_pool_state(engine, "After successful healthcheck")
         return True
-        
+
     except Exception as exc:
         total_healthcheck_time = time.time() - healthcheck_start_time
         logger.error(
@@ -498,7 +498,7 @@ async def db_healthcheck() -> bool:
         )
         logger.error(f"[DB_HEALTHCHECK] Error type: {type(exc).__name__}")
         logger.error(f"[DB_HEALTHCHECK] Worker: {worker_id}, PID: {process_id}")
-        
+
         if engine:
             _log_engine_pool_state(engine, "After failed healthcheck")
         return False
@@ -539,9 +539,9 @@ def get_connection_debug_info() -> ConnectionDebugInfo:
         ConnectionDebugInfo: Dictionary of connection debug info.
     """
     global engine, AsyncSessionLocal, _engine_creation_count, _session_creation_count, _connection_failures
-    
+
     worker_id, process_id, thread_id = _log_worker_info()
-    
+
     info: ConnectionDebugInfo = ConnectionDebugInfo(
         worker_id=worker_id,
         process_id=process_id,
@@ -552,7 +552,7 @@ def get_connection_debug_info() -> ConnectionDebugInfo:
         engine_initialized=engine is not None,
         sessionmaker_initialized=AsyncSessionLocal is not None,
     )
-    
+
     if engine:
         try:
             pool = engine.pool
@@ -572,10 +572,10 @@ def get_connection_debug_info() -> ConnectionDebugInfo:
             info["pool_checked_in"] = safe_call("checkedin")
             info["pool_overflow"] = safe_call("overflow")
             info["pool_invalidated"] = safe_call("invalidated")
-            
+
         except Exception as exc:
             info["pool_error"] = str(exc)
-    
+
     return info
 ```
 
@@ -606,15 +606,15 @@ async def create_user_endpoint(
             select(User).where(User.email == user_data.email)
         )
         existing_user = result.scalar_one_or_none()
-        
+
         if existing_user:
             raise HTTPException(status_code=400, detail="User already exists")
-        
+
         new_user = User(**user_data.dict())
         session.add(new_user)
         await session.commit()
         await session.refresh(new_user)
-        
+
         return new_user
 ```
 
@@ -625,7 +625,7 @@ from core.database import get_async_session
 
 class UserRepository:
     """User repository with database session management."""
-    
+
     async def create_user(self, user_data: UserCreate) -> User:
         """Create user with automatic session management."""
         async with get_async_session() as session:
@@ -634,7 +634,7 @@ class UserRepository:
             await session.commit()
             await session.refresh(new_user)
             return new_user
-    
+
     async def get_user_by_id(self, user_id: int) -> User | None:
         """Get user by ID with session management."""
         async with get_async_session() as session:
@@ -652,12 +652,12 @@ from core.database import db_healthcheck
 
 def setup_health_checks(app: FastAPI):
     """Setup application health checks."""
-    
+
     @app.get("/health/db")
     async def database_health():
         """Database health check endpoint."""
         is_healthy = await db_healthcheck()
-        
+
         if is_healthy:
             return {"status": "healthy", "database": "connected"}
         else:
@@ -690,7 +690,7 @@ async def test_database_operations(db_session):
 def test_connection_debug_info():
     """Test debug information collection."""
     debug_info = get_connection_debug_info()
-    
+
     assert "worker_id" in debug_info
     assert "process_id" in debug_info
     assert "engine_creation_count" in debug_info
@@ -771,7 +771,7 @@ except Exception as e:
 async def robust_database_operation():
     """Database operation with retry logic."""
     max_retries = 3
-    
+
     for attempt in range(max_retries):
         try:
             async with get_async_session() as session:
@@ -792,12 +792,12 @@ async def robust_database_operation():
 def log_database_state():
     """Log current database connection state."""
     debug_info = get_connection_debug_info()
-    
+
     logger.info(f"Worker: {debug_info['worker_id']}")
     logger.info(f"Engine creation count: {debug_info['engine_creation_count']}")
     logger.info(f"Session creation count: {debug_info['session_creation_count']}")
     logger.info(f"Connection failures: {debug_info['connection_failures']}")
-    
+
     if debug_info.get('pool_size'):
         logger.info(f"Pool size: {debug_info['pool_size']}")
         logger.info(f"Checked out: {debug_info['pool_checked_out']}")
@@ -810,17 +810,17 @@ def log_database_state():
 async def monitor_database_performance():
     """Monitor database operation performance."""
     start_time = time.time()
-    
+
     # Test database connectivity
     is_healthy = await db_healthcheck()
-    
+
     # Test session creation
     async with get_async_session() as session:
         await session.execute(text("SELECT COUNT(*) FROM users"))
-    
+
     total_time = time.time() - start_time
     logger.info(f"Database performance check completed in {total_time:.3f}s")
-    
+
     return {
         "healthy": is_healthy,
         "response_time": total_time,

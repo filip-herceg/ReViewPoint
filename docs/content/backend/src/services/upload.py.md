@@ -9,6 +9,7 @@ The upload service provides comprehensive file upload and management functionali
 ### UploadService Class
 
 **`UploadService`** - Main service class providing file operations:
+
 - **File upload processing** with security validation and storage
 - **File retrieval** with metadata and access control
 - **File deletion** with ownership verification and cleanup
@@ -17,6 +18,7 @@ The upload service provides comprehensive file upload and management functionali
 ### Core Methods
 
 #### File Upload Operations
+
 - **`upload_file`** - Complete file upload workflow with validation
 - **`get_file`** - File metadata retrieval by filename
 - **`delete_file`** - Secure file deletion with ownership checks
@@ -25,6 +27,7 @@ The upload service provides comprehensive file upload and management functionali
 ### Security Features
 
 #### Upload Validation
+
 - **Filename sanitization** to prevent directory traversal attacks
 - **File size limits** to prevent storage abuse and denial of service
 - **Content type validation** for security and processing requirements
@@ -43,22 +46,22 @@ async def upload_file(
     # 1. Filename validation and sanitization
     if not file.filename:
         raise HTTPException(status_code=400, detail="No filename provided")
-    
+
     safe_filename = sanitize_filename(file.filename)
     if not is_safe_filename(safe_filename):
         raise HTTPException(status_code=400, detail="Invalid filename")
-    
+
     # 2. File size validation
     max_size = 10 * 1024 * 1024  # 10MB
     content = await file.read()
     if len(content) > max_size:
         raise HTTPException(status_code=413, detail="File too large")
-    
+
     # 3. Unique filename generation
     file_id = str(uuid.uuid4())
     file_extension = Path(safe_filename).suffix
     stored_filename = f"{file_id}{file_extension}"
-    
+
     # 4. File storage and database coordination
 ```
 
@@ -67,12 +70,14 @@ async def upload_file(
 Multi-layer security validation for uploaded files:
 
 #### Filename Security
+
 - **Sanitization** removes dangerous characters and path traversal attempts
 - **Safety checking** validates against known attack patterns
 - **Extension validation** ensures only allowed file types
 - **Length limits** prevent excessively long filenames
 
 #### Content Security
+
 - **Size limits** prevent resource exhaustion and denial of service
 - **MIME type validation** ensures content matches declared type
 - **Content scanning** for malware and security threats (extensible)
@@ -85,6 +90,7 @@ Multi-layer security validation for uploaded files:
 Configurable storage management with security considerations:
 
 #### Storage Configuration
+
 ```python
 def __init__(self) -> None:
     self.settings = get_settings()
@@ -93,6 +99,7 @@ def __init__(self) -> None:
 ```
 
 #### Unique File Naming
+
 - **UUID-based naming** prevents filename collisions and enumeration attacks
 - **Extension preservation** maintains file type information
 - **Directory isolation** prevents access to system directories
@@ -103,6 +110,7 @@ def __init__(self) -> None:
 Secure file path handling:
 
 #### Path Resolution
+
 ```python
 def get_file_path(self, filename: str) -> Path:
     """Get the full path to a file."""
@@ -110,6 +118,7 @@ def get_file_path(self, filename: str) -> Path:
 ```
 
 #### Security Features
+
 - **Path validation** prevents directory traversal
 - **Upload directory confinement** restricts access to designated storage
 - **Symbolic link protection** prevents access to system files
@@ -122,6 +131,7 @@ def get_file_path(self, filename: str) -> Path:
 Strict ownership-based access control for file operations:
 
 #### Ownership Verification
+
 ```python
 # Check ownership before file operations
 if file_record.user_id != user_id:
@@ -131,6 +141,7 @@ if file_record.user_id != user_id:
 ```
 
 #### Access Control Features
+
 - **User isolation** ensures users can only access their own files
 - **Operation-level permissions** for different file operations
 - **Administrative access** for system operations and moderation
@@ -139,6 +150,7 @@ if file_record.user_id != user_id:
 ### File Metadata Security
 
 Secure metadata management:
+
 - **User ID association** for ownership tracking
 - **Access timestamp logging** for audit trails
 - **File type tracking** for processing and security
@@ -151,12 +163,14 @@ Secure metadata management:
 Complete upload processing with error handling:
 
 #### File Reading and Validation
+
 - **Async file reading** for non-blocking I/O operations
 - **Content buffering** for efficient memory usage
 - **Validation during read** for early error detection
 - **Cleanup on failure** to prevent partial uploads
 
 #### Database Coordination
+
 - **Transactional storage** ensuring atomicity between filesystem and database
 - **Metadata persistence** with proper error handling
 - **Rollback support** for failed operations
@@ -167,6 +181,7 @@ Complete upload processing with error handling:
 Efficient file retrieval with access control:
 
 #### Metadata Retrieval
+
 ```python
 async def get_file(self, session: AsyncSession, filename: str) -> File | None:
     """Get file metadata by filename."""
@@ -174,6 +189,7 @@ async def get_file(self, session: AsyncSession, filename: str) -> File | None:
 ```
 
 #### Performance Features
+
 - **Database indexing** for fast filename lookups
 - **Caching strategy** for frequently accessed metadata
 - **Lazy loading** for file content when needed
@@ -184,6 +200,7 @@ async def get_file(self, session: AsyncSession, filename: str) -> File | None:
 Secure file deletion with cleanup:
 
 #### Deletion Workflow
+
 ```python
 async def delete_file(
     self, session: AsyncSession, filename: str, user_id: uuid.UUID
@@ -195,6 +212,7 @@ async def delete_file(
 ```
 
 #### Cleanup Strategy
+
 - **Database-first deletion** to prevent orphaned metadata
 - **Filesystem cleanup** with error tolerance
 - **Audit logging** for compliance requirements
@@ -207,12 +225,14 @@ async def delete_file(
 Comprehensive error handling for upload operations:
 
 #### Validation Errors
+
 - **Filename validation** with specific error messages
 - **Size limit violations** with clear feedback
 - **File type rejections** with security justification
 - **Permission denials** with appropriate HTTP status codes
 
 #### Storage Errors
+
 - **Disk space handling** with graceful degradation
 - **Permission errors** with administrative notification
 - **Network failures** with retry mechanisms
@@ -221,6 +241,7 @@ Comprehensive error handling for upload operations:
 ### Error Recovery
 
 Robust error recovery mechanisms:
+
 - **Partial upload cleanup** to prevent storage waste
 - **Transaction rollback** for database consistency
 - **User notification** with actionable error messages
@@ -231,6 +252,7 @@ Robust error recovery mechanisms:
 ### Async Operations
 
 Full async support for file operations:
+
 - **Non-blocking file I/O** for concurrent upload processing
 - **Async database operations** for metadata management
 - **Concurrent validation** for independent security checks
@@ -239,6 +261,7 @@ Full async support for file operations:
 ### Memory Management
 
 Efficient memory usage for file operations:
+
 - **Streaming upload** to minimize memory footprint
 - **Chunked processing** for large file handling
 - **Resource cleanup** with proper context management
@@ -247,6 +270,7 @@ Efficient memory usage for file operations:
 ### Storage Optimization
 
 Storage efficiency features:
+
 - **Deduplication strategy** for identical files (extensible)
 - **Compression support** for applicable file types
 - **Cleanup automation** for orphaned files
@@ -257,6 +281,7 @@ Storage efficiency features:
 ### Repository Layer Coordination
 
 Service coordinates with file repository:
+
 - **File metadata operations** through repository pattern
 - **User association** for ownership tracking
 - **Query optimization** for file listing and search
@@ -265,6 +290,7 @@ Service coordinates with file repository:
 ### User Service Integration
 
 Integration with user management:
+
 - **User validation** for upload authorization
 - **Quota management** per user account
 - **Permission checking** for file operations
@@ -273,6 +299,7 @@ Integration with user management:
 ### Configuration Management
 
 Settings-based service configuration:
+
 - **Upload directory** configuration for storage location
 - **File size limits** through environment settings
 - **Allowed file types** through configuration
@@ -283,6 +310,7 @@ Settings-based service configuration:
 ### Upload Security
 
 Comprehensive upload security measures:
+
 - **File type restrictions** to prevent execution of malicious files
 - **Content validation** beyond filename extensions
 - **Virus scanning integration** (extensible for production)
@@ -291,6 +319,7 @@ Comprehensive upload security measures:
 ### Storage Security
 
 Secure file storage practices:
+
 - **Isolated storage** outside web-accessible directories
 - **Permission restrictions** on stored files
 - **Access logging** for security monitoring
@@ -299,6 +328,7 @@ Secure file storage practices:
 ### Data Protection
 
 Data protection and privacy features:
+
 - **User data isolation** preventing cross-user access
 - **Audit trails** for compliance requirements
 - **Secure deletion** with complete cleanup
@@ -309,6 +339,7 @@ Data protection and privacy features:
 ### Test-Friendly Design
 
 Service designed for comprehensive testing:
+
 - **Dependency injection** for mock storage and configuration
 - **Deterministic behavior** through configurable settings
 - **Isolated testing** with temporary storage directories
@@ -317,6 +348,7 @@ Service designed for comprehensive testing:
 ### Testing Utilities
 
 Built-in support for testing scenarios:
+
 - **Temporary storage** for test isolation
 - **Mock file objects** for upload testing
 - **Error simulation** for testing error handling
@@ -327,6 +359,7 @@ Built-in support for testing scenarios:
 ### File Operation Metrics
 
 Comprehensive metrics for file operations:
+
 - **Upload success rates** for system health monitoring
 - **File size distribution** for storage planning
 - **User activity patterns** for capacity planning
@@ -335,6 +368,7 @@ Comprehensive metrics for file operations:
 ### Storage Monitoring
 
 Storage health and capacity monitoring:
+
 - **Disk usage tracking** for capacity management
 - **Upload patterns** for performance optimization
 - **Security events** for threat detection

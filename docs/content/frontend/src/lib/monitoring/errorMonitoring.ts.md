@@ -10,16 +10,16 @@ The `errorMonitoring.ts` file provides a comprehensive error monitoring and repo
 
 ```typescript
 interface ErrorReport {
-  id: string;                    // Unique error identifier
-  timestamp: Date;               // Error occurrence time
-  message: string;               // Error message
-  stack?: string;                // Error stack trace
-  componentStack?: string;       // React component stack
-  errorBoundary?: string;        // Error boundary name
+  id: string; // Unique error identifier
+  timestamp: Date; // Error occurrence time
+  message: string; // Error message
+  stack?: string; // Error stack trace
+  componentStack?: string; // React component stack
+  errorBoundary?: string; // Error boundary name
   props?: Record<string, unknown>; // Component props at error
-  userAgent: string;             // Browser information
-  url: string;                   // Page URL where error occurred
-  userId?: string;               // User identifier (if authenticated)
+  userAgent: string; // Browser information
+  url: string; // Page URL where error occurred
+  userId?: string; // User identifier (if authenticated)
   severity: "low" | "medium" | "high" | "critical";
   context?: Record<string, unknown>; // Additional error context
 }
@@ -29,12 +29,12 @@ interface ErrorReport {
 
 ```typescript
 interface ErrorMonitoringConfig {
-  enableConsoleTracking: boolean;        // Track console errors
-  enableUnhandledRejections: boolean;    // Track promise rejections
-  enableComponentErrors: boolean;        // Track React component errors
-  enableUserFeedback: boolean;          // Enable user feedback collection
-  maxErrors: number;                    // Maximum errors to store
-  reportToSentry: boolean;              // External service integration
+  enableConsoleTracking: boolean; // Track console errors
+  enableUnhandledRejections: boolean; // Track promise rejections
+  enableComponentErrors: boolean; // Track React component errors
+  enableUserFeedback: boolean; // Enable user feedback collection
+  maxErrors: number; // Maximum errors to store
+  reportToSentry: boolean; // External service integration
 }
 ```
 
@@ -59,10 +59,10 @@ interface ErrorMonitoringConfig {
 ```typescript
 // Error severity classification
 enum ErrorSeverity {
-  LOW = "low",           // Minor UI issues, non-blocking
-  MEDIUM = "medium",     // Functional issues, workarounds available
-  HIGH = "high",         // Significant functionality broken
-  CRITICAL = "critical"  // Application unusable, data loss risk
+  LOW = "low", // Minor UI issues, non-blocking
+  MEDIUM = "medium", // Functional issues, workarounds available
+  HIGH = "high", // Significant functionality broken
+  CRITICAL = "critical", // Application unusable, data loss risk
 }
 ```
 
@@ -72,22 +72,22 @@ enum ErrorSeverity {
 
 ```typescript
 // Global error event listeners
-window.addEventListener('error', (event) => {
+window.addEventListener("error", (event) => {
   const errorReport = createErrorReport({
     message: event.message,
     filename: event.filename,
     lineno: event.lineno,
     colno: event.colno,
-    error: event.error
+    error: event.error,
   });
   reportError(errorReport);
 });
 
 // Unhandled promise rejection tracking
-window.addEventListener('unhandledrejection', (event) => {
+window.addEventListener("unhandledrejection", (event) => {
   const errorReport = createErrorReport({
-    message: 'Unhandled Promise Rejection',
-    error: event.reason
+    message: "Unhandled Promise Rejection",
+    error: event.reason,
   });
   reportError(errorReport);
 });
@@ -103,9 +103,9 @@ export class MonitoringErrorBoundary extends React.Component {
       message: error.message,
       stack: error.stack,
       componentStack: errorInfo.componentStack,
-      errorBoundary: this.constructor.name
+      errorBoundary: this.constructor.name,
     });
-    
+
     reportError(errorReport);
   }
 }
@@ -122,10 +122,10 @@ function gatherErrorContext(): Record<string, unknown> {
     timestamp: new Date().toISOString(),
     viewport: {
       width: window.innerWidth,
-      height: window.innerHeight
+      height: window.innerHeight,
     },
     connection: (navigator as any).connection?.effectiveType,
-    memory: (performance as any).memory?.usedJSHeapSize
+    memory: (performance as any).memory?.usedJSHeapSize,
   };
 }
 ```
@@ -141,7 +141,7 @@ function createErrorReport(errorData: Partial<ErrorReport>): ErrorReport {
     timestamp: new Date(),
     severity: classifyErrorSeverity(errorData),
     context: gatherErrorContext(),
-    ...errorData
+    ...errorData,
   };
 }
 ```
@@ -151,20 +151,20 @@ function createErrorReport(errorData: Partial<ErrorReport>): ErrorReport {
 ```typescript
 function classifyErrorSeverity(error: Partial<ErrorReport>): ErrorSeverity {
   // Critical: Authentication failures, data corruption
-  if (error.message?.includes('auth') || error.message?.includes('token')) {
+  if (error.message?.includes("auth") || error.message?.includes("token")) {
     return ErrorSeverity.CRITICAL;
   }
-  
+
   // High: Component crashes, API failures
-  if (error.componentStack || error.message?.includes('Network Error')) {
+  if (error.componentStack || error.message?.includes("Network Error")) {
     return ErrorSeverity.HIGH;
   }
-  
+
   // Medium: Feature failures, recoverable errors
-  if (error.stack?.includes('feature')) {
+  if (error.stack?.includes("feature")) {
     return ErrorSeverity.MEDIUM;
   }
-  
+
   // Low: Minor UI issues, console warnings
   return ErrorSeverity.LOW;
 }
@@ -177,17 +177,17 @@ function classifyErrorSeverity(error: Partial<ErrorReport>): ErrorSeverity {
 async function reportError(errorReport: ErrorReport) {
   // Local storage for offline scenarios
   storeErrorLocally(errorReport);
-  
+
   // External monitoring service (Sentry, LogRocket, etc.)
-  if (config.reportToSentry && isFeatureEnabled('error-reporting')) {
+  if (config.reportToSentry && isFeatureEnabled("error-reporting")) {
     await sendToExternalService(errorReport);
   }
-  
+
   // Internal analytics
   await sendToInternalAPI(errorReport);
-  
+
   // User notification (for high/critical errors)
-  if (errorReport.severity === 'high' || errorReport.severity === 'critical') {
+  if (errorReport.severity === "high" || errorReport.severity === "critical") {
     showUserNotification(errorReport);
   }
 }
@@ -210,7 +210,7 @@ function collectUserFeedback(errorReport: ErrorReport): Promise<ErrorFeedback> {
   return new Promise((resolve) => {
     showFeedbackModal({
       errorId: errorReport.id,
-      onSubmit: (feedback) => resolve(feedback)
+      onSubmit: (feedback) => resolve(feedback),
     });
   });
 }
@@ -222,13 +222,13 @@ function collectUserFeedback(errorReport: ErrorReport): Promise<ErrorFeedback> {
 // Provide recovery options to users
 const recoveryActions = {
   reload: () => window.location.reload(),
-  goHome: () => window.location.href = '/',
+  goHome: () => (window.location.href = "/"),
   clearStorage: () => {
     localStorage.clear();
     sessionStorage.clear();
     window.location.reload();
   },
-  reportBug: (errorId: string) => openBugReportForm(errorId)
+  reportBug: (errorId: string) => openBugReportForm(errorId),
 };
 ```
 
@@ -266,16 +266,16 @@ function App() {
 ### **Manual Error Reporting**
 
 ```typescript
-import { reportError } from '@/lib/monitoring/errorMonitoring';
+import { reportError } from "@/lib/monitoring/errorMonitoring";
 
 try {
   riskyOperation();
 } catch (error) {
   reportError({
-    message: 'Risk operation failed',
+    message: "Risk operation failed",
     error,
-    severity: 'medium',
-    context: { operation: 'user-data-processing' }
+    severity: "medium",
+    context: { operation: "user-data-processing" },
   });
 }
 ```
@@ -287,7 +287,7 @@ import { getErrorMetrics } from '@/lib/monitoring/errorMonitoring';
 
 function ErrorDashboard() {
   const metrics = getErrorMetrics();
-  
+
   return (
     <div>
       <div>Total Errors: {metrics.totalErrors}</div>
@@ -306,14 +306,14 @@ function ErrorDashboard() {
 // Efficient error storage with rotation
 class ErrorStorage {
   private maxErrors = 100;
-  
+
   store(error: ErrorReport) {
     const stored = this.getStoredErrors();
     if (stored.length >= this.maxErrors) {
       stored.shift(); // Remove oldest error
     }
     stored.push(error);
-    localStorage.setItem('error-reports', JSON.stringify(stored));
+    localStorage.setItem("error-reports", JSON.stringify(stored));
   }
 }
 ```
@@ -328,11 +328,12 @@ function shouldReportError(errorReport: ErrorReport): boolean {
   const key = errorReport.message + errorReport.stack;
   const lastReported = errorThrottler.get(key) || 0;
   const now = Date.now();
-  
-  if (now - lastReported < 5000) { // 5 second throttle
+
+  if (now - lastReported < 5000) {
+    // 5 second throttle
     return false;
   }
-  
+
   errorThrottler.set(key, now);
   return true;
 }
@@ -351,15 +352,15 @@ function shouldReportError(errorReport: ErrorReport): boolean {
 
 ```typescript
 // Trigger test errors for validation
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === "development") {
   window.triggerTestError = (type: string) => {
     switch (type) {
-      case 'component':
-        throw new Error('Test component error');
-      case 'async':
-        Promise.reject(new Error('Test async error'));
-      case 'network':
-        fetch('/nonexistent-endpoint');
+      case "component":
+        throw new Error("Test component error");
+      case "async":
+        Promise.reject(new Error("Test async error"));
+      case "network":
+        fetch("/nonexistent-endpoint");
     }
   };
 }

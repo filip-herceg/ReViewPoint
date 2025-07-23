@@ -40,6 +40,7 @@ ReViewPoint is ideal for:
 ### What are the system requirements?
 
 **Minimum Requirements:**
+
 - **Python 3.11+** for backend development
 - **Node.js 18+** for frontend development
 - **Docker** (optional, for PostgreSQL database)
@@ -47,6 +48,7 @@ ReViewPoint is ideal for:
 - **VS Code** (recommended for best developer experience)
 
 **Recommended System:**
+
 - 8GB+ RAM
 - 4+ CPU cores
 - 10GB+ free disk space
@@ -70,6 +72,7 @@ pnpm run dev:postgres
 ```
 
 **VS Code Users:**
+
 1. Open project in VS Code
 2. Install recommended extensions when prompted
 3. Use Command Palette: "Tasks: Run Task" → "ReViewPoint: Start Both (Backend + Frontend)"
@@ -77,12 +80,14 @@ pnpm run dev:postgres
 ### Why do I need both SQLite and PostgreSQL modes?
 
 **SQLite Mode** (Fast Development):
+
 - ✅ **No Docker required** - works immediately
 - ✅ **Fast testing** - 30-60 seconds for full test suite
 - ✅ **Simple setup** - perfect for development and CI
 - ❌ Limited to development environments
 
 **PostgreSQL Mode** (Production-Like):
+
 - ✅ **Production database** - real constraints and behavior
 - ✅ **Full feature testing** - complete integration testing
 - ✅ **Docker automated** - auto-setup with health checks
@@ -116,28 +121,31 @@ The system automatically detects the database type and adjusts behavior accordin
 **Daily Development Cycle:**
 
 1. **Start Development Environment:**
+
    ```bash
    # Quick start with SQLite
    pnpm run dev
-   
+
    # Or full setup with PostgreSQL
    pnpm run dev:postgres
    ```
 
 2. **Development with Testing:**
+
    ```bash
    # Fast tests during development (SQLite)
    cd backend && hatch run fast:test
-   
+
    # Or use VS Code task: "ReViewPoint: Run Fast Backend Tests"
    ```
 
 3. **Pre-commit Validation:**
+
    ```bash
    # Format and lint
    pnpm run lint:fix
    pnpm run format
-   
+
    # Full test suite
    pnpm run test:all
    ```
@@ -193,11 +201,13 @@ Use the Tasks panel for one-click testing without terminal commands.
 **When Backend API Changes:**
 
 1. **Export new schema:**
+
    ```bash
    hatch run python scripts/export-backend-schema.py
    ```
 
 2. **Generate TypeScript types:**
+
    ```bash
    cd frontend
    pnpm run generate:all
@@ -217,6 +227,7 @@ Use the VS Code task "ReViewPoint: Generate API Types" or the frontend script th
 #### Issue: "Port already in use" errors
 
 **Symptoms:**
+
 - Backend fails to start on port 8000
 - Frontend fails to start on port 3000
 
@@ -242,6 +253,7 @@ REVIEWPOINT_PORT=8001
 #### Issue: Database connection errors
 
 **Symptoms:**
+
 - "could not connect to server" errors
 - Migration failures
 
@@ -264,6 +276,7 @@ pnpm run db:sqlite
 #### Issue: Module import errors
 
 **Symptoms:**
+
 - Python import errors
 - TypeScript module not found errors
 
@@ -288,6 +301,7 @@ pnpm install
 #### Issue: Test failures
 
 **Symptoms:**
+
 - Random test failures
 - Database-related test errors
 
@@ -316,6 +330,7 @@ pnpm run test:clear-cache
 #### Issue: Hatch/Python environment problems
 
 **Symptoms:**
+
 - "hatch: command not found"
 - Python package installation errors
 
@@ -338,6 +353,7 @@ python --version  # Should be 3.11+
 #### Issue: Node.js/pnpm problems
 
 **Symptoms:**
+
 - "pnpm: command not found"
 - Package installation failures
 
@@ -363,6 +379,7 @@ npm run dev
 #### Issue: Slow startup times
 
 **Symptoms:**
+
 - Long wait times for services to start
 - Timeouts during development
 
@@ -408,30 +425,30 @@ hatch run pytest -n auto
 
 ```javascript
 // 1. Login to get tokens
-const response = await fetch('/api/v1/auth/login', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+const response = await fetch("/api/v1/auth/login", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    username: 'your-username',
-    password: 'your-password'
-  })
+    username: "your-username",
+    password: "your-password",
+  }),
 });
 
 const { access_token, refresh_token } = await response.json();
 
 // 2. Use access token for API requests
-const apiResponse = await fetch('/api/v1/users/me', {
+const apiResponse = await fetch("/api/v1/users/me", {
   headers: {
-    'Authorization': `Bearer ${access_token}`,
-    'Content-Type': 'application/json'
-  }
+    Authorization: `Bearer ${access_token}`,
+    "Content-Type": "application/json",
+  },
 });
 
 // 3. Refresh token when expired
-const refreshResponse = await fetch('/api/v1/auth/refresh', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ refresh_token })
+const refreshResponse = await fetch("/api/v1/auth/refresh", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ refresh_token }),
 });
 ```
 
@@ -442,16 +459,16 @@ const refreshResponse = await fetch('/api/v1/auth/refresh', {
 ```javascript
 const uploadFile = async (file, description) => {
   const formData = new FormData();
-  formData.append('file', file);
-  formData.append('description', description);
+  formData.append("file", file);
+  formData.append("description", description);
 
-  const response = await fetch('/api/v1/uploads/', {
-    method: 'POST',
+  const response = await fetch("/api/v1/uploads/", {
+    method: "POST",
     headers: {
-      'Authorization': `Bearer ${accessToken}`
+      Authorization: `Bearer ${accessToken}`,
       // Don't set Content-Type for FormData
     },
-    body: formData
+    body: formData,
   });
 
   return await response.json();
@@ -460,7 +477,7 @@ const uploadFile = async (file, description) => {
 // Usage
 const fileInput = document.querySelector('input[type="file"]');
 const file = fileInput.files[0];
-const result = await uploadFile(file, 'My important document');
+const result = await uploadFile(file, "My important document");
 ```
 
 ### What file types are supported?
@@ -473,11 +490,13 @@ const result = await uploadFile(file, 'My important document');
 - **Archives**: ZIP, RAR
 
 **File Limits:**
+
 - Maximum file size: **10 MB per file**
 - Total storage per user: **100 MB** (default)
 - Concurrent uploads: **3 per user**
 
 **Security Features:**
+
 - File content validation against declared MIME type
 - Malware scanning for all uploads
 - Filename sanitization to prevent path traversal
@@ -491,10 +510,10 @@ const result = await uploadFile(file, 'My important document');
 const apiCall = async (url, options) => {
   try {
     const response = await fetch(url, options);
-    
+
     if (!response.ok) {
       const errorData = await response.json();
-      
+
       switch (response.status) {
         case 401:
           // Handle authentication errors
@@ -510,20 +529,20 @@ const apiCall = async (url, options) => {
           break;
         case 429:
           // Handle rate limiting
-          const retryAfter = response.headers.get('Retry-After');
+          const retryAfter = response.headers.get("Retry-After");
           showRateLimitError(retryAfter);
           break;
         default:
           // Handle other errors
           showGenericError(errorData.detail);
       }
-      
+
       throw new Error(`API Error: ${response.status}`);
     }
-    
+
     return await response.json();
   } catch (error) {
-    console.error('API call failed:', error);
+    console.error("API call failed:", error);
     throw error;
   }
 };
@@ -603,6 +622,7 @@ const apiCall = async (url, options) => {
 4. **Wait** for acknowledgment before public disclosure
 
 **Security Response Process:**
+
 - Issues acknowledged within 48 hours
 - Fix timeline communicated within 1 week
 - Security patches released as soon as possible
@@ -615,22 +635,24 @@ const apiCall = async (url, options) => {
 **Production Deployment Options:**
 
 1. **Docker Deployment (Recommended):**
+
    ```bash
    # Build production images
    docker build -t reviewpoint-backend ./backend
    docker build -t reviewpoint-frontend ./frontend
-   
+
    # Deploy with docker-compose
    docker-compose -f docker-compose.prod.yml up -d
    ```
 
 2. **Traditional Server Deployment:**
+
    ```bash
    # Backend deployment
    cd backend
    hatch build
    pip install dist/*.whl
-   
+
    # Frontend deployment
    cd frontend
    pnpm run build
@@ -688,7 +710,7 @@ const apiCall = async (url, options) => {
 
 ```yaml
 # docker-compose.monitoring.yml
-version: '3.8'
+version: "3.8"
 services:
   prometheus:
     image: prom/prometheus
@@ -755,6 +777,7 @@ services:
    - Streamlined deployment process
 
 **Upcoming Features:**
+
 - File sharing and collaboration
 - Advanced search capabilities
 - API versioning and backwards compatibility
@@ -793,6 +816,7 @@ pnpm run dev  # Starts both backend and frontend
 ```
 
 **VS Code Setup:**
+
 1. Install recommended extensions when prompted
 2. Use integrated terminal and tasks
 3. Set up debugging configurations

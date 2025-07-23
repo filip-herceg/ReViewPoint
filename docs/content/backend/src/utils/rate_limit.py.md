@@ -34,6 +34,7 @@ V = TypeVar("V")
 ```
 
 **Features:**
+
 - Generic key type bounded to string for flexibility
 - Type-safe value handling for configuration data
 - Compile-time type checking for rate limiter operations
@@ -51,7 +52,8 @@ class RateLimitState(TypedDict):
 ```
 
 **Type Definitions:**
-- **_RateLimitConfig**: Internal configuration structure for rate limits
+
+- **\_RateLimitConfig**: Internal configuration structure for rate limits
 - **RateLimitState**: State tracking for rate limit monitoring
 - Type-safe configuration with required fields
 - Clear separation between configuration and runtime state
@@ -76,6 +78,7 @@ class AsyncRateLimiter(Generic[K]):
 ```
 
 **Key Features:**
+
 - Generic implementation supporting any string-based key type
 - Configurable maximum calls and time period
 - Thread-safe operations with asyncio.Lock
@@ -83,10 +86,11 @@ class AsyncRateLimiter(Generic[K]):
 - Memory-efficient defaultdict for sparse key usage
 
 **Configuration Parameters:**
+
 - **max_calls**: Maximum number of calls allowed within the time period
 - **period**: Time window in seconds for rate limit enforcement
 - **calls**: Per-key timestamp tracking for sliding window implementation
-- **_lock**: Async lock for thread-safe concurrent access
+- **\_lock**: Async lock for thread-safe concurrent access
 
 ### Rate Limit Checking
 
@@ -122,6 +126,7 @@ async def is_allowed(self, key: K) -> bool:
 ```
 
 **Algorithm Features:**
+
 - Sliding window implementation for accurate rate limiting
 - Automatic cleanup of expired call timestamps
 - Atomic check-and-increment operation under lock
@@ -129,6 +134,7 @@ async def is_allowed(self, key: K) -> bool:
 - High-precision timing using event loop time
 
 **Usage Examples:**
+
 ```python
 # User request rate limiting
 user_limiter = AsyncRateLimiter[str](max_calls=10, period=60.0)
@@ -136,7 +142,7 @@ user_limiter = AsyncRateLimiter[str](max_calls=10, period=60.0)
 async def handle_user_request(user_id: str) -> dict:
     if not await user_limiter.is_allowed(user_id):
         raise RateLimitExceededError("Too many requests. Try again later.")
-    
+
     return await process_user_request(user_id)
 
 # API endpoint rate limiting
@@ -146,7 +152,7 @@ async def api_endpoint(request):
     client_ip = request.client.host
     if not await api_limiter.is_allowed(client_ip):
         return {"error": "Rate limit exceeded", "retry_after": 3600}
-    
+
     return await handle_request(request)
 ```
 
@@ -169,12 +175,14 @@ def reset(self, key: K | None = None) -> None:
 ```
 
 **Reset Operations:**
+
 - **Specific key reset**: Remove rate limit state for individual users/IPs
 - **Global reset**: Clear all rate limit state for system maintenance
 - Thread-safe operations with automatic cleanup
 - Graceful handling of non-existent keys
 
 **Usage Examples:**
+
 ```python
 # Reset rate limit for specific user (admin action)
 await user_limiter.reset("user_123")
@@ -206,7 +214,7 @@ user_limiter = AsyncRateLimiter[str](max_calls=500, period=3600.0)  # 500/hour p
 
 async def rate_limit_middleware(request: Request, call_next):
     """Apply rate limiting to all requests."""
-    
+
     # IP-based rate limiting
     client_ip = request.client.host
     if not await ip_limiter.is_allowed(client_ip):
@@ -215,7 +223,7 @@ async def rate_limit_middleware(request: Request, call_next):
             detail="IP rate limit exceeded",
             headers={"Retry-After": "3600"}
         )
-    
+
     # User-based rate limiting (if authenticated)
     if hasattr(request.state, "user") and request.state.user:
         user_id = str(request.state.user.id)
@@ -225,7 +233,7 @@ async def rate_limit_middleware(request: Request, call_next):
                 detail="User rate limit exceeded",
                 headers={"Retry-After": "3600"}
             )
-    
+
     response = await call_next(request)
     return response
 
@@ -258,13 +266,13 @@ def rate_limit(limiter: AsyncRateLimiter[str], key_func=None):
                 # Default to user ID if available
                 request = args[0] if args else kwargs.get('request')
                 key = getattr(request.state, 'user_id', request.client.host)
-            
+
             if not await limiter.is_allowed(str(key)):
                 raise HTTPException(
                     status_code=429,
                     detail=f"Rate limit exceeded for {func.__name__}"
                 )
-            
+
             return await func(*args, **kwargs)
         return wrapper
     return decorator
@@ -294,16 +302,16 @@ class UserService:
         self.password_reset_limiter = AsyncRateLimiter[str](max_calls=3, period=3600.0)
         self.email_verification_limiter = AsyncRateLimiter[str](max_calls=5, period=3600.0)
         self.profile_update_limiter = AsyncRateLimiter[str](max_calls=10, period=3600.0)
-    
+
     async def request_password_reset(self, email: str) -> None:
         """Request password reset with rate limiting."""
         if not await self.password_reset_limiter.is_allowed(email):
             raise RateLimitExceededError(
                 "Too many password reset requests. Please try again in an hour."
             )
-        
+
         await self.send_password_reset_email(email)
-    
+
     async def send_verification_email(self, user_id: int) -> None:
         """Send verification email with rate limiting."""
         key = str(user_id)
@@ -311,9 +319,9 @@ class UserService:
             raise RateLimitExceededError(
                 "Too many verification emails sent. Please try again later."
             )
-        
+
         await self.email_service.send_verification_email(user_id)
-    
+
     async def update_profile(self, user_id: int, data: dict) -> User:
         """Update user profile with rate limiting."""
         key = str(user_id)
@@ -321,7 +329,7 @@ class UserService:
             raise RateLimitExceededError(
                 "Too many profile updates. Please try again later."
             )
-        
+
         return await self.user_repository.update_profile(user_id, data)
 ```
 
@@ -337,46 +345,46 @@ from src.utils.rate_limit import AsyncRateLimiter
 
 class RedisRateLimiter(AsyncRateLimiter[str]):
     """Redis-backed rate limiter for distributed systems."""
-    
+
     def __init__(self, max_calls: int, period: float, cache: CacheService):
         super().__init__(max_calls, period)
         self.cache = cache
         self.key_prefix = "rate_limit"
-    
+
     async def is_allowed(self, key: str) -> bool:
         """Check rate limit using Redis for persistence."""
         if os.environ.get("TESTING") == "1":
             return True
-        
+
         cache_key = f"{self.key_prefix}:{key}"
         now = asyncio.get_event_loop().time()
-        
+
         # Get current call history from Redis
         history_json = await self.cache.get(cache_key)
         if history_json:
             history = json.loads(history_json)
         else:
             history = []
-        
+
         # Remove expired calls
         history = [t for t in history if t > now - self.period]
-        
+
         # Check if limit is exceeded
         if len(history) >= self.max_calls:
             return False
-        
+
         # Add current call
         history.append(now)
-        
+
         # Store updated history in Redis
         await self.cache.set(
-            cache_key, 
-            json.dumps(history), 
+            cache_key,
+            json.dumps(history),
             expire=int(self.period)
         )
-        
+
         return True
-    
+
     async def reset(self, key: Optional[str] = None) -> None:
         """Reset rate limit state in Redis."""
         if key is not None:
@@ -399,12 +407,12 @@ class RedisRateLimiter(AsyncRateLimiter[str]):
 ```python
 class AdaptiveRateLimiter(AsyncRateLimiter[str]):
     """Rate limiter with dynamic adjustment based on system load."""
-    
+
     def __init__(self, base_max_calls: int, period: float):
         super().__init__(base_max_calls, period)
         self.base_max_calls = base_max_calls
         self.load_factor = 1.0
-    
+
     async def adjust_for_load(self, cpu_usage: float, memory_usage: float) -> None:
         """Adjust rate limits based on system metrics."""
         # Reduce limits under high load
@@ -414,9 +422,9 @@ class AdaptiveRateLimiter(AsyncRateLimiter[str]):
             self.load_factor = 0.7  # 70% of normal rate
         else:
             self.load_factor = 1.0  # Normal rate
-        
+
         self.max_calls = int(self.base_max_calls * self.load_factor)
-    
+
     async def is_allowed(self, key: str) -> bool:
         """Check rate limit with dynamic adjustment."""
         # Update max_calls based on current load factor
@@ -439,19 +447,19 @@ class UserTier(Enum):
 
 class TieredRateLimiter:
     """Rate limiter with different limits per user tier."""
-    
+
     def __init__(self):
         self.limiters = {
             UserTier.FREE: AsyncRateLimiter[str](max_calls=100, period=3600.0),
             UserTier.PREMIUM: AsyncRateLimiter[str](max_calls=1000, period=3600.0),
             UserTier.ENTERPRISE: AsyncRateLimiter[str](max_calls=10000, period=3600.0),
         }
-    
+
     async def is_allowed(self, user_id: str, tier: UserTier) -> bool:
         """Check rate limit based on user tier."""
         limiter = self.limiters[tier]
         return await limiter.is_allowed(user_id)
-    
+
     def reset(self, user_id: str, tier: UserTier | None = None) -> None:
         """Reset rate limits for user tier(s)."""
         if tier:
@@ -471,7 +479,7 @@ async def api_endpoint(user: User):
             status_code=429,
             detail=f"Rate limit exceeded for {user_tier.value} tier"
         )
-    
+
     return await process_request(user)
 ```
 
@@ -484,7 +492,7 @@ async def api_endpoint(user: User):
 ```python
 class DOSProtectionLimiter:
     """Multi-layer rate limiting for DOS protection."""
-    
+
     def __init__(self):
         # Aggressive short-term limiting
         self.burst_limiter = AsyncRateLimiter[str](max_calls=10, period=60.0)
@@ -492,18 +500,18 @@ class DOSProtectionLimiter:
         self.hourly_limiter = AsyncRateLimiter[str](max_calls=500, period=3600.0)
         # Conservative long-term limiting
         self.daily_limiter = AsyncRateLimiter[str](max_calls=5000, period=86400.0)
-    
+
     async def is_allowed(self, key: str) -> tuple[bool, str]:
         """Check all rate limit layers."""
         if not await self.burst_limiter.is_allowed(key):
             return False, "Burst rate limit exceeded"
-        
+
         if not await self.hourly_limiter.is_allowed(key):
             return False, "Hourly rate limit exceeded"
-        
+
         if not await self.daily_limiter.is_allowed(key):
             return False, "Daily rate limit exceeded"
-        
+
         return True, "Allowed"
 ```
 
@@ -514,42 +522,42 @@ class DOSProtectionLimiter:
 ```python
 class MemoryEfficientRateLimiter(AsyncRateLimiter[str]):
     """Rate limiter with automatic memory cleanup."""
-    
+
     def __init__(self, max_calls: int, period: float, max_keys: int = 10000):
         super().__init__(max_calls, period)
         self.max_keys = max_keys
         self.cleanup_interval = period / 4  # Cleanup 4 times per period
         self.last_cleanup = 0.0
-    
+
     async def is_allowed(self, key: str) -> bool:
         """Check rate limit with automatic cleanup."""
         now = asyncio.get_event_loop().time()
-        
+
         # Perform periodic cleanup
         if now - self.last_cleanup > self.cleanup_interval:
             await self._cleanup_expired_keys(now)
             self.last_cleanup = now
-        
+
         return await super().is_allowed(key)
-    
+
     async def _cleanup_expired_keys(self, now: float) -> None:
         """Remove keys with no recent activity."""
         async with self._lock:
             keys_to_remove = []
-            
+
             for key, timestamps in self.calls.items():
                 # Remove expired timestamps
                 valid_timestamps = [t for t in timestamps if t > now - self.period]
-                
+
                 if not valid_timestamps:
                     keys_to_remove.append(key)
                 else:
                     self.calls[key] = valid_timestamps
-            
+
             # Remove empty keys
             for key in keys_to_remove:
                 del self.calls[key]
-            
+
             # If still too many keys, remove oldest
             if len(self.calls) > self.max_keys:
                 # Sort by most recent activity
@@ -557,7 +565,7 @@ class MemoryEfficientRateLimiter(AsyncRateLimiter[str]):
                     self.calls.keys(),
                     key=lambda k: max(self.calls[k]) if self.calls[k] else 0
                 )
-                
+
                 # Remove oldest keys
                 excess_count = len(self.calls) - self.max_keys
                 for key in sorted_keys[:excess_count]:
@@ -575,16 +583,16 @@ RATE_LIMITS = {
     "login": {"max_calls": 5, "period": 300.0},  # 5 attempts per 5 minutes
     "password_reset": {"max_calls": 3, "period": 3600.0},  # 3 per hour
     "register": {"max_calls": 3, "period": 3600.0},  # 3 per hour
-    
+
     # API endpoints
     "api_general": {"max_calls": 1000, "period": 3600.0},  # 1000 per hour
     "api_search": {"max_calls": 100, "period": 60.0},  # 100 per minute
     "api_upload": {"max_calls": 10, "period": 3600.0},  # 10 per hour
-    
+
     # Email endpoints
     "email_send": {"max_calls": 10, "period": 3600.0},  # 10 per hour
     "email_verify": {"max_calls": 5, "period": 3600.0},  # 5 per hour
-    
+
     # Administrative actions
     "admin_action": {"max_calls": 100, "period": 3600.0},  # 100 per hour
 }
@@ -598,60 +606,60 @@ from src.utils.rate_limit import AsyncRateLimiter
 
 class TestRateLimiter:
     """Comprehensive rate limiter testing."""
-    
+
     @pytest.fixture
     def limiter(self):
         return AsyncRateLimiter[str](max_calls=3, period=60.0)
-    
+
     @pytest.mark.asyncio
     async def test_basic_rate_limiting(self, limiter):
         """Test basic rate limiting functionality."""
         key = "test_user"
-        
+
         # First 3 calls should be allowed
         for i in range(3):
             assert await limiter.is_allowed(key) is True
-        
+
         # 4th call should be denied
         assert await limiter.is_allowed(key) is False
-    
+
     @pytest.mark.asyncio
     async def test_different_keys(self, limiter):
         """Test that different keys have separate limits."""
         # User 1 reaches limit
         for i in range(3):
             await limiter.is_allowed("user1")
-        
+
         # User 2 should still be allowed
         assert await limiter.is_allowed("user2") is True
-    
+
     @pytest.mark.asyncio
     async def test_reset_functionality(self, limiter):
         """Test rate limit reset."""
         key = "test_user"
-        
+
         # Reach limit
         for i in range(3):
             await limiter.is_allowed(key)
-        
+
         assert await limiter.is_allowed(key) is False
-        
+
         # Reset and verify
         limiter.reset(key)
         assert await limiter.is_allowed(key) is True
-    
+
     @pytest.mark.asyncio
     async def test_concurrent_access(self, limiter):
         """Test thread safety under concurrent access."""
         key = "concurrent_user"
-        
+
         async def make_call():
             return await limiter.is_allowed(key)
-        
+
         # Make 10 concurrent calls
         tasks = [make_call() for _ in range(10)]
         results = await asyncio.gather(*tasks)
-        
+
         # Only 3 should be allowed
         allowed_count = sum(results)
         assert allowed_count == 3

@@ -61,7 +61,7 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 ```
 
@@ -89,7 +89,7 @@ apiClient.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 ```
 
@@ -108,8 +108,8 @@ apiClient.interceptors.response.use(
 ```typescript
 export async function request<T>(
   url: string,
-  config: AxiosRequestConfig = {}
-): Promise<ApiResponse<T>>
+  config: AxiosRequestConfig = {},
+): Promise<ApiResponse<T>>;
 ```
 
 **Purpose**: Standardized API request function with comprehensive error handling
@@ -124,31 +124,31 @@ export async function request<T>(
 **Usage Examples**:
 
 ```typescript
-import { request } from '@/lib/api/base';
+import { request } from "@/lib/api/base";
 
 // GET request
-const response = await request<User>('/api/v1/users/me');
+const response = await request<User>("/api/v1/users/me");
 if (response.data) {
-  console.log('User:', response.data);
+  console.log("User:", response.data);
 } else {
-  console.error('Error:', response.error);
+  console.error("Error:", response.error);
 }
 
 // POST request with data
-const loginResponse = await request<AuthLoginResponse>('/api/v1/auth/login', {
-  method: 'POST',
-  data: { email: 'user@example.com', password: 'password' }
+const loginResponse = await request<AuthLoginResponse>("/api/v1/auth/login", {
+  method: "POST",
+  data: { email: "user@example.com", password: "password" },
 });
 
 // PUT request with parameters
-const updateResponse = await request<User>('/api/v1/users/123', {
-  method: 'PUT',
-  data: { name: 'Updated Name' }
+const updateResponse = await request<User>("/api/v1/users/123", {
+  method: "PUT",
+  data: { name: "Updated Name" },
 });
 
 // DELETE request
-const deleteResponse = await request<void>('/api/v1/users/123', {
-  method: 'DELETE'
+const deleteResponse = await request<void>("/api/v1/users/123", {
+  method: "DELETE",
 });
 ```
 
@@ -205,7 +205,7 @@ interface ApiResponse<T> {
 The base client integrates closely with the token service for authentication:
 
 ```typescript
-import { tokenService } from '@/lib/token';
+import { tokenService } from "@/lib/token";
 
 // Get valid token for requests
 const token = await tokenService.getValidAccessToken();
@@ -217,7 +217,7 @@ const newToken = await tokenService.refreshAccessToken();
 ### Auth Store Integration
 
 ```typescript
-import { useAuthStore } from '@/store/auth';
+import { useAuthStore } from "@/store/auth";
 
 // Update refresh state
 useAuthStore.getState().setRefreshing(true);
@@ -243,7 +243,7 @@ useAuthStore.getState().logout();
 The module provides comprehensive logging for debugging:
 
 ```typescript
-import logger from '@/logger';
+import logger from "@/logger";
 
 // Request logging
 logger.info("[API] request", { url, config, response: res.data });
@@ -263,39 +263,43 @@ logger.warn("[API] Failed to get valid token for request", { error });
 ### React Hook Integration
 
 ```typescript
-import { useState, useCallback } from 'react';
-import { request } from '@/lib/api/base';
+import { useState, useCallback } from "react";
+import { request } from "@/lib/api/base";
 
 export function useApiRequest<T>() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<T | null>(null);
 
-  const makeRequest = useCallback(async (url: string, config?: AxiosRequestConfig) => {
-    setLoading(true);
-    setError(null);
+  const makeRequest = useCallback(
+    async (url: string, config?: AxiosRequestConfig) => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const response = await request<T>(url, config);
-      
-      if (response.error) {
-        setError(response.error);
+      try {
+        const response = await request<T>(url, config);
+
+        if (response.error) {
+          setError(response.error);
+          setData(null);
+        } else {
+          setData(response.data);
+          setError(null);
+        }
+
+        return response;
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Unknown error";
+        setError(errorMessage);
         setData(null);
-      } else {
-        setData(response.data);
-        setError(null);
+        throw err;
+      } finally {
+        setLoading(false);
       }
-      
-      return response;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-      setError(errorMessage);
-      setData(null);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   return { data, loading, error, makeRequest };
 }
@@ -314,8 +318,8 @@ export function useApiRequest<T>() {
 ### Type Dependencies
 
 ```typescript
-import type { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import type { ApiResponse } from '@/lib/api/types';
+import type { AxiosRequestConfig, AxiosResponse, AxiosError } from "axios";
+import type { ApiResponse } from "@/lib/api/types";
 ```
 
 ## Related Files

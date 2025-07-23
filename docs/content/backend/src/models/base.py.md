@@ -9,6 +9,7 @@ The base module provides the foundational SQLAlchemy classes for the ReViewPoint
 ### Base Class
 
 **`Base`** - SQLAlchemy declarative base class
+
 - Inherits from `DeclarativeBase` for modern SQLAlchemy 2.0+ patterns
 - Serves as the foundation for all model class definitions
 - Provides the metaclass functionality for ORM mapping
@@ -17,6 +18,7 @@ The base module provides the foundational SQLAlchemy classes for the ReViewPoint
 ### BaseModel Abstract Class
 
 **`BaseModel`** - Abstract base class with common model functionality
+
 - Inherits from `Base` and marked as abstract with `__abstract__ = True`
 - Provides standard primary key with auto-increment integer ID
 - Implements automatic timestamp tracking for created_at and updated_at
@@ -25,11 +27,13 @@ The base module provides the foundational SQLAlchemy classes for the ReViewPoint
 ### Core Attributes
 
 #### Primary Key Strategy
+
 ```python
 id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 ```
 
 #### Timestamp Tracking
+
 ```python
 created_at: Mapped[datetime] = mapped_column(
     DateTime(timezone=True), default=func.now(), nullable=False
@@ -44,6 +48,7 @@ updated_at: Mapped[datetime] = mapped_column(
 ### SQLAlchemy 2.0+ Patterns
 
 The base module implements modern SQLAlchemy patterns:
+
 - `DeclarativeBase` for the latest declarative system
 - `Mapped` type annotations for enhanced type safety
 - `mapped_column` for explicit column definition
@@ -52,6 +57,7 @@ The base module implements modern SQLAlchemy patterns:
 ### Database Function Integration
 
 Leverages SQLAlchemy database functions:
+
 - `func.now()` for server-side timestamp defaults
 - Automatic `onupdate` triggers for modification tracking
 - Timezone-aware operations for global application support
@@ -89,12 +95,14 @@ def to_dict(self) -> Mapping[str, Any]:
 ```
 
 #### Features:
+
 - Iterates through all table columns dynamically
 - Handles missing attributes gracefully with None default
 - Returns immutable Mapping interface for safety
 - Uses type casting for SQLAlchemy table access
 
 #### Error Handling:
+
 - Raises `AttributeError` if column attributes are missing
 - Provides clear documentation of potential exceptions
 - Maintains type safety through proper annotations
@@ -104,11 +112,13 @@ def to_dict(self) -> Mapping[str, Any]:
 Automatic timestamp handling ensures audit trail consistency:
 
 #### Created Timestamp:
+
 - Set automatically on record creation using `default=func.now()`
 - Timezone-aware to support global deployments
 - Immutable after creation (no onupdate trigger)
 
 #### Updated Timestamp:
+
 - Set on creation and automatically updated on modifications
 - Uses `onupdate=func.now()` for automatic maintenance
 - Tracks any change to the model instance
@@ -141,6 +151,7 @@ user_dict = user.to_dict()
 ### Type Annotation Guidelines
 
 The module includes important type safety guidance:
+
 - Avoid using `Base` as a type annotation
 - Use specific model classes for type hints
 - Use `Any` type when model type is unknown
@@ -149,6 +160,7 @@ The module includes important type safety guidance:
 ### SQLAlchemy Integration
 
 Type safety integration with SQLAlchemy:
+
 - `cast(Any, self.__table__)` for accessing table metadata
 - `Final` annotation for abstract class marker
 - Proper return type annotations for all methods
@@ -158,6 +170,7 @@ Type safety integration with SQLAlchemy:
 ### Database Operations
 
 The base model design optimizes database performance:
+
 - Server-side timestamp generation reduces Python overhead
 - Minimal attribute overhead through mapped columns
 - Efficient primary key strategy with auto-increment
@@ -166,6 +179,7 @@ The base model design optimizes database performance:
 ### Memory Efficiency
 
 BaseModel maintains efficient memory usage:
+
 - Minimal attribute definitions in base class
 - Lazy evaluation of table metadata access
 - Efficient dictionary creation in to_dict method
@@ -175,6 +189,7 @@ BaseModel maintains efficient memory usage:
 ### Test Database Support
 
 Base models support comprehensive testing scenarios:
+
 - Compatible with SQLite for fast test execution
 - Timezone handling works across database backends
 - Serialization methods facilitate test assertions
@@ -203,6 +218,7 @@ def test_to_dict_serialization():
 ### Timestamp Integrity
 
 Timestamp management provides security benefits:
+
 - Server-side timestamp generation prevents client manipulation
 - Timezone-aware storage prevents time-based attacks
 - Automatic update tracking for audit trails
@@ -211,6 +227,7 @@ Timestamp management provides security benefits:
 ### Data Access Patterns
 
 The base model promotes secure data access:
+
 - Controlled serialization through to_dict method
 - Type-safe attribute access through Mapped annotations
 - Clear separation between base functionality and business logic

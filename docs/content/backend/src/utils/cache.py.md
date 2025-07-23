@@ -20,6 +20,7 @@ _V = TypeVar("_V")
 ```
 
 **Type System Features:**
+
 - Generic implementation supporting any value type
 - String-bounded key types for consistent hashing
 - Type-safe operations with compile-time checking
@@ -45,6 +46,7 @@ class AsyncInMemoryCache(Generic[_K, _V]):
 ```
 
 **Core Architecture:**
+
 - Generic cache supporting any key-value types
 - Thread-safe operations with asyncio.Lock
 - Per-key TTL (Time-To-Live) expiration
@@ -72,6 +74,7 @@ async def get(self, key: _K) -> _V | None:
 ```
 
 **Features:**
+
 - Automatic expiration checking on retrieval
 - Lazy cleanup of expired entries
 - Thread-safe concurrent access
@@ -79,6 +82,7 @@ async def get(self, key: _K) -> _V | None:
 - High-precision timing using event loop time
 
 **Usage Examples:**
+
 ```python
 # Basic cache usage
 cache = AsyncInMemoryCache[str, dict]()
@@ -113,6 +117,7 @@ async def set(self, key: _K, value: _V, ttl: float = 60.0) -> None:
 ```
 
 **Features:**
+
 - Configurable TTL with default 60-second expiration
 - High-precision expiration timing
 - Atomic set operations under lock
@@ -120,6 +125,7 @@ async def set(self, key: _K, value: _V, ttl: float = 60.0) -> None:
 - Overwrite existing keys with new TTL
 
 **Usage Examples:**
+
 ```python
 # Default TTL (60 seconds)
 await cache.set("temp_data", {"status": "processing"})
@@ -145,6 +151,7 @@ async def clear(self) -> None:
 ```
 
 **Features:**
+
 - Complete cache invalidation
 - Thread-safe clearing operation
 - Memory cleanup for cache reset
@@ -160,6 +167,7 @@ user_cache: Final[AsyncInMemoryCache[str, object]] = AsyncInMemoryCache[str, obj
 ```
 
 **Global Cache Design:**
+
 - Singleton pattern for shared cache access
 - Generic object value type for flexibility
 - Pre-configured for repository layer integration
@@ -178,50 +186,50 @@ from typing import Optional
 
 class UserRepository:
     """User repository with intelligent caching."""
-    
+
     async def get_user_by_id(self, user_id: int) -> Optional[User]:
         """Get user with cache optimization."""
         cache_key = f"user:id:{user_id}"
-        
+
         # Try cache first
         cached_user = await user_cache.get(cache_key)
         if cached_user:
             return User.parse_obj(cached_user) if isinstance(cached_user, dict) else cached_user
-        
+
         # Database lookup
         user = await self._fetch_user_from_db(user_id)
         if user:
             # Cache for 5 minutes
             await user_cache.set(cache_key, user.dict(), ttl=300.0)
-        
+
         return user
-    
+
     async def get_user_by_email(self, email: str) -> Optional[User]:
         """Get user by email with caching."""
         cache_key = f"user:email:{email.lower()}"
-        
+
         cached_user = await user_cache.get(cache_key)
         if cached_user:
             return User.parse_obj(cached_user)
-        
+
         user = await self._fetch_user_by_email_from_db(email)
         if user:
             # Cache both email and ID lookups
             await user_cache.set(cache_key, user.dict(), ttl=300.0)
             await user_cache.set(f"user:id:{user.id}", user.dict(), ttl=300.0)
-        
+
         return user
-    
+
     async def update_user(self, user_id: int, data: dict) -> User:
         """Update user and invalidate cache."""
         # Update database
         updated_user = await self._update_user_in_db(user_id, data)
-        
+
         # Invalidate related cache entries
         await self._invalidate_user_cache(user_id, updated_user.email)
-        
+
         return updated_user
-    
+
     async def _invalidate_user_cache(self, user_id: int, email: str) -> None:
         """Invalidate all cache entries for a user."""
         cache_keys = [
@@ -230,7 +238,7 @@ class UserRepository:
             f"user:profile:{user_id}",
             f"user:permissions:{user_id}"
         ]
-        
+
         # Note: This implementation removes entries one by one
         # In a production Redis implementation, you might use pattern deletion
         for key in cache_keys:
@@ -246,58 +254,58 @@ from src.utils.cache import AsyncInMemoryCache
 
 class BusinessLogicService:
     """Service with comprehensive caching strategy."""
-    
+
     def __init__(self):
         self.computation_cache = AsyncInMemoryCache[str, dict]()
         self.permission_cache = AsyncInMemoryCache[str, list]()
         self.config_cache = AsyncInMemoryCache[str, dict]()
-    
+
     async def get_user_permissions(self, user_id: int) -> list[str]:
         """Get user permissions with caching."""
         cache_key = f"permissions:{user_id}"
-        
+
         permissions = await self.permission_cache.get(cache_key)
         if permissions is not None:
             return permissions
-        
+
         # Expensive permission calculation
         permissions = await self._calculate_user_permissions(user_id)
-        
+
         # Cache for 15 minutes
         await self.permission_cache.set(cache_key, permissions, ttl=900.0)
         return permissions
-    
+
     async def get_application_config(self) -> dict:
         """Get application configuration with long-term caching."""
         cache_key = "app_config"
-        
+
         config = await self.config_cache.get(cache_key)
         if config is not None:
             return config
-        
+
         # Load configuration from database/file
         config = await self._load_application_config()
-        
+
         # Cache for 1 hour
         await self.config_cache.set(cache_key, config, ttl=3600.0)
         return config
-    
+
     async def compute_analytics(self, user_id: int, time_range: str) -> dict:
         """Compute analytics with result caching."""
         cache_key = f"analytics:{user_id}:{time_range}"
-        
+
         result = await self.computation_cache.get(cache_key)
         if result is not None:
             return result
-        
+
         # Expensive analytics computation
         result = await self._compute_user_analytics(user_id, time_range)
-        
+
         # Cache based on time range
         ttl = self._get_analytics_cache_ttl(time_range)
         await self.computation_cache.set(cache_key, result, ttl=ttl)
         return result
-    
+
     def _get_analytics_cache_ttl(self, time_range: str) -> float:
         """Get appropriate cache TTL based on time range."""
         ttl_mapping = {
@@ -323,27 +331,27 @@ request_cache = AsyncInMemoryCache[str, dict]()
 
 async def cache_middleware(request: Request, call_next):
     """Middleware for request-level caching."""
-    
+
     # Only cache GET requests
     if request.method != "GET":
         return await call_next(request)
-    
+
     # Generate cache key from request
     cache_key = f"request:{request.url.path}:{hash(str(request.query_params))}"
-    
+
     # Try cache first
     cached_response = await request_cache.get(cache_key)
     if cached_response:
         return JSONResponse(content=cached_response)
-    
+
     # Process request
     response = await call_next(request)
-    
+
     # Cache successful responses
     if response.status_code == 200:
         # Cache for 2 minutes
         await request_cache.set(cache_key, response.body, ttl=120.0)
-    
+
     return response
 
 app = FastAPI()
@@ -357,14 +365,14 @@ async def get_user_profile(
 ):
     """Get user profile with endpoint caching."""
     cache_key = f"profile:{user_id}"
-    
+
     profile = await cache.get(cache_key)
     if profile:
         return profile
-    
+
     # Fetch from service
     profile = await user_service.get_profile(user_id)
-    
+
     # Cache for 10 minutes
     await cache.set(cache_key, profile, ttl=600.0)
     return profile
@@ -385,34 +393,34 @@ class CacheBackend(Protocol):
 
 class MultiLevelCache:
     """Multi-level cache with L1 (memory) and L2 (Redis) tiers."""
-    
+
     def __init__(self, l1_cache: AsyncInMemoryCache, l2_cache: CacheBackend):
         self.l1 = l1_cache
         self.l2 = l2_cache
-    
+
     async def get(self, key: str) -> any:
         """Get value with L1 -> L2 -> source fallback."""
-        
+
         # Try L1 cache first
         value = await self.l1.get(key)
         if value is not None:
             return value
-        
+
         # Try L2 cache
         value = await self.l2.get(key)
         if value is not None:
             # Populate L1 cache
             await self.l1.set(key, value, ttl=60.0)
             return value
-        
+
         return None
-    
+
     async def set(self, key: str, value: any, ttl: float = 60.0) -> None:
         """Set value in both cache levels."""
         # Set in both caches
         await self.l1.set(key, value, ttl=min(ttl, 300.0))  # L1: max 5 minutes
         await self.l2.set(key, value, ttl=ttl)  # L2: full TTL
-    
+
     async def invalidate(self, key: str) -> None:
         """Invalidate key in both cache levels."""
         await self.l1.set(key, None, ttl=0.0)  # Immediate expiration
@@ -433,42 +441,42 @@ from typing import Set
 
 class CacheInvalidationManager:
     """Manages cache invalidation with dependency tracking."""
-    
+
     def __init__(self):
         self.cache = AsyncInMemoryCache[str, any]()
         self.dependencies: dict[str, Set[str]] = {}  # key -> dependent keys
         self.lock = asyncio.Lock()
-    
+
     async def set_with_dependencies(
-        self, 
-        key: str, 
-        value: any, 
+        self,
+        key: str,
+        value: any,
         ttl: float = 60.0,
         depends_on: list[str] = None
     ) -> None:
         """Set value with dependency tracking."""
         await self.cache.set(key, value, ttl)
-        
+
         if depends_on:
             async with self.lock:
                 for dependency in depends_on:
                     if dependency not in self.dependencies:
                         self.dependencies[dependency] = set()
                     self.dependencies[dependency].add(key)
-    
+
     async def invalidate_with_dependencies(self, key: str) -> None:
         """Invalidate key and all dependent keys."""
         async with self.lock:
             # Get all dependent keys
             dependent_keys = self.dependencies.get(key, set())
-            
+
             # Invalidate the key itself
             await self.cache.set(key, None, ttl=0.0)
-            
+
             # Recursively invalidate dependent keys
             for dependent_key in dependent_keys:
                 await self.invalidate_with_dependencies(dependent_key)
-            
+
             # Clean up dependency tracking
             del self.dependencies[key]
 
@@ -477,13 +485,13 @@ cache_manager = CacheInvalidationManager()
 
 # User profile depends on user data
 await cache_manager.set_with_dependencies(
-    "user:123", 
-    user_data, 
+    "user:123",
+    user_data,
     ttl=300.0
 )
 await cache_manager.set_with_dependencies(
-    "profile:123", 
-    profile_data, 
+    "profile:123",
+    profile_data,
     ttl=600.0,
     depends_on=["user:123"]
 )
@@ -499,23 +507,23 @@ await cache_manager.invalidate_with_dependencies("user:123")
 ```python
 class CacheKeyBuilder:
     """Standardized cache key generation."""
-    
+
     @staticmethod
     def user_key(user_id: int) -> str:
         return f"user:id:{user_id}"
-    
+
     @staticmethod
     def user_email_key(email: str) -> str:
         return f"user:email:{email.lower()}"
-    
+
     @staticmethod
     def session_key(session_id: str) -> str:
         return f"session:{session_id}"
-    
+
     @staticmethod
     def rate_limit_key(user_id: int, action: str) -> str:
         return f"rate_limit:{user_id}:{action}"
-    
+
     @staticmethod
     def analytics_key(user_id: int, time_range: str, metric: str) -> str:
         return f"analytics:{user_id}:{time_range}:{metric}"
@@ -533,28 +541,28 @@ from functools import wraps
 
 class CacheMetrics:
     """Cache performance monitoring."""
-    
+
     def __init__(self):
         self.hits = 0
         self.misses = 0
         self.total_time = 0.0
         self.operation_count = 0
-    
+
     def record_hit(self, duration: float):
         self.hits += 1
         self.total_time += duration
         self.operation_count += 1
-    
+
     def record_miss(self, duration: float):
         self.misses += 1
         self.total_time += duration
         self.operation_count += 1
-    
+
     @property
     def hit_rate(self) -> float:
         total = self.hits + self.misses
         return self.hits / total if total > 0 else 0.0
-    
+
     @property
     def average_time(self) -> float:
         return self.total_time / self.operation_count if self.operation_count > 0 else 0.0
@@ -568,12 +576,12 @@ def monitor_cache_performance(cache_operation):
         start_time = time.time()
         result = await cache_operation(*args, **kwargs)
         duration = time.time() - start_time
-        
+
         if result is not None:
             cache_metrics.record_hit(duration)
         else:
             cache_metrics.record_miss(duration)
-        
+
         return result
     return wrapper
 
@@ -591,70 +599,70 @@ from src.utils.cache import AsyncInMemoryCache
 
 class TestAsyncInMemoryCache:
     """Comprehensive cache testing."""
-    
+
     @pytest.fixture
     async def cache(self):
         return AsyncInMemoryCache[str, dict]()
-    
+
     @pytest.mark.asyncio
     async def test_basic_operations(self, cache):
         """Test basic cache operations."""
         # Test set and get
         test_data = {"key": "value", "number": 42}
         await cache.set("test_key", test_data, ttl=60.0)
-        
+
         result = await cache.get("test_key")
         assert result == test_data
-    
+
     @pytest.mark.asyncio
     async def test_expiration(self, cache):
         """Test TTL expiration."""
         await cache.set("expire_key", {"data": "test"}, ttl=0.1)  # 100ms
-        
+
         # Should be available immediately
         result = await cache.get("expire_key")
         assert result is not None
-        
+
         # Wait for expiration
         await asyncio.sleep(0.2)
-        
+
         # Should be expired
         result = await cache.get("expire_key")
         assert result is None
-    
+
     @pytest.mark.asyncio
     async def test_concurrent_access(self, cache):
         """Test thread safety under concurrent access."""
         async def set_operation(i):
             await cache.set(f"key_{i}", {"value": i}, ttl=60.0)
-        
+
         async def get_operation(i):
             return await cache.get(f"key_{i}")
-        
+
         # Concurrent set operations
         await asyncio.gather(*[set_operation(i) for i in range(100)])
-        
+
         # Concurrent get operations
         results = await asyncio.gather(*[get_operation(i) for i in range(100)])
-        
+
         # Verify all operations completed successfully
         for i, result in enumerate(results):
             assert result == {"value": i}
-    
+
     @pytest.mark.asyncio
     async def test_clear_cache(self, cache):
         """Test cache clearing."""
         # Add multiple entries
         for i in range(10):
             await cache.set(f"key_{i}", {"value": i}, ttl=60.0)
-        
+
         # Verify entries exist
         result = await cache.get("key_5")
         assert result is not None
-        
+
         # Clear cache
         await cache.clear()
-        
+
         # Verify all entries are gone
         for i in range(10):
             result = await cache.get(f"key_{i}")

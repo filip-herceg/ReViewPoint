@@ -439,10 +439,10 @@ if (response.ok) {
 def enhance_openapi_schema(schema: dict[str, Any]) -> dict[str, Any]:
     """
     Enhance OpenAPI schema with comprehensive documentation.
-    
+
     Args:
         schema: Base OpenAPI schema from FastAPI
-        
+
     Returns:
         Enhanced schema with detailed documentation
     """
@@ -453,19 +453,19 @@ def enhance_openapi_schema(schema: dict[str, Any]) -> dict[str, Any]:
             "servers": SERVERS,
             "tags": TAGS
         })
-        
+
         # Add security schemes
         if "components" not in schema:
             schema["components"] = {}
         schema["components"]["securitySchemes"] = SECURITY_SCHEMES
-        
+
         # Enhance paths with examples and code samples
         if "paths" in schema:
             _enhance_paths(schema["paths"])
-        
+
         logger.info("OpenAPI schema enhancement completed successfully")
         return schema
-        
+
     except Exception as e:
         logger.error(f"Failed to enhance OpenAPI schema: {e}")
         return schema
@@ -479,18 +479,18 @@ def _enhance_paths(paths: dict[str, Any]) -> None:
     for path, path_item in paths.items():
         if not isinstance(path_item, dict):
             continue
-        
+
         for method, operation in path_item.items():
             if not isinstance(operation, dict):
                 continue
-            
+
             # Add code samples
             _add_code_samples(operation, path, method)
-            
+
             # Add response examples
             if "responses" in operation:
                 _add_response_examples(operation["responses"])
-            
+
             # Configure security
             _configure_operation_security(operation, path, method)
 ```
@@ -523,15 +523,15 @@ def _add_response_examples(responses: dict[str, Any]) -> None:
     for status_code, response in responses.items():
         if not isinstance(response, dict) or "content" not in response:
             continue
-        
+
         content = response["content"]
         for media_type, media_info in content.items():
             if not isinstance(media_info, dict):
                 continue
-            
+
             if "examples" not in media_info:
                 media_info["examples"] = {}
-            
+
             # Add appropriate examples based on status code and content
             if status_code in ["200", "201"]:
                 if "user" in str(media_info).lower():
@@ -611,23 +611,23 @@ from core.documentation import enhance_openapi_schema
 def create_documented_app() -> FastAPI:
     """Create FastAPI app with enhanced documentation."""
     app = FastAPI()
-    
+
     # Override OpenAPI schema generation
     original_openapi = app.openapi
-    
+
     def custom_openapi():
         if app.openapi_schema:
             return app.openapi_schema
-        
+
         # Generate base schema
         openapi_schema = original_openapi()
-        
+
         # Apply enhancements
         enhanced_schema = enhance_openapi_schema(openapi_schema)
-        
+
         app.openapi_schema = enhanced_schema
         return app.openapi_schema
-    
+
     app.openapi = custom_openapi
     return app
 ```
@@ -638,10 +638,10 @@ def create_documented_app() -> FastAPI:
 if __name__ == "__main__":
     import uvicorn
     from main import app
-    
+
     # Apply documentation enhancements
     enhanced_app = create_documented_app()
-    
+
     # Serve with comprehensive documentation
     uvicorn.run(
         enhanced_app,
@@ -669,7 +669,7 @@ def get_code_samples(endpoint_key: str) -> list[dict[str, str]]:
     """Retrieve code samples with caching."""
     if endpoint_key not in CODE_SAMPLES_CACHE:
         CODE_SAMPLES_CACHE[endpoint_key] = _generate_code_samples(endpoint_key)
-    
+
     return CODE_SAMPLES_CACHE[endpoint_key]
 ```
 

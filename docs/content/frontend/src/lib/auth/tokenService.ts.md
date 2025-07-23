@@ -14,7 +14,7 @@ Central service class that manages all token-related operations:
 class TokenService {
   // Token refresh state management
   private refreshState: TokenRefreshState;
-  
+
   // Token expiration buffer (5 minutes before expiry)
   private readonly EXPIRATION_BUFFER = 5 * 60;
 }
@@ -24,9 +24,10 @@ class TokenService {
 
 ```typescript
 interface TokenRefreshState {
-  isRefreshing: boolean;                    // Current refresh status
-  refreshPromise: Promise<string> | null;   // Active refresh promise
-  refreshQueue: Array<{                     // Queued refresh requests
+  isRefreshing: boolean; // Current refresh status
+  refreshPromise: Promise<string> | null; // Active refresh promise
+  refreshQueue: Array<{
+    // Queued refresh requests
     resolve: (token: string) => void;
     reject: (error: Error) => void;
   }>;
@@ -105,7 +106,7 @@ clearStoredTokens(): void
 
 ```typescript
 // Proactive refresh with buffer time
-const isNearExpiry = (currentTime + EXPIRATION_BUFFER) >= payload.exp;
+const isNearExpiry = currentTime + EXPIRATION_BUFFER >= payload.exp;
 
 if (isNearExpiry) {
   return await this.refreshAccessToken();
@@ -140,10 +141,10 @@ catch (error) {
 ### **Token Validation**
 
 ```typescript
-import { tokenService } from '@/lib/auth/tokenService';
+import { tokenService } from "@/lib/auth/tokenService";
 
 // Check if token is still valid
-const token = localStorage.getItem('accessToken');
+const token = localStorage.getItem("accessToken");
 if (token && tokenService.isTokenExpired(token)) {
   // Token expired, need to refresh
   const newToken = await tokenService.refreshAccessToken();
@@ -193,10 +194,10 @@ async function logout() {
 ```typescript
 // Secure token storage with error handling
 try {
-  localStorage.setItem('refreshToken', tokens.refreshToken);
-  localStorage.setItem('accessToken', tokens.accessToken);
+  localStorage.setItem("refreshToken", tokens.refreshToken);
+  localStorage.setItem("accessToken", tokens.accessToken);
 } catch (error) {
-  logger.error('Token storage failed', error);
+  logger.error("Token storage failed", error);
   // Handle storage quota exceeded or other issues
 }
 ```
@@ -250,9 +251,9 @@ if (error.response?.status === 401) {
 ```typescript
 // Graceful storage error handling
 try {
-  return JSON.parse(localStorage.getItem('authTokens') || '{}');
+  return JSON.parse(localStorage.getItem("authTokens") || "{}");
 } catch (error) {
-  logger.warn('Token storage corrupted, clearing', error);
+  logger.warn("Token storage corrupted, clearing", error);
   this.clearStoredTokens();
   return null;
 }
@@ -271,7 +272,7 @@ try {
 
 ```typescript
 // Mock token for testing
-const mockToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...';
+const mockToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...";
 
 // Test expiration detection
 expect(tokenService.isTokenExpired(expiredToken)).toBe(true);
@@ -287,9 +288,10 @@ const refreshPromise2 = tokenService.refreshAccessToken();
 
 ```typescript
 // Configurable expiration buffer
-const EXPIRATION_BUFFER = process.env.NODE_ENV === 'development' 
-  ? 1 * 60  // 1 minute for development
-  : 5 * 60; // 5 minutes for production
+const EXPIRATION_BUFFER =
+  process.env.NODE_ENV === "development"
+    ? 1 * 60 // 1 minute for development
+    : 5 * 60; // 5 minutes for production
 ```
 
 ### **Debugging and Monitoring**

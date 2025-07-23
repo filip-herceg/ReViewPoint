@@ -69,7 +69,7 @@ IS_PYTEST = os.environ.get("PYTEST_CURRENT_TEST") is not None or "pytest" in os.
 ```python
 class Settings(BaseSettings):
     """Application settings with environment-specific configurations and validation."""
-    
+
     # Application metadata
     app_name: str = Field(default="ReViewPoint", description="Application name")
     app_version: str = Field(default="1.0.0", description="Application version")
@@ -100,22 +100,22 @@ class Settings(BaseSettings):
         description="Enable SQLAlchemy query logging",
         env="REVIEWPOINT_DB_ECHO"
     )
-    
+
     @validator("database_url")
     def validate_database_url(cls, v: str) -> str:
         """Validate database URL format and driver compatibility."""
         if not v:
             raise ValueError("Database URL cannot be empty")
-        
+
         # Ensure async drivers for production environments
         if not IS_PYTEST and "sqlite" in v and "aiosqlite" not in v:
             logger.warning("SQLite detected without async driver, adding aiosqlite")
             v = v.replace("sqlite://", "sqlite+aiosqlite://")
-        
+
         if not IS_PYTEST and "postgresql" in v and "asyncpg" not in v:
             logger.warning("PostgreSQL detected without async driver, adding asyncpg")
             v = v.replace("postgresql://", "postgresql+asyncpg://")
-        
+
         return v
 ```
 
@@ -146,7 +146,7 @@ class Settings(BaseSettings):
         description="Access token expiration time in minutes",
         env="REVIEWPOINT_ACCESS_TOKEN_EXPIRE_MINUTES"
     )
-    
+
     @validator("secret_key")
     def validate_secret_key(cls, v: str) -> str:
         """Validate secret key strength and security requirements."""
@@ -157,7 +157,7 @@ class Settings(BaseSettings):
             if not IS_PYTEST:
                 logger.critical("Using default secret key in production environment!")
         return v
-    
+
     @validator("jwt_algorithm")
     def validate_jwt_algorithm(cls, v: str) -> str:
         """Validate JWT algorithm security and compatibility."""
@@ -194,7 +194,7 @@ class Settings(BaseSettings):
         description="Allowed file extensions for uploads",
         env="REVIEWPOINT_ALLOWED_EXTENSIONS"
     )
-    
+
     @validator("upload_dir")
     def validate_upload_dir(cls, v: str) -> str:
         """Validate and create upload directory if needed."""
@@ -206,10 +206,10 @@ class Settings(BaseSettings):
             except Exception as e:
                 logger.error(f"Failed to create upload directory: {e}")
                 raise ValueError(f"Cannot create upload directory: {v}")
-        
+
         if not upload_path.is_dir():
             raise ValueError(f"Upload path exists but is not a directory: {v}")
-        
+
         return str(upload_path.absolute())
 ```
 
@@ -240,7 +240,7 @@ class Settings(BaseSettings):
         description="Allowed CORS methods",
         env="REVIEWPOINT_CORS_ALLOW_METHODS"
     )
-    
+
     @validator("cors_origins", pre=True)
     def validate_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
         """Validate and normalize CORS origins configuration."""
@@ -249,12 +249,12 @@ class Settings(BaseSettings):
             origins = [origin.strip() for origin in v.split(",") if origin.strip()]
         else:
             origins = v
-        
+
         # Validate each origin format
         for origin in origins:
             if origin != "*" and not origin.startswith(("http://", "https://")):
                 raise ValueError(f"Invalid CORS origin format: {origin}")
-        
+
         return origins
 ```
 
@@ -280,7 +280,7 @@ class Settings(BaseSettings):
         description="Default cache TTL in seconds",
         env="REVIEWPOINT_CACHE_TTL"
     )
-    
+
     # Storage configuration
     storage_backend: str = Field(
         default="local",
@@ -320,7 +320,7 @@ class Settings(BaseSettings):
         description="SMTP server port",
         env="REVIEWPOINT_SMTP_PORT"
     )
-    
+
     # Monitoring and logging
     log_level: str = Field(
         default="INFO",
@@ -360,7 +360,7 @@ class Settings(BaseSettings):
         description="ReDoc documentation URL",
         env="REVIEWPOINT_REDOC_URL"
     )
-    
+
     # Feature flags
     enable_registration: bool = Field(
         default=True,
@@ -390,7 +390,7 @@ class Settings(BaseSettings):
         env_file_encoding = "utf-8"
         env_prefix = "REVIEWPOINT_"
         case_sensitive = False
-        
+
         @classmethod
         def customise_sources(
             cls,
@@ -421,22 +421,22 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """
     Get application settings with caching.
-    
+
     Uses functools.lru_cache to ensure only one Settings instance
     is created and reused throughout the application lifecycle.
-    
+
     Returns:
         Settings: Cached settings instance
     """
     logger.debug("Loading application settings")
     settings = Settings()
-    
+
     # Log key configuration values (excluding sensitive data)
     logger.info(f"Application: {settings.app_name} v{settings.app_version}")
     logger.info(f"Database: {settings.database_url.split('@')[-1] if '@' in settings.database_url else 'local'}")
     logger.info(f"Upload directory: {settings.upload_dir}")
     logger.info(f"CORS origins: {len(settings.cors_origins)} configured")
-    
+
     return settings
 ```
 
@@ -454,22 +454,22 @@ def get_settings() -> Settings:
 class SettingsProxy:
     """
     Proxy for backward compatibility with legacy configuration access patterns.
-    
+
     Provides attribute access to settings while maintaining the singleton pattern
     and enabling smooth migration from older configuration systems.
     """
-    
+
     def __getattr__(self, name: str) -> Any:
         """Get attribute from cached settings instance."""
         settings = get_settings()
         if hasattr(settings, name):
             return getattr(settings, name)
         raise AttributeError(f"Settings has no attribute '{name}'")
-    
+
     def __setattr__(self, name: str, value: Any) -> None:
         """Prevent direct attribute modification to maintain immutability."""
         raise AttributeError("Settings are immutable. Use environment variables to modify configuration.")
-    
+
     def refresh(self) -> None:
         """Clear settings cache to force reload from environment."""
         get_settings.cache_clear()
@@ -498,7 +498,7 @@ from core.config import get_settings
 def create_app():
     """Create FastAPI application with configuration."""
     settings = get_settings()
-    
+
     app = FastAPI(
         title=settings.app_name,
         version=settings.app_version,
@@ -506,7 +506,7 @@ def create_app():
         docs_url=settings.docs_url,
         redoc_url=settings.redoc_url
     )
-    
+
     # Configure CORS
     app.add_middleware(
         CORSMiddleware,
@@ -515,7 +515,7 @@ def create_app():
         allow_methods=settings.cors_allow_methods,
         allow_headers=["*"]
     )
-    
+
     return app
 ```
 
@@ -528,14 +528,14 @@ from sqlalchemy.ext.asyncio import create_async_engine
 def get_database_engine():
     """Create database engine with configuration."""
     settings = get_settings()
-    
+
     engine = create_async_engine(
         settings.database_url,
         echo=settings.database_echo,
         pool_pre_ping=True,
         pool_recycle=3600
     )
-    
+
     return engine
 ```
 
@@ -550,13 +550,13 @@ def test_settings():
     """Override settings for testing."""
     # Clear cache to allow new settings
     get_settings.cache_clear()
-    
+
     # Set test environment variables
     os.environ["REVIEWPOINT_DATABASE_URL"] = "sqlite+aiosqlite:///:memory:"
     os.environ["REVIEWPOINT_SECRET_KEY"] = "test-secret-key-for-testing-only"
-    
+
     yield get_settings()
-    
+
     # Cleanup
     get_settings.cache_clear()
 ```
@@ -693,7 +693,7 @@ def test_settings_validation():
     # Test invalid secret key
     with pytest.raises(ValidationError):
         Settings(secret_key="short")
-    
+
     # Test valid configuration
     settings = Settings(
         secret_key="valid-secret-key-with-sufficient-length",

@@ -9,23 +9,27 @@ Centralized feature flag configuration with type safety and runtime control. Ena
 ### Feature Flag Categories
 
 #### Authentication Features
+
 - **enablePasswordReset**: Password reset functionality (default: true)
 - **enableSocialLogin**: Third-party authentication integration (default: false)
 - **enableTwoFactorAuth**: Multi-factor authentication support (default: false)
 
-#### Upload Features  
+#### Upload Features
+
 - **enableMultipleFileUpload**: Batch file upload capability (default: true)
 - **enableDragDropUpload**: Drag-and-drop file interface (default: true)
 - **enableUploadProgress**: Upload progress tracking (default: true)
 - **enableFilePreview**: File preview before upload (default: true)
 
 #### Review Features
+
 - **enableAiReviews**: AI-powered review generation (default: false)
-- **enableCollaborativeReviews**: Multi-user review collaboration (default: false) 
+- **enableCollaborativeReviews**: Multi-user review collaboration (default: false)
 - **enableReviewComments**: Comment system for reviews (default: true)
 - **enableReviewExport**: Export functionality for reviews (default: true)
 
 #### UI Features
+
 - **enableDarkMode**: Dark theme support (default: true)
 - **enableNotifications**: In-app notification system (default: true)
 - **enableBreadcrumbs**: Navigation breadcrumb trail (default: true)
@@ -33,11 +37,13 @@ Centralized feature flag configuration with type safety and runtime control. Ena
 - **enableWebSocket**: Real-time communication features (default: true)
 
 #### Performance Features
+
 - **enableVirtualization**: Large list virtualization (default: false)
 - **enableLazyLoading**: Component lazy loading (default: true)
 - **enableCodeSplitting**: Bundle code splitting (default: true)
 
 #### Monitoring Features
+
 - **enableAnalytics**: User analytics tracking (default: false)
 - **enableErrorReporting**: Error monitoring integration (default: true)
 - **enablePerformanceMonitoring**: Performance metrics collection (default: true)
@@ -45,11 +51,13 @@ Centralized feature flag configuration with type safety and runtime control. Ena
 ## Configuration Sources
 
 ### Window Global Override
+
 - **Runtime Configuration**: `window.FEATURE_FLAGS` for dynamic overrides
 - **Development Testing**: Easily toggle features during development
 - **A/B Testing**: Support for user segment-specific flags
 
 ### Environment Integration
+
 - **Environment-Aware**: Integrates with environment configuration
 - **Type Safety**: Zod schema validation for all feature flags
 - **Default Values**: Sensible defaults for all environments
@@ -57,6 +65,7 @@ Centralized feature flag configuration with type safety and runtime control. Ena
 ## Usage Patterns
 
 ### Component Integration
+
 ```typescript
 const featureFlags = getFeatureFlags();
 if (featureFlags.enableDarkMode) {
@@ -65,6 +74,7 @@ if (featureFlags.enableDarkMode) {
 ```
 
 ### Conditional Rendering
+
 - **Feature Gating**: Hide/show components based on flags
 - **Progressive Enhancement**: Gradually enable advanced features
 - **Fallback Handling**: Graceful degradation when features disabled
@@ -79,12 +89,14 @@ if (featureFlags.enableDarkMode) {
 ## Development Workflow
 
 ### Feature Development
+
 1. **Add Flag**: Define new feature flag in schema
 2. **Implement**: Build feature with flag checks
 3. **Test**: Verify both enabled/disabled states
 4. **Deploy**: Gradual rollout via flag configuration
 
 ### Flag Lifecycle
+
 - **Introduction**: Start with false default for new features
 - **Testing**: Enable for development/staging environments
 - **Rollout**: Gradually enable for production users

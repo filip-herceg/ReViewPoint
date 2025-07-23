@@ -116,19 +116,19 @@ async def blacklist_token_endpoint(
     try:
         # Create blacklist entry
         blacklist_entry = await blacklist_service.blacklist_token(token)
-        
+
         # Convert to schema for response
         blacklisted_schema = BlacklistedTokenSchema(
             id=blacklist_entry.id,
             token=blacklist_entry.token,
             blacklisted_at=blacklist_entry.blacklisted_at
         )
-        
+
         return {
             "message": "Token successfully blacklisted",
             "blacklisted_token": blacklisted_schema
         }
-        
+
     except Exception as e:
         logger.error(f"Token blacklisting failed: {e}")
         raise HTTPException(
@@ -145,7 +145,7 @@ async def validate_token_not_blacklisted(token: str) -> bool:
     try:
         # Query blacklist repository
         blacklisted_entry = await blacklist_repository.get_blacklisted_token(token)
-        
+
         if blacklisted_entry:
             # Convert to schema for logging
             blacklist_schema = BlacklistedTokenSchema(
@@ -153,15 +153,15 @@ async def validate_token_not_blacklisted(token: str) -> bool:
                 token=blacklisted_entry.token,
                 blacklisted_at=blacklisted_entry.blacklisted_at
             )
-            
+
             logger.warning(
                 f"Attempted use of blacklisted token: {blacklist_schema.id} "
                 f"(blacklisted at {blacklist_schema.blacklisted_at})"
             )
             return False
-        
+
         return True
-        
+
     except Exception as e:
         logger.error(f"Token blacklist validation failed: {e}")
         # Fail secure - treat as blacklisted if validation fails
@@ -179,13 +179,13 @@ async def logout_endpoint(
     try:
         # Extract access token from header
         access_token = authorization.replace("Bearer ", "")
-        
+
         # Blacklist both access and refresh tokens
         access_blacklist = await blacklist_service.blacklist_token(access_token)
         refresh_blacklist = await blacklist_service.blacklist_token(
             refresh_token_request.refresh_token
         )
-        
+
         # Convert to schemas for response
         blacklisted_tokens = [
             BlacklistedTokenSchema(
@@ -199,12 +199,12 @@ async def logout_endpoint(
                 blacklisted_at=refresh_blacklist.blacklisted_at
             )
         ]
-        
+
         return {
             "message": "Successfully logged out",
             "blacklisted_tokens": blacklisted_tokens
         }
-        
+
     except Exception as e:
         logger.error(f"Logout failed: {e}")
         raise HTTPException(status_code=500, detail="Logout failed")
@@ -218,15 +218,15 @@ async def cleanup_expired_tokens():
     try:
         # Get current time
         current_time = datetime.utcnow()
-        
+
         # Calculate expiration threshold (e.g., 30 days)
         expiration_threshold = current_time - timedelta(days=30)
-        
+
         # Get expired blacklist entries
         expired_entries = await blacklist_repository.get_tokens_blacklisted_before(
             expiration_threshold
         )
-        
+
         # Convert to schemas for logging
         expired_schemas = [
             BlacklistedTokenSchema(
@@ -236,7 +236,7 @@ async def cleanup_expired_tokens():
             )
             for entry in expired_entries
         ]
-        
+
         # Remove expired entries
         for schema in expired_schemas:
             await blacklist_repository.remove_blacklisted_token(schema.id)
@@ -244,12 +244,12 @@ async def cleanup_expired_tokens():
                 f"Removed expired blacklisted token {schema.id} "
                 f"(blacklisted at {schema.blacklisted_at})"
             )
-        
+
         return {
             "message": f"Cleaned up {len(expired_schemas)} expired tokens",
             "removed_tokens": len(expired_schemas)
         }
-        
+
     except Exception as e:
         logger.error(f"Token cleanup failed: {e}")
         raise
@@ -270,14 +270,14 @@ async def audit_blacklisted_tokens(
             end_date = datetime.utcnow()
         if not start_date:
             start_date = end_date - timedelta(days=30)
-        
+
         # Get blacklisted tokens in date range
         blacklisted_entries = await blacklist_repository.get_tokens_blacklisted_between(
             start_date=start_date,
             end_date=end_date,
             limit=limit
         )
-        
+
         # Convert to schemas for response
         blacklist_schemas = [
             BlacklistedTokenSchema(
@@ -287,15 +287,15 @@ async def audit_blacklisted_tokens(
             )
             for entry in blacklisted_entries
         ]
-        
+
         # Generate audit statistics
         total_blacklisted = len(blacklist_schemas)
         tokens_by_date = {}
-        
+
         for schema in blacklist_schemas:
             date_key = schema.blacklisted_at.date().isoformat()
             tokens_by_date[date_key] = tokens_by_date.get(date_key, 0) + 1
-        
+
         return {
             "audit_period": {
                 "start_date": start_date.isoformat(),
@@ -305,7 +305,7 @@ async def audit_blacklisted_tokens(
             "tokens_by_date": tokens_by_date,
             "blacklisted_tokens": blacklist_schemas[:10]  # First 10 for review
         }
-        
+
     except Exception as e:
         logger.error(f"Blacklist audit failed: {e}")
         raise HTTPException(
@@ -390,11 +390,11 @@ async def check_token_blacklist_optimized(token: str) -> bool:
     cached_result = await cache.get(f"blacklist:{hash(token)}")
     if cached_result is not None:
         return cached_result == "blacklisted"
-    
+
     # Query database
     blacklisted_entry = await blacklist_repository.get_blacklisted_token(token)
     is_blacklisted = blacklisted_entry is not None
-    
+
     # Cache result for performance
     cache_value = "blacklisted" if is_blacklisted else "valid"
     await cache.set(
@@ -402,7 +402,7 @@ async def check_token_blacklist_optimized(token: str) -> bool:
         cache_value,
         expire=300  # 5 minutes
     )
-    
+
     return is_blacklisted
 ```
 
@@ -425,27 +425,27 @@ async def automated_token_cleanup():
     """Automated cleanup of expired blacklisted tokens."""
     batch_size = 1000
     cleanup_threshold = datetime.utcnow() - timedelta(days=30)
-    
+
     while True:
         # Process in batches to avoid memory issues
         expired_tokens = await blacklist_repository.get_expired_tokens_batch(
             threshold=cleanup_threshold,
             limit=batch_size
         )
-        
+
         if not expired_tokens:
             break
-        
+
         # Convert to schemas for logging
         schemas = [
             BlacklistedTokenSchema.model_validate(token)
             for token in expired_tokens
         ]
-        
+
         # Batch delete
         token_ids = [schema.id for schema in schemas]
         await blacklist_repository.delete_tokens_batch(token_ids)
-        
+
         logger.info(f"Cleaned up {len(schemas)} expired blacklisted tokens")
 ```
 
@@ -463,7 +463,7 @@ async def validate_blacklist_entry(token_data: dict) -> BlacklistedTokenSchema:
         for error in e.errors():
             field = error["loc"][-1]
             error_type = error["type"]
-            
+
             if field == "token" and "missing" in error_type:
                 raise HTTPException(
                     status_code=400,
@@ -474,7 +474,7 @@ async def validate_blacklist_entry(token_data: dict) -> BlacklistedTokenSchema:
                     status_code=400,
                     detail="Invalid blacklist timestamp format"
                 )
-        
+
         # Generic validation error
         raise HTTPException(
             status_code=400,
@@ -491,7 +491,7 @@ async def safe_token_blacklisting(token: str) -> BlacklistedTokenSchema:
         # Attempt to blacklist token
         blacklist_entry = await blacklist_repository.create_blacklist_entry(token)
         return BlacklistedTokenSchema.model_validate(blacklist_entry)
-        
+
     except IntegrityError:
         # Token already blacklisted
         existing_entry = await blacklist_repository.get_blacklisted_token(token)
@@ -501,7 +501,7 @@ async def safe_token_blacklisting(token: str) -> BlacklistedTokenSchema:
             status_code=409,
             detail="Token already blacklisted"
         )
-        
+
     except DatabaseError as e:
         logger.error(f"Database error during token blacklisting: {e}")
         raise HTTPException(
@@ -547,7 +547,7 @@ def test_blacklisted_token_schema_creation():
         "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.test",
         "blacklisted_at": datetime(2024, 1, 1, 12, 0, 0)
     }
-    
+
     blacklist_schema = BlacklistedTokenSchema(**token_data)
     assert blacklist_schema.id == 1
     assert blacklist_schema.token == token_data["token"]
@@ -561,7 +561,7 @@ def test_blacklist_schema_validation():
             blacklisted_at=datetime.now()
             # Missing token field
         )
-    
+
     # Test datetime validation
     with pytest.raises(ValidationError):
         BlacklistedTokenSchema(
@@ -577,31 +577,31 @@ def test_blacklist_schema_validation():
 async def test_token_blacklist_flow():
     # Test complete token blacklist workflow
     client = TestClient(app)
-    
+
     # Login to get tokens
     login_response = client.post("/auth/login", json={
         "email": "test@example.com",
         "password": "testpass"
     })
-    
+
     tokens = login_response.json()
     access_token = tokens["access_token"]
-    
+
     # Blacklist token (logout)
     logout_response = client.post(
         "/auth/logout",
         json={"refresh_token": tokens["refresh_token"]},
         headers={"Authorization": f"Bearer {access_token}"}
     )
-    
+
     assert logout_response.status_code == 200
-    
+
     # Verify token is blacklisted
     protected_response = client.get(
         "/users/me",
         headers={"Authorization": f"Bearer {access_token}"}
     )
-    
+
     assert protected_response.status_code == 401
 ```
 
@@ -611,15 +611,15 @@ async def test_token_blacklist_flow():
 async def test_blacklist_security():
     # Test blacklist validation security
     malicious_token = "malicious.token.value"
-    
+
     # Should fail securely on invalid token
     is_valid = await validate_token_not_blacklisted(malicious_token)
     assert is_valid is False  # Fail secure
-    
+
     # Test blacklist entry creation
     blacklist_entry = await blacklist_service.blacklist_token(malicious_token)
     blacklist_schema = BlacklistedTokenSchema.model_validate(blacklist_entry)
-    
+
     # Verify token is properly blacklisted
     assert blacklist_schema.token == malicious_token
     assert isinstance(blacklist_schema.blacklisted_at, datetime)

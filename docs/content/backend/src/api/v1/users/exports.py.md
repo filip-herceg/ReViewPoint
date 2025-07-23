@@ -64,7 +64,7 @@ CSV_FULL_EXPORT_FILENAME: Final[Literal["users_full_export.csv"]] = "users_full_
 
 #### Basic CSV Export with Essential Data
 
-```python
+````python
 @router.get(
     "/export",
     summary="Export users as CSV (minimal format)",
@@ -166,13 +166,13 @@ async def export_users_csv(
     }
 
     return Response(content=csv_content, media_type="text/csv", headers=dict(headers))
-```
+````
 
 ### Comprehensive User Export
 
 #### Full CSV Export with Complete User Data
 
-```python
+````python
 @router.get(
     "/export-full",
     summary="Export users as CSV (complete format)",
@@ -275,13 +275,13 @@ async def export_users_full_csv(
     }
 
     return Response(content=csv_content, media_type="text/csv", headers=dict(headers))
-```
+````
 
 ### Health Check Endpoints
 
 #### Export Service Health Monitoring
 
-```python
+````python
 EXPORT_ALIVE_STATUS: Final[Literal["users export alive"]] = "users export alive"
 
 @router.get(
@@ -329,11 +329,11 @@ async def export_alive() -> ExportAliveResponse:
     Health check endpoint for export router functionality.
     """
     return {"status": EXPORT_ALIVE_STATUS}
-```
+````
 
 #### Debug and Testing Endpoint
 
-```python
+````python
 EXPORT_SIMPLE_STATUS: Final[Literal["export simple status"]] = "export simple status"
 
 @router.get(
@@ -381,7 +381,7 @@ async def export_simple() -> ExportSimpleResponse:
     Simple test endpoint for debugging export functionality.
     """
     return {"users": EXPORT_SIMPLE_STATUS}
-```
+````
 
 ## Export Features and Capabilities
 
@@ -396,10 +396,10 @@ def generate_csv_export(users_data: Sequence[User], headers: list[str]) -> str:
     """Generate CSV content from user data."""
     output: StringIO = StringIO()
     csv_writer = csv.writer(output)
-    
+
     # Write headers
     csv_writer.writerow(headers)
-    
+
     # Write data rows
     for user in users_data:
         csv_writer.writerow([
@@ -412,7 +412,7 @@ def generate_csv_export(users_data: Sequence[User], headers: list[str]) -> str:
             user.is_active if hasattr(user, 'is_active') else False,
             user.is_admin if hasattr(user, 'is_admin') else False,
         ])
-    
+
     return output.getvalue()
 ```
 
@@ -447,8 +447,8 @@ headers: Mapping[str, str] = {
 }
 
 return Response(
-    content=csv_content, 
-    media_type="text/csv", 
+    content=csv_content,
+    media_type="text/csv",
     headers=dict(headers)
 )
 ```

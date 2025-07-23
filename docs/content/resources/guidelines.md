@@ -4,13 +4,13 @@
 
 ## 📋 **Quick Links**
 
-| Resource | Description | Link |
-|----------|-------------|------|
-| **Development Guidelines** | Code standards & workflow | [↓ See below](#development-guidelines) |
-| **Testing Guide** | Complete testing documentation | [Testing Guide →](testing.md) |
-| **API Reference** | Full API documentation | [API Docs →](api-reference.md) |
-| **Contributing** | How to contribute to the project | [Contributing →](contributing.md) |
-| **FAQ** | Common questions & troubleshooting | [FAQ →](faq.md) |
+| Resource                   | Description                        | Link                                   |
+| -------------------------- | ---------------------------------- | -------------------------------------- |
+| **Development Guidelines** | Code standards & workflow          | [↓ See below](#development-guidelines) |
+| **Testing Guide**          | Complete testing documentation     | [Testing Guide →](testing.md)          |
+| **API Reference**          | Full API documentation             | [API Docs →](api-reference.md)         |
+| **Contributing**           | How to contribute to the project   | [Contributing →](contributing.md)      |
+| **FAQ**                    | Common questions & troubleshooting | [FAQ →](faq.md)                        |
 
 ---
 
@@ -18,19 +18,20 @@
 
 ### **Code Quality Standards**
 
-| Language | Formatter | Linter | Type Checker |
-|----------|-----------|--------|--------------|
-| **Python** | `black` | `ruff` | `mypy` |
-| **TypeScript** | `Biome` | `Biome` | `tsc` |
-| **Markdown** | `Prettier` | `markdownlint` | - |
+| Language       | Formatter  | Linter         | Type Checker |
+| -------------- | ---------- | -------------- | ------------ |
+| **Python**     | `black`    | `ruff`         | `mypy`       |
+| **TypeScript** | `Biome`    | `Biome`        | `tsc`        |
+| **Markdown**   | `Prettier` | `markdownlint` | -            |
 
 ### **Testing Requirements**
 
-| Component | Framework | Min Coverage | Command |
-|-----------|-----------|--------------|---------|
-| **Backend** | `pytest` | 85%+ | `pnpm run test:backend` |
-| **Frontend** | `Vitest` | 80%+ | `cd frontend && pnpm test` |
-| **E2E** | `Playwright` | Critical paths | `cd frontend && pnpm run test:e2e` |
+| Component    | Framework    | Min Coverage   | Command                            |
+| ------------ | ------------ | -------------- | ---------------------------------- |
+| **Backend**  | `pytest`     | 85%+           | `pnpm run test:backend`            |
+| **Frontend** | `Vitest`     | 80%+           | `cd frontend && pnpm test`         |
+| **E2E**      | `Playwright` | Critical paths | `cd frontend && pnpm run test:e2e` |
+
 - **Test Types**: Unit tests, integration tests, API tests
 - **Database Testing**: Both SQLite (fast) and PostgreSQL (full) modes
 - **Commands**:
@@ -88,12 +89,14 @@ test(user): add unit tests for user service
 ### Environment Setup
 
 1. **Clone Repository**:
+
    ```bash
    git clone https://github.com/filip-herceg/ReViewPoint.git
    cd ReViewPoint
    ```
 
 2. **Install Dependencies**:
+
    ```bash
    pnpm run install  # Installs both backend and frontend dependencies
    ```

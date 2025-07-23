@@ -112,7 +112,7 @@ def create_access_token(data: Mapping[str, str | int | bool]) -> str:
     """
     to_encode: MutableMapping[str, str | int | bool | datetime] = dict(data)
     settings = get_settings()
-    
+
     # Set expiration time
     expire: datetime = datetime.now(UTC) + timedelta(
         minutes=settings.jwt_expire_minutes,
@@ -120,7 +120,7 @@ def create_access_token(data: Mapping[str, str | int | bool]) -> str:
     to_encode["exp"] = expire
     to_encode["iat"] = int(datetime.now(UTC).timestamp())
     to_encode["jti"] = str(uuid.uuid4())
-    
+
     # Validate secret key configuration
     if not settings.jwt_secret_key:
         logger.error("JWT secret key is not configured. Cannot create access token.")
@@ -170,7 +170,7 @@ def verify_access_token(token: str) -> JWTPayload:
         RuntimeError: If verification fails for unknown reasons.
     """
     settings = get_settings()
-    
+
     # Development authentication bypass
     if not settings.auth_enabled:
         logger.warning(
@@ -193,25 +193,25 @@ def verify_access_token(token: str) -> JWTPayload:
     if not settings.jwt_secret_key:
         logger.error("JWT secret key is not configured. Cannot verify access token.")
         raise ValueError("JWT secret key is not configured.")
-    
+
     try:
         payload: dict[str, object] = jwt.decode(
             token,
             settings.jwt_secret_key,
             algorithms=[settings.jwt_algorithm],
         )
-        
+
         if not isinstance(payload, dict):
             raise TypeError("Decoded JWT payload is not a dictionary")
-        
+
         logger.debug(
             "JWT access token successfully verified (claims: {})",
             {k: v for k, v in payload.items() if k != "exp"},
         )
-        
+
         # Cast to JWTPayload for type safety
         return cast("JWTPayload", payload)
-        
+
     except JWTError as e:
         logger.warning("JWT access token validation failed: {}", str(e))
         raise
@@ -276,17 +276,17 @@ def create_refresh_token(data: Mapping[str, str | int | bool]) -> str:
     """
     settings = get_settings()
     to_encode: MutableMapping[str, str | int | bool | datetime] = dict(data)
-    
+
     # Longer expiration for refresh tokens (7 days)
     expire: datetime = datetime.now(UTC) + timedelta(days=7)
     to_encode["exp"] = expire
     to_encode["iat"] = int(datetime.now(UTC).timestamp())
     to_encode["jti"] = str(uuid.uuid4())
-    
+
     if not settings.jwt_secret_key:
         logger.error("JWT secret key is not configured. Cannot create refresh token.")
         raise ValueError("JWT secret key is not configured.")
-        
+
     try:
         token: str = jwt.encode(
             to_encode,
@@ -329,25 +329,25 @@ def verify_refresh_token(token: str) -> JWTPayload:
         TypeError: If the decoded payload is not a dictionary.
     """
     settings = get_settings()
-    
+
     if not settings.jwt_secret_key:
         logger.error("JWT secret key is not configured. Cannot verify refresh token.")
         raise ValueError("JWT secret key is not configured.")
-        
+
     try:
         payload: dict[str, object] = jwt.decode(
             token,
             settings.jwt_secret_key,
             algorithms=[settings.jwt_algorithm],
         )
-        
+
         if not isinstance(payload, dict):
             raise TypeError("Decoded JWT payload is not a dictionary")
-        
+
         # Ensure required claims are present
         if not ("sub" in payload and "jti" in payload and "exp" in payload):
             raise ValueError("Refresh token missing required claims (sub, jti, exp)")
-        
+
         # Check expiration manually
         exp_val: int = (
             int(payload["exp"])
@@ -356,9 +356,9 @@ def verify_refresh_token(token: str) -> JWTPayload:
         )
         if exp_val < int(datetime.now(UTC).timestamp()):
             raise ValueError("Refresh token is expired")
-        
+
         return cast("JWTPayload", payload)
-        
+
     except JWTError as e:
         logger.error("JWT refresh token verification failed: %s", str(e))
         raise ValueError("Invalid or expired refresh token") from e
@@ -412,33 +412,33 @@ from core.security import create_access_token, create_refresh_token
 
 class AuthenticationService:
     """Service for user authentication and token management."""
-    
+
     async def authenticate_user(
-        self, 
-        email: str, 
+        self,
+        email: str,
         password: str
     ) -> tuple[str, str]:
         """Authenticate user and return access and refresh tokens."""
         # Validate user credentials (implementation omitted)
         user = await self.validate_credentials(email, password)
-        
+
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid credentials"
             )
-        
+
         # Create token payload
         token_data = {
             "sub": str(user.id),
             "role": user.role,
             "is_authenticated": True
         }
-        
+
         # Generate tokens
         access_token = create_access_token(token_data)
         refresh_token = create_refresh_token(token_data)
-        
+
         return access_token, refresh_token
 ```
 
@@ -452,16 +452,16 @@ async def refresh_access_token(refresh_token: str) -> str:
     try:
         # Verify refresh token
         payload = verify_refresh_token(refresh_token)
-        
+
         # Create new access token with same payload
         new_token_data = {
             "sub": payload["sub"],
             "role": payload.get("role"),
             "is_authenticated": payload.get("is_authenticated", True)
         }
-        
+
         return create_access_token(new_token_data)
-        
+
     except (JWTError, ValueError) as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -481,13 +481,13 @@ def require_role(required_role: str):
         @wraps(func)
         async def wrapper(*args, user: JWTPayload = Depends(get_current_user), **kwargs):
             user_role = user.get("role")
-            
+
             if user_role != required_role:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail=f"Required role: {required_role}"
                 )
-            
+
             return await func(*args, **kwargs)
         return wrapper
     return decorator
@@ -515,7 +515,7 @@ async def is_token_blacklisted(token: str) -> bool:
     try:
         payload = verify_access_token(token)
         jti = payload.get("jti")
-        
+
         if jti:
             return redis_client.exists(f"blacklist:{jti}") == 1
         return False
@@ -528,7 +528,7 @@ async def blacklist_token(token: str):
         payload = verify_access_token(token)
         jti = payload.get("jti")
         exp = payload.get("exp")
-        
+
         if jti and exp:
             # Set TTL based on token expiration
             ttl = exp - int(datetime.now(UTC).timestamp())
@@ -547,7 +547,7 @@ from core.config import get_settings
 def setup_development_auth():
     """Configure development authentication settings."""
     settings = get_settings()
-    
+
     if settings.environment == "development":
         # Authentication bypass is handled in verify_access_token
         logger.info("Development mode: Authentication bypass enabled")
@@ -563,37 +563,37 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 class TokenValidationMiddleware(BaseHTTPMiddleware):
     """Middleware for automatic token validation and blacklist checking."""
-    
+
     async def dispatch(self, request: Request, call_next):
         # Skip validation for public endpoints
         if request.url.path in ["/docs", "/health", "/login"]:
             return await call_next(request)
-        
+
         # Extract token from Authorization header
         auth_header = request.headers.get("Authorization")
         if auth_header and auth_header.startswith("Bearer "):
             token = auth_header[7:]
-            
+
             try:
                 # Verify token
                 payload = verify_access_token(token)
-                
+
                 # Check blacklist
                 if await is_token_blacklisted(token):
                     return Response(
                         content="Token has been revoked",
                         status_code=401
                     )
-                
+
                 # Add user info to request state
                 request.state.user = payload
-                
+
             except (JWTError, ValueError):
                 return Response(
                     content="Invalid token",
                     status_code=401
                 )
-        
+
         return await call_next(request)
 ```
 
@@ -642,7 +642,7 @@ import asyncio
 from typing import Optional
 
 async def validate_token_with_retry(
-    token: str, 
+    token: str,
     max_retries: int = 3
 ) -> Optional[JWTPayload]:
     """Validate token with retry logic for transient failures."""
@@ -657,10 +657,10 @@ async def validate_token_with_retry(
             if attempt == max_retries - 1:
                 logger.error(f"Token validation failed after {max_retries} attempts: {e}")
                 return None
-            
+
             logger.warning(f"Token validation attempt {attempt + 1} failed, retrying: {e}")
             await asyncio.sleep(2 ** attempt)  # Exponential backoff
-    
+
     return None
 ```
 

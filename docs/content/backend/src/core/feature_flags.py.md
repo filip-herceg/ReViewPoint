@@ -24,7 +24,7 @@ Provides a comprehensive feature flag system for enabling/disabling features thr
 
 ### Environment Management
 
-#### **_ensure_env_loaded() Function**
+#### **\_ensure_env_loaded() Function**
 
 - **Purpose**: Lazy loading of environment variables from .env files into os.environ
 - **Design**: Module-level state tracking to prevent redundant file operations
@@ -111,14 +111,14 @@ REVIEWPOINT_FEATURE_ANALYTICS=true # Enables all analytics:* features
 def _ensure_env_loaded() -> None:
     """Environment file discovery with fallback locations"""
     env_path = os.getenv("ENV_FILE")  # Explicit path override
-    
+
     # Standard locations in order of preference:
     locations = [
         "config/.env",           # Primary config location
         "backend/config/.env",   # Backend-specific config
         "backend/.env"           # Fallback backend location
     ]
-    
+
     # Load first available .env file
     env_file = find_first_existing_file(locations)
     if env_file:
@@ -131,28 +131,28 @@ def _ensure_env_loaded() -> None:
 def parse_env_file(env_file: Path) -> dict[str, str]:
     """Safe .env file parsing with quote handling"""
     env_vars = {}
-    
+
     with env_file.open(encoding="utf-8") as f:
         for line in f:
             line = line.strip()
-            
+
             # Skip comments and empty lines
             if not line or line.startswith("#"):
                 continue
-            
+
             # Parse key=value assignments
             if "=" in line:
                 key, value = line.split("=", 1)
                 key = key.strip()
                 value = value.strip()
-                
+
                 # Remove surrounding quotes
                 value = value.strip('"\'')
-                
+
                 # Only set if not already in environment
                 if key not in os.environ:
                     env_vars[key] = value
-    
+
     return env_vars
 ```
 
@@ -171,29 +171,29 @@ def parse_env_file(env_file: Path) -> dict[str, str]:
 def is_enabled(feature_name: str) -> bool:
     """Feature flag evaluation with precedence rules"""
     _ensure_env_loaded()
-    
+
     # Parse feature list
     features_env = os.getenv("REVIEWPOINT_FEATURES", "")
     enabled_features = {
         f.strip() for f in features_env.split(",") if f.strip()
     }
-    
+
     # Extract base feature name (before colon)
     base_name = feature_name.split(":")[0].upper()
-    
+
     # Build environment variable names
     specific_var = f"REVIEWPOINT_FEATURE_{feature_name.upper().replace(':', '_')}"
     base_var = f"REVIEWPOINT_FEATURE_{base_name}"
-    
+
     # Get environment values
     specific_value = os.getenv(specific_var)
     base_value = os.getenv(base_var)
-    
+
     # Check for explicit disable (highest precedence)
     if (specific_value and specific_value.lower() == "false") or \
        (base_value and base_value.lower() == "false"):
         return False
-    
+
     # Check for explicit enable or feature list inclusion
     return (
         feature_name in enabled_features or
@@ -213,11 +213,11 @@ _env_loaded: bool = False
 def _ensure_env_loaded() -> None:
     """Optimized environment loading with state tracking"""
     global _env_loaded
-    
+
     # Early return if already loaded
     if _env_loaded:
         return
-    
+
     # Perform expensive file operations only once
     load_environment_files()
     _env_loaded = True
@@ -237,14 +237,14 @@ def is_enabled(feature_name: str) -> bool:
     """Optimized feature flag evaluation"""
     # Ensure environment is loaded (cached after first call)
     _ensure_env_loaded()
-    
+
     # Use efficient string operations and set membership
     features_set = parse_feature_list()  # Parsed once per call
-    
+
     # Fast dictionary lookups for environment variables
     specific_check = os.getenv(build_specific_var_name(feature_name))
     base_check = os.getenv(build_base_var_name(feature_name))
-    
+
     # Short-circuit evaluation for performance
     return evaluate_with_precedence(feature_name, features_set, specific_check, base_check)
 ```
@@ -363,11 +363,11 @@ class AnalyticsService:
         """Analytics with gradual feature rollout"""
         # Base analytics (always enabled)
         self.basic_tracking(event_data)
-        
+
         # Enhanced analytics (feature flagged)
         if FeatureFlags.is_enabled("analytics:enhanced"):
             self.enhanced_tracking(event_data)
-        
+
         # Real-time analytics (feature flagged)
         if FeatureFlags.is_enabled("analytics:realtime"):
             self.realtime_tracking(event_data)
@@ -430,12 +430,12 @@ async def get_enabled_features():
         "new_ui", "api:v2", "analytics:detailed",
         "debug_mode", "experimental"
     ]
-    
+
     enabled = {
         feature: FeatureFlags.is_enabled(feature)
         for feature in features
     }
-    
+
     return {"enabled_features": enabled}
 ```
 
@@ -452,9 +452,9 @@ def test_feature_flag_enabled():
     """Test feature flag evaluation"""
     # Set environment variable for test
     os.environ["REVIEWPOINT_FEATURE_TEST_FEATURE"] = "true"
-    
+
     assert FeatureFlags.is_enabled("test_feature") is True
-    
+
     # Cleanup
     del os.environ["REVIEWPOINT_FEATURE_TEST_FEATURE"]
 
@@ -465,15 +465,15 @@ def test_feature_flag_disabled():
 def test_hierarchical_feature_flags():
     """Test hierarchical feature flag support"""
     os.environ["REVIEWPOINT_FEATURE_API"] = "true"
-    
+
     # Base feature enables hierarchical features
     assert FeatureFlags.is_enabled("api:v1") is True
     assert FeatureFlags.is_enabled("api:v2") is True
-    
+
     # Specific override
     os.environ["REVIEWPOINT_FEATURE_API_V2"] = "false"
     assert FeatureFlags.is_enabled("api:v2") is False
-    
+
     # Cleanup
     del os.environ["REVIEWPOINT_FEATURE_API"]
     del os.environ["REVIEWPOINT_FEATURE_API_V2"]
@@ -486,15 +486,15 @@ def test_hierarchical_feature_flags():
 def mock_feature_flags():
     """Fixture for mocking feature flags in tests"""
     original_env = os.environ.copy()
-    
+
     # Set test feature flags
     os.environ.update({
         "REVIEWPOINT_FEATURES": "test_feature1,test_feature2",
         "REVIEWPOINT_FEATURE_DEBUG": "true"
     })
-    
+
     yield
-    
+
     # Restore original environment
     os.environ.clear()
     os.environ.update(original_env)
@@ -524,12 +524,12 @@ class DynamicFeatureFlags:
     def __init__(self):
         self.cache = {}
         self.last_update = None
-    
+
     async def refresh_from_remote(self):
         """Refresh feature flags from remote configuration"""
         # Implementation for remote feature flag management
         pass
-    
+
     def is_enabled(self, feature_name: str, user_id: str = None) -> bool:
         """Enhanced feature flag evaluation with user context"""
         # Implementation for user-specific feature flags

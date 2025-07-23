@@ -34,6 +34,7 @@ await session.commit()
 ```
 
 **Table Configuration:**
+
 - `__tablename__ = "blacklisted_tokens"` - Database table name
 - Inherits from `BaseModel` (id, created_at, updated_at)
 - Optimized for fast token lookup and validation
@@ -43,6 +44,7 @@ await session.commit()
 ### Token Identification
 
 **JWT ID (JTI) Storage:**
+
 ```python
 jti: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
 ```
@@ -53,6 +55,7 @@ jti: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False
 - **String Type**: Flexible to accommodate various JTI formats
 
 **JTI (JWT ID) Explanation:**
+
 - Standard JWT claim identifying unique tokens
 - Prevents token replay attacks when combined with blacklisting
 - Generated during token creation for tracking purposes
@@ -61,6 +64,7 @@ jti: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False
 ### Expiration Management
 
 **Token Expiration Tracking:**
+
 ```python
 expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 ```
@@ -71,6 +75,7 @@ expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=F
 - **Performance**: Allows efficient cleanup queries
 
 **Expiration Benefits:**
+
 - Automatic cleanup of irrelevant blacklist entries
 - Storage optimization for long-running applications
 - Performance improvement through reduced blacklist size
@@ -83,23 +88,23 @@ expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=F
 ```python
 async def blacklist_token_on_logout(jti: str, expires_at: datetime) -> BlacklistedToken:
     """Blacklist a token when user logs out."""
-    
+
     # Check if token is already blacklisted
     existing = await session.execute(
         select(BlacklistedToken).where(BlacklistedToken.jti == jti)
     )
     if existing.scalar_one_or_none():
         raise ValueError("Token already blacklisted")
-    
+
     # Create blacklist entry
     blacklisted_token = BlacklistedToken(
         jti=jti,
         expires_at=expires_at
     )
-    
+
     session.add(blacklisted_token)
     await session.commit()
-    
+
     logger.info(f"Token blacklisted: {jti}")
     return blacklisted_token
 ```
@@ -109,14 +114,14 @@ async def blacklist_token_on_logout(jti: str, expires_at: datetime) -> Blacklist
 ```python
 async def is_token_blacklisted(jti: str) -> bool:
     """Check if a token is blacklisted."""
-    
+
     try:
         # Query blacklist for token
         result = await session.execute(
             select(BlacklistedToken).where(BlacklistedToken.jti == jti)
         )
         blacklisted_token = result.scalar_one_or_none()
-        
+
         if blacklisted_token:
             # Check if blacklist entry is still valid
             if blacklisted_token.expires_at > datetime.now(UTC):
@@ -127,9 +132,9 @@ async def is_token_blacklisted(jti: str) -> bool:
                 await session.delete(blacklisted_token)
                 await session.commit()
                 return False
-        
+
         return False
-        
+
     except Exception as e:
         logger.error(f"Error checking token blacklist: {e}")
         # Fail secure - treat as blacklisted on error
@@ -141,30 +146,30 @@ async def is_token_blacklisted(jti: str) -> bool:
 ```python
 async def blacklist_user_tokens(user_id: int, token_jti_list: list[str]) -> int:
     """Blacklist multiple tokens for a user (e.g., during account suspension)."""
-    
+
     blacklisted_count = 0
-    
+
     for jti in token_jti_list:
         try:
             # Calculate expiration (assuming 24-hour tokens)
             expires_at = datetime.now(UTC) + timedelta(hours=24)
-            
+
             # Create blacklist entry
             blacklisted_token = BlacklistedToken(
                 jti=jti,
                 expires_at=expires_at
             )
-            
+
             session.add(blacklisted_token)
             blacklisted_count += 1
-            
+
         except Exception as e:
             logger.error(f"Failed to blacklist token {jti}: {e}")
-    
+
     if blacklisted_count > 0:
         await session.commit()
         logger.info(f"Blacklisted {blacklisted_count} tokens for user {user_id}")
-    
+
     return blacklisted_count
 ```
 
@@ -173,25 +178,25 @@ async def blacklist_user_tokens(user_id: int, token_jti_list: list[str]) -> int:
 ```python
 async def cleanup_expired_blacklisted_tokens() -> int:
     """Remove expired tokens from blacklist."""
-    
+
     current_time = datetime.now(UTC)
-    
+
     # Find expired blacklisted tokens
     expired_tokens = await session.execute(
         select(BlacklistedToken).where(BlacklistedToken.expires_at <= current_time)
     )
-    
+
     expired_list = list(expired_tokens.scalars())
     cleanup_count = len(expired_list)
-    
+
     # Remove expired tokens
     for token in expired_list:
         await session.delete(token)
-    
+
     if cleanup_count > 0:
         await session.commit()
         logger.info(f"Cleaned up {cleanup_count} expired blacklisted tokens")
-    
+
     return cleanup_count
 ```
 
@@ -200,33 +205,33 @@ async def cleanup_expired_blacklisted_tokens() -> int:
 ```python
 async def get_blacklist_statistics() -> dict:
     """Get comprehensive blacklist statistics for security monitoring."""
-    
+
     current_time = datetime.now(UTC)
-    
+
     # Total blacklisted tokens
     total_blacklisted = await session.scalar(
         select(func.count(BlacklistedToken.id))
     )
-    
+
     # Active (not expired) blacklisted tokens
     active_blacklisted = await session.scalar(
         select(func.count(BlacklistedToken.id))
         .where(BlacklistedToken.expires_at > current_time)
     )
-    
+
     # Expired tokens (ready for cleanup)
     expired_blacklisted = await session.scalar(
         select(func.count(BlacklistedToken.id))
         .where(BlacklistedToken.expires_at <= current_time)
     )
-    
+
     # Recent blacklisting activity (last 24 hours)
     recent_date = current_time - timedelta(hours=24)
     recent_blacklisted = await session.scalar(
         select(func.count(BlacklistedToken.id))
         .where(BlacklistedToken.created_at >= recent_date)
     )
-    
+
     return {
         "total_blacklisted": total_blacklisted,
         "active_blacklisted": active_blacklisted,
@@ -241,12 +246,14 @@ async def get_blacklist_statistics() -> dict:
 ### Token Security
 
 **Unique Token Tracking:**
+
 - JTI field ensures each token can only be blacklisted once
 - Prevents duplicate blacklist entries
 - Enables efficient token lookup and validation
 - Supports comprehensive token lifecycle management
 
 **Fail-Secure Design:**
+
 ```python
 async def validate_token_securely(jti: str) -> bool:
     """Validate token with fail-secure approach."""
@@ -266,34 +273,36 @@ async def validate_token_securely(jti: str) -> bool:
 ### Performance Security
 
 **Efficient Blacklist Checking:**
+
 ```python
 # Index-optimized blacklist validation
 async def fast_blacklist_check(jti: str) -> bool:
     """Optimized blacklist check with caching."""
-    
+
     # Check cache first (if implemented)
     cached_result = await get_from_cache(f"blacklist:{jti}")
     if cached_result is not None:
         return cached_result
-    
+
     # Database lookup with index
     result = await session.execute(
         select(BlacklistedToken.id)
         .where(BlacklistedToken.jti == jti)
         .limit(1)
     )
-    
+
     is_blacklisted = result.scalar_one_or_none() is not None
-    
+
     # Cache result for performance
     await cache_result(f"blacklist:{jti}", is_blacklisted, ttl=300)
-    
+
     return is_blacklisted
 ```
 
 ### Cleanup Security
 
 **Secure Cleanup Process:**
+
 - Only removes truly expired tokens
 - Maintains audit trail through BaseModel timestamps
 - Logs cleanup operations for security monitoring
@@ -304,6 +313,7 @@ async def fast_blacklist_check(jti: str) -> bool:
 ### Database Optimization
 
 **Indexing Strategy:**
+
 ```python
 # Recommended additional indexes for large deployments
 __table_args__ = (
@@ -314,49 +324,51 @@ __table_args__ = (
 ```
 
 **Query Optimization:**
+
 ```python
 # Efficient cleanup query
 async def optimized_cleanup():
     """Optimized cleanup using bulk operations."""
     current_time = datetime.now(UTC)
-    
+
     # Use bulk delete for better performance
     result = await session.execute(
         delete(BlacklistedToken)
         .where(BlacklistedToken.expires_at <= current_time)
     )
-    
+
     deleted_count = result.rowcount
     await session.commit()
-    
+
     return deleted_count
 ```
 
 ### Memory Management
 
 **Efficient Token Processing:**
+
 ```python
 # Process tokens in batches to avoid memory issues
 async def process_blacklist_batch(batch_size: int = 1000):
     """Process blacklist validation in batches."""
     offset = 0
-    
+
     while True:
         tokens = await session.execute(
             select(BlacklistedToken)
             .offset(offset)
             .limit(batch_size)
         )
-        
+
         token_batch = list(tokens.scalars())
         if not token_batch:
             break
-        
+
         # Process batch
         for token in token_batch:
             if token.expires_at <= datetime.now(UTC):
                 await session.delete(token)
-        
+
         await session.commit()
         offset += batch_size
 ```
@@ -373,7 +385,7 @@ async def safe_token_blacklisting(jti: str, expires_at: datetime) -> bool:
         session.add(blacklisted_token)
         await session.commit()
         return True
-        
+
     except IntegrityError as e:
         await session.rollback()
         if "unique constraint" in str(e).lower():
@@ -381,7 +393,7 @@ async def safe_token_blacklisting(jti: str, expires_at: datetime) -> bool:
             logger.info(f"Token {jti} already blacklisted")
             return True
         raise
-        
+
     except Exception as e:
         await session.rollback()
         logger.error(f"Failed to blacklist token {jti}: {e}")
@@ -393,23 +405,23 @@ async def safe_token_blacklisting(jti: str, expires_at: datetime) -> bool:
 ```python
 def validate_blacklist_data(jti: str, expires_at: datetime) -> None:
     """Validate blacklist data before database operations."""
-    
+
     if not jti or not isinstance(jti, str):
         raise ValueError("JTI must be a non-empty string")
-    
+
     if not expires_at or not isinstance(expires_at, datetime):
         raise ValueError("Expires_at must be a datetime object")
-    
+
     if expires_at.tzinfo is None:
         raise ValueError("Expires_at must be timezone-aware")
-    
+
     # Check that expiration is in the future (within reason)
     current_time = datetime.now(UTC)
     max_future = current_time + timedelta(days=365)  # 1 year max
-    
+
     if expires_at <= current_time:
         raise ValueError("Expiration time must be in the future")
-    
+
     if expires_at > max_future:
         raise ValueError("Expiration time too far in the future")
 ```
@@ -448,12 +460,12 @@ def validate_blacklist_data(jti: str, expires_at: datetime) -> None:
 def test_blacklisted_token_creation():
     """Test basic blacklisted token creation."""
     expires_at = datetime.now(UTC) + timedelta(hours=1)
-    
+
     token = BlacklistedToken(
         jti="test-jti-123",
         expires_at=expires_at
     )
-    
+
     assert token.jti == "test-jti-123"
     assert token.expires_at == expires_at
 
@@ -462,7 +474,7 @@ def test_blacklisted_token_validation():
     # Test with timezone-naive datetime (should raise error)
     with pytest.raises(ValueError):
         validate_blacklist_data("test-jti", datetime.now())
-    
+
     # Test with valid data
     expires_at = datetime.now(UTC) + timedelta(hours=1)
     validate_blacklist_data("test-jti", expires_at)  # Should not raise
@@ -473,22 +485,22 @@ def test_blacklisted_token_validation():
 ```python
 async def test_token_blacklist_workflow():
     """Test complete token blacklist workflow."""
-    
+
     jti = "integration-test-jti"
     expires_at = datetime.now(UTC) + timedelta(hours=1)
-    
+
     # Test blacklisting
     blacklisted_token = await blacklist_token_on_logout(jti, expires_at)
     assert blacklisted_token.jti == jti
-    
+
     # Test validation
     is_blacklisted = await is_token_blacklisted(jti)
     assert is_blacklisted is True
-    
+
     # Test duplicate blacklisting
     with pytest.raises(ValueError):
         await blacklist_token_on_logout(jti, expires_at)
-    
+
     # Test cleanup after expiration
     # (Would require time manipulation or test data setup)
 ```
@@ -498,19 +510,19 @@ async def test_token_blacklist_workflow():
 ```python
 async def test_blacklist_security():
     """Test blacklist security features."""
-    
+
     # Test fail-secure behavior
     with patch('session.execute', side_effect=DatabaseError("Connection lost")):
         result = await validate_token_securely("test-jti")
         assert result is False  # Should fail secure
-    
+
     # Test unique constraint enforcement
     jti = "duplicate-test-jti"
     expires_at = datetime.now(UTC) + timedelta(hours=1)
-    
+
     # First blacklisting should succeed
     await blacklist_token_on_logout(jti, expires_at)
-    
+
     # Second blacklisting should fail
     with pytest.raises(ValueError):
         await blacklist_token_on_logout(jti, expires_at)

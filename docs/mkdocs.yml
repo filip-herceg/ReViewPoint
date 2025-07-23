@@ -150,7 +150,7 @@ nav:
   - Vision & Mission: vision-mission-goals.md
   - Get Started: installation.md
   - Documentation: developer-overview.md
-  - Resources: 
+  - Resources:
       - Guidelines: resources/guidelines.md
       - VS Code Tasks Safety: vscode-tasks-safety-guide.md
 

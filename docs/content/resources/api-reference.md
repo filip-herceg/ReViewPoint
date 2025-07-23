@@ -25,17 +25,17 @@ sequenceDiagram
     participant Client
     participant API
     participant Database
-    
+
     Client->>API: POST /auth/login (credentials)
     API->>Database: Validate user
     Database-->>API: User data
     API->>API: Generate JWT tokens
     API-->>Client: access_token + refresh_token
-    
+
     Client->>API: GET /protected (Bearer token)
     API->>API: Validate JWT token
     API-->>Client: Protected resource
-    
+
     Note over Client,API: When access token expires
     Client->>API: POST /auth/refresh (refresh_token)
     API->>API: Validate refresh token
@@ -63,9 +63,9 @@ Register a new user account.
 
 ```json
 {
-  "username": "string",        // 3-50 characters, alphanumeric + underscore
-  "email": "string",           // Valid email format
-  "password": "string"         // Minimum 8 characters
+  "username": "string", // 3-50 characters, alphanumeric + underscore
+  "email": "string", // Valid email format
+  "password": "string" // Minimum 8 characters
 }
 ```
 
@@ -122,7 +122,7 @@ Authenticate user and receive JWT tokens.
 
 ```json
 {
-  "username": "string",        // Username or email
+  "username": "string", // Username or email
   "password": "string"
 }
 ```
@@ -134,7 +134,7 @@ Authenticate user and receive JWT tokens.
   "access_token": "string",
   "refresh_token": "string",
   "token_type": "bearer",
-  "expires_in": 900,           // seconds (15 minutes)
+  "expires_in": 900, // seconds (15 minutes)
   "user": {
     "id": "uuid",
     "username": "string",
@@ -237,7 +237,7 @@ Get current user profile.
   "updated_at": "2024-01-01T00:00:00Z",
   "stats": {
     "total_uploads": 42,
-    "total_storage_used": 1048576    // bytes
+    "total_storage_used": 1048576 // bytes
   }
 }
 ```
@@ -252,8 +252,8 @@ Update current user profile.
 
 ```json
 {
-  "email": "string",           // Optional
-  "username": "string"         // Optional
+  "email": "string", // Optional
+  "username": "string" // Optional
 }
 ```
 
@@ -476,8 +476,8 @@ Update file metadata.
 
 ```json
 {
-  "description": "string",     // Optional
-  "filename": "string"         // Optional (changes display name only)
+  "description": "string", // Optional
+  "filename": "string" // Optional (changes display name only)
 }
 ```
 
@@ -569,8 +569,8 @@ Update user (admin only).
 
 ```json
 {
-  "role": "admin",             // Optional: user, admin
-  "is_active": false          // Optional: activate/deactivate
+  "role": "admin", // Optional: user, admin
+  "is_active": false // Optional: activate/deactivate
 }
 ```
 
@@ -625,9 +625,10 @@ All API errors follow this consistent format:
 
 ```json
 {
-  "detail": "string",          // Human-readable error message
-  "error_code": "string",      // Machine-readable error code (optional)
-  "field_errors": {            // Field-specific errors (validation)
+  "detail": "string", // Human-readable error message
+  "error_code": "string", // Machine-readable error code (optional)
+  "field_errors": {
+    // Field-specific errors (validation)
     "field_name": ["error message"]
   }
 }
@@ -635,22 +636,22 @@ All API errors follow this consistent format:
 
 ### HTTP Status Codes
 
-| Code | Meaning | Usage |
-|------|---------|-------|
-| 200 | OK | Successful GET, PUT requests |
-| 201 | Created | Successful POST requests |
-| 204 | No Content | Successful DELETE requests |
-| 400 | Bad Request | Invalid request data |
-| 401 | Unauthorized | Missing or invalid authentication |
-| 403 | Forbidden | Valid auth, insufficient permissions |
-| 404 | Not Found | Resource doesn't exist |
-| 409 | Conflict | Resource already exists |
-| 413 | Payload Too Large | File too big |
-| 415 | Unsupported Media Type | Invalid file type |
-| 422 | Unprocessable Entity | Validation errors |
-| 429 | Too Many Requests | Rate limiting |
-| 500 | Internal Server Error | Server-side errors |
-| 507 | Insufficient Storage | Storage quota exceeded |
+| Code | Meaning                | Usage                                |
+| ---- | ---------------------- | ------------------------------------ |
+| 200  | OK                     | Successful GET, PUT requests         |
+| 201  | Created                | Successful POST requests             |
+| 204  | No Content             | Successful DELETE requests           |
+| 400  | Bad Request            | Invalid request data                 |
+| 401  | Unauthorized           | Missing or invalid authentication    |
+| 403  | Forbidden              | Valid auth, insufficient permissions |
+| 404  | Not Found              | Resource doesn't exist               |
+| 409  | Conflict               | Resource already exists              |
+| 413  | Payload Too Large      | File too big                         |
+| 415  | Unsupported Media Type | Invalid file type                    |
+| 422  | Unprocessable Entity   | Validation errors                    |
+| 429  | Too Many Requests      | Rate limiting                        |
+| 500  | Internal Server Error  | Server-side errors                   |
+| 507  | Insufficient Storage   | Storage quota exceeded               |
 
 ## Rate Limiting
 
@@ -687,11 +688,11 @@ All list endpoints support pagination with consistent parameters:
 
 ```json
 {
-  "items": [],                 // Array of results
-  "total": 100,               // Total number of items
-  "page": 1,                  // Current page
-  "size": 20,                 // Items per page
-  "pages": 5                  // Total number of pages
+  "items": [], // Array of results
+  "total": 100, // Total number of items
+  "page": 1, // Current page
+  "size": 20, // Items per page
+  "pages": 5 // Total number of pages
 }
 ```
 
@@ -704,16 +705,16 @@ npm install @reviewpoint/api-client
 ```
 
 ```typescript
-import { ReviewPointAPI } from '@reviewpoint/api-client';
+import { ReviewPointAPI } from "@reviewpoint/api-client";
 
 const api = new ReviewPointAPI({
-  baseURL: 'http://localhost:8000',
-  apiKey: 'your-api-key'
+  baseURL: "http://localhost:8000",
+  apiKey: "your-api-key",
 });
 
 // Upload file
-const file = new File(['content'], 'test.txt', { type: 'text/plain' });
-const result = await api.uploads.create(file, { description: 'Test file' });
+const file = new File(["content"], "test.txt", { type: "text/plain" });
+const result = await api.uploads.create(file, { description: "Test file" });
 ```
 
 ### Python

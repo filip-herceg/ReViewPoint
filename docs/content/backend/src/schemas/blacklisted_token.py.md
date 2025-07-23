@@ -178,20 +178,20 @@ return schema
 ```python
 async def blacklist_token(jti: str, expires_at: datetime) -> BlacklistedTokenSchema:
     """Blacklist a JWT token for security purposes."""
-    
+
     # Create blacklist entry
     blacklist_data = {
         "jti": jti,
         "expires_at": expires_at,
         "created_at": datetime.utcnow()
     }
-    
+
     # Validate with schema
     blacklisted_schema = BlacklistedTokenSchema(**blacklist_data)
-    
+
     # Save to database
     await blacklist_repository.create(blacklisted_schema)
-    
+
     return blacklisted_schema
 ```
 
@@ -200,22 +200,22 @@ async def blacklist_token(jti: str, expires_at: datetime) -> BlacklistedTokenSch
 ```python
 async def is_token_blacklisted(jti: str) -> bool:
     """Check if a token is blacklisted."""
-    
+
     # Query blacklist
     blacklisted = await blacklist_repository.get_by_jti(jti)
-    
+
     if blacklisted is None:
         return False
-    
+
     # Convert to schema for type safety
     schema = BlacklistedTokenSchema.model_validate(blacklisted)
-    
+
     # Check if still relevant (not naturally expired)
     if schema.expires_at < datetime.utcnow():
         # Token naturally expired, no longer need to track
         await blacklist_repository.delete_by_jti(jti)
         return False
-    
+
     return True
 ```
 
@@ -236,9 +236,9 @@ async def logout(
             expires_at=token_data.exp,
             created_at=datetime.utcnow()
         )
-        
+
         await blacklist_service.blacklist_token(blacklisted)
-    
+
     return {"message": "Successfully logged out"}
 ```
 
@@ -252,13 +252,13 @@ async def revoke_token(
 ):
     # Admin can revoke any token by JTI
     token_info = await jwt_service.get_token_info(jti)
-    
+
     blacklisted = BlacklistedTokenSchema(
         jti=jti,
         expires_at=token_info.expires_at,
         created_at=datetime.utcnow()
     )
-    
+
     await blacklist_service.blacklist_token(blacklisted)
     return blacklisted
 ```
@@ -272,7 +272,7 @@ async def list_blacklisted_tokens(
 ):
     blacklisted_tokens = await blacklist_repository.list_active()
     return [
-        BlacklistedTokenSchema.model_validate(token) 
+        BlacklistedTokenSchema.model_validate(token)
         for token in blacklisted_tokens
     ]
 ```
@@ -285,7 +285,7 @@ async def list_blacklisted_tokens(
 # BlacklistedToken ORM model
 class BlacklistedToken(Base):
     __tablename__ = "blacklisted_tokens"
-    
+
     jti: str = Column(String, primary_key=True)
     expires_at: datetime = Column(DateTime, nullable=False)
     created_at: datetime = Column(DateTime, default=datetime.utcnow)
@@ -309,7 +309,7 @@ async def create_blacklisted_token(
     session.add(blacklisted_orm)
     await session.commit()
     await session.refresh(blacklisted_orm)
-    
+
     return BlacklistedTokenSchema.model_validate(blacklisted_orm)
 ```
 
@@ -320,12 +320,12 @@ async def create_blacklisted_token(
 ```python
 async def cleanup_expired_blacklisted_tokens() -> int:
     """Remove blacklisted tokens that have naturally expired."""
-    
+
     current_time = datetime.utcnow()
-    
+
     # Find expired blacklisted tokens
     expired_tokens = await blacklist_repository.get_expired(current_time)
-    
+
     # Validate with schema and count
     count = 0
     for token_orm in expired_tokens:
@@ -333,7 +333,7 @@ async def cleanup_expired_blacklisted_tokens() -> int:
         if schema.expires_at < current_time:
             await blacklist_repository.delete_by_jti(schema.jti)
             count += 1
-    
+
     return count
 ```
 
@@ -343,7 +343,7 @@ async def cleanup_expired_blacklisted_tokens() -> int:
 @periodic_task(hours=1)
 async def scheduled_blacklist_cleanup():
     """Scheduled task to clean up expired blacklisted tokens."""
-    
+
     try:
         cleaned_count = await cleanup_expired_blacklisted_tokens()
         logger.info(f"Cleaned up {cleaned_count} expired blacklisted tokens")
@@ -361,7 +361,7 @@ try:
 except ValidationError as e:
     for error in e.errors():
         field = error['loc'][0]
-        
+
         if field == 'jti':
             raise HTTPException(
                 status_code=422,
@@ -414,7 +414,7 @@ def test_blacklisted_token_schema_missing_required():
     }
     with pytest.raises(ValidationError) as exc_info:
         BlacklistedTokenSchema(**data)
-    
+
     errors = exc_info.value.errors()
     assert any(error['loc'] == ('expires_at',) for error in errors)
 ```
@@ -430,10 +430,10 @@ def test_blacklisted_token_from_orm(db_session):
     )
     db_session.add(blacklisted_orm)
     db_session.commit()
-    
+
     # Convert to schema
     schema = BlacklistedTokenSchema.model_validate(blacklisted_orm)
-    
+
     assert schema.jti == "test-jti-123"
     assert schema.expires_at.year == 2023
     assert schema.created_at is not None  # Set by ORM default

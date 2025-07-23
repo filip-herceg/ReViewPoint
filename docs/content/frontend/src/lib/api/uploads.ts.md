@@ -31,7 +31,7 @@ The `uploads.ts` file provides comprehensive file upload and management function
 Uploads a single file to the server with validation and progress tracking.
 
 ```typescript
-async function uploadFile(file: File): Promise<FileUploadResponse>
+async function uploadFile(file: File): Promise<FileUploadResponse>;
 ```
 
 **Parameters:**
@@ -45,36 +45,46 @@ async function uploadFile(file: File): Promise<FileUploadResponse>
 **Example Usage:**
 
 ```typescript
-import { uploadsApi } from '@/lib/api';
+import { uploadsApi } from "@/lib/api";
 
 async function handleFileUpload(file: File) {
   try {
     // Validate file before upload
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit
-      throw new Error('File size exceeds 10MB limit');
+    if (file.size > 10 * 1024 * 1024) {
+      // 10MB limit
+      throw new Error("File size exceeds 10MB limit");
     }
 
-    const allowedTypes = ['application/pdf', 'text/plain', 'image/jpeg', 'image/png'];
+    const allowedTypes = [
+      "application/pdf",
+      "text/plain",
+      "image/jpeg",
+      "image/png",
+    ];
     if (!allowedTypes.includes(file.type)) {
-      throw new Error('File type not supported');
+      throw new Error("File type not supported");
     }
 
     const response = await uploadsApi.uploadFile(file);
-    
-    console.log('File uploaded successfully:');
-    console.log('- Filename:', response.filename);
-    console.log('- URL:', response.url);
-    
+
+    console.log("File uploaded successfully:");
+    console.log("- Filename:", response.filename);
+    console.log("- URL:", response.url);
+
     return response;
   } catch (error) {
-    if (error.message.includes('413')) {
-      console.error('File too large. Please choose a smaller file.');
-    } else if (error.message.includes('415')) {
-      console.error('File type not supported. Please upload a PDF, text, or image file.');
-    } else if (error.message.includes('403')) {
-      console.error('Upload permission denied. Please check your account status.');
+    if (error.message.includes("413")) {
+      console.error("File too large. Please choose a smaller file.");
+    } else if (error.message.includes("415")) {
+      console.error(
+        "File type not supported. Please upload a PDF, text, or image file.",
+      );
+    } else if (error.message.includes("403")) {
+      console.error(
+        "Upload permission denied. Please check your account status.",
+      );
     } else {
-      console.error('Upload failed:', error.message);
+      console.error("Upload failed:", error.message);
     }
     throw error;
   }
@@ -82,19 +92,19 @@ async function handleFileUpload(file: File) {
 
 // Example with drag-and-drop
 function setupDragAndDrop() {
-  const dropZone = document.getElementById('drop-zone');
-  
-  dropZone.addEventListener('dragover', (e) => {
+  const dropZone = document.getElementById("drop-zone");
+
+  dropZone.addEventListener("dragover", (e) => {
     e.preventDefault();
-    dropZone.classList.add('drag-over');
+    dropZone.classList.add("drag-over");
   });
 
-  dropZone.addEventListener('drop', async (e) => {
+  dropZone.addEventListener("drop", async (e) => {
     e.preventDefault();
-    dropZone.classList.remove('drag-over');
-    
+    dropZone.classList.remove("drag-over");
+
     const files = Array.from(e.dataTransfer.files);
-    
+
     for (const file of files) {
       try {
         await handleFileUpload(file);
@@ -118,7 +128,7 @@ async function createUpload(file: File): Promise<{
   status: string;
   progress: number;
   createdAt: string;
-}>
+}>;
 ```
 
 **Example Usage:**
@@ -127,18 +137,18 @@ async function createUpload(file: File): Promise<{
 async function advancedFileUpload(file: File) {
   try {
     const upload = await uploadsApi.createUpload(file);
-    
-    console.log('Upload created:', {
+
+    console.log("Upload created:", {
       id: upload.id,
       name: upload.name,
       status: upload.status,
       progress: upload.progress,
-      created: upload.createdAt
+      created: upload.createdAt,
     });
-    
+
     return upload;
   } catch (error) {
-    console.error('Advanced upload failed:', error.message);
+    console.error("Advanced upload failed:", error.message);
     throw error;
   }
 }
@@ -151,7 +161,7 @@ async function advancedFileUpload(file: File) {
 Retrieves a paginated list of uploaded files with advanced filtering options.
 
 ```typescript
-async function listFiles(params?: FileListParams): Promise<FileListResponse>
+async function listFiles(params?: FileListParams): Promise<FileListResponse>;
 ```
 
 **Parameters:**
@@ -169,29 +179,29 @@ async function searchFiles() {
   try {
     // Basic file listing
     const allFiles = await uploadsApi.listFiles();
-    
+
     // Advanced search with filtering
     const searchResults = await uploadsApi.listFiles({
-      q: 'research paper',        // Search query
-      limit: 20,                  // Results per page
-      offset: 0,                  // Skip count for pagination
-      sort: 'created_at',         // Sort by creation date
-      order: 'desc',              // Newest first
-      created_after: '2024-01-01T00:00:00Z',  // Filter by date
-      fields: 'filename,url,createdAt'         // Specific fields only
+      q: "research paper", // Search query
+      limit: 20, // Results per page
+      offset: 0, // Skip count for pagination
+      sort: "created_at", // Sort by creation date
+      order: "desc", // Newest first
+      created_after: "2024-01-01T00:00:00Z", // Filter by date
+      fields: "filename,url,createdAt", // Specific fields only
     });
 
     console.log(`Found ${searchResults.files.length} files`);
     console.log(`Total matching files: ${searchResults.total}`);
-    
+
     // Process results
-    searchResults.files.forEach(file => {
+    searchResults.files.forEach((file) => {
       console.log(`- ${file.filename} (${file.url})`);
     });
-    
+
     return searchResults;
   } catch (error) {
-    console.error('File search failed:', error.message);
+    console.error("File search failed:", error.message);
     throw error;
   }
 }
@@ -206,22 +216,22 @@ async function buildPaginatedFileBrowser(pageSize: number = 10) {
       const response = await uploadsApi.listFiles({
         limit: pageSize,
         offset: page * pageSize,
-        sort: 'created_at',
-        order: 'desc'
+        sort: "created_at",
+        order: "desc",
       });
 
       hasMore = (page + 1) * pageSize < response.total;
-      
+
       return {
         files: response.files,
         currentPage: page,
         totalPages: Math.ceil(response.total / pageSize),
         hasNext: hasMore,
         hasPrev: page > 0,
-        total: response.total
+        total: response.total,
       };
     } catch (error) {
-      console.error('Failed to load page:', error.message);
+      console.error("Failed to load page:", error.message);
       throw error;
     }
   };
@@ -237,7 +247,7 @@ async function buildPaginatedFileBrowser(pageSize: number = 10) {
 Retrieves specific file information by filename.
 
 ```typescript
-async function getFile(filename: string): Promise<FileUploadResponse>
+async function getFile(filename: string): Promise<FileUploadResponse>;
 ```
 
 **Example Usage:**
@@ -246,21 +256,21 @@ async function getFile(filename: string): Promise<FileUploadResponse>
 async function getFileDetails(filename: string) {
   try {
     const file = await uploadsApi.getFile(filename);
-    
-    console.log('File details:', {
+
+    console.log("File details:", {
       filename: file.filename,
       url: file.url,
-      downloadUrl: `${window.location.origin}${file.url}`
+      downloadUrl: `${window.location.origin}${file.url}`,
     });
-    
+
     return file;
   } catch (error) {
-    if (error.message.includes('404')) {
-      console.error('File not found:', filename);
-    } else if (error.message.includes('403')) {
-      console.error('Access denied to file:', filename);
+    if (error.message.includes("404")) {
+      console.error("File not found:", filename);
+    } else if (error.message.includes("403")) {
+      console.error("Access denied to file:", filename);
     } else {
-      console.error('Failed to get file:', error.message);
+      console.error("Failed to get file:", error.message);
     }
     throw error;
   }
@@ -270,20 +280,20 @@ async function getFileDetails(filename: string) {
 async function downloadFile(filename: string) {
   try {
     const file = await uploadsApi.getFile(filename);
-    
+
     // Create download link
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = file.url;
     link.download = filename;
-    link.style.display = 'none';
-    
+    link.style.display = "none";
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
-    console.log('Download initiated for:', filename);
+
+    console.log("Download initiated for:", filename);
   } catch (error) {
-    console.error('Download failed:', error.message);
+    console.error("Download failed:", error.message);
     throw error;
   }
 }
@@ -296,35 +306,37 @@ async function downloadFile(filename: string) {
 Permanently removes a file from the server.
 
 ```typescript
-async function deleteFile(filename: string): Promise<null>
+async function deleteFile(filename: string): Promise<null>;
 ```
 
 **Example Usage:**
 
 ```typescript
-async function safeDeleteFile(filename: string, confirmCallback?: () => boolean) {
+async function safeDeleteFile(
+  filename: string,
+  confirmCallback?: () => boolean,
+) {
   try {
     // Optional confirmation
     if (confirmCallback && !confirmCallback()) {
-      console.log('File deletion cancelled by user');
+      console.log("File deletion cancelled by user");
       return;
     }
 
     await uploadsApi.deleteFile(filename);
-    console.log('File deleted successfully:', filename);
-    
+    console.log("File deleted successfully:", filename);
+
     // Optionally refresh file list after deletion
     // await refreshFileList();
-    
   } catch (error) {
-    if (error.message.includes('404')) {
-      console.error('File not found for deletion:', filename);
-    } else if (error.message.includes('403')) {
-      console.error('Permission denied for file deletion:', filename);
-    } else if (error.message.includes('409')) {
-      console.error('File is in use and cannot be deleted:', filename);
+    if (error.message.includes("404")) {
+      console.error("File not found for deletion:", filename);
+    } else if (error.message.includes("403")) {
+      console.error("Permission denied for file deletion:", filename);
+    } else if (error.message.includes("409")) {
+      console.error("File is in use and cannot be deleted:", filename);
     } else {
-      console.error('File deletion failed:', error.message);
+      console.error("File deletion failed:", error.message);
     }
     throw error;
   }
@@ -334,12 +346,12 @@ async function safeDeleteFile(filename: string, confirmCallback?: () => boolean)
 async function batchDeleteFiles(filenames: string[]) {
   const results = {
     successful: [] as string[],
-    failed: [] as { filename: string; error: string }[]
+    failed: [] as { filename: string; error: string }[],
   };
 
   const confirmDelete = () => {
     return window.confirm(
-      `Are you sure you want to delete ${filenames.length} files? This action cannot be undone.`
+      `Are you sure you want to delete ${filenames.length} files? This action cannot be undone.`,
     );
   };
 
@@ -358,7 +370,9 @@ async function batchDeleteFiles(filenames: string[]) {
     }
   }
 
-  console.log(`Batch delete completed: ${results.successful.length} successful, ${results.failed.length} failed`);
+  console.log(
+    `Batch delete completed: ${results.successful.length} successful, ${results.failed.length} failed`,
+  );
   return results;
 }
 ```
@@ -368,31 +382,37 @@ async function batchDeleteFiles(filenames: string[]) {
 Updates file metadata and properties.
 
 ```typescript
-async function patchFile(id: string, updates: Record<string, unknown>): Promise<void>
+async function patchFile(
+  id: string,
+  updates: Record<string, unknown>,
+): Promise<void>;
 ```
 
 **Example Usage:**
 
 ```typescript
-async function updateFileMetadata(fileId: string, metadata: Record<string, unknown>) {
+async function updateFileMetadata(
+  fileId: string,
+  metadata: Record<string, unknown>,
+) {
   try {
     await uploadsApi.patchFile(fileId, metadata);
-    console.log('File metadata updated:', fileId);
+    console.log("File metadata updated:", fileId);
   } catch (error) {
-    console.error('Failed to update file metadata:', error.message);
+    console.error("Failed to update file metadata:", error.message);
     throw error;
   }
 }
 
 // Example metadata updates
 const metadataUpdates = {
-  description: 'Research paper on AI applications',
-  tags: ['research', 'ai', 'machine-learning'],
-  category: 'academic',
-  isPublic: false
+  description: "Research paper on AI applications",
+  tags: ["research", "ai", "machine-learning"],
+  category: "academic",
+  isPublic: false,
 };
 
-await updateFileMetadata('file-123', metadataUpdates);
+await updateFileMetadata("file-123", metadataUpdates);
 ```
 
 ### File Export Operations
@@ -402,7 +422,7 @@ await updateFileMetadata('file-123', metadataUpdates);
 Exports file listings as CSV with customizable fields and filtering.
 
 ```typescript
-async function exportFiles(params?: FileExportParams): Promise<Blob>
+async function exportFiles(params?: FileExportParams): Promise<Blob>;
 ```
 
 **Example Usage:**
@@ -411,25 +431,25 @@ async function exportFiles(params?: FileExportParams): Promise<Blob>
 async function exportFileList() {
   try {
     const exportParams = {
-      fields: 'filename,created_at,size,url',
-      sort: 'created_at',
-      order: 'desc',
-      created_after: '2024-01-01T00:00:00Z'
+      fields: "filename,created_at,size,url",
+      sort: "created_at",
+      order: "desc",
+      created_after: "2024-01-01T00:00:00Z",
     };
 
     const csvBlob = await uploadsApi.exportFiles(exportParams);
-    
+
     // Download CSV file
     const url = URL.createObjectURL(csvBlob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    link.download = `files-export-${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `files-export-${new Date().toISOString().split("T")[0]}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-    
-    console.log('File export completed successfully');
+
+    console.log("File export completed successfully");
   } catch (error) {
-    console.error('File export failed:', error.message);
+    console.error("File export failed:", error.message);
     throw error;
   }
 }
@@ -439,26 +459,29 @@ async function customFileExport() {
   try {
     // Let user choose export parameters
     const exportConfig = {
-      fields: prompt('Enter fields to export (comma-separated):', 'filename,created_at,size') || 'filename,created_at',
-      sort: 'created_at',
-      order: 'desc'
+      fields:
+        prompt(
+          "Enter fields to export (comma-separated):",
+          "filename,created_at,size",
+        ) || "filename,created_at",
+      sort: "created_at",
+      order: "desc",
     };
 
     const csvBlob = await uploadsApi.exportFiles(exportConfig);
-    
+
     // Create custom filename
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const filename = `custom-files-export-${timestamp}.csv`;
-    
+
     const url = URL.createObjectURL(csvBlob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = filename;
     link.click();
     URL.revokeObjectURL(url);
-    
   } catch (error) {
-    console.error('Custom export failed:', error.message);
+    console.error("Custom export failed:", error.message);
     throw error;
   }
 }
@@ -470,21 +493,21 @@ async function customFileExport() {
 
 ```typescript
 interface FileUploadResponse {
-  filename: string;        // Name of the uploaded file
-  url: string;             // Access URL for the file
+  filename: string; // Name of the uploaded file
+  url: string; // Access URL for the file
 }
 
 interface FileDict {
-  filename: string;        // File name
-  url: string;             // File URL
-  status?: string;         // Upload status (pending, completed, failed)
-  progress?: number;       // Upload progress percentage (0-100)
-  createdAt?: string;      // ISO timestamp of creation
+  filename: string; // File name
+  url: string; // File URL
+  status?: string; // Upload status (pending, completed, failed)
+  progress?: number; // Upload progress percentage (0-100)
+  createdAt?: string; // ISO timestamp of creation
 }
 
 interface FileListResponse {
-  files: FileDict[];       // Array of file objects
-  total: number;           // Total number of files matching criteria
+  files: FileDict[]; // Array of file objects
+  total: number; // Total number of files matching criteria
 }
 ```
 
@@ -492,23 +515,23 @@ interface FileListResponse {
 
 ```typescript
 interface FileListParams {
-  offset?: number;                    // Number of files to skip (pagination)
-  limit?: number;                     // Maximum number of files to return
-  q?: string;                         // Search query for filename
-  fields?: string;                    // Comma-separated list of fields to return
-  sort?: "created_at" | "filename";   // Sort criteria
-  order?: "desc" | "asc";             // Sort order
-  created_after?: string;             // Filter by creation date (ISO string)
-  created_before?: string;            // Filter by creation date (ISO string)
+  offset?: number; // Number of files to skip (pagination)
+  limit?: number; // Maximum number of files to return
+  q?: string; // Search query for filename
+  fields?: string; // Comma-separated list of fields to return
+  sort?: "created_at" | "filename"; // Sort criteria
+  order?: "desc" | "asc"; // Sort order
+  created_after?: string; // Filter by creation date (ISO string)
+  created_before?: string; // Filter by creation date (ISO string)
 }
 
 interface FileExportParams {
-  q?: string;                         // Search query for export filtering
-  sort?: "created_at" | "filename";   // Sort criteria for export
-  order?: "desc" | "asc";             // Sort order for export
-  fields?: string;                    // Fields to include in export
-  created_before?: string;            // Date filter for export
-  created_after?: string;             // Date filter for export
+  q?: string; // Search query for export filtering
+  sort?: "created_at" | "filename"; // Sort criteria for export
+  order?: "desc" | "asc"; // Sort order for export
+  fields?: string; // Fields to include in export
+  created_before?: string; // Date filter for export
+  created_after?: string; // Date filter for export
 }
 ```
 
@@ -517,7 +540,7 @@ interface FileExportParams {
 ### Comprehensive File Manager Class
 
 ```typescript
-import { uploadsApi } from '@/lib/api';
+import { uploadsApi } from "@/lib/api";
 
 class FileManager {
   private cache: Map<string, FileDict> = new Map();
@@ -526,15 +549,15 @@ class FileManager {
   // Upload with progress tracking
   async uploadWithProgress(
     file: File,
-    onProgress?: (progress: number) => void
+    onProgress?: (progress: number) => void,
   ): Promise<FileUploadResponse> {
     try {
       // Validate file
       this.validateFile(file);
-      
+
       // Create upload
       const upload = await uploadsApi.createUpload(file);
-      
+
       // Track progress (if supported by backend)
       if (onProgress) {
         this.trackUploadProgress(upload.id, onProgress);
@@ -546,24 +569,27 @@ class FileManager {
         url: `/uploads/${upload.name}`,
         status: upload.status,
         progress: upload.progress,
-        createdAt: upload.createdAt
+        createdAt: upload.createdAt,
       });
 
-      this.emitEvent('fileUploaded', { file: upload });
+      this.emitEvent("fileUploaded", { file: upload });
       return { filename: upload.name, url: `/uploads/${upload.name}` };
     } catch (error) {
-      this.emitEvent('uploadError', { file: file.name, error: error.message });
+      this.emitEvent("uploadError", { file: file.name, error: error.message });
       throw error;
     }
   }
 
   // Smart file search with caching
-  async searchFiles(query: string, options: {
-    useCache?: boolean;
-    maxAge?: number;
-  } = {}): Promise<FileListResponse> {
+  async searchFiles(
+    query: string,
+    options: {
+      useCache?: boolean;
+      maxAge?: number;
+    } = {},
+  ): Promise<FileListResponse> {
     const cacheKey = `search:${query}:${JSON.stringify(options)}`;
-    
+
     if (options.useCache && this.isCacheValid(cacheKey, options.maxAge)) {
       return this.getCachedResult(cacheKey);
     }
@@ -571,15 +597,15 @@ class FileManager {
     try {
       const results = await uploadsApi.listFiles({
         q: query,
-        sort: 'created_at',
-        order: 'desc',
-        limit: 50
+        sort: "created_at",
+        order: "desc",
+        limit: 50,
       });
 
       this.setCachedResult(cacheKey, results);
       return results;
     } catch (error) {
-      console.error('File search failed:', error.message);
+      console.error("File search failed:", error.message);
       throw error;
     }
   }
@@ -591,7 +617,7 @@ class FileManager {
   }> {
     const results = {
       successful: [] as FileUploadResponse[],
-      failed: [] as { file: string; error: string }[]
+      failed: [] as { file: string; error: string }[],
     };
 
     const uploadPromises = files.map(async (file) => {
@@ -604,8 +630,8 @@ class FileManager {
     });
 
     await Promise.allSettled(uploadPromises);
-    
-    this.emitEvent('bulkUploadComplete', results);
+
+    this.emitEvent("bulkUploadComplete", results);
     return results;
   }
 
@@ -615,9 +641,9 @@ class FileManager {
       const allFiles = await uploadsApi.listFiles({ limit: 1000 });
       const organized: { [date: string]: FileDict[] } = {};
 
-      allFiles.files.forEach(file => {
+      allFiles.files.forEach((file) => {
         if (file.createdAt) {
-          const date = file.createdAt.split('T')[0]; // Get date part
+          const date = file.createdAt.split("T")[0]; // Get date part
           if (!organized[date]) {
             organized[date] = [];
           }
@@ -627,7 +653,7 @@ class FileManager {
 
       return organized;
     } catch (error) {
-      console.error('File organization failed:', error.message);
+      console.error("File organization failed:", error.message);
       throw error;
     }
   }
@@ -636,13 +662,13 @@ class FileManager {
   private validateFile(file: File): void {
     const maxSize = 50 * 1024 * 1024; // 50MB
     const allowedTypes = [
-      'application/pdf',
-      'text/plain',
-      'image/jpeg',
-      'image/png',
-      'image/gif',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      "application/pdf",
+      "text/plain",
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ];
 
     if (file.size > maxSize) {
@@ -654,7 +680,10 @@ class FileManager {
     }
   }
 
-  private trackUploadProgress(uploadId: string, callback: (progress: number) => void): void {
+  private trackUploadProgress(
+    uploadId: string,
+    callback: (progress: number) => void,
+  ): void {
     // Implementation would depend on backend WebSocket or polling support
     // This is a placeholder for progress tracking functionality
     const interval = setInterval(async () => {
@@ -662,7 +691,7 @@ class FileManager {
         // Poll upload status (if supported by backend)
         // const status = await uploadsApi.getUploadStatus(uploadId);
         // callback(status.progress);
-        
+
         // For now, simulate progress
         let progress = 0;
         const progressInterval = setInterval(() => {
@@ -675,13 +704,15 @@ class FileManager {
         }, 100);
       } catch (error) {
         clearInterval(interval);
-        console.error('Progress tracking failed:', error.message);
+        console.error("Progress tracking failed:", error.message);
       }
     }, 1000);
   }
 
   private emitEvent(eventType: string, data: any): void {
-    this.eventEmitter.dispatchEvent(new CustomEvent(eventType, { detail: data }));
+    this.eventEmitter.dispatchEvent(
+      new CustomEvent(eventType, { detail: data }),
+    );
   }
 
   private isCacheValid(key: string, maxAge: number = 300000): boolean {
@@ -747,7 +778,7 @@ function FileUploadComponent() {
     try {
       const uploadPromises = Array.from(fileList).map(async (file) => {
         setUploadProgress(prev => ({ ...prev, [file.name]: 0 }));
-        
+
         try {
           const result = await uploadsApi.uploadFile(file);
           setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
@@ -760,10 +791,10 @@ function FileUploadComponent() {
 
       await Promise.allSettled(uploadPromises);
       await loadFiles(); // Refresh file list
-      
+
       // Clear progress after delay
       setTimeout(() => setUploadProgress({}), 3000);
-      
+
     } catch (error) {
       setError('Upload failed: ' + error.message);
     } finally {
@@ -790,7 +821,7 @@ function FileUploadComponent() {
         q: searchQuery,
         fields: 'filename,created_at,url'
       });
-      
+
       const url = URL.createObjectURL(csvBlob);
       const link = document.createElement('a');
       link.href = url;
@@ -811,7 +842,7 @@ function FileUploadComponent() {
           onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
           disabled={uploading}
         />
-        
+
         <div className="search-area">
           <input
             type="text"
@@ -836,9 +867,9 @@ function FileUploadComponent() {
             <div key={filename} className="progress-item">
               <span>{filename}</span>
               <div className="progress-bar">
-                <div 
-                  className="progress-fill" 
-                  style={{ 
+                <div
+                  className="progress-fill"
+                  style={{
                     width: `${Math.max(0, progress)}%`,
                     backgroundColor: progress === -1 ? 'red' : 'green'
                   }}
@@ -880,7 +911,7 @@ async function runDiagnostics() {
     rootTest: () => uploadsApi.rootTest(),
     aliveTest: () => uploadsApi.testAlive(),
     exportAlive: () => uploadsApi.exportAlive(),
-    exportTest: () => uploadsApi.exportTest()
+    exportTest: () => uploadsApi.exportTest(),
   };
 
   for (const [testName, testFunc] of Object.entries(tests)) {
@@ -899,18 +930,18 @@ async function checkUploadHealth(): Promise<boolean> {
     const [rootTest, aliveTest, exportTest] = await Promise.all([
       uploadsApi.rootTest(),
       uploadsApi.testAlive(),
-      uploadsApi.exportAlive()
+      uploadsApi.exportAlive(),
     ]);
 
-    const isHealthy = 
-      rootTest.status === 'uploads root test alive' &&
-      aliveTest.status === 'uploads alive' &&
-      exportTest.status === 'uploads export alive';
+    const isHealthy =
+      rootTest.status === "uploads root test alive" &&
+      aliveTest.status === "uploads alive" &&
+      exportTest.status === "uploads export alive";
 
-    console.log('Upload service health:', isHealthy ? 'HEALTHY' : 'UNHEALTHY');
+    console.log("Upload service health:", isHealthy ? "HEALTHY" : "UNHEALTHY");
     return isHealthy;
   } catch (error) {
-    console.error('Health check failed:', error.message);
+    console.error("Health check failed:", error.message);
     return false;
   }
 }
@@ -923,39 +954,39 @@ async function checkUploadHealth(): Promise<boolean> {
 ```typescript
 class UploadErrorHandler {
   static handleUploadError(error: Error, file?: File): string {
-    const filename = file?.name || 'unknown file';
-    
-    if (error.message.includes('413')) {
+    const filename = file?.name || "unknown file";
+
+    if (error.message.includes("413")) {
       return `File "${filename}" is too large. Maximum size is 50MB.`;
-    } else if (error.message.includes('415')) {
+    } else if (error.message.includes("415")) {
       return `File type for "${filename}" is not supported. Please upload PDF, text, or image files.`;
-    } else if (error.message.includes('403')) {
-      return 'You do not have permission to upload files. Please check your account status.';
-    } else if (error.message.includes('507')) {
-      return 'Server storage is full. Please try again later or contact support.';
-    } else if (error.message.includes('409')) {
+    } else if (error.message.includes("403")) {
+      return "You do not have permission to upload files. Please check your account status.";
+    } else if (error.message.includes("507")) {
+      return "Server storage is full. Please try again later or contact support.";
+    } else if (error.message.includes("409")) {
       return `A file named "${filename}" already exists. Please rename the file or delete the existing one.`;
-    } else if (error.message.includes('network')) {
-      return 'Network error during upload. Please check your connection and try again.';
+    } else if (error.message.includes("network")) {
+      return "Network error during upload. Please check your connection and try again.";
     }
     return `Upload failed for "${filename}": ${error.message}`;
   }
 
   static handleListError(error: Error): string {
-    if (error.message.includes('403')) {
-      return 'You do not have permission to view files.';
-    } else if (error.message.includes('503')) {
-      return 'File service is temporarily unavailable. Please try again later.';
+    if (error.message.includes("403")) {
+      return "You do not have permission to view files.";
+    } else if (error.message.includes("503")) {
+      return "File service is temporarily unavailable. Please try again later.";
     }
     return `Failed to load files: ${error.message}`;
   }
 
   static handleDeleteError(error: Error, filename: string): string {
-    if (error.message.includes('404')) {
+    if (error.message.includes("404")) {
       return `File "${filename}" not found. It may have already been deleted.`;
-    } else if (error.message.includes('403')) {
+    } else if (error.message.includes("403")) {
       return `You do not have permission to delete "${filename}".`;
-    } else if (error.message.includes('409')) {
+    } else if (error.message.includes("409")) {
       return `File "${filename}" is currently in use and cannot be deleted.`;
     }
     return `Failed to delete "${filename}": ${error.message}`;
@@ -967,7 +998,7 @@ try {
   await uploadsApi.uploadFile(file);
 } catch (error) {
   const userMessage = UploadErrorHandler.handleUploadError(error, file);
-  showUserNotification(userMessage, 'error');
+  showUserNotification(userMessage, "error");
 }
 ```
 
@@ -989,11 +1020,12 @@ function processLargeFiles(files: FileList) {
   const processFile = async (file: File) => {
     try {
       // Process file in chunks if needed
-      if (file.size > 10 * 1024 * 1024) { // 10MB threshold
+      if (file.size > 10 * 1024 * 1024) {
+        // 10MB threshold
         console.log(`Large file detected: ${file.name} (${file.size} bytes)`);
         // Implement chunked upload or compression
       }
-      
+
       const result = await uploadsApi.uploadFile(file);
       return result;
     } finally {
@@ -1027,29 +1059,29 @@ function processLargeFiles(files: FileList) {
 function secureFileUpload(file: File): Promise<FileUploadResponse> {
   // 1. Validate file type
   const allowedTypes = [
-    'application/pdf',
-    'text/plain',
-    'image/jpeg',
-    'image/png',
-    'image/gif'
+    "application/pdf",
+    "text/plain",
+    "image/jpeg",
+    "image/png",
+    "image/gif",
   ];
-  
+
   if (!allowedTypes.includes(file.type)) {
-    throw new Error('File type not allowed for security reasons');
+    throw new Error("File type not allowed for security reasons");
   }
-  
+
   // 2. Check file size
   const maxSize = 50 * 1024 * 1024; // 50MB
   if (file.size > maxSize) {
-    throw new Error('File size exceeds security limits');
+    throw new Error("File size exceeds security limits");
   }
-  
+
   // 3. Sanitize filename
-  const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-  
+  const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+
   // 4. Create secure file object
   const secureFile = new File([file], sanitizedName, { type: file.type });
-  
+
   return uploadsApi.uploadFile(secureFile);
 }
 ```

@@ -15,25 +15,25 @@ graph TB
         Components[UI Components]
         Layout[Layout Components]
     end
-    
+
     subgraph "State Management"
         Zustand[Zustand Store]
         Context[React Context]
         LocalState[Local State]
     end
-    
+
     subgraph "Data Layer"
         API[API Client]
         Types[TypeScript Types]
         Cache[Query Cache]
     end
-    
+
     subgraph "Infrastructure"
         Router[React Router]
         Build[Vite Build]
         Test[Testing Setup]
     end
-    
+
     Pages --> Components
     Components --> Zustand
     Pages --> API
@@ -45,16 +45,16 @@ graph TB
 
 ### Key Technologies
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **React** | 18+ | Modern UI library with concurrent features |
-| **TypeScript** | 5+ | Type-safe JavaScript development |
-| **Vite** | 5+ | Fast build tool and development server |
-| **Tailwind CSS** | 3+ | Utility-first CSS framework |
-| **Zustand** | 4+ | Lightweight state management |
-| **React Router** | 6+ | Client-side routing |
-| **Vitest** | 1+ | Fast unit testing framework |
-| **Playwright** | 1+ | End-to-end testing |
+| Technology       | Version | Purpose                                    |
+| ---------------- | ------- | ------------------------------------------ |
+| **React**        | 18+     | Modern UI library with concurrent features |
+| **TypeScript**   | 5+      | Type-safe JavaScript development           |
+| **Vite**         | 5+      | Fast build tool and development server     |
+| **Tailwind CSS** | 3+      | Utility-first CSS framework                |
+| **Zustand**      | 4+      | Lightweight state management               |
+| **React Router** | 6+      | Client-side routing                        |
+| **Vitest**       | 1+      | Fast unit testing framework                |
+| **Playwright**   | 1+      | End-to-end testing                         |
 
 ## Quick Navigation
 
@@ -203,7 +203,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   const handleDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault()
     setDragActive(false)
-    
+
     const files = Array.from(e.dataTransfer.files)
     for (const file of files) {
       if (validateFile(file, accept, maxSize)) {
@@ -257,7 +257,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
 }) => {
   const { login } = useAuth()
   const navigate = useNavigate()
-  
+
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -337,73 +337,73 @@ We use **Zustand** for simple, efficient state management:
 ```typescript
 // store/auth.ts
 interface AuthState {
-  user: User | null
-  token: string | null
-  isAuthenticated: boolean
-  isLoading: boolean
+  user: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 interface AuthActions {
-  login: (credentials: LoginCredentials) => Promise<void>
-  logout: () => void
-  refreshToken: () => Promise<void>
-  updateProfile: (data: UpdateProfileData) => Promise<void>
+  login: (credentials: LoginCredentials) => Promise<void>;
+  logout: () => void;
+  refreshToken: () => Promise<void>;
+  updateProfile: (data: UpdateProfileData) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
   // State
   user: null,
-  token: localStorage.getItem('access_token'),
+  token: localStorage.getItem("access_token"),
   isAuthenticated: false,
   isLoading: false,
 
   // Actions
   login: async (credentials) => {
-    set({ isLoading: true })
+    set({ isLoading: true });
     try {
-      const response = await authAPI.login(credentials)
-      const { access_token, user } = response.data
-      
-      localStorage.setItem('access_token', access_token)
+      const response = await authAPI.login(credentials);
+      const { access_token, user } = response.data;
+
+      localStorage.setItem("access_token", access_token);
       set({
         user,
         token: access_token,
         isAuthenticated: true,
-        isLoading: false
-      })
+        isLoading: false,
+      });
     } catch (error) {
-      set({ isLoading: false })
-      throw error
+      set({ isLoading: false });
+      throw error;
     }
   },
 
   logout: () => {
-    localStorage.removeItem('access_token')
+    localStorage.removeItem("access_token");
     set({
       user: null,
       token: null,
-      isAuthenticated: false
-    })
+      isAuthenticated: false,
+    });
   },
 
   refreshToken: async () => {
     try {
-      const response = await authAPI.refresh()
-      const { access_token } = response.data
-      
-      localStorage.setItem('access_token', access_token)
-      set({ token: access_token })
+      const response = await authAPI.refresh();
+      const { access_token } = response.data;
+
+      localStorage.setItem("access_token", access_token);
+      set({ token: access_token });
     } catch (error) {
-      get().logout()
-      throw error
+      get().logout();
+      throw error;
     }
   },
 
   updateProfile: async (data) => {
-    const user = await userAPI.updateProfile(data)
-    set({ user })
-  }
-}))
+    const user = await userAPI.updateProfile(data);
+    set({ user });
+  },
+}));
 ```
 
 #### UI State Store
@@ -411,52 +411,52 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
 ```typescript
 // store/ui.ts
 interface UIState {
-  theme: 'light' | 'dark' | 'system'
-  sidebarOpen: boolean
-  notifications: Notification[]
+  theme: "light" | "dark" | "system";
+  sidebarOpen: boolean;
+  notifications: Notification[];
 }
 
 interface UIActions {
-  setTheme: (theme: UIState['theme']) => void
-  toggleSidebar: () => void
-  addNotification: (notification: Omit<Notification, 'id'>) => void
-  removeNotification: (id: string) => void
+  setTheme: (theme: UIState["theme"]) => void;
+  toggleSidebar: () => void;
+  addNotification: (notification: Omit<Notification, "id">) => void;
+  removeNotification: (id: string) => void;
 }
 
 export const useUIStore = create<UIState & UIActions>((set, get) => ({
   // State
-  theme: (localStorage.getItem('theme') as UIState['theme']) || 'system',
+  theme: (localStorage.getItem("theme") as UIState["theme"]) || "system",
   sidebarOpen: true,
   notifications: [],
 
   // Actions
   setTheme: (theme) => {
-    localStorage.setItem('theme', theme)
-    set({ theme })
+    localStorage.setItem("theme", theme);
+    set({ theme });
   },
 
   toggleSidebar: () => {
-    set((state) => ({ sidebarOpen: !state.sidebarOpen }))
+    set((state) => ({ sidebarOpen: !state.sidebarOpen }));
   },
 
   addNotification: (notification) => {
-    const id = Math.random().toString(36).substr(2, 9)
+    const id = Math.random().toString(36).substr(2, 9);
     set((state) => ({
-      notifications: [...state.notifications, { ...notification, id }]
-    }))
-    
+      notifications: [...state.notifications, { ...notification, id }],
+    }));
+
     // Auto-remove after delay
     setTimeout(() => {
-      get().removeNotification(id)
-    }, notification.duration || 5000)
+      get().removeNotification(id);
+    }, notification.duration || 5000);
   },
 
   removeNotification: (id) => {
     set((state) => ({
-      notifications: state.notifications.filter(n => n.id !== id)
-    }))
-  }
-}))
+      notifications: state.notifications.filter((n) => n.id !== id),
+    }));
+  },
+}));
 ```
 
 ## API Integration
@@ -475,46 +475,47 @@ pnpm run generate:types
 
 ```typescript
 // lib/api/client.ts
-import axios from 'axios'
-import { useAuthStore } from '@/store/auth'
+import axios from "axios";
+import { useAuthStore } from "@/store/auth";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json'
-  }
-})
+    "Content-Type": "application/json",
+  },
+});
 
 // Request interceptor for authentication
 apiClient.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().token
+  const token = useAuthStore.getState().token;
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+    config.headers.Authorization = `Bearer ${token}`;
   }
-  return config
-})
+  return config;
+});
 
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      const authStore = useAuthStore.getState()
+      const authStore = useAuthStore.getState();
       try {
-        await authStore.refreshToken()
+        await authStore.refreshToken();
         // Retry the original request
-        return apiClient.request(error.config)
+        return apiClient.request(error.config);
       } catch (refreshError) {
-        authStore.logout()
-        window.location.href = '/login'
+        authStore.logout();
+        window.location.href = "/login";
       }
     }
-    return Promise.reject(error)
-  }
-)
+    return Promise.reject(error);
+  },
+);
 ```
 
 #### API Service Modules
@@ -523,38 +524,34 @@ apiClient.interceptors.response.use(
 // lib/api/auth.ts
 export const authAPI = {
   login: (credentials: LoginCredentials) =>
-    apiClient.post<AuthResponse>('/auth/login', credentials),
-    
+    apiClient.post<AuthResponse>("/auth/login", credentials),
+
   register: (data: RegisterData) =>
-    apiClient.post<UserResponse>('/auth/register', data),
-    
-  refresh: () =>
-    apiClient.post<AuthResponse>('/auth/refresh'),
-    
-  logout: () =>
-    apiClient.post('/auth/logout'),
-    
+    apiClient.post<UserResponse>("/auth/register", data),
+
+  refresh: () => apiClient.post<AuthResponse>("/auth/refresh"),
+
+  logout: () => apiClient.post("/auth/logout"),
+
   requestPasswordReset: (email: string) =>
-    apiClient.post('/auth/password-reset-request', { email }),
-    
+    apiClient.post("/auth/password-reset-request", { email }),
+
   confirmPasswordReset: (data: PasswordResetData) =>
-    apiClient.post('/auth/password-reset-confirm', data)
-}
+    apiClient.post("/auth/password-reset-confirm", data),
+};
 
 // lib/api/users.ts
 export const userAPI = {
-  getProfile: () =>
-    apiClient.get<UserResponse>('/users/me'),
-    
+  getProfile: () => apiClient.get<UserResponse>("/users/me"),
+
   updateProfile: (data: UpdateProfileData) =>
-    apiClient.put<UserResponse>('/users/me', data),
-    
-  getUser: (id: string) =>
-    apiClient.get<UserResponse>(`/users/${id}`),
-    
+    apiClient.put<UserResponse>("/users/me", data),
+
+  getUser: (id: string) => apiClient.get<UserResponse>(`/users/${id}`),
+
   listUsers: (params?: ListUsersParams) =>
-    apiClient.get<UsersListResponse>('/users', { params })
-}
+    apiClient.get<UsersListResponse>("/users", { params }),
+};
 ```
 
 ## Routing System
@@ -664,7 +661,7 @@ describe('Button Component', () => {
   it('calls onClick handler when clicked', () => {
     const handleClick = vi.fn()
     render(<Button onClick={handleClick}>Click me</Button>)
-    
+
     fireEvent.click(screen.getByText('Click me'))
     expect(handleClick).toHaveBeenCalledTimes(1)
   })
@@ -685,45 +682,47 @@ describe('Button Component', () => {
 
 ```typescript
 // e2e/auth.spec.ts
-import { test, expect } from '@playwright/test'
+import { test, expect } from "@playwright/test";
 
-test.describe('Authentication Flow', () => {
-  test('user can login successfully', async ({ page }) => {
-    await page.goto('/login')
-    
-    await page.fill('[data-testid="username"]', 'testuser')
-    await page.fill('[data-testid="password"]', 'testpassword')
-    await page.click('[data-testid="login-button"]')
-    
-    await expect(page).toHaveURL('/dashboard')
-    await expect(page.locator('[data-testid="user-menu"]')).toBeVisible()
-  })
+test.describe("Authentication Flow", () => {
+  test("user can login successfully", async ({ page }) => {
+    await page.goto("/login");
 
-  test('shows error for invalid credentials', async ({ page }) => {
-    await page.goto('/login')
-    
-    await page.fill('[data-testid="username"]', 'wronguser')
-    await page.fill('[data-testid="password"]', 'wrongpassword')
-    await page.click('[data-testid="login-button"]')
-    
-    await expect(page.locator('[data-testid="error-message"]')).toBeVisible()
-    await expect(page.locator('[data-testid="error-message"]')).toContainText('Invalid')
-  })
+    await page.fill('[data-testid="username"]', "testuser");
+    await page.fill('[data-testid="password"]', "testpassword");
+    await page.click('[data-testid="login-button"]');
 
-  test('user can logout', async ({ page }) => {
+    await expect(page).toHaveURL("/dashboard");
+    await expect(page.locator('[data-testid="user-menu"]')).toBeVisible();
+  });
+
+  test("shows error for invalid credentials", async ({ page }) => {
+    await page.goto("/login");
+
+    await page.fill('[data-testid="username"]', "wronguser");
+    await page.fill('[data-testid="password"]', "wrongpassword");
+    await page.click('[data-testid="login-button"]');
+
+    await expect(page.locator('[data-testid="error-message"]')).toBeVisible();
+    await expect(page.locator('[data-testid="error-message"]')).toContainText(
+      "Invalid",
+    );
+  });
+
+  test("user can logout", async ({ page }) => {
     // Login first
-    await page.goto('/login')
-    await page.fill('[data-testid="username"]', 'testuser')
-    await page.fill('[data-testid="password"]', 'testpassword')
-    await page.click('[data-testid="login-button"]')
-    
+    await page.goto("/login");
+    await page.fill('[data-testid="username"]', "testuser");
+    await page.fill('[data-testid="password"]', "testpassword");
+    await page.click('[data-testid="login-button"]');
+
     // Then logout
-    await page.click('[data-testid="user-menu"]')
-    await page.click('[data-testid="logout-button"]')
-    
-    await expect(page).toHaveURL('/login')
-  })
-})
+    await page.click('[data-testid="user-menu"]');
+    await page.click('[data-testid="logout-button"]');
+
+    await expect(page).toHaveURL("/login");
+  });
+});
 ```
 
 ## Development Workflow
@@ -820,15 +819,51 @@ pnpm run preview
 
 ```css
 /* Typography classes */
-.text-display-1 { font-size: 3.5rem; line-height: 1.2; font-weight: 700; }
-.text-display-2 { font-size: 3rem; line-height: 1.25; font-weight: 700; }
-.text-heading-1 { font-size: 2.5rem; line-height: 1.3; font-weight: 600; }
-.text-heading-2 { font-size: 2rem; line-height: 1.35; font-weight: 600; }
-.text-heading-3 { font-size: 1.5rem; line-height: 1.4; font-weight: 600; }
-.text-body-large { font-size: 1.125rem; line-height: 1.5; font-weight: 400; }
-.text-body { font-size: 1rem; line-height: 1.5; font-weight: 400; }
-.text-body-small { font-size: 0.875rem; line-height: 1.5; font-weight: 400; }
-.text-caption { font-size: 0.75rem; line-height: 1.4; font-weight: 400; }
+.text-display-1 {
+  font-size: 3.5rem;
+  line-height: 1.2;
+  font-weight: 700;
+}
+.text-display-2 {
+  font-size: 3rem;
+  line-height: 1.25;
+  font-weight: 700;
+}
+.text-heading-1 {
+  font-size: 2.5rem;
+  line-height: 1.3;
+  font-weight: 600;
+}
+.text-heading-2 {
+  font-size: 2rem;
+  line-height: 1.35;
+  font-weight: 600;
+}
+.text-heading-3 {
+  font-size: 1.5rem;
+  line-height: 1.4;
+  font-weight: 600;
+}
+.text-body-large {
+  font-size: 1.125rem;
+  line-height: 1.5;
+  font-weight: 400;
+}
+.text-body {
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 400;
+}
+.text-body-small {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  font-weight: 400;
+}
+.text-caption {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  font-weight: 400;
+}
 ```
 
 ### Spacing System
@@ -838,16 +873,16 @@ pnpm run preview
 module.exports = {
   theme: {
     spacing: {
-      'xs': '0.5rem',    // 8px
-      'sm': '1rem',      // 16px
-      'md': '1.5rem',    // 24px
-      'lg': '2rem',      // 32px
-      'xl': '3rem',      // 48px
-      '2xl': '4rem',     // 64px
-      '3xl': '6rem',     // 96px
-    }
-  }
-}
+      xs: "0.5rem", // 8px
+      sm: "1rem", // 16px
+      md: "1.5rem", // 24px
+      lg: "2rem", // 32px
+      xl: "3rem", // 48px
+      "2xl": "4rem", // 64px
+      "3xl": "6rem", // 96px
+    },
+  },
+};
 ```
 
 ## Build System
@@ -856,43 +891,43 @@ module.exports = {
 
 ```typescript
 // vite.config.ts
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      "@": path.resolve(__dirname, "./src"),
     },
   },
   server: {
     port: 3000,
     proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
+      "/api": {
+        target: "http://localhost:8000",
         changeOrigin: true,
       },
     },
   },
   build: {
-    outDir: 'dist',
+    outDir: "dist",
     sourcemap: true,
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          vendor: ["react", "react-dom"],
+          router: ["react-router-dom"],
+          ui: ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu"],
         },
       },
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
+    include: ["react", "react-dom", "react-router-dom"],
   },
-})
+});
 ```
 
 ### Environment Variables
@@ -937,7 +972,7 @@ const ParentComponent = () => {
   const [items, setItems] = useState<Item[]>([])
 
   const handleItemClick = useCallback((id: string) => {
-    setItems(prev => prev.map(item => 
+    setItems(prev => prev.map(item =>
       item.id === id ? { ...item, selected: !item.selected } : item
     ))
   }, [])

@@ -29,7 +29,9 @@ The `auth.ts` file provides comprehensive authentication and authorization funct
 Creates a new user account with comprehensive validation and security features.
 
 ```typescript
-async function register(userData: AuthRegisterRequest): Promise<AuthRegisterResponse>
+async function register(
+  userData: AuthRegisterRequest,
+): Promise<AuthRegisterResponse>;
 ```
 
 **Parameters:**
@@ -43,46 +45,50 @@ async function register(userData: AuthRegisterRequest): Promise<AuthRegisterResp
 **Example Usage:**
 
 ```typescript
-import { authApi } from '@/lib/api';
+import { authApi } from "@/lib/api";
 
 async function handleUserRegistration() {
   try {
     const userData = {
-      email: 'john.doe@example.com',
-      name: 'John Doe',
-      password: 'SecurePassword123!'
+      email: "john.doe@example.com",
+      name: "John Doe",
+      password: "SecurePassword123!",
     };
 
     const response = await authApi.register(userData);
-    
-    console.log('Registration successful:', {
+
+    console.log("Registration successful:", {
       user: response.user,
-      hasToken: !!response.access_token
+      hasToken: !!response.access_token,
     });
 
     // Store authentication tokens
-    localStorage.setItem('access_token', response.access_token);
-    localStorage.setItem('refresh_token', response.refresh_token);
-    localStorage.setItem('token_type', response.token_type);
+    localStorage.setItem("access_token", response.access_token);
+    localStorage.setItem("refresh_token", response.refresh_token);
+    localStorage.setItem("token_type", response.token_type);
 
     // Redirect to dashboard or main application
-    window.location.href = '/dashboard';
-    
+    window.location.href = "/dashboard";
+
     return response;
   } catch (error) {
-    console.error('Registration failed:', error.message);
-    
+    console.error("Registration failed:", error.message);
+
     // Handle specific registration errors
-    if (error.message.includes('email already exists')) {
-      showError('This email is already registered. Please use a different email or try logging in.');
-    } else if (error.message.includes('password')) {
-      showError('Password does not meet security requirements. Please choose a stronger password.');
-    } else if (error.message.includes('validation')) {
-      showError('Please check your input and try again.');
+    if (error.message.includes("email already exists")) {
+      showError(
+        "This email is already registered. Please use a different email or try logging in.",
+      );
+    } else if (error.message.includes("password")) {
+      showError(
+        "Password does not meet security requirements. Please choose a stronger password.",
+      );
+    } else if (error.message.includes("validation")) {
+      showError("Please check your input and try again.");
     } else {
-      showError('Registration failed. Please try again later.');
+      showError("Registration failed. Please try again later.");
     }
-    
+
     throw error;
   }
 }
@@ -97,14 +103,14 @@ async function registrationWithValidation(formData: {
   // Client-side validation
   const errors = validateRegistrationData(formData);
   if (errors.length > 0) {
-    throw new Error(`Validation failed: ${errors.join(', ')}`);
+    throw new Error(`Validation failed: ${errors.join(", ")}`);
   }
 
   // Prepare registration data
   const userData = {
     email: formData.email.toLowerCase().trim(),
     name: formData.name.trim(),
-    password: formData.password
+    password: formData.password,
   };
 
   return await authApi.register(userData);
@@ -121,25 +127,25 @@ function validateRegistrationData(data: {
   // Email validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(data.email)) {
-    errors.push('Please enter a valid email address');
+    errors.push("Please enter a valid email address");
   }
 
   // Name validation
   if (data.name.length < 2) {
-    errors.push('Name must be at least 2 characters long');
+    errors.push("Name must be at least 2 characters long");
   }
 
   // Password validation
   if (data.password.length < 8) {
-    errors.push('Password must be at least 8 characters long');
+    errors.push("Password must be at least 8 characters long");
   }
   if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(data.password)) {
-    errors.push('Password must contain uppercase, lowercase, and number');
+    errors.push("Password must contain uppercase, lowercase, and number");
   }
 
   // Confirm password
   if (data.password !== data.confirmPassword) {
-    errors.push('Passwords do not match');
+    errors.push("Passwords do not match");
   }
 
   return errors;
@@ -151,7 +157,7 @@ function validateRegistrationData(data: {
 Authenticates existing users and establishes secure sessions.
 
 ```typescript
-async function login(loginData: AuthLoginRequest): Promise<AuthLoginResponse>
+async function login(loginData: AuthLoginRequest): Promise<AuthLoginResponse>;
 ```
 
 **Parameters:**
@@ -168,15 +174,15 @@ async function login(loginData: AuthLoginRequest): Promise<AuthLoginResponse>
 async function handleUserLogin() {
   try {
     const credentials = {
-      email: 'john.doe@example.com',
-      password: 'SecurePassword123!'
+      email: "john.doe@example.com",
+      password: "SecurePassword123!",
     };
 
     const response = await authApi.login(credentials);
-    
-    console.log('Login successful:', {
+
+    console.log("Login successful:", {
       user: response.user,
-      tokenType: response.token_type
+      tokenType: response.token_type,
     });
 
     // Store authentication data
@@ -186,14 +192,14 @@ async function handleUserLogin() {
     updateUserSession(response.user);
 
     // Redirect to intended destination
-    const returnUrl = sessionStorage.getItem('returnUrl') || '/dashboard';
-    sessionStorage.removeItem('returnUrl');
+    const returnUrl = sessionStorage.getItem("returnUrl") || "/dashboard";
+    sessionStorage.removeItem("returnUrl");
     window.location.href = returnUrl;
 
     return response;
   } catch (error) {
-    console.error('Login failed:', error.message);
-    
+    console.error("Login failed:", error.message);
+
     handleLoginError(error);
     throw error;
   }
@@ -201,49 +207,58 @@ async function handleUserLogin() {
 
 function storeAuthenticationData(authResponse: AuthLoginResponse) {
   // Store tokens securely
-  localStorage.setItem('access_token', authResponse.access_token);
-  localStorage.setItem('refresh_token', authResponse.refresh_token);
-  localStorage.setItem('token_type', authResponse.token_type);
-  
+  localStorage.setItem("access_token", authResponse.access_token);
+  localStorage.setItem("refresh_token", authResponse.refresh_token);
+  localStorage.setItem("token_type", authResponse.token_type);
+
   // Store user data (excluding sensitive info)
   const userData = {
     id: authResponse.user.id,
     email: authResponse.user.email,
     name: authResponse.user.name,
-    role: authResponse.user.role
+    role: authResponse.user.role,
   };
-  localStorage.setItem('user_data', JSON.stringify(userData));
+  localStorage.setItem("user_data", JSON.stringify(userData));
 
   // Set session timestamp
-  localStorage.setItem('login_timestamp', new Date().toISOString());
+  localStorage.setItem("login_timestamp", new Date().toISOString());
 }
 
 function handleLoginError(error: Error) {
-  if (error.message.includes('invalid credentials')) {
-    showError('Invalid email or password. Please check your credentials and try again.');
-  } else if (error.message.includes('account locked')) {
-    showError('Your account has been temporarily locked due to too many failed login attempts.');
-  } else if (error.message.includes('email not verified')) {
-    showError('Please verify your email address before logging in.');
-  } else if (error.message.includes('network')) {
-    showError('Connection error. Please check your internet connection and try again.');
+  if (error.message.includes("invalid credentials")) {
+    showError(
+      "Invalid email or password. Please check your credentials and try again.",
+    );
+  } else if (error.message.includes("account locked")) {
+    showError(
+      "Your account has been temporarily locked due to too many failed login attempts.",
+    );
+  } else if (error.message.includes("email not verified")) {
+    showError("Please verify your email address before logging in.");
+  } else if (error.message.includes("network")) {
+    showError(
+      "Connection error. Please check your internet connection and try again.",
+    );
   } else {
-    showError('Login failed. Please try again later.');
+    showError("Login failed. Please try again later.");
   }
 }
 
 // Login with remember me functionality
-async function loginWithRememberMe(credentials: AuthLoginRequest, rememberMe: boolean) {
+async function loginWithRememberMe(
+  credentials: AuthLoginRequest,
+  rememberMe: boolean,
+) {
   const response = await authApi.login(credentials);
-  
+
   if (rememberMe) {
     // Store tokens in localStorage for persistence
     storeAuthenticationData(response);
   } else {
     // Store tokens in sessionStorage for session-only persistence
-    sessionStorage.setItem('access_token', response.access_token);
-    sessionStorage.setItem('refresh_token', response.refresh_token);
-    sessionStorage.setItem('token_type', response.token_type);
+    sessionStorage.setItem("access_token", response.access_token);
+    sessionStorage.setItem("refresh_token", response.refresh_token);
+    sessionStorage.setItem("token_type", response.token_type);
   }
 
   return response;
@@ -255,7 +270,7 @@ async function loginWithRememberMe(credentials: AuthLoginRequest, rememberMe: bo
 Securely terminates user sessions and clears authentication data.
 
 ```typescript
-async function logout(): Promise<AuthLogoutResponse>
+async function logout(): Promise<AuthLogoutResponse>;
 ```
 
 **Returns:**
@@ -269,8 +284,8 @@ async function handleUserLogout() {
   try {
     // Perform server-side logout
     const response = await authApi.logout();
-    
-    console.log('Logout successful:', response.message);
+
+    console.log("Logout successful:", response.message);
 
     // Clear all authentication data
     clearAuthenticationData();
@@ -279,50 +294,48 @@ async function handleUserLogout() {
     clearUserSession();
 
     // Redirect to login page
-    window.location.href = '/login';
+    window.location.href = "/login";
 
     return response;
   } catch (error) {
-    console.error('Logout failed:', error.message);
-    
+    console.error("Logout failed:", error.message);
+
     // Even if server logout fails, clear local data
     clearAuthenticationData();
     clearUserSession();
-    
+
     // Still redirect to login
-    window.location.href = '/login';
+    window.location.href = "/login";
   }
 }
 
 function clearAuthenticationData() {
   // Remove tokens and user data
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('refresh_token');
-  localStorage.removeItem('token_type');
-  localStorage.removeItem('user_data');
-  localStorage.removeItem('login_timestamp');
-  
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("token_type");
+  localStorage.removeItem("user_data");
+  localStorage.removeItem("login_timestamp");
+
   // Clear session storage as well
-  sessionStorage.removeItem('access_token');
-  sessionStorage.removeItem('refresh_token');
-  sessionStorage.removeItem('token_type');
-  sessionStorage.removeItem('returnUrl');
+  sessionStorage.removeItem("access_token");
+  sessionStorage.removeItem("refresh_token");
+  sessionStorage.removeItem("token_type");
+  sessionStorage.removeItem("returnUrl");
 }
 
 function clearUserSession() {
   // Clear any application-specific state
   // This would be customized based on your state management solution
-  
   // Example: Clear Zustand store
   // useAuthStore.getState().clearUser();
-  
   // Example: Clear React Query cache
   // queryClient.clear();
 }
 
 // Automatic logout on tab close
-window.addEventListener('beforeunload', () => {
-  const rememberMe = localStorage.getItem('access_token');
+window.addEventListener("beforeunload", () => {
+  const rememberMe = localStorage.getItem("access_token");
   if (!rememberMe) {
     // Only auto-logout if not using "remember me"
     authApi.logout().catch(console.error);
@@ -335,7 +348,9 @@ window.addEventListener('beforeunload', () => {
 Automatically refreshes JWT access tokens to maintain user sessions.
 
 ```typescript
-async function refreshToken(refreshToken: string): Promise<AuthTokenRefreshResponse>
+async function refreshToken(
+  refreshToken: string,
+): Promise<AuthTokenRefreshResponse>;
 ```
 
 **Parameters:**
@@ -351,35 +366,38 @@ async function refreshToken(refreshToken: string): Promise<AuthTokenRefreshRespo
 ```typescript
 async function handleTokenRefresh() {
   try {
-    const storedRefreshToken = localStorage.getItem('refresh_token') || 
-                              sessionStorage.getItem('refresh_token');
-    
+    const storedRefreshToken =
+      localStorage.getItem("refresh_token") ||
+      sessionStorage.getItem("refresh_token");
+
     if (!storedRefreshToken) {
-      throw new Error('No refresh token available');
+      throw new Error("No refresh token available");
     }
 
     const response = await authApi.refreshToken(storedRefreshToken);
-    
-    console.log('Token refreshed successfully');
+
+    console.log("Token refreshed successfully");
 
     // Update stored tokens
-    const storage = localStorage.getItem('refresh_token') ? localStorage : sessionStorage;
-    storage.setItem('access_token', response.access_token);
-    storage.setItem('token_type', response.token_type);
-    
+    const storage = localStorage.getItem("refresh_token")
+      ? localStorage
+      : sessionStorage;
+    storage.setItem("access_token", response.access_token);
+    storage.setItem("token_type", response.token_type);
+
     // Update refresh token if provided
     if (response.refresh_token) {
-      storage.setItem('refresh_token', response.refresh_token);
+      storage.setItem("refresh_token", response.refresh_token);
     }
 
     return response;
   } catch (error) {
-    console.error('Token refresh failed:', error.message);
-    
+    console.error("Token refresh failed:", error.message);
+
     // If refresh fails, user needs to log in again
     clearAuthenticationData();
-    window.location.href = '/login';
-    
+    window.location.href = "/login";
+
     throw error;
   }
 }
@@ -390,9 +408,9 @@ class TokenManager {
 
   async getValidToken(): Promise<string> {
     const token = this.getStoredToken();
-    
+
     if (!token) {
-      throw new Error('No access token available');
+      throw new Error("No access token available");
     }
 
     // Check if token is expired or expiring soon
@@ -411,7 +429,7 @@ class TokenManager {
     }
 
     this.refreshPromise = handleTokenRefresh();
-    
+
     try {
       const response = await this.refreshPromise;
       return response.access_token;
@@ -421,22 +439,27 @@ class TokenManager {
   }
 
   private getStoredToken(): string | null {
-    return localStorage.getItem('access_token') || 
-           sessionStorage.getItem('access_token');
+    return (
+      localStorage.getItem("access_token") ||
+      sessionStorage.getItem("access_token")
+    );
   }
 
   private isTokenExpired(token: string): boolean {
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const payload = JSON.parse(atob(token.split(".")[1]));
       return payload.exp * 1000 < Date.now();
     } catch {
       return true; // Assume expired if we can't parse
     }
   }
 
-  private isTokenExpiringSoon(token: string, bufferMinutes: number = 5): boolean {
+  private isTokenExpiringSoon(
+    token: string,
+    bufferMinutes: number = 5,
+  ): boolean {
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const payload = JSON.parse(atob(token.split(".")[1]));
       const bufferMs = bufferMinutes * 60 * 1000;
       return payload.exp * 1000 < Date.now() + bufferMs;
     } catch {
@@ -453,8 +476,12 @@ export const tokenManager = new TokenManager();
 Complete password reset workflow with email verification.
 
 ```typescript
-async function forgotPassword(resetRequest: AuthPasswordResetRequest): Promise<AuthPasswordResetResponse>
-async function resetPassword(resetRequest: AuthPasswordResetConfirmRequest): Promise<AuthPasswordResetConfirmResponse>
+async function forgotPassword(
+  resetRequest: AuthPasswordResetRequest,
+): Promise<AuthPasswordResetResponse>;
+async function resetPassword(
+  resetRequest: AuthPasswordResetConfirmRequest,
+): Promise<AuthPasswordResetConfirmResponse>;
 ```
 
 **Example Usage:**
@@ -464,23 +491,25 @@ async function resetPassword(resetRequest: AuthPasswordResetConfirmRequest): Pro
 async function requestPasswordReset(email: string) {
   try {
     const response = await authApi.forgotPassword({ email });
-    
-    console.log('Password reset email sent:', response.message);
-    
-    showSuccess('Password reset instructions have been sent to your email address.');
-    
+
+    console.log("Password reset email sent:", response.message);
+
+    showSuccess(
+      "Password reset instructions have been sent to your email address.",
+    );
+
     return response;
   } catch (error) {
-    console.error('Password reset request failed:', error.message);
-    
-    if (error.message.includes('not found')) {
-      showError('No account found with this email address.');
-    } else if (error.message.includes('rate limit')) {
-      showError('Too many reset requests. Please wait before trying again.');
+    console.error("Password reset request failed:", error.message);
+
+    if (error.message.includes("not found")) {
+      showError("No account found with this email address.");
+    } else if (error.message.includes("rate limit")) {
+      showError("Too many reset requests. Please wait before trying again.");
     } else {
-      showError('Failed to send reset email. Please try again later.');
+      showError("Failed to send reset email. Please try again later.");
     }
-    
+
     throw error;
   }
 }
@@ -490,32 +519,36 @@ async function confirmPasswordReset(token: string, newPassword: string) {
   try {
     const resetRequest = {
       token,
-      new_password: newPassword
+      new_password: newPassword,
     };
 
     const response = await authApi.resetPassword(resetRequest);
-    
-    console.log('Password reset successful:', response.message);
-    
-    showSuccess('Your password has been reset successfully. Please log in with your new password.');
-    
+
+    console.log("Password reset successful:", response.message);
+
+    showSuccess(
+      "Your password has been reset successfully. Please log in with your new password.",
+    );
+
     // Redirect to login page
     setTimeout(() => {
-      window.location.href = '/login';
+      window.location.href = "/login";
     }, 2000);
-    
+
     return response;
   } catch (error) {
-    console.error('Password reset failed:', error.message);
-    
-    if (error.message.includes('invalid token')) {
-      showError('Invalid or expired reset token. Please request a new password reset.');
-    } else if (error.message.includes('password')) {
-      showError('Password does not meet security requirements.');
+    console.error("Password reset failed:", error.message);
+
+    if (error.message.includes("invalid token")) {
+      showError(
+        "Invalid or expired reset token. Please request a new password reset.",
+      );
+    } else if (error.message.includes("password")) {
+      showError("Password does not meet security requirements.");
     } else {
-      showError('Failed to reset password. Please try again.');
+      showError("Failed to reset password. Please try again.");
     }
-    
+
     throw error;
   }
 }
@@ -525,17 +558,23 @@ class PasswordResetFlow {
   async handleForgotPassword(email: string) {
     // Validate email format
     if (!this.isValidEmail(email)) {
-      throw new Error('Please enter a valid email address');
+      throw new Error("Please enter a valid email address");
     }
 
     return await requestPasswordReset(email);
   }
 
-  async handlePasswordReset(token: string, password: string, confirmPassword: string) {
+  async handlePasswordReset(
+    token: string,
+    password: string,
+    confirmPassword: string,
+  ) {
     // Validate new password
     const passwordErrors = this.validatePassword(password, confirmPassword);
     if (passwordErrors.length > 0) {
-      throw new Error(`Password validation failed: ${passwordErrors.join(', ')}`);
+      throw new Error(
+        `Password validation failed: ${passwordErrors.join(", ")}`,
+      );
     }
 
     return await confirmPasswordReset(token, password);
@@ -546,19 +585,22 @@ class PasswordResetFlow {
     return emailRegex.test(email);
   }
 
-  private validatePassword(password: string, confirmPassword: string): string[] {
+  private validatePassword(
+    password: string,
+    confirmPassword: string,
+  ): string[] {
     const errors: string[] = [];
 
     if (password.length < 8) {
-      errors.push('Password must be at least 8 characters long');
+      errors.push("Password must be at least 8 characters long");
     }
 
     if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-      errors.push('Password must contain uppercase, lowercase, and number');
+      errors.push("Password must contain uppercase, lowercase, and number");
     }
 
     if (password !== confirmPassword) {
-      errors.push('Passwords do not match');
+      errors.push("Passwords do not match");
     }
 
     return errors;
@@ -571,7 +613,7 @@ class PasswordResetFlow {
 Retrieves current user profile information and session details.
 
 ```typescript
-async function getCurrentUser(): Promise<User>
+async function getCurrentUser(): Promise<User>;
 ```
 
 **Returns:**
@@ -584,57 +626,57 @@ async function getCurrentUser(): Promise<User>
 async function loadUserProfile() {
   try {
     const user = await authApi.getCurrentUser();
-    
-    console.log('User profile loaded:', {
+
+    console.log("User profile loaded:", {
       id: user.id,
       email: user.email,
       name: user.name,
-      role: user.role
+      role: user.role,
     });
 
     // Update UI with user information
     updateUserInterface(user);
-    
+
     // Store user data locally
-    localStorage.setItem('user_data', JSON.stringify(user));
-    
+    localStorage.setItem("user_data", JSON.stringify(user));
+
     return user;
   } catch (error) {
-    console.error('Failed to load user profile:', error.message);
-    
-    if (error.message.includes('unauthorized')) {
+    console.error("Failed to load user profile:", error.message);
+
+    if (error.message.includes("unauthorized")) {
       // Token might be expired or invalid
-      console.log('User not authenticated, redirecting to login');
+      console.log("User not authenticated, redirecting to login");
       clearAuthenticationData();
-      window.location.href = '/login';
+      window.location.href = "/login";
     } else {
-      showError('Failed to load user profile. Please refresh the page.');
+      showError("Failed to load user profile. Please refresh the page.");
     }
-    
+
     throw error;
   }
 }
 
 function updateUserInterface(user: User) {
   // Update navigation with user name
-  const userNameElement = document.getElementById('user-name');
+  const userNameElement = document.getElementById("user-name");
   if (userNameElement) {
     userNameElement.textContent = user.name;
   }
 
   // Update avatar or profile picture
-  const avatarElement = document.getElementById('user-avatar');
+  const avatarElement = document.getElementById("user-avatar");
   if (avatarElement) {
     avatarElement.src = user.avatar_url || generateAvatarUrl(user.name);
   }
 
   // Show/hide admin features based on role
-  const adminElements = document.querySelectorAll('.admin-only');
-  adminElements.forEach(element => {
-    if (user.role === 'admin') {
-      element.style.display = 'block';
+  const adminElements = document.querySelectorAll(".admin-only");
+  adminElements.forEach((element) => {
+    if (user.role === "admin") {
+      element.style.display = "block";
     } else {
-      element.style.display = 'none';
+      element.style.display = "none";
     }
   });
 }
@@ -642,25 +684,28 @@ function updateUserInterface(user: User) {
 function generateAvatarUrl(name: string): string {
   // Generate a default avatar URL based on user name
   const initials = name
-    .split(' ')
-    .map(word => word[0])
-    .join('')
+    .split(" ")
+    .map((word) => word[0])
+    .join("")
     .toUpperCase();
-  
+
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=0D8ABC&color=fff`;
 }
 
 // Automatic profile refresh
 async function setupProfileRefresh() {
   // Refresh user profile every 30 minutes
-  setInterval(async () => {
-    try {
-      await loadUserProfile();
-      console.log('User profile refreshed');
-    } catch (error) {
-      console.error('Profile refresh failed:', error.message);
-    }
-  }, 30 * 60 * 1000); // 30 minutes
+  setInterval(
+    async () => {
+      try {
+        await loadUserProfile();
+        console.log("User profile refreshed");
+      } catch (error) {
+        console.error("Profile refresh failed:", error.message);
+      }
+    },
+    30 * 60 * 1000,
+  ); // 30 minutes
 }
 ```
 
@@ -670,23 +715,23 @@ async function setupProfileRefresh() {
 
 ```typescript
 interface AuthRegisterRequest {
-  email: string;           // User email address (required)
-  name?: string;           // User full name (optional, defaults to email prefix)
-  password: string;        // User password (required)
+  email: string; // User email address (required)
+  name?: string; // User full name (optional, defaults to email prefix)
+  password: string; // User password (required)
 }
 
 interface AuthLoginRequest {
-  email: string;           // User email address
-  password: string;        // User password
+  email: string; // User email address
+  password: string; // User password
 }
 
 interface AuthPasswordResetRequest {
-  email: string;           // Email address for password reset
+  email: string; // Email address for password reset
 }
 
 interface AuthPasswordResetConfirmRequest {
-  token: string;           // Password reset token from email
-  new_password: string;    // New password to set
+  token: string; // Password reset token from email
+  new_password: string; // New password to set
 }
 ```
 
@@ -694,35 +739,35 @@ interface AuthPasswordResetConfirmRequest {
 
 ```typescript
 interface AuthRegisterResponse {
-  user: User;              // User profile data
-  access_token: string;    // JWT access token
-  refresh_token: string;   // JWT refresh token
-  token_type: string;      // Token type (always "bearer")
+  user: User; // User profile data
+  access_token: string; // JWT access token
+  refresh_token: string; // JWT refresh token
+  token_type: string; // Token type (always "bearer")
 }
 
 interface AuthLoginResponse {
-  user: User;              // User profile data
-  access_token: string;    // JWT access token
-  refresh_token: string;   // JWT refresh token
-  token_type: string;      // Token type (always "bearer")
+  user: User; // User profile data
+  access_token: string; // JWT access token
+  refresh_token: string; // JWT refresh token
+  token_type: string; // Token type (always "bearer")
 }
 
 interface AuthLogoutResponse {
-  message: string;         // Logout confirmation message
+  message: string; // Logout confirmation message
 }
 
 interface AuthTokenRefreshResponse {
-  access_token: string;    // New JWT access token
-  refresh_token?: string;  // New refresh token (if rotated)
-  token_type: string;      // Token type (always "bearer")
+  access_token: string; // New JWT access token
+  refresh_token?: string; // New refresh token (if rotated)
+  token_type: string; // Token type (always "bearer")
 }
 
 interface AuthPasswordResetResponse {
-  message: string;         // Reset request confirmation
+  message: string; // Reset request confirmation
 }
 
 interface AuthPasswordResetConfirmResponse {
-  message: string;         // Password reset confirmation
+  message: string; // Password reset confirmation
 }
 ```
 
@@ -730,15 +775,15 @@ interface AuthPasswordResetConfirmResponse {
 
 ```typescript
 interface User {
-  id: string;              // Unique user identifier
-  email: string;           // User email address
-  name: string;            // User full name
-  role: string;            // User role (user, admin, etc.)
-  avatar_url?: string;     // Profile picture URL (optional)
-  created_at: string;      // Account creation timestamp
-  updated_at: string;      // Last profile update timestamp
+  id: string; // Unique user identifier
+  email: string; // User email address
+  name: string; // User full name
+  role: string; // User role (user, admin, etc.)
+  avatar_url?: string; // Profile picture URL (optional)
+  created_at: string; // Account creation timestamp
+  updated_at: string; // Last profile update timestamp
   email_verified: boolean; // Email verification status
-  is_active: boolean;      // Account active status
+  is_active: boolean; // Account active status
 }
 ```
 
@@ -747,7 +792,7 @@ interface User {
 ### Complete Authentication Service
 
 ```typescript
-import { authApi } from '@/lib/api';
+import { authApi } from "@/lib/api";
 
 class AuthenticationService {
   private tokenManager = new TokenManager();
@@ -763,25 +808,25 @@ class AuthenticationService {
     // Validate input
     const errors = this.validateRegistrationData(userData);
     if (errors.length > 0) {
-      throw new Error(`Validation failed: ${errors.join(', ')}`);
+      throw new Error(`Validation failed: ${errors.join(", ")}`);
     }
 
     try {
       const response = await authApi.register({
         email: userData.email,
         name: userData.name,
-        password: userData.password
+        password: userData.password,
       });
 
       // Store authentication data
       this.storeAuthData(response);
-      
+
       // Emit registration event
-      this.emit('userRegistered', response.user);
-      
+      this.emit("userRegistered", response.user);
+
       return response;
     } catch (error) {
-      this.emit('registrationFailed', error);
+      this.emit("registrationFailed", error);
       throw error;
     }
   }
@@ -790,19 +835,19 @@ class AuthenticationService {
   async login(credentials: AuthLoginRequest, rememberMe: boolean = false) {
     try {
       const response = await authApi.login(credentials);
-      
+
       // Store authentication data
       this.storeAuthData(response, rememberMe);
-      
+
       // Load full user profile
       const user = await this.loadUserProfile();
-      
+
       // Emit login event
-      this.emit('userLoggedIn', user);
-      
+      this.emit("userLoggedIn", user);
+
       return response;
     } catch (error) {
-      this.emit('loginFailed', error);
+      this.emit("loginFailed", error);
       throw error;
     }
   }
@@ -812,11 +857,11 @@ class AuthenticationService {
     try {
       await authApi.logout();
     } catch (error) {
-      console.error('Server logout failed:', error.message);
+      console.error("Server logout failed:", error.message);
     } finally {
       // Always clear local data
       this.clearAuthData();
-      this.emit('userLoggedOut');
+      this.emit("userLoggedOut");
     }
   }
 
@@ -833,13 +878,13 @@ class AuthenticationService {
   // Get current user with caching
   async getCurrentUser(): Promise<User | null> {
     try {
-      if (!await this.isAuthenticated()) {
+      if (!(await this.isAuthenticated())) {
         return null;
       }
 
       return await authApi.getCurrentUser();
     } catch (error) {
-      console.error('Failed to get current user:', error.message);
+      console.error("Failed to get current user:", error.message);
       return null;
     }
   }
@@ -848,48 +893,56 @@ class AuthenticationService {
   async requestPasswordReset(email: string) {
     try {
       const response = await authApi.forgotPassword({ email });
-      this.emit('passwordResetRequested', { email });
+      this.emit("passwordResetRequested", { email });
       return response;
     } catch (error) {
-      this.emit('passwordResetFailed', error);
+      this.emit("passwordResetFailed", error);
       throw error;
     }
   }
 
   async confirmPasswordReset(token: string, newPassword: string) {
     try {
-      const response = await authApi.resetPassword({ token, new_password: newPassword });
-      this.emit('passwordResetConfirmed');
+      const response = await authApi.resetPassword({
+        token,
+        new_password: newPassword,
+      });
+      this.emit("passwordResetConfirmed");
       return response;
     } catch (error) {
-      this.emit('passwordResetConfirmationFailed', error);
+      this.emit("passwordResetConfirmationFailed", error);
       throw error;
     }
   }
 
   // Utility methods
-  private storeAuthData(authResponse: AuthLoginResponse | AuthRegisterResponse, persistent: boolean = true) {
+  private storeAuthData(
+    authResponse: AuthLoginResponse | AuthRegisterResponse,
+    persistent: boolean = true,
+  ) {
     const storage = persistent ? localStorage : sessionStorage;
-    
-    storage.setItem('access_token', authResponse.access_token);
-    storage.setItem('refresh_token', authResponse.refresh_token);
-    storage.setItem('token_type', authResponse.token_type);
-    
+
+    storage.setItem("access_token", authResponse.access_token);
+    storage.setItem("refresh_token", authResponse.refresh_token);
+    storage.setItem("token_type", authResponse.token_type);
+
     const userData = {
       id: authResponse.user.id,
       email: authResponse.user.email,
       name: authResponse.user.name,
-      role: authResponse.user.role
+      role: authResponse.user.role,
     };
-    storage.setItem('user_data', JSON.stringify(userData));
+    storage.setItem("user_data", JSON.stringify(userData));
   }
 
   private clearAuthData() {
     // Clear localStorage
-    ['access_token', 'refresh_token', 'token_type', 'user_data'].forEach(key => {
-      localStorage.removeItem(key);
-      sessionStorage.removeItem(key);
-    });
+    ["access_token", "refresh_token", "token_type", "user_data"].forEach(
+      (key) => {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+      },
+    );
   }
 
   private async loadUserProfile(): Promise<User> {
@@ -906,21 +959,21 @@ class AuthenticationService {
 
     // Email validation
     if (!this.isValidEmail(data.email)) {
-      errors.push('Invalid email format');
+      errors.push("Invalid email format");
     }
 
     // Name validation
     if (data.name.length < 2) {
-      errors.push('Name must be at least 2 characters');
+      errors.push("Name must be at least 2 characters");
     }
 
     // Password validation
     if (data.password.length < 8) {
-      errors.push('Password must be at least 8 characters');
+      errors.push("Password must be at least 8 characters");
     }
 
     if (data.password !== data.confirmPassword) {
-      errors.push('Passwords do not match');
+      errors.push("Passwords do not match");
     }
 
     return errors;
@@ -932,7 +985,9 @@ class AuthenticationService {
   }
 
   private emit(eventType: string, data?: any) {
-    this.eventEmitter.dispatchEvent(new CustomEvent(eventType, { detail: data }));
+    this.eventEmitter.dispatchEvent(
+      new CustomEvent(eventType, { detail: data }),
+    );
   }
 
   // Event listeners
@@ -951,8 +1006,8 @@ export const authService = new AuthenticationService();
 ### React Hook Integration
 
 ```typescript
-import { useState, useEffect } from 'react';
-import { authService } from './auth-service';
+import { useState, useEffect } from "react";
+import { authService } from "./auth-service";
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -961,7 +1016,7 @@ export function useAuth() {
 
   useEffect(() => {
     loadUser();
-    
+
     // Listen for auth events
     const handleLogin = (event: CustomEvent) => {
       setUser(event.detail);
@@ -977,14 +1032,14 @@ export function useAuth() {
       setError(event.detail.message);
     };
 
-    authService.addEventListener('userLoggedIn', handleLogin);
-    authService.addEventListener('userLoggedOut', handleLogout);
-    authService.addEventListener('loginFailed', handleError);
+    authService.addEventListener("userLoggedIn", handleLogin);
+    authService.addEventListener("userLoggedOut", handleLogout);
+    authService.addEventListener("loginFailed", handleError);
 
     return () => {
-      authService.removeEventListener('userLoggedIn', handleLogin);
-      authService.removeEventListener('userLoggedOut', handleLogout);
-      authService.removeEventListener('loginFailed', handleError);
+      authService.removeEventListener("userLoggedIn", handleLogin);
+      authService.removeEventListener("userLoggedOut", handleLogout);
+      authService.removeEventListener("loginFailed", handleError);
     };
   }, []);
 
@@ -994,7 +1049,7 @@ export function useAuth() {
       const currentUser = await authService.getCurrentUser();
       setUser(currentUser);
     } catch (error) {
-      console.error('Failed to load user:', error.message);
+      console.error("Failed to load user:", error.message);
       setUser(null);
     } finally {
       setLoading(false);
@@ -1037,7 +1092,7 @@ export function useAuth() {
     try {
       await authService.logout();
     } catch (error) {
-      console.error('Logout failed:', error.message);
+      console.error("Logout failed:", error.message);
     } finally {
       setLoading(false);
     }
@@ -1051,7 +1106,7 @@ export function useAuth() {
     login,
     register,
     logout,
-    clearError: () => setError(null)
+    clearError: () => setError(null),
   };
 }
 ```
@@ -1089,21 +1144,21 @@ class AuthErrorHandler {
     console.error(`Authentication error in ${context}:`, error.message);
 
     // Network errors
-    if (error.message.includes('network') || error.message.includes('fetch')) {
-      return 'Connection error. Please check your internet connection and try again.';
+    if (error.message.includes("network") || error.message.includes("fetch")) {
+      return "Connection error. Please check your internet connection and try again.";
     }
 
     // Authentication specific errors
     switch (context) {
-      case 'register':
+      case "register":
         return this.handleRegistrationError(error);
-      case 'login':
+      case "login":
         return this.handleLoginError(error);
-      case 'logout':
+      case "logout":
         return this.handleLogoutError(error);
-      case 'refresh':
+      case "refresh":
         return this.handleRefreshError(error);
-      case 'password-reset':
+      case "password-reset":
         return this.handlePasswordResetError(error);
       default:
         return `Authentication failed: ${error.message}`;
@@ -1111,44 +1166,44 @@ class AuthErrorHandler {
   }
 
   private static handleRegistrationError(error: Error): string {
-    if (error.message.includes('email already exists')) {
-      return 'This email is already registered. Please use a different email or try logging in.';
-    } else if (error.message.includes('password')) {
-      return 'Password does not meet security requirements. Please choose a stronger password.';
-    } else if (error.message.includes('validation')) {
-      return 'Please check your input and try again.';
+    if (error.message.includes("email already exists")) {
+      return "This email is already registered. Please use a different email or try logging in.";
+    } else if (error.message.includes("password")) {
+      return "Password does not meet security requirements. Please choose a stronger password.";
+    } else if (error.message.includes("validation")) {
+      return "Please check your input and try again.";
     }
-    return 'Registration failed. Please try again later.';
+    return "Registration failed. Please try again later.";
   }
 
   private static handleLoginError(error: Error): string {
-    if (error.message.includes('invalid credentials')) {
-      return 'Invalid email or password. Please check your credentials and try again.';
-    } else if (error.message.includes('account locked')) {
-      return 'Your account has been temporarily locked due to too many failed login attempts.';
-    } else if (error.message.includes('email not verified')) {
-      return 'Please verify your email address before logging in.';
+    if (error.message.includes("invalid credentials")) {
+      return "Invalid email or password. Please check your credentials and try again.";
+    } else if (error.message.includes("account locked")) {
+      return "Your account has been temporarily locked due to too many failed login attempts.";
+    } else if (error.message.includes("email not verified")) {
+      return "Please verify your email address before logging in.";
     }
-    return 'Login failed. Please try again later.';
+    return "Login failed. Please try again later.";
   }
 
   private static handleLogoutError(error: Error): string {
-    return 'Logout completed locally. Server logout may have failed.';
+    return "Logout completed locally. Server logout may have failed.";
   }
 
   private static handleRefreshError(error: Error): string {
-    return 'Session expired. Please log in again.';
+    return "Session expired. Please log in again.";
   }
 
   private static handlePasswordResetError(error: Error): string {
-    if (error.message.includes('not found')) {
-      return 'No account found with this email address.';
-    } else if (error.message.includes('rate limit')) {
-      return 'Too many reset requests. Please wait before trying again.';
-    } else if (error.message.includes('invalid token')) {
-      return 'Invalid or expired reset token. Please request a new password reset.';
+    if (error.message.includes("not found")) {
+      return "No account found with this email address.";
+    } else if (error.message.includes("rate limit")) {
+      return "Too many reset requests. Please wait before trying again.";
+    } else if (error.message.includes("invalid token")) {
+      return "Invalid or expired reset token. Please request a new password reset.";
     }
-    return 'Password reset failed. Please try again later.';
+    return "Password reset failed. Please try again later.";
   }
 }
 ```
@@ -1173,15 +1228,16 @@ class TokenCache {
 
   static getToken(): string | null {
     const now = Date.now();
-    if (this.tokenCache && (now - this.cacheTimestamp) < this.CACHE_DURATION) {
+    if (this.tokenCache && now - this.cacheTimestamp < this.CACHE_DURATION) {
       return this.tokenCache;
     }
 
     // Cache expired, get fresh token
-    this.tokenCache = localStorage.getItem('access_token') || 
-                     sessionStorage.getItem('access_token');
+    this.tokenCache =
+      localStorage.getItem("access_token") ||
+      sessionStorage.getItem("access_token");
     this.cacheTimestamp = now;
-    
+
     return this.tokenCache;
   }
 
@@ -1199,7 +1255,7 @@ class TokenCache {
 This module integrates with the following backend endpoints:
 
 - `POST /api/v1/auth/register` - User registration
-- `POST /api/v1/auth/login` - User authentication  
+- `POST /api/v1/auth/login` - User authentication
 - `POST /api/v1/auth/logout` - Session termination
 - `POST /api/v1/auth/refresh-token` - Token refresh
 - `GET /api/v1/auth/me` - Current user profile

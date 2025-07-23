@@ -32,6 +32,7 @@ app.add_middleware(RequestLoggingMiddleware)
 The middleware layer handles application-wide concerns that span across all API endpoints:
 
 #### Core Middleware Responsibilities
+
 - **Request Tracking** - Unique identifier generation for request correlation
 - **Observability** - Comprehensive logging and monitoring integration
 - **Context Management** - Request-scoped data and context variables
@@ -42,6 +43,7 @@ The middleware layer handles application-wide concerns that span across all API 
 HTTP requests flow through the middleware stack in a predictable order:
 
 #### Request Processing Flow
+
 1. **Request Reception** - Initial HTTP request processing
 2. **Middleware Chain** - Sequential middleware processing
 3. **Route Handler** - Business logic execution
@@ -55,6 +57,7 @@ HTTP requests flow through the middleware stack in a predictable order:
 The middleware system implements comprehensive request correlation for distributed tracing:
 
 #### Correlation Features
+
 - **Unique Request IDs** - UUID-based request identification
 - **Header Propagation** - Request ID passed through HTTP headers
 - **Context Variables** - Thread-local storage for request-scoped data
@@ -65,6 +68,7 @@ The middleware system implements comprehensive request correlation for distribut
 Middleware provides deep observability into application behavior:
 
 #### Observability Features
+
 - **Structured Logging** - JSON-formatted logs with correlation IDs
 - **Performance Metrics** - Request duration and throughput monitoring
 - **Error Tracking** - Exception logging with full request context
@@ -77,6 +81,7 @@ Middleware provides deep observability into application behavior:
 The middleware layer implements privacy-aware logging and monitoring:
 
 #### Privacy Features
+
 - **Sensitive Data Filtering** - Automatic removal of passwords and tokens
 - **Query Parameter Sanitization** - Safe logging of request parameters
 - **Header Protection** - Filtering of sensitive authentication headers
@@ -87,6 +92,7 @@ The middleware layer implements privacy-aware logging and monitoring:
 Middleware supports security monitoring and threat detection:
 
 #### Security Features
+
 - **Request Pattern Analysis** - Unusual request pattern detection
 - **Rate Limiting Support** - Integration with rate limiting systems
 - **Authentication Tracking** - User session and authentication logging
@@ -99,6 +105,7 @@ Middleware supports security monitoring and threat detection:
 Middleware is designed for minimal performance impact:
 
 #### Performance Features
+
 - **Async Operations** - Non-blocking request processing
 - **Minimal Overhead** - Lightweight request ID generation and logging
 - **Selective Processing** - Configurable path exclusions for health checks
@@ -109,6 +116,7 @@ Middleware is designed for minimal performance impact:
 Middleware supports horizontal scaling and high-throughput scenarios:
 
 #### Scalability Features
+
 - **Stateless Design** - No shared state between requests
 - **Context Isolation** - Proper request context separation
 - **Thread Safety** - Safe operation in concurrent environments
@@ -121,6 +129,7 @@ Middleware supports horizontal scaling and high-throughput scenarios:
 Middleware components support comprehensive configuration:
 
 #### Configuration Options
+
 - **Excluded Paths** - Skip logging for specific endpoints (health checks, metrics)
 - **Custom Loggers** - Integration with different logging systems
 - **Header Customization** - Configurable request ID header names
@@ -131,6 +140,7 @@ Middleware components support comprehensive configuration:
 Middleware integrates seamlessly with the broader application architecture:
 
 #### Integration Benefits
+
 - **FastAPI Native** - Built on FastAPI/Starlette middleware patterns
 - **Dependency Injection** - Compatible with application dependency system
 - **Configuration Management** - Integration with application configuration
@@ -143,6 +153,7 @@ Middleware integrates seamlessly with the broader application architecture:
 Middleware provides comprehensive error handling:
 
 #### Error Handling Features
+
 - **Exception Logging** - Full exception context with request correlation
 - **Error Propagation** - Proper exception re-raising after logging
 - **Recovery Patterns** - Graceful handling of middleware failures
@@ -153,6 +164,7 @@ Middleware provides comprehensive error handling:
 Middleware supports integration with monitoring and alerting systems:
 
 #### Monitoring Features
+
 - **Structured Log Output** - JSON logs compatible with log aggregation
 - **Metric Integration** - Prometheus/StatsD compatible metrics
 - **Alert Support** - Error pattern detection for alerting
@@ -165,6 +177,7 @@ Middleware supports integration with monitoring and alerting systems:
 Middleware provides excellent development experience:
 
 #### Development Features
+
 - **Local Debugging** - Detailed request information for development
 - **Request Tracing** - Complete request lifecycle visibility
 - **Performance Profiling** - Request timing information
@@ -175,6 +188,7 @@ Middleware provides excellent development experience:
 Comprehensive testing and quality measures:
 
 #### Quality Features
+
 - **Unit Testing** - Isolated middleware component testing
 - **Integration Testing** - End-to-end request flow testing
 - **Performance Testing** - Middleware overhead measurement
@@ -187,6 +201,7 @@ Comprehensive testing and quality measures:
 Middleware is designed for production deployment:
 
 #### Production Features
+
 - **High Performance** - Minimal latency overhead
 - **Reliability** - Robust error handling and recovery
 - **Observability** - Comprehensive monitoring and logging
@@ -197,6 +212,7 @@ Middleware is designed for production deployment:
 Production monitoring capabilities:
 
 #### Monitoring Capabilities
+
 - **Request Rate Monitoring** - Track application throughput
 - **Error Rate Tracking** - Monitor application health
 - **Performance Metrics** - Response time percentiles

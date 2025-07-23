@@ -16,17 +16,20 @@ Centralized environment configuration with type safety and validation using Zod 
 ### Configuration Categories
 
 #### API Configuration
+
 - **API_BASE_URL**: Backend API endpoint (default: http://localhost:8000)
 - **API_TIMEOUT**: Request timeout in milliseconds (default: 5000ms)
 - **WS_URL**: WebSocket endpoint (default: ws://localhost:8000/api/v1)
 
 #### Monitoring & Analytics
+
 - **SENTRY_DSN**: Error reporting service configuration
 - **ENABLE_ANALYTICS**: Privacy-focused analytics toggle (default: true)
 - **ENABLE_ERROR_REPORTING**: Global error reporting control (default: true)
 - **ENABLE_PERFORMANCE_MONITORING**: Performance tracking toggle (default: true)
 
 #### Application Metadata
+
 - **APP_VERSION**: Application version string (default: 0.1.0)
 - **APP_NAME**: Application display name (default: ReViewPoint)
 - **LOG_LEVEL**: Logging verbosity control (default: error)
@@ -60,11 +63,13 @@ if (isTestEnvironment) {
 ## Usage Patterns
 
 ### Environment Variable Loading
+
 - **Vite Integration**: Uses `import.meta.env` for Vite environment variables
-- **VITE_ Prefix**: All custom environment variables use VITE_ prefix
+- **VITE\_ Prefix**: All custom environment variables use VITE\_ prefix
 - **Fallback Strategy**: Graceful degradation with sensible defaults
 
 ### Configuration Access
+
 - Exported as validated `EnvironmentConfig` type
 - Used throughout application for consistent configuration access
 - Centralized configuration prevents scattered hardcoded values
@@ -78,7 +83,7 @@ if (isTestEnvironment) {
 ## Integration Points
 
 - **API Clients**: Provides base URLs and timeout configurations
-- **Monitoring**: Controls analytics and error reporting behavior  
+- **Monitoring**: Controls analytics and error reporting behavior
 - **WebSocket**: Configures real-time communication endpoints
 - **Feature Flags**: Works with feature flag system for environment-specific features
 

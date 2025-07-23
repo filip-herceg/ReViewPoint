@@ -39,10 +39,10 @@ export type ErrorType = "network" | "4xx" | "5xx" | "unknown";
 
 ```typescript
 export interface HandledError {
-  type: ErrorType;           // Classification of the error
-  status?: number;           // HTTP status code (if available)
-  message: string;           // Human-readable error message
-  original?: unknown;        // Original error object for debugging
+  type: ErrorType; // Classification of the error
+  status?: number; // HTTP status code (if available)
+  message: string; // Human-readable error message
+  original?: unknown; // Original error object for debugging
 }
 ```
 
@@ -60,7 +60,7 @@ export interface HandledError {
 Intelligently extracts meaningful error messages from various response data formats.
 
 ```typescript
-function extractErrorMessage(data: unknown): string
+function extractErrorMessage(data: unknown): string;
 ```
 
 **Message Extraction Logic:**
@@ -69,9 +69,10 @@ function extractErrorMessage(data: unknown): string
 2. **Object with `error` Property**: Extracts the error field if it's a string
 3. **Object with `message` Property**: Extracts the message field if it's a string
 4. **Fallback**: Returns "HTTP error" for unrecognizable formats
-  return "HTTP error";
-}
-```
+   return "HTTP error";
+   }
+
+````
 
 ### **Comprehensive Error Handler**
 
@@ -84,7 +85,7 @@ export function handleApiError(error: unknown): HandledError {
   // - Plain objects with error information
   // - Unknown/unexpected error types
 }
-```
+````
 
 ## Error Processing Logic
 
@@ -92,12 +93,13 @@ export function handleApiError(error: unknown): HandledError {
 
 ```typescript
 // Axios error identification
-const isAxiosError = typeof error === "object" && 
-                    error !== null && 
-                    "isAxiosError" in error;
+const isAxiosError =
+  typeof error === "object" && error !== null && "isAxiosError" in error;
 
 // Response extraction with type safety
-const getAxiosResponse = (err: unknown): { status?: number; data?: unknown } | undefined => {
+const getAxiosResponse = (
+  err: unknown,
+): { status?: number; data?: unknown } | undefined => {
   if (typeof err === "object" && err !== null && "response" in err) {
     const response = (err as { response?: unknown }).response;
     if (typeof response === "object" && response !== null) {
@@ -115,10 +117,10 @@ const getAxiosResponse = (err: unknown): { status?: number; data?: unknown } | u
 if (isAxiosError && !response) {
   const message = error instanceof Error ? error.message : "Network error";
   logger.error("Network error", error);
-  return { 
-    type: "network", 
-    message, 
-    original: error 
+  return {
+    type: "network",
+    message,
+    original: error,
   };
 }
 ```
@@ -129,22 +131,22 @@ if (isAxiosError && !response) {
 // 4xx Client Errors (400-499)
 if (status && status >= 400 && status < 500) {
   logger.warn(`4xx error (${status}):`, message, error);
-  return { 
-    type: "4xx", 
-    status, 
-    message, 
-    original: error 
+  return {
+    type: "4xx",
+    status,
+    message,
+    original: error,
   };
 }
 
 // 5xx Server Errors (500-599)
 if (status && status >= 500) {
   logger.error(`5xx error (${status}):`, message, error);
-  return { 
-    type: "5xx", 
-    status, 
-    message, 
-    original: error 
+  return {
+    type: "5xx",
+    status,
+    message,
+    original: error,
   };
 }
 ```
@@ -232,7 +234,7 @@ import logger from "@/logger";
 // Network errors - highest priority
 logger.error("Network error", error);
 
-// Server errors - high priority  
+// Server errors - high priority
 logger.error(`5xx error (${status}):`, message, error);
 
 // Client errors - medium priority
@@ -253,7 +255,7 @@ logger.error("Unknown error type", wrappedError);
 ### **API Layer Integration**
 
 ```typescript
-import { handleApiError, type HandledError } from './errorHandling';
+import { handleApiError, type HandledError } from "./errorHandling";
 
 // In API service methods
 async function fetchUserData(userId: string): Promise<User> {
@@ -262,7 +264,7 @@ async function fetchUserData(userId: string): Promise<User> {
     return response.data;
   } catch (error) {
     const handledError = handleApiError(error);
-    
+
     // Use standardized error for UI feedback
     throw new Error(handledError.message);
   }
@@ -272,7 +274,7 @@ async function fetchUserData(userId: string): Promise<User> {
 ### **Component Error Handling**
 
 ```typescript
-import { handleApiError } from '@/lib/api/errorHandling';
+import { handleApiError } from "@/lib/api/errorHandling";
 
 function UserProfile({ userId }: { userId: string }) {
   const [error, setError] = useState<string | null>(null);
@@ -283,20 +285,22 @@ function UserProfile({ userId }: { userId: string }) {
       setUser(user);
     } catch (error) {
       const handled = handleApiError(error);
-      
+
       // Display appropriate error message based on type
       switch (handled.type) {
-        case 'network':
-          setError('Connection problem. Please check your internet connection.');
+        case "network":
+          setError(
+            "Connection problem. Please check your internet connection.",
+          );
           break;
-        case '4xx':
+        case "4xx":
           setError(handled.message); // Use server-provided message
           break;
-        case '5xx':
-          setError('Server error. Please try again later.');
+        case "5xx":
+          setError("Server error. Please try again later.");
           break;
         default:
-          setError('An unexpected error occurred.');
+          setError("An unexpected error occurred.");
       }
     }
   };
@@ -306,23 +310,23 @@ function UserProfile({ userId }: { userId: string }) {
 ### **React Query Integration**
 
 ```typescript
-import { useQuery } from '@tanstack/react-query';
-import { handleApiError } from '@/lib/api/errorHandling';
+import { useQuery } from "@tanstack/react-query";
+import { handleApiError } from "@/lib/api/errorHandling";
 
 function useUserData(userId: string) {
   return useQuery({
-    queryKey: ['user', userId],
+    queryKey: ["user", userId],
     queryFn: () => fetchUserData(userId),
     onError: (error) => {
       const handled = handleApiError(error);
-      
+
       // Log structured error information
-      console.error('User data fetch failed:', {
+      console.error("User data fetch failed:", {
         type: handled.type,
         status: handled.status,
-        message: handled.message
+        message: handled.message,
       });
-    }
+    },
   });
 }
 ```
@@ -332,26 +336,26 @@ function useUserData(userId: string) {
 ### **Retry Logic Integration**
 
 ```typescript
-import { handleApiError } from '@/lib/api/errorHandling';
+import { handleApiError } from "@/lib/api/errorHandling";
 
 async function apiWithRetry<T>(
-  apiCall: () => Promise<T>, 
-  maxRetries: number = 3
+  apiCall: () => Promise<T>,
+  maxRetries: number = 3,
 ): Promise<T> {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       return await apiCall();
     } catch (error) {
       const handled = handleApiError(error);
-      
+
       // Only retry on network or 5xx errors
-      if (handled.type === 'network' || handled.type === '5xx') {
+      if (handled.type === "network" || handled.type === "5xx") {
         if (attempt < maxRetries) {
           await delay(attempt * 1000); // Exponential backoff
           continue;
         }
       }
-      
+
       // Don't retry 4xx errors (client errors)
       throw error;
     }
@@ -370,7 +374,7 @@ class ApiCircuitBreaker {
 
   async execute<T>(apiCall: () => Promise<T>): Promise<T> {
     if (this.isOpen()) {
-      throw new Error('Circuit breaker is open');
+      throw new Error("Circuit breaker is open");
     }
 
     try {
@@ -379,12 +383,12 @@ class ApiCircuitBreaker {
       return result;
     } catch (error) {
       const handled = handleApiError(error);
-      
+
       // Only count 5xx and network errors as circuit breaker failures
-      if (handled.type === '5xx' || handled.type === 'network') {
+      if (handled.type === "5xx" || handled.type === "network") {
         this.onFailure();
       }
-      
+
       throw error;
     }
   }
@@ -423,25 +427,25 @@ class ApiCircuitBreaker {
 
 ```typescript
 // Unit tests for error handling scenarios
-describe('handleApiError', () => {
-  it('should handle network errors correctly', () => {
-    const networkError = { isAxiosError: true, message: 'Network Error' };
+describe("handleApiError", () => {
+  it("should handle network errors correctly", () => {
+    const networkError = { isAxiosError: true, message: "Network Error" };
     const result = handleApiError(networkError);
-    
-    expect(result.type).toBe('network');
-    expect(result.message).toBe('Network Error');
+
+    expect(result.type).toBe("network");
+    expect(result.message).toBe("Network Error");
   });
 
-  it('should categorize 4xx errors properly', () => {
+  it("should categorize 4xx errors properly", () => {
     const clientError = {
       isAxiosError: true,
-      response: { status: 404, data: 'User not found' }
+      response: { status: 404, data: "User not found" },
     };
     const result = handleApiError(clientError);
-    
-    expect(result.type).toBe('4xx');
+
+    expect(result.type).toBe("4xx");
     expect(result.status).toBe(404);
-    expect(result.message).toBe('User not found');
+    expect(result.message).toBe("User not found");
   });
 });
 ```
@@ -449,6 +453,6 @@ describe('handleApiError', () => {
 ### **Security Considerations**
 
 - **Error Message Sanitization**: Avoid exposing sensitive server information
-- **Rate Limiting**: Implement error-based rate limiting for suspicious patterns  
+- **Rate Limiting**: Implement error-based rate limiting for suspicious patterns
 - **Audit Logging**: Log security-relevant errors for monitoring and analysis
 - **Input Validation**: Ensure error handling doesn't bypass input validation

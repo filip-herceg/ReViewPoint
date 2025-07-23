@@ -49,12 +49,17 @@ export function createUser(overrides: Partial<User> = {}): User;
 export function createApiUser(overrides: Partial<User> = {}): User;
 
 // User update request template
-export function createUserUpdateRequest(overrides: Partial<UserUpdateRequest> = {}): UserUpdateRequest;
+export function createUserUpdateRequest(
+  overrides: Partial<UserUpdateRequest> = {},
+): UserUpdateRequest;
 
 // Usage examples:
-const basicUser = createUser({ name: 'John Doe' });
-const adminUser = createUser({ email: 'admin@example.com', name: 'Administrator' });
-const updateRequest = createUserUpdateRequest({ bio: 'Updated biography' });
+const basicUser = createUser({ name: "John Doe" });
+const adminUser = createUser({
+  email: "admin@example.com",
+  name: "Administrator",
+});
+const updateRequest = createUserUpdateRequest({ bio: "Updated biography" });
 ```
 
 ### **Upload System Templates**
@@ -64,37 +69,57 @@ const updateRequest = createUserUpdateRequest({ bio: 'Updated biography' });
 export function createUpload(overrides: Partial<TestUpload> = {}): TestUpload;
 
 // Upload list generation
-export function createUploadList(count = 3, overrides: Partial<TestUpload> = {}): TestUpload[];
+export function createUploadList(
+  count = 3,
+  overrides: Partial<TestUpload> = {},
+): TestUpload[];
 
 // API upload response
 export function createApiUpload(overrides: Partial<Upload> = {}): Upload;
 
 // File upload response
-export function createFileUploadResponse(overrides: Partial<FileUploadResponse> = {}): FileUploadResponse;
+export function createFileUploadResponse(
+  overrides: Partial<FileUploadResponse> = {},
+): FileUploadResponse;
 
 // Usage examples:
-const pendingUpload = createUpload({ status: 'pending' });
-const uploadList = createUploadList(5, { status: 'completed' });
-const errorUpload = createUpload({ status: 'error', progress: 0 });
+const pendingUpload = createUpload({ status: "pending" });
+const uploadList = createUploadList(5, { status: "completed" });
+const errorUpload = createUpload({ status: "error", progress: 0 });
 ```
 
 ### **Authentication Templates**
 
 ```typescript
 // JWT token management
-export function createAuthTokens(overrides: Partial<AuthTokens> = {}): AuthTokens;
+export function createAuthTokens(
+  overrides: Partial<AuthTokens> = {},
+): AuthTokens;
 
 // Token lifecycle scenarios
-export function createExpiredAuthTokens(overrides: Partial<AuthTokens> = {}): AuthTokens;
-export function createSoonToExpireAuthTokens(overrides: Partial<AuthTokens> = {}): AuthTokens;
-export function createValidAuthTokens(overrides: Partial<AuthTokens> = {}): AuthTokens;
+export function createExpiredAuthTokens(
+  overrides: Partial<AuthTokens> = {},
+): AuthTokens;
+export function createSoonToExpireAuthTokens(
+  overrides: Partial<AuthTokens> = {},
+): AuthTokens;
+export function createValidAuthTokens(
+  overrides: Partial<AuthTokens> = {},
+): AuthTokens;
 
 // Authentication requests
-export function createAuthLoginRequest(overrides: Partial<AuthLoginRequest> = {}): AuthLoginRequest;
-export function createAuthRegisterRequest(overrides: Partial<AuthRegisterRequest> = {}): AuthRegisterRequest;
+export function createAuthLoginRequest(
+  overrides: Partial<AuthLoginRequest> = {},
+): AuthLoginRequest;
+export function createAuthRegisterRequest(
+  overrides: Partial<AuthRegisterRequest> = {},
+): AuthRegisterRequest;
 
 // Error scenarios
-export function createAuthError(type: AuthErrorType, overrides: Partial<AuthError> = {}): AuthError;
+export function createAuthError(
+  type: AuthErrorType,
+  overrides: Partial<AuthError> = {},
+): AuthError;
 ```
 
 ## Advanced Template Patterns
@@ -108,14 +133,16 @@ export function createExpiredAuthTokens(): AuthTokens {
   const exp = now - 3600; // 1 hour ago (expired)
 
   const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
-  const payload = btoa(JSON.stringify({
-    sub: randomInt(1, 1000).toString(),
-    email: `user${randomString(4)}@example.com`,
-    exp,
-    iat: now - 7200, // 2 hours ago
-    iss: "reviewpoint",
-    roles: ["user"],
-  }));
+  const payload = btoa(
+    JSON.stringify({
+      sub: randomInt(1, 1000).toString(),
+      email: `user${randomString(4)}@example.com`,
+      exp,
+      iat: now - 7200, // 2 hours ago
+      iss: "reviewpoint",
+      roles: ["user"],
+    }),
+  );
   const signature = randomString(43);
 
   return {
@@ -183,10 +210,19 @@ export function createPaginatedResponse<T>(
 
 ```typescript
 // Button props for UI testing
-export function createButtonProps(overrides: Partial<ButtonProps> = {}): ButtonProps {
-  const variants = ["default", "destructive", "outline", "secondary", "ghost", "link"] as const;
+export function createButtonProps(
+  overrides: Partial<ButtonProps> = {},
+): ButtonProps {
+  const variants = [
+    "default",
+    "destructive",
+    "outline",
+    "secondary",
+    "ghost",
+    "link",
+  ] as const;
   const sizes = ["default", "sm", "lg", "icon"] as const;
-  
+
   return {
     variant: overrides.variant || variants[randomInt(0, variants.length - 1)],
     size: overrides.size || sizes[randomInt(0, sizes.length - 1)],
@@ -198,9 +234,11 @@ export function createButtonProps(overrides: Partial<ButtonProps> = {}): ButtonP
 }
 
 // Input props for form testing
-export function createInputProps(overrides: Partial<InputProps> = {}): InputProps {
+export function createInputProps(
+  overrides: Partial<InputProps> = {},
+): InputProps {
   const types = ["text", "email", "password", "number", "file"] as const;
-  
+
   return {
     className: overrides.className || "",
     type: overrides.type || types[randomInt(0, types.length - 1)],
@@ -216,7 +254,9 @@ export function createInputProps(overrides: Partial<InputProps> = {}): InputProp
 
 ```typescript
 // Upload form initial state
-export function createUploadFormData(overrides: Partial<UploadFormData> = {}): UploadFormData {
+export function createUploadFormData(
+  overrides: Partial<UploadFormData> = {},
+): UploadFormData {
   return {
     name: overrides.name || `${randomString(8)}.pdf`,
     progress: 0,
@@ -227,7 +267,12 @@ export function createUploadFormData(overrides: Partial<UploadFormData> = {}): U
 
 // Upload status variations
 export function randomUploadStatus(): TestUpload["status"] {
-  const statuses: TestUpload["status"][] = ["pending", "uploading", "completed", "error"];
+  const statuses: TestUpload["status"][] = [
+    "pending",
+    "uploading",
+    "completed",
+    "error",
+  ];
   return statuses[randomInt(0, statuses.length - 1)];
 }
 ```
@@ -329,7 +374,9 @@ export function createProductionEnvironmentConfig(): EnvironmentConfig;
 ### **Feature Flags Templates**
 
 ```typescript
-export function createFeatureFlags(overrides: Partial<FeatureFlags> = {}): FeatureFlags {
+export function createFeatureFlags(
+  overrides: Partial<FeatureFlags> = {},
+): FeatureFlags {
   return {
     enablePasswordReset: true,
     enableSocialLogin: false,
@@ -371,9 +418,16 @@ export function createProductionFeatureFlags(): FeatureFlags;
 ### **Error Report Templates**
 
 ```typescript
-export function createErrorReport(overrides: Partial<ErrorReport> = {}): ErrorReport {
-  const severities: ErrorReport["severity"][] = ["low", "medium", "high", "critical"];
-  
+export function createErrorReport(
+  overrides: Partial<ErrorReport> = {},
+): ErrorReport {
+  const severities: ErrorReport["severity"][] = [
+    "low",
+    "medium",
+    "high",
+    "critical",
+  ];
+
   return {
     id: randomString(16),
     timestamp: new Date(),
@@ -399,8 +453,12 @@ export function createPerformanceMetric(
   overrides: Partial<PerformanceMetric> = {},
 ): PerformanceMetric {
   const metricNames = ["CLS", "FCP", "INP", "LCP", "TTFB"];
-  const ratings: PerformanceMetric["rating"][] = ["good", "needs-improvement", "poor"];
-  
+  const ratings: PerformanceMetric["rating"][] = [
+    "good",
+    "needs-improvement",
+    "poor",
+  ];
+
   return {
     id: randomString(16),
     name: metricNames[randomInt(0, metricNames.length - 1)],
@@ -464,7 +522,9 @@ export function clearReactQueryCache() {
 }
 
 // Analytics event templates
-export function createAnalyticsEvent(overrides: Partial<AnalyticsEvent> = {}): AnalyticsEvent {
+export function createAnalyticsEvent(
+  overrides: Partial<AnalyticsEvent> = {},
+): AnalyticsEvent {
   return {
     name: overrides.name || `test_event_${randomString(5)}`,
     props: overrides.props || { foo: randomString(3) },
@@ -478,11 +538,11 @@ export function createAnalyticsEvent(overrides: Partial<AnalyticsEvent> = {}): A
 ### **Basic Test Setup**
 
 ```typescript
-import { 
-  createUser, 
-  createUpload, 
+import {
+  createUser,
+  createUpload,
   createAuthTokens,
-  createApiResponse 
+  createApiResponse
 } from '@/tests/test-templates';
 
 describe('UserProfile Component', () => {
@@ -501,29 +561,29 @@ describe('UserProfile Component', () => {
 ### **API Testing**
 
 ```typescript
-import { 
-  createApiResponse, 
-  createUser, 
-  createApiErrorResponse 
-} from '@/tests/test-templates';
+import {
+  createApiResponse,
+  createUser,
+  createApiErrorResponse,
+} from "@/tests/test-templates";
 
-describe('User API', () => {
-  it('should handle successful user fetch', async () => {
+describe("User API", () => {
+  it("should handle successful user fetch", async () => {
     const user = createUser();
     const response = createApiResponse(user);
-    
+
     mockAxios.get.mockResolvedValue({ data: response });
-    
+
     const result = await fetchUser(user.id);
     expect(result).toEqual(user);
   });
 
-  it('should handle API error', async () => {
-    const errorResponse = createApiErrorResponse('User not found');
-    
+  it("should handle API error", async () => {
+    const errorResponse = createApiErrorResponse("User not found");
+
     mockAxios.get.mockResolvedValue({ data: errorResponse });
-    
-    await expect(fetchUser(999)).rejects.toThrow('User not found');
+
+    await expect(fetchUser(999)).rejects.toThrow("User not found");
   });
 });
 ```
@@ -531,27 +591,27 @@ describe('User API', () => {
 ### **Authentication Testing**
 
 ```typescript
-import { 
-  createAuthTokens, 
+import {
+  createAuthTokens,
   createExpiredAuthTokens,
-  createAuthLoginRequest 
-} from '@/tests/test-templates';
+  createAuthLoginRequest,
+} from "@/tests/test-templates";
 
-describe('Token Service', () => {
-  it('should refresh expired tokens', async () => {
+describe("Token Service", () => {
+  it("should refresh expired tokens", async () => {
     const expiredTokens = createExpiredAuthTokens();
     const newTokens = createAuthTokens();
-    
+
     mockRefreshTokens.mockResolvedValue(newTokens);
-    
+
     const result = await tokenService.refreshIfNeeded(expiredTokens);
     expect(result).toEqual(newTokens);
   });
 
-  it('should handle login request', async () => {
+  it("should handle login request", async () => {
     const loginRequest = createAuthLoginRequest({
-      email: 'user@example.com',
-      password: 'password123'
+      email: "user@example.com",
+      password: "password123",
     });
 
     const tokens = createAuthTokens();
@@ -602,7 +662,7 @@ import {
   randomInt,
   randomString,
   testLogger,
-  randomStatus
+  randomStatus,
 } from "./test-utils";
 ```
 
@@ -628,13 +688,13 @@ import {
 ```typescript
 // Adding new template categories
 export function createNewEntityTemplate(
-  overrides: Partial<NewEntity> = {}
+  overrides: Partial<NewEntity> = {},
 ): NewEntity {
   const entity: NewEntity = {
     // Default properties with realistic values
     ...overrides,
   };
-  
+
   testLogger.debug("Created new entity template", entity);
   return entity;
 }

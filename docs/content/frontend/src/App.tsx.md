@@ -14,18 +14,19 @@ The App component implements a carefully ordered provider hierarchy:
 
 ```tsx
 <ThemeProvider defaultTheme={enableDarkMode ? "dark" : "light"}>
-    <LiveRegionProvider>
-        <EnhancedErrorBoundary>
-            <ErrorBoundary>
-                <AppRouter />
-                <Toaster />
-            </ErrorBoundary>
-        </EnhancedErrorBoundary>
-    </LiveRegionProvider>
+  <LiveRegionProvider>
+    <EnhancedErrorBoundary>
+      <ErrorBoundary>
+        <AppRouter />
+        <Toaster />
+      </ErrorBoundary>
+    </EnhancedErrorBoundary>
+  </LiveRegionProvider>
 </ThemeProvider>
 ```
 
 #### Provider Hierarchy
+
 - **ThemeProvider** - Theme and styling system management
 - **LiveRegionProvider** - Accessibility and screen reader support
 - **EnhancedErrorBoundary** - Advanced error tracking and monitoring
@@ -43,6 +44,7 @@ const enableDarkMode = useFeatureFlag("enableDarkMode");
 ```
 
 #### Feature Flag Usage
+
 - **WebSocket Feature** - Conditional real-time communication
 - **Dark Mode Feature** - Dynamic theme selection
 - **Runtime Configuration** - Feature toggle without deployment
@@ -56,16 +58,17 @@ Smart WebSocket connection based on feature flags:
 
 ```tsx
 useEffect(() => {
-    if (enableWebSocket) {
-        logger.info("Initializing WebSocket connection");
-        connect();
-    } else {
-        logger.info("WebSocket feature disabled");
-    }
+  if (enableWebSocket) {
+    logger.info("Initializing WebSocket connection");
+    connect();
+  } else {
+    logger.info("WebSocket feature disabled");
+  }
 }, [connect, enableWebSocket]);
 ```
 
 #### WebSocket Features
+
 - **Feature-Gated Connection** - Only connect when feature is enabled
 - **Automatic Connection** - Connect on application startup
 - **Connection State Management** - Zustand store integration
@@ -76,6 +79,7 @@ useEffect(() => {
 Integration with WebSocket store for real-time features:
 
 #### Real-Time Capabilities
+
 - **Live Updates** - Real-time data synchronization
 - **Connection Management** - Automatic reconnection and health monitoring
 - **Message Handling** - Structured message processing
@@ -91,13 +95,12 @@ Comprehensive error boundary implementation with monitoring:
 const EnhancedErrorBoundary = createEnhancedErrorBoundary();
 
 <EnhancedErrorBoundary>
-    <ErrorBoundary>
-        {/* Application content */}
-    </ErrorBoundary>
-</EnhancedErrorBoundary>
+  <ErrorBoundary>{/* Application content */}</ErrorBoundary>
+</EnhancedErrorBoundary>;
 ```
 
 #### Error Handling Layers
+
 - **Enhanced Error Boundary** - Sentry integration and advanced error tracking
 - **Standard Error Boundary** - React component error catching
 - **Fallback UI** - User-friendly error display
@@ -108,6 +111,7 @@ const EnhancedErrorBoundary = createEnhancedErrorBoundary();
 Advanced error tracking with context and user information:
 
 #### Monitoring Features
+
 - **Sentry Integration** - Comprehensive error tracking and reporting
 - **User Context** - User session information in error reports
 - **Component Stack** - React component error stack traces
@@ -124,6 +128,7 @@ Comprehensive theme management with feature flag integration:
 ```
 
 #### Theme Features
+
 - **Feature Flag Control** - Dynamic theme selection based on features
 - **System Preference** - Respect user system theme preferences
 - **Theme Persistence** - Remember user theme choices
@@ -134,6 +139,7 @@ Comprehensive theme management with feature flag integration:
 Modern styling system with Tailwind CSS integration:
 
 #### Styling Features
+
 - **Tailwind CSS** - Utility-first CSS framework
 - **Dark Mode Support** - Comprehensive dark mode implementation
 - **Component Theming** - Consistent component styling
@@ -147,11 +153,12 @@ Comprehensive accessibility with ARIA live regions:
 
 ```tsx
 <LiveRegionProvider>
-    {/* Application content with accessibility support */}
+  {/* Application content with accessibility support */}
 </LiveRegionProvider>
 ```
 
 #### Accessibility Features
+
 - **ARIA Live Regions** - Dynamic content announcements
 - **Screen Reader Support** - Comprehensive screen reader compatibility
 - **Keyboard Navigation** - Full keyboard accessibility
@@ -162,6 +169,7 @@ Comprehensive accessibility with ARIA live regions:
 Modern accessibility standards and best practices:
 
 #### Inclusive Features
+
 - **WCAG Compliance** - Web Content Accessibility Guidelines adherence
 - **Color Contrast** - Sufficient color contrast for readability
 - **Alternative Text** - Comprehensive image and content descriptions
@@ -178,6 +186,7 @@ User-friendly notification system with Sonner integration:
 ```
 
 #### Notification Features
+
 - **Toast Messages** - Non-intrusive user notifications
 - **Multiple Types** - Success, error, warning, and info notifications
 - **Accessibility** - Screen reader compatible notifications
@@ -188,6 +197,7 @@ User-friendly notification system with Sonner integration:
 Comprehensive user feedback and communication:
 
 #### Feedback Features
+
 - **Action Feedback** - Immediate feedback for user actions
 - **Error Communication** - Clear error message presentation
 - **Success Confirmation** - Positive action confirmation
@@ -204,6 +214,7 @@ Comprehensive routing system with React Router:
 ```
 
 #### Routing Features
+
 - **Declarative Routing** - Component-based route definitions
 - **Lazy Loading** - Code splitting and dynamic imports
 - **Route Guards** - Authentication and authorization protection
@@ -214,6 +225,7 @@ Comprehensive routing system with React Router:
 Modern single-page application routing:
 
 #### Route Management
+
 - **Nested Routing** - Hierarchical route organization
 - **Route Parameters** - Dynamic route parameter handling
 - **Query Parameters** - URL search parameter management
@@ -227,16 +239,17 @@ Comprehensive application lifecycle management:
 
 ```tsx
 useEffect(() => {
-    logger.info("App component initialized", {
-        features: {
-            webSocket: enableWebSocket,
-            darkMode: enableDarkMode,
-        },
-    });
+  logger.info("App component initialized", {
+    features: {
+      webSocket: enableWebSocket,
+      darkMode: enableDarkMode,
+    },
+  });
 }, [enableWebSocket, enableDarkMode]);
 ```
 
 #### Lifecycle Management
+
 - **Initialization Logging** - Comprehensive startup logging
 - **Feature Flag Logging** - Feature state visibility
 - **Dependency Tracking** - Component dependency monitoring
@@ -247,6 +260,7 @@ useEffect(() => {
 Modern state management with Zustand integration:
 
 #### State Features
+
 - **WebSocket Store** - Real-time connection state management
 - **Global State** - Application-wide state management
 - **Local State** - Component-specific state handling
@@ -259,6 +273,7 @@ Modern state management with Zustand integration:
 Modern React performance optimization techniques:
 
 #### Performance Features
+
 - **React 18 Features** - Concurrent rendering and automatic batching
 - **Memo Optimization** - Component re-render optimization
 - **Code Splitting** - Dynamic component loading
@@ -269,6 +284,7 @@ Modern React performance optimization techniques:
 Efficient resource loading and management:
 
 #### Resource Optimization
+
 - **Lazy Loading** - On-demand component and resource loading
 - **Image Optimization** - Responsive image loading
 - **Font Loading** - Optimized font loading and fallbacks
@@ -281,6 +297,7 @@ Efficient resource loading and management:
 Comprehensive development experience optimization:
 
 #### Development Features
+
 - **Hot Module Replacement** - Fast development iteration
 - **React Developer Tools** - Component debugging and inspection
 - **Error Visualization** - Development error display
@@ -291,6 +308,7 @@ Comprehensive development experience optimization:
 Advanced debugging and monitoring integration:
 
 #### Debugging Features
+
 - **Structured Logging** - Comprehensive application logging
 - **Component Debugging** - React component state inspection
 - **Network Debugging** - API request and response monitoring
@@ -303,6 +321,7 @@ Advanced debugging and monitoring integration:
 Security-focused component design and implementation:
 
 #### Security Features
+
 - **XSS Prevention** - Cross-site scripting protection
 - **Content Security Policy** - CSP header integration
 - **Secure Dependencies** - Vetted third-party component usage
@@ -313,6 +332,7 @@ Security-focused component design and implementation:
 Production deployment security considerations:
 
 #### Production Security
+
 - **Error Information Filtering** - Production error message filtering
 - **Source Map Protection** - Source map security in production
 - **Dependency Scanning** - Security vulnerability scanning
@@ -325,6 +345,7 @@ Production deployment security considerations:
 Integration with modern React development patterns:
 
 #### Ecosystem Integration
+
 - **TanStack Query** - Server state management integration
 - **React Hook Form** - Form state management integration
 - **Zod Validation** - Type-safe validation integration

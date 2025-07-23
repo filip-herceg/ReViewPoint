@@ -40,6 +40,7 @@ except ValueError as e:
 ```
 
 **Field Specifications:**
+
 - `email: EmailStr` - Valid email address with format validation
 - `password: str` - 8-128 characters with strength requirements
 - `name: str | None` - Optional display name, max 128 characters
@@ -47,6 +48,7 @@ except ValueError as e:
 **Validation Features:**
 
 **Email Validation:**
+
 ```python
 @field_validator("email")
 @classmethod
@@ -57,8 +59,9 @@ def validate_email_field(cls, v: str) -> str:
 ```
 
 **Password Validation:**
+
 ```python
-@field_validator("password") 
+@field_validator("password")
 @classmethod
 def validate_password_field(cls, v: str) -> str:
     err = get_password_validation_error(v)
@@ -68,6 +71,7 @@ def validate_password_field(cls, v: str) -> str:
 ```
 
 **Security Features:**
+
 - Email format validation using custom `validate_email()` utility
 - Password strength validation with `get_password_validation_error()`
 - Length constraints to prevent buffer overflow attacks
@@ -80,7 +84,7 @@ Streamlined login credential validation for authentication endpoints.
 ```python
 # Example usage
 login_data = {
-    "email": "user@example.com", 
+    "email": "user@example.com",
     "password": "userpassword"
 }
 
@@ -88,10 +92,12 @@ login_request = UserLoginRequest(**login_data)
 ```
 
 **Field Specifications:**
+
 - `email: EmailStr` - Validated email address
 - `password: str` - Plain text password (hashed server-side)
 
 **Design Features:**
+
 - Minimal validation for performance
 - EmailStr type ensures format validation
 - No password strength checking (existing users)
@@ -110,9 +116,11 @@ reset_request = PasswordResetRequest(email="user@example.com")
 ```
 
 **Field Specifications:**
+
 - `email: EmailStr` - Target email for password reset
 
 **Validation Features:**
+
 - Custom email validation with `validate_email()` utility
 - Consistent validation pattern across auth schemas
 - Type-safe validator signatures with ClassVar
@@ -132,10 +140,12 @@ confirm_request = PasswordResetConfirmRequest(**confirm_data)
 ```
 
 **Field Specifications:**
+
 - `token: str` - Password reset token from email
 - `new_password: str` - New password with 8-128 character requirement
 
 **Security Features:**
+
 - Full password strength validation for new passwords
 - Token format validation (server-side verification)
 - Same security standards as registration
@@ -156,18 +166,20 @@ auth_response = AuthResponse(
 
 # TypedDict for type hints
 response_dict: AuthResponseDict = {
-    "access_token": "jwt-access-token", 
+    "access_token": "jwt-access-token",
     "refresh_token": "jwt-refresh-token",
     "token_type": "bearer"
 }
 ```
 
 **Field Specifications:**
+
 - `access_token: str` - JWT access token for API authentication
 - `refresh_token: str` - JWT refresh token for session management
 - `token_type: Literal["bearer"]` - OAuth 2.0 bearer token type
 
 **Design Features:**
+
 - Default token type value with `TOKEN_TYPE_BEARER` constant
 - Literal type for token_type ensures correct OAuth 2.0 format
 - Dual pattern: BaseModel for validation, TypedDict for type hints
@@ -183,9 +195,11 @@ error_response = MessageResponse(message="Email address not found")
 ```
 
 **Field Specifications:**
+
 - `message: str` - Human-readable operation result message
 
 **Use Cases:**
+
 - Password reset confirmation messages
 - Registration success notifications
 - Authentication error descriptions
@@ -196,6 +210,7 @@ error_response = MessageResponse(message="Email address not found")
 ### Custom Validator Integration
 
 **Email Validation:**
+
 ```python
 # Utilizes src.utils.validation.validate_email()
 def validate_email_field(cls, v: str) -> str:
@@ -205,6 +220,7 @@ def validate_email_field(cls, v: str) -> str:
 ```
 
 **Password Validation:**
+
 ```python
 # Utilizes src.utils.validation.get_password_validation_error()
 def validate_password_field(cls, v: str) -> str:
@@ -217,6 +233,7 @@ def validate_password_field(cls, v: str) -> str:
 ### Type Safety Patterns
 
 **ClassVar Validator Signatures:**
+
 ```python
 class UserRegisterRequest(BaseModel):
     _email_validator: ClassVar[Callable[[type["UserRegisterRequest"], str], str]]
@@ -224,6 +241,7 @@ class UserRegisterRequest(BaseModel):
 ```
 
 **Literal Type Constraints:**
+
 ```python
 token_type: Literal["bearer"] = TOKEN_TYPE_BEARER
 ```
@@ -233,17 +251,20 @@ token_type: Literal["bearer"] = TOKEN_TYPE_BEARER
 ### Input Validation Security
 
 **Email Security:**
+
 - Format validation prevents injection attacks
 - EmailStr type ensures RFC compliance
 - Custom validation adds application-specific rules
 
 **Password Security:**
+
 - Minimum length requirements (8 characters)
 - Maximum length limits (128 characters) prevent DoS
 - Strength validation enforces complexity rules
 - No password storage in schema (server-side hashing)
 
 **Token Security:**
+
 - Literal types prevent token type confusion
 - Consistent token format across responses
 - Type safety prevents accidental exposure
@@ -251,6 +272,7 @@ token_type: Literal["bearer"] = TOKEN_TYPE_BEARER
 ### Validation Error Handling
 
 **Secure Error Messages:**
+
 ```python
 # Good: Generic error message
 raise ValueError("Invalid email format.")
@@ -260,6 +282,7 @@ raise ValueError("Invalid email format.")
 ```
 
 **Input Sanitization:**
+
 - All fields validated before processing
 - Length limits prevent buffer overflow
 - Type constraints prevent injection
@@ -410,7 +433,7 @@ def test_password_validation():
     weak_passwords = ["123", "password", "12345678"]
     for weak_password in weak_passwords:
         data = {
-            "email": "test@example.com", 
+            "email": "test@example.com",
             "password": weak_password,
             "name": "Test User"
         }
@@ -443,13 +466,13 @@ async def test_registration_flow():
         "password": "IntegrationTest123!",
         "name": "Integration User"
     }
-    
+
     # Schema validation
     request = UserRegisterRequest(**registration_data)
-    
+
     # Service integration
     response = await register_user_service(request)
-    
+
     # Response validation
     auth_response = AuthResponse(**response)
     assert auth_response.token_type == "bearer"
@@ -483,7 +506,7 @@ async def test_registration_flow():
 ```python
 # Validation configuration constants
 MIN_PASSWORD_LENGTH = 8
-MAX_PASSWORD_LENGTH = 128  
+MAX_PASSWORD_LENGTH = 128
 MAX_NAME_LENGTH = 128
 TOKEN_TYPE_BEARER = "bearer"
 ```
@@ -496,7 +519,7 @@ class AuthSchemaConfig:
     validate_assignment = True
     str_strip_whitespace = True
     json_schema_extra = {
-        "examples": [...] 
+        "examples": [...]
     }
 ```
 

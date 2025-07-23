@@ -31,6 +31,7 @@ if user:
 ```
 
 **Caching Features:**
+
 - Async cache with configurable TTL (60 seconds default)
 - Cache key pattern: `user_id:{user_id}`
 - Cache only stores user ID, not ORM instances
@@ -84,6 +85,7 @@ except UserAlreadyExistsError:
 ```
 
 **Validation Features:**
+
 - Email format validation using `validate_email()`
 - Password strength validation with `get_password_validation_error()`
 - Email uniqueness checking with `is_email_unique()`
@@ -113,6 +115,7 @@ print(f"Found {len(users)} out of {total_count} total users")
 ```
 
 **Query Features:**
+
 - **Pagination**: Offset and limit support
 - **Search**: Partial matching on email and name
 - **Filtering**: Email, name, date range filters
@@ -148,6 +151,7 @@ except RateLimitExceededError:
 ```
 
 **Rate Limiting Features:**
+
 - Async rate limiter with 5 calls per 60 seconds per user
 - Action-specific rate limiting keys
 - Configurable limits and time windows
@@ -311,6 +315,7 @@ if success:
 ```
 
 **Anonymization Process:**
+
 - Replaces email with anonymous format
 - Clears password hash
 - Deactivates and soft-deletes account
@@ -555,7 +560,7 @@ async def test_bulk_operations():
 ```python
 __all__ = [
     "safe_get_user_by_id",
-    "create_user_with_validation", 
+    "create_user_with_validation",
     "sensitive_user_action",
     "anonymize_user",
     "user_signups_per_month",

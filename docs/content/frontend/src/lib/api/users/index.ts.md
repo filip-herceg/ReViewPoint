@@ -28,18 +28,18 @@ The `users/index.ts` file serves as the main entry point for all user-related AP
 export const usersApi = {
   // Core CRUD operations
   ...usersCoreApi,
-  
+
   // Specialized sub-modules
-  exports: usersExportsApi,      // Data export operations
-  testOnly: usersTestOnlyApi     // Test-only endpoints
+  exports: usersExportsApi, // Data export operations
+  testOnly: usersTestOnlyApi, // Test-only endpoints
 };
 ```
 
 ### Individual Sub-Module Exports
 
 ```typescript
-export { usersCoreApi } from "./core";          // Core user operations
-export { usersExportsApi } from "./exports";    // Export functionality  
+export { usersCoreApi } from "./core"; // Core user operations
+export { usersExportsApi } from "./exports"; // Export functionality
 export { usersTestOnlyApi } from "./test_only_router"; // Test operations
 ```
 
@@ -99,7 +99,7 @@ export { usersTestOnlyApi } from "./test_only_router"; // Test operations
 ### Combined API Object Usage
 
 ```typescript
-import { usersApi } from '@/lib/api';
+import { usersApi } from "@/lib/api";
 
 // Core user operations
 async function manageUsers() {
@@ -108,25 +108,24 @@ async function manageUsers() {
     const userList = await usersApi.listUsers({
       limit: 20,
       offset: 0,
-      email: 'search@example.com',
-      created_after: '2024-01-01T00:00:00Z'
+      email: "search@example.com",
+      created_after: "2024-01-01T00:00:00Z",
     });
 
-    console.log('Users found:', userList.users.length);
-    console.log('Total users:', userList.total);
+    console.log("Users found:", userList.users.length);
+    console.log("Total users:", userList.total);
 
     // Get specific user
     const user = await usersApi.getUser(userList.users[0].id);
-    console.log('User details:', user);
+    console.log("User details:", user);
 
     // Update user
     const updatedUser = await usersApi.updateUser(user.id, {
-      name: 'Updated Name'
+      name: "Updated Name",
     });
-    console.log('User updated:', updatedUser);
-    
+    console.log("User updated:", updatedUser);
   } catch (error) {
-    console.error('User operation failed:', error.message);
+    console.error("User operation failed:", error.message);
   }
 }
 
@@ -135,20 +134,19 @@ async function exportUserData() {
   try {
     // Export filtered users as CSV
     const csvBlob = await usersApi.exports.exportUsersCsv({
-      created_after: '2024-01-01T00:00:00Z',
-      limit: 1000
+      created_after: "2024-01-01T00:00:00Z",
+      limit: 1000,
     });
 
     // Download CSV file
     const url = URL.createObjectURL(csvBlob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    link.download = 'users-export.csv';
+    link.download = "users-export.csv";
     link.click();
     URL.revokeObjectURL(url);
-    
   } catch (error) {
-    console.error('Export failed:', error.message);
+    console.error("Export failed:", error.message);
   }
 }
 ```
@@ -156,15 +154,15 @@ async function exportUserData() {
 ### Individual Sub-Module Usage
 
 ```typescript
-import { usersCoreApi, usersExportsApi, usersTestOnlyApi } from '@/lib/api';
+import { usersCoreApi, usersExportsApi, usersTestOnlyApi } from "@/lib/api";
 
 // Direct core operations
 async function coreUserOperations() {
   const users = await usersCoreApi.listUsers();
   const newUser = await usersCoreApi.createUser({
-    email: 'user@example.com',
-    name: 'New User',
-    password: 'securePassword123'
+    email: "user@example.com",
+    name: "New User",
+    password: "securePassword123",
   });
 }
 
@@ -176,11 +174,11 @@ async function exportOperations() {
 
 // Test operations (development only)
 async function testOperations() {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     const status = await usersTestOnlyApi.testAlive();
     const testUser = await usersTestOnlyApi.createTestUser({
-      email: 'test@example.com',
-      name: 'Test User'
+      email: "test@example.com",
+      name: "Test User",
     });
   }
 }
@@ -189,31 +187,31 @@ async function testOperations() {
 ### Admin User Creation
 
 ```typescript
-import { usersApi } from '@/lib/api';
+import { usersApi } from "@/lib/api";
 
 async function createAdminUser() {
   try {
     const adminUserData = {
-      email: 'admin@reviewpoint.com',
-      name: 'Administrator',
-      password: 'secureAdminPassword123',
-      role: 'admin',
-      permissions: ['user_management', 'system_admin']
+      email: "admin@reviewpoint.com",
+      name: "Administrator",
+      password: "secureAdminPassword123",
+      role: "admin",
+      permissions: ["user_management", "system_admin"],
     };
 
     const newAdmin = await usersApi.createUser(adminUserData);
-    
-    console.log('Admin user created:', newAdmin.id);
-    console.log('Admin permissions:', newAdmin.permissions);
-    
+
+    console.log("Admin user created:", newAdmin.id);
+    console.log("Admin permissions:", newAdmin.permissions);
+
     return newAdmin;
   } catch (error) {
-    if (error.message.includes('insufficient permissions')) {
-      console.error('Admin privileges required for user creation');
-    } else if (error.message.includes('email already exists')) {
-      console.error('User with this email already exists');
+    if (error.message.includes("insufficient permissions")) {
+      console.error("Admin privileges required for user creation");
+    } else if (error.message.includes("email already exists")) {
+      console.error("User with this email already exists");
     } else {
-      console.error('Admin creation failed:', error.message);
+      console.error("Admin creation failed:", error.message);
     }
     throw error;
   }
@@ -223,36 +221,36 @@ async function createAdminUser() {
 ### Advanced User Search
 
 ```typescript
-import { usersApi } from '@/lib/api';
+import { usersApi } from "@/lib/api";
 
 async function advancedUserSearch() {
   try {
     const searchParams = {
       // Text search
-      email: 'domain.com',           // Email contains domain.com
-      name: 'John',                  // Name contains John
-      
+      email: "domain.com", // Email contains domain.com
+      name: "John", // Name contains John
+
       // Date filtering
-      created_after: '2024-01-01T00:00:00Z',
-      created_before: '2024-12-31T23:59:59Z',
-      
+      created_after: "2024-01-01T00:00:00Z",
+      created_before: "2024-12-31T23:59:59Z",
+
       // Pagination
       limit: 50,
       offset: 0,
-      
+
       // Sorting
-      sort_by: 'created_at',
-      sort_order: 'desc'
+      sort_by: "created_at",
+      sort_order: "desc",
     };
 
     const searchResults = await usersApi.listUsers(searchParams);
-    
+
     console.log(`Found ${searchResults.users.length} users`);
     console.log(`Total matching users: ${searchResults.total}`);
-    
+
     return searchResults;
   } catch (error) {
-    console.error('User search failed:', error.message);
+    console.error("User search failed:", error.message);
     throw error;
   }
 }
@@ -270,16 +268,16 @@ try {
   // Handle success
 } catch (error) {
   // Error types and handling
-  if (error.message.includes('401')) {
+  if (error.message.includes("401")) {
     // Authentication required
     redirectToLogin();
-  } else if (error.message.includes('403')) {
+  } else if (error.message.includes("403")) {
     // Insufficient permissions
     showPermissionError();
-  } else if (error.message.includes('404')) {
+  } else if (error.message.includes("404")) {
     // User not found
     showUserNotFoundError();
-  } else if (error.message.includes('409')) {
+  } else if (error.message.includes("409")) {
     // Conflict (e.g., email already exists)
     showConflictError(error.message);
   } else {
@@ -308,7 +306,7 @@ interface User {
   id: string;
   email: string;
   name: string;
-  role: 'user' | 'admin';
+  role: "user" | "admin";
   permissions: string[];
   created_at: string;
   updated_at: string;
@@ -321,7 +319,7 @@ interface UserCreateRequest {
   email: string;
   name: string;
   password: string;
-  role?: 'user' | 'admin';
+  role?: "user" | "admin";
   permissions?: string[];
 }
 
@@ -329,7 +327,7 @@ interface UserCreateRequest {
 interface UserUpdateRequest {
   name?: string;
   email?: string;
-  role?: 'user' | 'admin';
+  role?: "user" | "admin";
   permissions?: string[];
   is_active?: boolean;
 }
@@ -346,14 +344,14 @@ interface UserListResponse {
 interface UserSearchParams {
   email?: string;
   name?: string;
-  role?: 'user' | 'admin';
+  role?: "user" | "admin";
   created_after?: string;
   created_before?: string;
   is_active?: boolean;
   limit?: number;
   offset?: number;
-  sort_by?: 'created_at' | 'name' | 'email';
-  sort_order?: 'asc' | 'desc';
+  sort_by?: "created_at" | "name" | "email";
+  sort_order?: "asc" | "desc";
 }
 ```
 
@@ -398,8 +396,8 @@ This module integrates with the following backend endpoints:
 
 ```typescript
 // Zustand store integration
-import { create } from 'zustand';
-import { usersApi } from '@/lib/api';
+import { create } from "zustand";
+import { usersApi } from "@/lib/api";
 
 const useUserStore = create((set, get) => ({
   users: [],
@@ -423,16 +421,16 @@ const useUserStore = create((set, get) => ({
     set({ loading: true, error: null });
     try {
       const newUser = await usersApi.createUser(userData);
-      set(state => ({ 
-        users: [...state.users, newUser], 
-        loading: false 
+      set((state) => ({
+        users: [...state.users, newUser],
+        loading: false,
       }));
       return newUser;
     } catch (error) {
       set({ error: error.message, loading: false });
       throw error;
     }
-  }
+  },
 }));
 ```
 

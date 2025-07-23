@@ -45,12 +45,14 @@ def validate_email(email: str) -> bool:
 ```
 
 **Key Features:**
+
 - RFC-compliant email validation using the `email_validator` library
 - Maximum length enforcement (320 characters per RFC 5321)
 - Deliverability checking disabled for performance and privacy
 - Graceful error handling with boolean return
 
 **Usage Examples:**
+
 ```python
 # Valid email addresses
 assert validate_email("user@example.com") == True
@@ -90,12 +92,14 @@ def validate_password(password: str, min_length: int = 8) -> bool:
 ```
 
 **Password Requirements:**
+
 - Minimum length (default: 8 characters)
 - At least one letter (A-Z or a-z)
 - At least one digit (0-9)
 - Configurable minimum length parameter
 
 **Usage Examples:**
+
 ```python
 # Valid passwords
 assert validate_password("password123") == True
@@ -151,12 +155,14 @@ def get_password_validation_error(password: str, min_length: int = 8) -> str | N
 ```
 
 **Features:**
+
 - Specific error message for each validation failure
 - Type-safe error message literals
 - Parameter validation with appropriate exceptions
 - Clear, user-friendly error messages
 
 **Usage Examples:**
+
 ```python
 # Valid password returns None
 assert get_password_validation_error("validpass1") is None
@@ -190,20 +196,20 @@ from src.utils.errors import ValidationError
 
 async def register_user(email: str, password: str, name: str | None = None) -> User:
     """Register a new user with comprehensive validation."""
-    
+
     # Email validation
     if not validate_email(email):
         raise ValidationError("Invalid email format")
-    
+
     # Password validation with detailed error
     password_error = get_password_validation_error(password)
     if password_error:
         raise ValidationError(password_error)
-    
+
     # Additional business logic validation
     if await user_exists(email):
         raise ValidationError("Email already registered")
-    
+
     return await create_user(email, password, name)
 ```
 
@@ -219,13 +225,13 @@ class UserRegistrationRequest(BaseModel):
     email: str
     password: str
     name: str | None = None
-    
+
     @validator('email')
     def validate_email_field(cls, v):
         if not validate_email(v):
             raise ValueError('Invalid email format')
         return v
-    
+
     @validator('password')
     def validate_password_field(cls, v):
         error = get_password_validation_error(v)
@@ -237,8 +243,8 @@ class UserRegistrationRequest(BaseModel):
 async def register_user_endpoint(request: UserRegistrationRequest):
     try:
         user = await user_service.register_user(
-            request.email, 
-            request.password, 
+            request.email,
+            request.password,
             request.name
         )
         return {"message": "User registered successfully", "user_id": user.id}
@@ -258,26 +264,26 @@ export interface PasswordValidationResult {
 }
 
 export function validatePassword(
-  password: string, 
-  minLength: number = 8
+  password: string,
+  minLength: number = 8,
 ): PasswordValidationResult {
   const errors: string[] = [];
-  
+
   if (password.length < minLength) {
     errors.push(`Password must be at least ${minLength} characters.`);
   }
-  
+
   if (!/[A-Za-z]/.test(password)) {
     errors.push("Password must contain at least one letter.");
   }
-  
+
   if (!/\d/.test(password)) {
     errors.push("Password must contain at least one digit.");
   }
-  
+
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
@@ -300,17 +306,17 @@ def sanitize_user_input(input_str: str, max_length: int = 1000) -> str:
     """Sanitize user input for security."""
     # Trim whitespace
     sanitized = input_str.strip()
-    
+
     # Limit length
     if len(sanitized) > max_length:
         sanitized = sanitized[:max_length]
-    
+
     # HTML escape for XSS prevention
     sanitized = html.escape(sanitized)
-    
+
     # Remove potentially dangerous characters
     sanitized = re.sub(r'[<>"\'\&]', '', sanitized)
-    
+
     return sanitized
 ```
 
@@ -325,10 +331,10 @@ validation_limiter = AsyncRateLimiter(max_calls=10, period=60.0)
 async def rate_limited_validation(user_id: str, validator_func, *args):
     """Apply rate limiting to validation functions."""
     key = f"validation:{user_id}"
-    
+
     if not await validation_limiter.is_allowed(key):
         raise ValidationError("Too many validation attempts. Please try again later.")
-    
+
     return validator_func(*args)
 ```
 
@@ -362,7 +368,7 @@ import pytest
 
 class TestValidation:
     """Comprehensive validation testing."""
-    
+
     @pytest.mark.parametrize("email,expected", [
         ("user@example.com", True),
         ("invalid.email", False),
@@ -372,7 +378,7 @@ class TestValidation:
     ])
     def test_email_validation(self, email, expected):
         assert validate_email(email) == expected
-    
+
     @pytest.mark.parametrize("password,min_length,expected", [
         ("validpass1", 8, True),
         ("short1", 8, False),
@@ -382,7 +388,7 @@ class TestValidation:
     ])
     def test_password_validation(self, password, min_length, expected):
         assert validate_password(password, min_length) == expected
-    
+
     def test_password_error_messages(self):
         assert get_password_validation_error("short") == "Password must be at least 8 characters."
         assert get_password_validation_error("nodigits") == "Password must contain at least one digit."

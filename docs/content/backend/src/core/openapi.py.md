@@ -154,18 +154,18 @@ def custom_openapi(self: FastAPI) -> dict[str, object]:
     # Check for cached schema
     if hasattr(self, "openapi_schema") and self.openapi_schema is not None:
         return cast(dict[str, object], self.openapi_schema)
-    
+
     # Generate base schema
     openapi_schema = original_openapi()
     logger.info("OpenAPI schema generated successfully")
-    
+
     # Apply customizations
     enhance_metadata(openapi_schema)
     add_security_schemes(openapi_schema)
     configure_endpoint_security(openapi_schema)
     add_endpoint_tags(openapi_schema)
     add_response_examples(openapi_schema)
-    
+
     # Cache and return
     self.openapi_schema = openapi_schema
     return openapi_schema
@@ -180,7 +180,7 @@ def enhance_metadata(schema: dict[str, object]) -> None:
         info = schema["info"]
         info["contact"] = dict(CONTACT)
         info["license"] = dict(LICENSE_INFO)
-    
+
     # Add server information
     schema["servers"] = list(SERVERS)
 ```
@@ -192,7 +192,7 @@ def add_security_schemes(schema: dict[str, object]) -> None:
     """Add comprehensive security schemes"""
     if "components" not in schema:
         schema["components"] = {}
-    
+
     components = schema["components"]
     if isinstance(components, dict):
         components["securitySchemes"] = {
@@ -218,7 +218,7 @@ def add_security_schemes(schema: dict[str, object]) -> None:
                 }
             }
         }
-    
+
     # Set global security requirements
     schema["security"] = [{"BearerAuth": []}, {"ApiKeyAuth": []}]
 ```
@@ -233,15 +233,15 @@ def configure_endpoint_security(schema: dict[str, object]) -> None:
     paths = schema.get("paths")
     if not isinstance(paths, dict):
         return
-    
+
     for path, path_item in paths.items():
         if not isinstance(path_item, dict):
             continue
-        
+
         for method, operation in path_item.items():
             if not isinstance(operation, dict):
                 continue
-            
+
             # Skip authentication for public endpoints
             if (path, method) in NON_AUTH_ENDPOINTS:
                 operation["security"] = []
@@ -268,11 +268,11 @@ def add_endpoint_tags(schema: dict[str, object]) -> None:
     paths = schema.get("paths")
     if not isinstance(paths, dict):
         return
-    
+
     for path, path_item in paths.items():
         if not isinstance(path_item, dict):
             continue
-        
+
         # Determine tag based on path
         if "/api/v1/auth" in path:
             tag = "Auth"
@@ -284,7 +284,7 @@ def add_endpoint_tags(schema: dict[str, object]) -> None:
             tag = "File"
         else:
             tag = "General"
-        
+
         # Apply tag to all methods
         for method in path_item:
             operation = path_item[method]
@@ -336,11 +336,11 @@ def add_response_examples(schema: dict[str, object]) -> None:
     paths = schema.get("paths")
     if not isinstance(paths, dict):
         return
-    
+
     for path, path_info in paths.items():
         if not isinstance(path_info, dict):
             continue
-        
+
         # Add examples for export endpoints
         if "/api/v1/users/export" in path:
             add_users_export_example(path_info)
@@ -365,10 +365,10 @@ def create_app() -> FastAPI:
         description="Modular, scalable, and LLM-powered platform for scientific paper review",
         version="1.0.0"
     )
-    
+
     # Apply OpenAPI customizations
     setup_openapi(app)
-    
+
     return app
 ```
 
@@ -379,14 +379,14 @@ def create_app() -> FastAPI:
 def export_openapi_schema(app: FastAPI, output_path: str) -> None:
     """Export OpenAPI schema to file for frontend code generation"""
     import json
-    
+
     # Generate customized schema
     schema = app.openapi()
-    
+
     # Write to file
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(schema, f, indent=2)
-    
+
     logger.info(f"OpenAPI schema exported to {output_path}")
 ```
 
@@ -431,7 +431,7 @@ def safe_schema_update(schema: dict[str, object], updates: OpenAPISchemaDict) ->
     # Validate schema structure
     if not isinstance(schema, dict):
         raise ValueError("Schema must be a dictionary")
-    
+
     # Apply updates with type checking
     for key, value in updates.items():
         if key in schema:
@@ -455,7 +455,7 @@ def custom_openapi(self: FastAPI) -> dict[str, object]:
         # Generate base schema
         openapi_schema = original_openapi()
         logger.info("OpenAPI schema generated successfully")
-        
+
         # Apply customizations with error handling
         try:
             enhance_schema(openapi_schema)
@@ -464,11 +464,11 @@ def custom_openapi(self: FastAPI) -> dict[str, object]:
             logger.error(f"Schema customization failed: {e}")
             # Return base schema if customization fails
             return openapi_schema
-        
+
         # Cache successful schema
         self.openapi_schema = openapi_schema
         return openapi_schema
-        
+
     except Exception as e:
         logger.error(f"OpenAPI schema generation failed: {e}")
         # Return minimal schema as fallback
@@ -483,17 +483,17 @@ def validate_paths(paths: dict[str, object]) -> bool:
     if not isinstance(paths, dict):
         logger.error("OpenAPI schema missing 'paths' or not a dict")
         return False
-    
+
     for path, path_item in paths.items():
         if not isinstance(path_item, dict):
             logger.warning(f"Invalid path item for {path}")
             continue
-        
+
         for method, operation in path_item.items():
             if not isinstance(operation, dict):
                 logger.warning(f"Invalid operation for {path} {method}")
                 continue
-    
+
     return True
 ```
 
@@ -507,7 +507,7 @@ def custom_openapi(self: FastAPI) -> dict[str, object]:
     # Check cache first
     if hasattr(self, "openapi_schema") and self.openapi_schema is not None:
         return cast(dict[str, object], self.openapi_schema)
-    
+
     # Generate and cache schema
     schema = generate_enhanced_schema()
     self.openapi_schema = schema
@@ -582,13 +582,13 @@ with open("frontend/openapi-schema.json", "w") as f:
 def test_openapi_schema():
     """Test OpenAPI schema generation and structure"""
     from fastapi.testclient import TestClient
-    
+
     client = TestClient(app)
     response = client.get("/openapi.json")
-    
+
     assert response.status_code == 200
     schema = response.json()
-    
+
     # Validate schema structure
     assert "info" in schema
     assert "components" in schema
@@ -603,11 +603,11 @@ def test_security_schemes():
     """Test security scheme configuration"""
     schema = app.openapi()
     security_schemes = schema["components"]["securitySchemes"]
-    
+
     # Validate Bearer auth
     assert security_schemes["BearerAuth"]["type"] == "http"
     assert security_schemes["BearerAuth"]["scheme"] == "bearer"
-    
+
     # Validate API key auth
     assert security_schemes["ApiKeyAuth"]["type"] == "apiKey"
     assert security_schemes["ApiKeyAuth"]["in"] == "header"

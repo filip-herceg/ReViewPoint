@@ -27,7 +27,7 @@ import { Toaster as Sonner, type ToasterProps } from "sonner";
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme();
-  
+
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
@@ -50,7 +50,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
 ### Basic Toast Setup
 
 ```tsx
-import { Toaster } from '@/components/ui/sonner';
+import { Toaster } from "@/components/ui/sonner";
 
 function App() {
   return (
@@ -65,18 +65,13 @@ function App() {
 ### Custom Configuration
 
 ```tsx
-import { Toaster } from '@/components/ui/sonner';
+import { Toaster } from "@/components/ui/sonner";
 
 function App() {
   return (
     <>
       <YourAppContent />
-      <Toaster
-        position="top-right"
-        duration={4000}
-        closeButton
-        richColors
-      />
+      <Toaster position="top-right" duration={4000} closeButton richColors />
     </>
   );
 }
@@ -85,20 +80,20 @@ function App() {
 ### Using Toast Notifications
 
 ```tsx
-import { toast } from 'sonner';
+import { toast } from "sonner";
 
 // Success toast
-toast.success('Operation completed successfully!');
+toast.success("Operation completed successfully!");
 
 // Error toast
-toast.error('Something went wrong');
+toast.error("Something went wrong");
 
 // Info toast
-toast.info('Information message');
+toast.info("Information message");
 
 // Loading toast
-const loadingToast = toast.loading('Processing...');
-toast.success('Done!', { id: loadingToast });
+const loadingToast = toast.loading("Processing...");
+toast.success("Done!", { id: loadingToast });
 ```
 
 ## Theme Integration
@@ -116,7 +111,8 @@ const { theme = "system" } = useTheme();
 ### Semantic Color Classes
 
 ```tsx
-className="toaster group bg-popover text-popover-foreground border border-border"
+className =
+  "toaster group bg-popover text-popover-foreground border border-border";
 ```
 
 - **Background**: Uses `bg-popover` for consistent popup styling
@@ -161,30 +157,30 @@ className="toaster group bg-popover text-popover-foreground border border-border
 
 ```tsx
 // Success states
-toast.success('File uploaded successfully');
+toast.success("File uploaded successfully");
 
-// Error states  
-toast.error('Failed to save changes');
+// Error states
+toast.error("Failed to save changes");
 
 // Warning states
-toast.warning('Please save your work');
+toast.warning("Please save your work");
 
 // Information
-toast.info('New feature available');
+toast.info("New feature available");
 ```
 
 ### Advanced Toast Features
 
 ```tsx
 // Custom duration
-toast.success('Saved!', { duration: 2000 });
+toast.success("Saved!", { duration: 2000 });
 
 // Action buttons
-toast.error('Failed to delete', {
+toast.error("Failed to delete", {
   action: {
-    label: 'Retry',
-    onClick: () => retryDelete()
-  }
+    label: "Retry",
+    onClick: () => retryDelete(),
+  },
 });
 
 // Rich content
@@ -224,11 +220,11 @@ toast.custom((t) => (
 
 ```tsx
 <Toaster
-  duration={5000}        // Auto-dismiss after 5 seconds
-  closeButton={true}     // Show close button
-  richColors={true}      // Use rich color variants
-  expand={true}          // Allow toast expansion
-  visibleToasts={5}      // Maximum visible toasts
+  duration={5000} // Auto-dismiss after 5 seconds
+  closeButton={true} // Show close button
+  richColors={true} // Use rich color variants
+  expand={true} // Allow toast expansion
+  visibleToasts={5} // Maximum visible toasts
 />
 ```
 
@@ -238,10 +234,10 @@ toast.custom((t) => (
 <Toaster
   className="custom-toaster"
   toastOptions={{
-    className: 'custom-toast',
+    className: "custom-toast",
     style: {
       // Custom inline styles if needed
-    }
+    },
   }}
 />
 ```

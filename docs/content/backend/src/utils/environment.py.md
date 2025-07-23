@@ -62,12 +62,14 @@ def is_test_mode() -> bool:
 3. **Application Override**: `REVIEWPOINT_TEST_MODE == '1'`
 
 **Benefits:**
+
 - Automatic test detection without manual configuration
 - Framework-agnostic test mode identification
 - Application-specific override capability
 - Type-safe environment variable handling
 
 **Usage Examples:**
+
 ```python
 # Basic test mode detection
 if is_test_mode():
@@ -104,27 +106,27 @@ from pydantic import BaseSettings
 
 class Settings(BaseSettings):
     """Application settings with environment-aware defaults."""
-    
+
     # Database configuration
     database_url: str = "postgresql://localhost/reviewpoint"
     database_echo: bool = False
-    
+
     # Email configuration
     smtp_host: str = "localhost"
     smtp_port: int = 587
     email_enabled: bool = True
-    
+
     # Security settings
     secret_key: str = "your-secret-key"
     access_token_expire_minutes: int = 30
-    
+
     # File upload settings
     upload_dir: str = "./uploads"
     max_file_size: int = 10 * 1024 * 1024  # 10MB
-    
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        
+
         # Apply test mode overrides
         if is_test_mode():
             self.database_url = "sqlite:///:memory:"
@@ -153,13 +155,13 @@ from src.utils.environment import is_test_mode
 
 class ExternalServiceManager:
     """Manages external service connections with test mode support."""
-    
+
     def __init__(self):
         self.email_service = self._create_email_service()
         self.payment_service = self._create_payment_service()
         self.analytics_service = self._create_analytics_service()
         self.cache_service = self._create_cache_service()
-    
+
     def _create_email_service(self):
         if is_test_mode():
             return MockEmailService()
@@ -170,7 +172,7 @@ class ExternalServiceManager:
                 username=settings.smtp_username,
                 password=settings.smtp_password
             )
-    
+
     def _create_payment_service(self):
         if is_test_mode():
             return MockPaymentService()
@@ -179,7 +181,7 @@ class ExternalServiceManager:
                 api_key=settings.stripe_api_key,
                 webhook_secret=settings.stripe_webhook_secret
             )
-    
+
     def _create_analytics_service(self):
         if is_test_mode():
             return MockAnalyticsService()
@@ -187,7 +189,7 @@ class ExternalServiceManager:
             return GoogleAnalyticsService(
                 tracking_id=settings.ga_tracking_id
             )
-    
+
     def _create_cache_service(self):
         if is_test_mode():
             return InMemoryCacheService()
@@ -214,7 +216,7 @@ from sqlalchemy.orm import sessionmaker
 
 class DatabaseManager:
     """Database connection manager with test mode support."""
-    
+
     def __init__(self):
         self.database_url = self._get_database_url()
         self.engine = create_async_engine(
@@ -227,7 +229,7 @@ class DatabaseManager:
             class_=AsyncSession,
             expire_on_commit=False
         )
-    
+
     def _get_database_url(self) -> str:
         """Get appropriate database URL for current environment."""
         if is_test_mode():
@@ -239,11 +241,11 @@ class DatabaseManager:
                 "DATABASE_URL",
                 "postgresql+asyncpg://localhost/reviewpoint"
             )
-    
+
     async def create_tables(self):
         """Create database tables."""
         from src.models.base import Base
-        
+
         if is_test_mode():
             # Always recreate tables in test mode
             async with self.engine.begin() as conn:
@@ -252,7 +254,7 @@ class DatabaseManager:
         else:
             # Use migrations in production
             pass  # Alembic handles this
-    
+
     async def get_session(self) -> AsyncSession:
         """Get database session."""
         async with self.SessionLocal() as session:
@@ -279,21 +281,21 @@ assert is_test_mode() == True  # This will pass when running under pytest
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_environment():
     """Automatically configure test environment."""
-    
+
     # Verify we're in test mode
     assert is_test_mode(), "Tests must run in test mode"
-    
+
     # Set additional test environment variables
     os.environ["REVIEWPOINT_TEST_MODE"] = "1"
     os.environ["ENVIRONMENT"] = "test"
-    
+
     # Configure test-specific settings
     os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///:memory:"
     os.environ["REDIS_URL"] = "redis://localhost:6379/1"  # Test database
     os.environ["EMAIL_BACKEND"] = "mock"
-    
+
     yield
-    
+
     # Cleanup after tests
     test_vars = [
         "REVIEWPOINT_TEST_MODE",
@@ -310,10 +312,10 @@ def test_client():
     """Create test client with proper environment detection."""
     from fastapi.testclient import TestClient
     from src.main import app
-    
+
     # Verify test mode
     assert is_test_mode()
-    
+
     with TestClient(app) as client:
         yield client
 
@@ -321,10 +323,10 @@ def test_client():
 def test_service_initialization():
     """Test that services are properly initialized in test mode."""
     assert is_test_mode()
-    
+
     # Services should use mock implementations
     from src.services import email_service, payment_service
-    
+
     assert isinstance(email_service, MockEmailService)
     assert isinstance(payment_service, MockPaymentService)
 ```
@@ -339,7 +341,7 @@ from src.utils.environment import is_test_mode
 
 def create_app() -> FastAPI:
     """Create FastAPI application with environment-aware configuration."""
-    
+
     app = FastAPI(
         title="ReViewPoint API",
         version="1.0.0",
@@ -347,7 +349,7 @@ def create_app() -> FastAPI:
         docs_url="/docs" if not is_test_mode() else None,  # Disable docs in production
         redoc_url="/redoc" if not is_test_mode() else None
     )
-    
+
     # Environment-specific middleware
     if is_test_mode():
         # Add test-specific middleware
@@ -359,7 +361,7 @@ def create_app() -> FastAPI:
         from src.middleware.logging import LoggingMiddleware
         app.add_middleware(SecurityMiddleware)
         app.add_middleware(LoggingMiddleware)
-    
+
     # Environment-specific startup events
     @app.on_event("startup")
     async def startup_event():
@@ -369,7 +371,7 @@ def create_app() -> FastAPI:
         else:
             print("Starting application in PRODUCTION mode")
             await setup_production_services()
-    
+
     return app
 
 app = create_app()
@@ -386,26 +388,26 @@ from typing import Any, Optional
 
 class CacheService:
     """Cache service with test mode support."""
-    
+
     def __init__(self):
         if is_test_mode():
             self.backend = InMemoryCache()
         else:
             self.backend = RedisCache()
-    
+
     async def get(self, key: str) -> Optional[Any]:
         return await self.backend.get(key)
-    
+
     async def set(self, key: str, value: Any, expire: int = 3600) -> None:
         # Shorter TTL in test mode
         if is_test_mode():
             expire = min(expire, 60)  # Max 1 minute in tests
-        
+
         await self.backend.set(key, value, expire)
-    
+
     async def delete(self, key: str) -> None:
         await self.backend.delete(key)
-    
+
     async def clear(self) -> None:
         """Clear all cache entries."""
         if is_test_mode():
@@ -417,26 +419,26 @@ class CacheService:
 
 class InMemoryCache:
     """In-memory cache for testing."""
-    
+
     def __init__(self):
         self.store = {}
         self.expiration = {}
-    
+
     async def get(self, key: str) -> Optional[Any]:
         if key in self.expiration and asyncio.get_event_loop().time() > self.expiration[key]:
             del self.store[key]
             del self.expiration[key]
             return None
         return self.store.get(key)
-    
+
     async def set(self, key: str, value: Any, expire: int = 3600) -> None:
         self.store[key] = value
         self.expiration[key] = asyncio.get_event_loop().time() + expire
-    
+
     async def delete(self, key: str) -> None:
         self.store.pop(key, None)
         self.expiration.pop(key, None)
-    
+
     async def clear(self) -> None:
         self.store.clear()
         self.expiration.clear()
@@ -452,18 +454,18 @@ from src.utils.environment import is_test_mode
 
 def configure_logging() -> None:
     """Configure logging based on environment."""
-    
+
     if is_test_mode():
         # Minimal logging for tests
         logging.basicConfig(
             level=logging.WARNING,
             format="%(levelname)s: %(message)s"
         )
-        
+
         # Disable noisy loggers in test mode
         logging.getLogger("sqlalchemy").setLevel(logging.ERROR)
         logging.getLogger("urllib3").setLevel(logging.ERROR)
-        
+
     else:
         # Comprehensive logging for production
         logging.basicConfig(
@@ -487,31 +489,31 @@ from functools import lru_cache
 
 class PerformanceManager:
     """Performance optimizations with test mode awareness."""
-    
+
     @staticmethod
     @lru_cache(maxsize=128 if not is_test_mode() else 16)
     def expensive_calculation(input_data: str) -> str:
         """Expensive calculation with environment-aware caching."""
         # Smaller cache in test mode to avoid memory issues
         return f"processed_{input_data}"
-    
+
     @staticmethod
     def get_connection_pool_size() -> int:
         """Get appropriate connection pool size."""
         return 5 if is_test_mode() else 20
-    
+
     @staticmethod
     def get_worker_count() -> int:
         """Get appropriate worker count."""
         return 1 if is_test_mode() else 4
-    
+
     @staticmethod
     def should_enable_feature(feature_name: str) -> bool:
         """Feature flag with test mode consideration."""
         if is_test_mode():
             # Enable all features in test mode for coverage
             return True
-        
+
         # Production feature flags
         return os.environ.get(f"ENABLE_{feature_name.upper()}", "false").lower() == "true"
 ```
@@ -556,47 +558,47 @@ from src.utils.environment import is_test_mode
 
 class TestEnvironmentDetection:
     """Test environment detection functionality."""
-    
+
     def test_pytest_detection(self):
         """Test automatic PyTest detection."""
         # This test automatically runs in test mode due to PYTEST_CURRENT_TEST
         assert is_test_mode() == True
-    
+
     def test_manual_test_mode(self, monkeypatch):
         """Test manual test mode activation."""
         # Clear all test environment variables
         monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
         monkeypatch.delenv("ENVIRONMENT", raising=False)
         monkeypatch.delenv("REVIEWPOINT_TEST_MODE", raising=False)
-        
+
         # Should not be in test mode
         assert is_test_mode() == False
-        
+
         # Set manual test mode
         monkeypatch.setenv("REVIEWPOINT_TEST_MODE", "1")
         assert is_test_mode() == True
-    
+
     def test_environment_variable(self, monkeypatch):
         """Test ENVIRONMENT variable detection."""
         monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
         monkeypatch.delenv("REVIEWPOINT_TEST_MODE", raising=False)
-        
+
         # Set environment to test
         monkeypatch.setenv("ENVIRONMENT", "test")
         assert is_test_mode() == True
-        
+
         # Set environment to production
         monkeypatch.setenv("ENVIRONMENT", "production")
         assert is_test_mode() == False
-    
+
     def test_multiple_indicators(self, monkeypatch):
         """Test behavior with multiple test indicators."""
         # Set multiple test indicators
         monkeypatch.setenv("ENVIRONMENT", "test")
         monkeypatch.setenv("REVIEWPOINT_TEST_MODE", "1")
-        
+
         assert is_test_mode() == True
-        
+
         # Remove one indicator
         monkeypatch.delenv("ENVIRONMENT")
         assert is_test_mode() == True  # Still true due to REVIEWPOINT_TEST_MODE

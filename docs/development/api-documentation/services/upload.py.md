@@ -23,7 +23,7 @@ The main service class that coordinates all file operations:
 ```python
 class UploadService:
     """Service for handling file uploads and management."""
-    
+
     def __init__(self) -> None:
         self.settings = get_settings()
         self.upload_dir = Path(self.settings.upload_dir)
@@ -31,6 +31,7 @@ class UploadService:
 ```
 
 **Key Features:**
+
 - Automatic upload directory creation
 - Configuration-driven storage paths
 - Environment-based settings management
@@ -55,6 +56,7 @@ print(f"File uploaded: {uploaded_file.filename}")
 ```
 
 **Upload Process:**
+
 1. **Filename Validation**: Checks for valid filename presence
 2. **Security Sanitization**: Sanitizes filename for safe storage
 3. **Size Validation**: Enforces 10MB file size limit
@@ -64,6 +66,7 @@ print(f"File uploaded: {uploaded_file.filename}")
 7. **User Association**: Links file to uploading user
 
 **Security Features:**
+
 - Filename sanitization to prevent path traversal
 - File size limits to prevent storage abuse
 - Safe filename validation using security utilities
@@ -85,6 +88,7 @@ if file_record:
 ```
 
 **Features:**
+
 - Efficient database lookup by filename
 - Complete metadata retrieval
 - Null handling for non-existent files
@@ -108,6 +112,7 @@ if deleted:
 ```
 
 **Deletion Process:**
+
 1. **File Lookup**: Retrieves file metadata from database
 2. **Ownership Verification**: Confirms user owns the file
 3. **Physical Deletion**: Removes file from storage directory
@@ -115,6 +120,7 @@ if deleted:
 5. **Error Resilience**: Continues even if physical deletion fails
 
 **Security Features:**
+
 - Strict ownership verification
 - Authorization checking before deletion
 - Graceful handling of missing files
@@ -135,6 +141,7 @@ if file_path.exists():
 ```
 
 **Features:**
+
 - Path construction using configured upload directory
 - Type-safe Path object returns
 - Consistent path handling across platforms
@@ -144,6 +151,7 @@ if file_path.exists():
 ### File Validation
 
 **Filename Security:**
+
 ```python
 # Sanitization process
 safe_filename = sanitize_filename(file.filename)
@@ -159,6 +167,7 @@ if not is_safe_filename(safe_filename):
 ### Storage Security
 
 **Unique File Naming:**
+
 ```python
 # UUID-based storage names prevent conflicts
 file_id = str(uuid.uuid4())
@@ -174,11 +183,12 @@ stored_filename = f"{file_id}{file_extension}"
 ### Access Control
 
 **Ownership Verification:**
+
 ```python
 # Strict ownership checking
 if file_record.user_id != user_id:
     raise HTTPException(
-        status_code=403, 
+        status_code=403,
         detail="Not authorized to delete this file"
     )
 ```
@@ -191,6 +201,7 @@ if file_record.user_id != user_id:
 ### Size Limitations
 
 **Storage Abuse Prevention:**
+
 ```python
 # 10MB file size limit
 max_size = 10 * 1024 * 1024
@@ -257,7 +268,7 @@ async def download_endpoint(
     file_record = await upload_service.get_file(session, filename)
     if not file_record:
         raise HTTPException(status_code=404, detail="File not found")
-    
+
     file_path = upload_service.get_file_path(filename)
     return FileResponse(
         path=file_path,

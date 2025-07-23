@@ -24,7 +24,11 @@ The `ErrorBoundary` component provides comprehensive error handling for React ap
 ```tsx
 interface ErrorBoundaryProps {
   children: ReactNode;
-  fallback?: (error: Error, errorInfo: React.ErrorInfo, retry: () => void) => ReactNode;
+  fallback?: (
+    error: Error,
+    errorInfo: React.ErrorInfo,
+    retry: () => void,
+  ) => ReactNode;
   onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
   testId?: string;
   retryText?: string;
@@ -85,7 +89,7 @@ handleRetry = () => {
 ### Basic Error Boundary
 
 ```tsx
-import { ErrorBoundary } from '@/components/ui/error-boundary';
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 function App() {
   return (
@@ -105,7 +109,7 @@ function App() {
   )}
   onError={(error, errorInfo) => {
     // Custom error handling
-    analytics.track('error_boundary_triggered', { error: error.message });
+    analytics.track("error_boundary_triggered", { error: error.message });
   }}
 >
   <App />
@@ -116,7 +120,7 @@ function App() {
 
 ```tsx
 <ErrorBoundary
-  showDetails={process.env.NODE_ENV === 'development'}
+  showDetails={process.env.NODE_ENV === "development"}
   retryText="Try Again"
   testId="app-error-boundary"
 >

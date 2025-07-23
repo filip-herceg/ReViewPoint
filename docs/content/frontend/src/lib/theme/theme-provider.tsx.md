@@ -10,10 +10,10 @@ The `theme-provider.tsx` file provides centralized theme management for the ReVi
 
 ```typescript
 interface ThemeContextType {
-  mode: ThemeMode;           // Current theme mode ('light' | 'dark' | 'system')
-  setMode: (mode: ThemeMode) => void;  // Manual theme setter
-  toggleMode: () => void;    // Toggle between light/dark
-  colors: ThemeColors;       // Current color palette
+  mode: ThemeMode; // Current theme mode ('light' | 'dark' | 'system')
+  setMode: (mode: ThemeMode) => void; // Manual theme setter
+  toggleMode: () => void; // Toggle between light/dark
+  colors: ThemeColors; // Current color palette
 }
 ```
 
@@ -46,18 +46,16 @@ interface ThemeContextType {
 The provider automatically selects the appropriate color palette:
 
 ```typescript
-const colors = mode === 'dark' 
-  ? themeColors.dark 
-  : themeColors.light;
+const colors = mode === "dark" ? themeColors.dark : themeColors.light;
 ```
 
 ### **System Theme Detection**
 
 ```typescript
 // Detects system preference using media query
-const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-  ? 'dark' 
-  : 'light';
+const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+  ? "dark"
+  : "light";
 ```
 
 ## Dependencies
@@ -95,7 +93,7 @@ import { useTheme } from '@/lib/theme/theme-provider';
 
 function ThemeToggle() {
   const { mode, toggleMode, setMode } = useTheme();
-  
+
   return (
     <button onClick={toggleMode}>
       Current: {mode}
@@ -109,11 +107,11 @@ function ThemeToggle() {
 ```typescript
 function ThemedComponent() {
   const { colors } = useTheme();
-  
+
   return (
-    <div style={{ 
+    <div style={{
       backgroundColor: colors.background,
-      color: colors.foreground 
+      color: colors.foreground
     }}>
       Themed content
     </div>
@@ -136,7 +134,7 @@ function ThemedComponent() {
 try {
   localStorage.setItem(THEME_STORAGE_KEY, newMode);
 } catch (error) {
-  logger.warn('Theme persistence failed', error);
+  logger.warn("Theme persistence failed", error);
   // Continue with in-memory theme state
 }
 ```
@@ -160,8 +158,9 @@ The theme provider updates CSS custom properties for global theme application:
 
 ```typescript
 // Listens for system theme changes
-window.matchMedia('(prefers-color-scheme: dark)')
-  .addEventListener('change', handleSystemThemeChange);
+window
+  .matchMedia("(prefers-color-scheme: dark)")
+  .addEventListener("change", handleSystemThemeChange);
 ```
 
 ## Configuration Options
@@ -171,8 +170,8 @@ window.matchMedia('(prefers-color-scheme: dark)')
 ```typescript
 interface ThemeProviderProps {
   children: React.ReactNode;
-  defaultTheme?: ThemeMode;     // Initial theme mode
-  enableSystem?: boolean;       // Enable system preference detection
+  defaultTheme?: ThemeMode; // Initial theme mode
+  enableSystem?: boolean; // Enable system preference detection
 }
 ```
 
@@ -214,7 +213,7 @@ interface ThemeProviderProps {
 
 ```typescript
 // Test theme persistence
-localStorage.setItem('reviewpoint-theme', 'dark');
+localStorage.setItem("reviewpoint-theme", "dark");
 // Reload page to verify theme restoration
 
 // Test system theme detection

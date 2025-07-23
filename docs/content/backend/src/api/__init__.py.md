@@ -26,12 +26,14 @@ The API package provides the complete REST API implementation for the ReViewPoin
 ### API Layers
 
 #### Infrastructure Layer (api/)
+
 - **`deps.py`** - Comprehensive dependency injection system
 - **`__init__.py`** - API package initialization
 
 #### Endpoint Layer (api/v1/)
+
 - **`auth.py`** - Authentication and authorization endpoints
-- **`health.py`** - System health and monitoring endpoints  
+- **`health.py`** - System health and monitoring endpoints
 - **`uploads.py`** - File upload and management endpoints
 - **`websocket.py`** - Real-time WebSocket communication
 - **`users/`** - User management endpoint modules
@@ -43,6 +45,7 @@ The API package provides the complete REST API implementation for the ReViewPoin
 The API follows REST principles with consistent patterns:
 
 #### HTTP Methods
+
 - **GET** - Retrieve resources without side effects
 - **POST** - Create new resources or complex operations
 - **PUT** - Update existing resources (replace)
@@ -50,12 +53,14 @@ The API follows REST principles with consistent patterns:
 - **DELETE** - Remove resources
 
 #### Response Patterns
+
 - **2xx** - Success responses with appropriate data
 - **4xx** - Client errors with validation details
 - **5xx** - Server errors with minimal sensitive information
 - **Consistent JSON structure** across all endpoints
 
 #### URL Structure
+
 ```
 /api/v1/{resource}/{id?}/{action?}
 ```
@@ -65,18 +70,21 @@ The API follows REST principles with consistent patterns:
 Comprehensive security measures across all endpoints:
 
 #### Authentication Security
+
 - **JWT token validation** for protected endpoints
 - **Token blacklisting** for logout and security events
 - **Refresh token rotation** for extended sessions
 - **API key authentication** for service-to-service communication
 
 #### Authorization Patterns
+
 - **Role-based access control** for administrative functions
 - **Resource ownership** validation for user-specific data
 - **Feature flag** integration for controlled access
 - **Rate limiting** to prevent abuse
 
 #### Input Validation
+
 - **Pydantic schema validation** for all request data
 - **SQL injection prevention** through parameterized queries
 - **XSS protection** with proper output encoding
@@ -89,12 +97,14 @@ Comprehensive security measures across all endpoints:
 The API uses a sophisticated dependency injection system:
 
 #### Core Dependencies
+
 - **Database sessions** with async transaction management
 - **User authentication** with context propagation
 - **Service instances** with lifecycle management
 - **Repository access** with testable abstractions
 
 #### Cross-Cutting Concerns
+
 - **Request tracing** with unique ID propagation
 - **Error handling** with structured logging
 - **Performance monitoring** with metrics collection
@@ -105,6 +115,7 @@ The API uses a sophisticated dependency injection system:
 Dependency injection enables comprehensive testing:
 
 #### Mock Dependencies
+
 - **Service mocking** for unit tests
 - **Database mocking** for isolated testing
 - **Authentication bypassing** for test scenarios
@@ -129,12 +140,14 @@ graph TD
 ```
 
 #### Security Validation
+
 1. **Authentication verification** - JWT token validation and user lookup
 2. **Authorization checking** - Resource access permissions
 3. **Input sanitization** - Request data validation and cleaning
 4. **Rate limiting** - Request frequency monitoring
 
 #### Business Logic Integration
+
 1. **Service layer coordination** - Business logic execution
 2. **Repository pattern usage** - Data access abstraction
 3. **Transaction management** - Database consistency
@@ -145,6 +158,7 @@ graph TD
 Consistent response formats across all endpoints:
 
 #### Success Responses
+
 ```json
 {
   "data": {...},
@@ -154,6 +168,7 @@ Consistent response formats across all endpoints:
 ```
 
 #### Error Responses
+
 ```json
 {
   "error": "Error description",
@@ -163,6 +178,7 @@ Consistent response formats across all endpoints:
 ```
 
 #### Validation Errors
+
 ```json
 {
   "error": "Validation failed",
@@ -180,12 +196,14 @@ Consistent response formats across all endpoints:
 The current API version provides:
 
 #### Core Functionality
+
 - **User authentication** with JWT tokens
 - **Profile management** with customizable fields
 - **File operations** with secure upload/download
 - **Real-time features** with WebSocket communication
 
 #### Stability Guarantees
+
 - **Backward compatibility** for existing endpoints
 - **Deprecation notices** for planned changes
 - **Migration guides** for breaking changes
@@ -196,6 +214,7 @@ The current API version provides:
 Planned approach for API evolution:
 
 #### Version Management
+
 - **URL-based versioning** (/api/v2/) for major changes
 - **Header-based versioning** for minor variations
 - **Feature flags** for gradual rollouts
@@ -208,12 +227,14 @@ Planned approach for API evolution:
 Full async support throughout the API:
 
 #### Database Operations
+
 - **Async SQLAlchemy** for non-blocking database access
 - **Connection pooling** for efficient resource usage
 - **Query optimization** with proper indexing
 - **Transaction isolation** for data consistency
 
 #### External Services
+
 - **HTTP client async** for external API calls
 - **Caching integration** for frequently accessed data
 - **Background tasks** for time-consuming operations
@@ -224,6 +245,7 @@ Full async support throughout the API:
 Multi-layer caching for performance:
 
 #### Response Caching
+
 - **HTTP cache headers** for client-side caching
 - **CDN integration** for static content
 - **Application cache** for computed results
@@ -236,6 +258,7 @@ Multi-layer caching for performance:
 Structured error handling across all endpoints:
 
 #### Error Categories
+
 - **Validation errors** - Input data problems
 - **Authentication errors** - Token and credential issues
 - **Authorization errors** - Permission and access problems
@@ -243,6 +266,7 @@ Structured error handling across all endpoints:
 - **System errors** - Infrastructure and unexpected failures
 
 #### Error Response Strategy
+
 - **User-friendly messages** for client consumption
 - **Technical details** for debugging (development only)
 - **Error codes** for programmatic handling
@@ -253,12 +277,14 @@ Structured error handling across all endpoints:
 Comprehensive observability for API operations:
 
 #### Request Logging
+
 - **Request/response logging** with sensitive data masking
 - **Performance metrics** with timing information
 - **Error tracking** with stack traces
 - **User activity** for audit trails
 
 #### Monitoring Integration
+
 - **Health check endpoints** for uptime monitoring
 - **Metrics exposure** for performance dashboards
 - **Alert integration** for critical failures
@@ -271,12 +297,14 @@ Comprehensive observability for API operations:
 Seamless integration with React frontend:
 
 #### Type Generation
+
 - **OpenAPI schema** generation from endpoint definitions
 - **TypeScript types** automatic generation for frontend
 - **Client SDK** generation for consistent API usage
 - **Documentation** automatic generation from code
 
 #### Real-time Features
+
 - **WebSocket endpoints** for live updates
 - **Server-sent events** for notifications
 - **Polling endpoints** for status checks
@@ -287,12 +315,14 @@ Seamless integration with React frontend:
 API designed for extensibility:
 
 #### Service Integration
+
 - **Authentication providers** for SSO integration
 - **File storage services** for scalable uploads
 - **Notification services** for user communication
 - **Analytics services** for usage tracking
 
 #### API Gateway Ready
+
 - **Rate limiting** for traffic control
 - **API key management** for access control
 - **Request/response transformation** for legacy clients
@@ -305,18 +335,21 @@ API designed for extensibility:
 Multi-layer security throughout the API:
 
 #### Authentication Security
+
 - **JWT token security** with proper signing and validation
 - **Token refresh** with secure rotation patterns
 - **Session management** with proper invalidation
 - **Multi-factor authentication** support (extensible)
 
 #### Data Protection
+
 - **Input sanitization** preventing injection attacks
 - **Output encoding** preventing XSS attacks
 - **Sensitive data masking** in logs and responses
 - **Encryption at rest** for stored credentials
 
 #### API Security
+
 - **CORS configuration** for cross-origin security
 - **CSRF protection** for state-changing operations
 - **Rate limiting** for abuse prevention
@@ -329,18 +362,21 @@ Multi-layer security throughout the API:
 Multi-level testing approach:
 
 #### Unit Testing
+
 - **Endpoint testing** with mock dependencies
 - **Dependency testing** with isolated components
 - **Schema validation** testing with edge cases
 - **Error handling** testing with exception scenarios
 
 #### Integration Testing
+
 - **Database integration** with real connections
 - **Service integration** with actual business logic
 - **Authentication flow** testing with real tokens
 - **File upload** testing with actual files
 
 #### End-to-End Testing
+
 - **Complete workflows** from frontend to database
 - **Multi-user scenarios** with concurrent access
 - **Performance testing** under load

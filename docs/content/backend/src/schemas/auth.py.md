@@ -8,7 +8,7 @@ The `auth.py` schema module provides comprehensive Pydantic model definitions fo
 
 - Complete authentication request/response schemas
 - Integrated email and password validation
-- Password reset workflow support  
+- Password reset workflow support
 - Type-safe authentication responses
 - Custom field validators with security rules
 - TypedDict compatibility for flexible usage
@@ -26,10 +26,12 @@ from src.utils.validation import get_password_validation_error, validate_email
 ### Core Dependencies
 
 #### Internal Validation Systems
+
 - `src.utils.validation.validate_email` - Email format validation
 - `src.utils.validation.get_password_validation_error` - Password strength validation
 
 #### External Dependencies
+
 - `pydantic` - Core validation and serialization framework
 - `pydantic.EmailStr` - Email validation type
 - `typing_extensions.TypedDict` - Type dictionary support
@@ -45,14 +47,14 @@ class UserRegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8, max_length=128)
     name: str | None = Field(None, max_length=128)
-    
+
     @field_validator("email")
     @classmethod
     def validate_email_field(cls, v: str) -> str:
         if not validate_email(v):
             raise ValueError("Invalid email format.")
         return v
-    
+
     @field_validator("password")
     @classmethod
     def validate_password_field(cls, v: str) -> str:
@@ -90,6 +92,7 @@ class UserRegisterRequest(BaseModel):
    - No special validation requirements
 
 **Security Considerations:**
+
 - Password validation integrates with centralized security rules
 - Email validation prevents malformed addresses
 - Field length limits prevent buffer overflow attacks
@@ -115,6 +118,7 @@ class UserLoginRequest(BaseModel):
 - **Type Safety:** Strict type definitions for credential fields
 
 **Design Rationale:**
+
 - Login should accept any previously valid credentials
 - Password strength validation occurs during registration, not login
 - Email format validation prevents obvious input errors
@@ -127,7 +131,7 @@ class UserLoginRequest(BaseModel):
 ```python
 class PasswordResetRequest(BaseModel):
     email: EmailStr
-    
+
     @field_validator("email")
     @classmethod
     def validate_email_field(cls, v: str) -> str:
@@ -151,7 +155,7 @@ class PasswordResetRequest(BaseModel):
 class PasswordResetConfirmRequest(BaseModel):
     token: str
     new_password: str = Field(..., min_length=8, max_length=128)
-    
+
     @field_validator("new_password")
     @classmethod
     def validate_password_field(cls, v: str) -> str:
@@ -171,6 +175,7 @@ class PasswordResetConfirmRequest(BaseModel):
 - **Strength Validation:** Integration with password validation utility
 
 **Security Flow:**
+
 1. Token received from password reset email
 2. New password must meet all strength requirements
 3. Service layer validates token authenticity and expiration
@@ -210,6 +215,7 @@ class AuthResponseDict(TypedDict):
 **Purpose:** TypedDict version for compatibility with non-Pydantic code.
 
 **Use Cases:**
+
 - Function return types that don't need Pydantic features
 - Integration with legacy code expecting plain dictionaries
 - Performance-critical paths where Pydantic overhead matters
@@ -226,6 +232,7 @@ class MessageResponse(BaseModel):
 **Purpose:** Generic message response for operations that return status messages.
 
 **Common Usage:**
+
 - Password reset initiation confirmation
 - Logout success messages
 - General operation status responses
@@ -251,6 +258,7 @@ TOKEN_TYPE_BEARER: Final[Literal["bearer"]] = "bearer"
 **Purpose:** Centralized constant for OAuth2 bearer token type.
 
 **Benefits:**
+
 - Type safety with Literal type
 - Single source of truth for token type
 - Prevents typos and inconsistencies
@@ -266,6 +274,7 @@ _password_validator: ClassVar[Callable[[type["UserRegisterRequest"], str], str]]
 **Purpose:** Type hints for field validator methods.
 
 **Technical Details:**
+
 - ClassVar indicates class-level attributes
 - Callable types document validator signatures
 - Generic type parameters for different model classes
@@ -285,6 +294,7 @@ def validate_email_field(cls, v: str) -> str:
 ```
 
 **Validation Layers:**
+
 1. **Pydantic EmailStr:** Basic format validation
 2. **Custom Validator:** Additional business rules
 3. **Utility Integration:** Centralized validation logic
@@ -302,6 +312,7 @@ def validate_password_field(cls, v: str) -> str:
 ```
 
 **Security Features:**
+
 - Integration with centralized password policy
 - Detailed error messages for user feedback
 - Consistent validation across all password fields
@@ -315,11 +326,12 @@ def validate_password_field(cls, v: str) -> str:
 # Email validation failure
 ValueError("Invalid email format.")
 
-# Password validation failure  
+# Password validation failure
 ValueError("Password must contain at least one uppercase letter")
 ```
 
 **Error Handling Strategy:**
+
 - Clear, user-friendly error messages
 - Specific validation failures rather than generic errors
 - Integration with API error response formatting
@@ -339,6 +351,7 @@ except ValidationError as e:
 ```
 
 **Error Information Available:**
+
 - Field location (`loc`)
 - Error message (`msg`)
 - Error type (`type`)
@@ -360,14 +373,14 @@ try:
     request = UserRegisterRequest(**registration_data)
     # Process registration with validated data
     user = await user_service.register(request)
-    
+
     # Return authentication response
     response = AuthResponse(
         access_token=tokens.access_token,
         refresh_token=tokens.refresh_token
     )
     return response
-    
+
 except ValidationError as e:
     # Handle validation errors
     raise HTTPException(status_code=422, detail=e.errors())
@@ -383,12 +396,12 @@ try:
     request = UserLoginRequest(**login_data)
     # Authenticate user
     tokens = await auth_service.authenticate(request.email, request.password)
-    
+
     return AuthResponse(
         access_token=tokens.access_token,
         refresh_token=tokens.refresh_token
     )
-    
+
 except ValidationError:
     raise HTTPException(status_code=422, detail="Invalid credentials format")
 ```
@@ -413,7 +426,7 @@ confirm_request = PasswordResetConfirmRequest(**reset_confirm_data)
 
 # Reset password with validated data
 await auth_service.confirm_password_reset(
-    confirm_request.token, 
+    confirm_request.token,
     confirm_request.new_password
 )
 return MessageResponse(message="Password reset successful")
@@ -429,7 +442,7 @@ async def register(request: UserRegisterRequest) -> AuthResponse:
     # request is automatically validated by FastAPI
     user = await user_service.create_user(request)
     tokens = await auth_service.generate_tokens(user)
-    
+
     return AuthResponse(
         access_token=tokens.access_token,
         refresh_token=tokens.refresh_token
@@ -447,6 +460,7 @@ async def login(request: UserLoginRequest) -> AuthResponse:
 ### OpenAPI Documentation
 
 The schemas automatically generate comprehensive OpenAPI documentation with:
+
 - Field descriptions and constraints
 - Example values for testing
 - Validation error responses
@@ -475,7 +489,7 @@ def test_user_register_request_invalid_email():
     }
     with pytest.raises(ValidationError) as exc_info:
         UserRegisterRequest(**data)
-    
+
     errors = exc_info.value.errors()
     assert any(error['loc'] == ('email',) for error in errors)
 
@@ -502,7 +516,7 @@ def create_valid_registration_data():
 
 def create_valid_login_data():
     return {
-        "email": "test@example.com", 
+        "email": "test@example.com",
         "password": "password123"
     }
 ```
@@ -526,12 +540,14 @@ def create_valid_login_data():
 ## Security Best Practices
 
 ### Input Validation
+
 - All user inputs validated before processing
 - Length limits prevent buffer overflow attacks
 - Email format validation prevents injection
 - Password strength requirements enforced
 
 ### Error Information
+
 - Validation errors don't expose internal system details
 - Error messages are user-friendly but not revealing
 - Sensitive information never included in error responses
@@ -540,15 +556,18 @@ def create_valid_login_data():
 ## Related Modules
 
 ### **Core Dependencies**
+
 - **`src.utils.validation`** - Email and password validation functions
 - **`src.utils.errors`** - Custom exception classes for validation errors
 
 ### **Integration Points**
+
 - **`src.api.v1.auth`** - Authentication endpoints using these schemas
 - **`src.services.user`** - User service receiving validated schema objects
 - **`src.core.security`** - JWT token generation and validation
 
 ### **External Dependencies**
+
 - **`pydantic[email]`** - EmailStr validation support
 - **`typing_extensions`** - Enhanced typing for older Python versions
 

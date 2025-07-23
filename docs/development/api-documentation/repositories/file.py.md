@@ -32,6 +32,7 @@ if file_record:
 ```
 
 **Features:**
+
 - Efficient single-query lookup by filename
 - Type-safe return values with None handling
 - Minimal database overhead
@@ -59,6 +60,7 @@ except ValidationError as e:
 ```
 
 **Validation Features:**
+
 - **Filename Validation**: Ensures filename is not empty
 - **Type Safety**: Strong typing for all parameters
 - **Error Handling**: Comprehensive exception management
@@ -66,6 +68,7 @@ except ValidationError as e:
 - **Database Flush**: Immediate ID generation for reference
 
 **Error Handling:**
+
 - `ValidationError`: Raised when filename is empty
 - `Exception`: Generic database operation failures
 - Automatic session rollback on errors
@@ -87,6 +90,7 @@ else:
 ```
 
 **Features:**
+
 - Safe deletion with existence checking
 - Boolean return for operation success
 - No commit handling (delegated to caller)
@@ -109,12 +113,14 @@ print(f"Failed to delete: {failed}")
 ```
 
 **Security Features:**
+
 - **Ownership Verification**: Only deletes files owned by the user
 - **Batch Processing**: Efficient multi-file deletion
 - **Error Resilience**: Continues processing despite individual failures
 - **Detailed Results**: Returns lists of successful and failed deletions
 
 **Return Value:**
+
 - `tuple[list[str], list[str]]`: (successfully_deleted, failed_to_delete)
 - Separate tracking of success and failure cases
 - Comprehensive operation reporting
@@ -144,32 +150,38 @@ print(f"Found {len(files)} files out of {total_count} total")
 **Query Features:**
 
 **Pagination Support:**
+
 - `offset`: Starting position for results
 - `limit`: Maximum number of results to return
 - Efficient pagination with proper counting
 
 **Search Capabilities:**
+
 - `q` parameter: Partial filename matching with ILIKE
 - Case-insensitive search
 - Wildcard pattern matching
 
 **Filtering Options:**
+
 - `created_after`: Files created after specified datetime
 - `created_before`: Files created before specified datetime
 - User-specific filtering (always applied)
 
 **Sorting Options:**
+
 - `sort`: "created_at" or "filename"
 - `order`: "desc" or "asc"
 - Proper column mapping with type safety
 
 **Performance Optimizations:**
+
 - Subquery-based counting for accurate totals
 - Efficient query construction with conditional clauses
 - Proper indexing utilization
 - Minimal data transfer
 
 **Return Value:**
+
 - `tuple[list[File], int]`: (files, total_count)
 - Complete file objects with all metadata
 - Accurate total count for pagination
@@ -194,6 +206,7 @@ class File:
 ### Query Patterns
 
 **Efficient Lookups:**
+
 ```python
 # Single file lookup
 stmt = select(File).where(File.filename == filename)
@@ -210,6 +223,7 @@ stmt = select(File).where(
 ```
 
 **Optimized Counting:**
+
 ```python
 # Efficient count with subquery
 count_stmt = select(func.count()).select_from(stmt.subquery())
@@ -261,7 +275,7 @@ return {
 async def upload_workflow(session: AsyncSession, upload_file: UploadFile, user_id: int):
     # 1. Save physical file
     stored_filename = save_physical_file(upload_file)
-    
+
     # 2. Create database record
     try:
         file_record = await create_file(
@@ -292,7 +306,7 @@ async def list_user_files(session: AsyncSession, user_id: int, page: int = 1, pe
         sort="created_at",
         order="desc"
     )
-    
+
     return {
         "files": [file_to_dict(f) for f in files],
         "pagination": {
@@ -312,7 +326,7 @@ async def delete_workflow(session: AsyncSession, filename: str, user_id: int):
     file_record = await get_file_by_filename(session, filename)
     if not file_record or file_record.user_id != user_id:
         raise HTTPException(status_code=404, detail="File not found")
-    
+
     # 2. Delete database record
     deleted = await delete_file(session, filename)
     if deleted:
@@ -328,18 +342,21 @@ async def delete_workflow(session: AsyncSession, filename: str, user_id: int):
 ### Query Optimization
 
 **Indexing Strategy:**
+
 - Primary key index on `id`
 - Unique index on `filename`
 - Composite index on `(user_id, created_at)` for user file listings
 - Index on `user_id` for ownership queries
 
 **Efficient Pagination:**
+
 ```python
 # Avoid COUNT(*) on large tables with subquery approach
 count_stmt = select(func.count()).select_from(stmt.subquery())
 ```
 
 **Conditional Query Building:**
+
 ```python
 # Only add WHERE clauses when needed
 if q is not None:
@@ -358,12 +375,14 @@ if q is not None:
 ### Access Control
 
 **User Ownership Verification:**
+
 ```python
 # Always verify user owns the file
 stmt = select(File).where(File.filename == filename, File.user_id == user_id)
 ```
 
 **Input Validation:**
+
 - Filename validation to prevent empty values
 - User ID validation for proper access control
 - Size validation for storage limits
@@ -401,10 +420,10 @@ async def test_file_lifecycle():
     created = await create_file(session, "test.pdf", "application/pdf", 123)
     retrieved = await get_file_by_filename(session, "test.pdf")
     assert retrieved.id == created.id
-    
+
     deleted = await delete_file(session, "test.pdf")
     assert deleted is True
-    
+
     not_found = await get_file_by_filename(session, "test.pdf")
     assert not_found is None
 ```

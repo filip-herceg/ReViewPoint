@@ -74,17 +74,17 @@ async def blacklist_token(
 async def logout_user(session: AsyncSession, jwt_token: str):
     jti = extract_jti_from_token(jwt_token)
     expires_at = extract_expiration_from_token(jwt_token)
-    
+
     await blacklist_token(session, jti, expires_at)
     await session.commit()  # Caller controls transaction
-    
+
     return {"message": "Logged out successfully"}
 
 # During token revocation
 async def revoke_token(session: AsyncSession, token_data: dict):
     await blacklist_token(
-        session, 
-        token_data["jti"], 
+        session,
+        token_data["jti"],
         datetime.fromtimestamp(token_data["exp"], UTC)
     )
     await session.commit()
@@ -123,7 +123,7 @@ async def is_token_blacklisted(session: AsyncSession, jti: str) -> bool:
     )
     token: BlacklistedToken | None = result.scalar_one_or_none()
     now: Final[datetime] = datetime.now(UTC)
-    
+
     if token is not None:
         expires_at: datetime = token.expires_at
         # If naive, treat as UTC
@@ -176,17 +176,17 @@ async def validate_jwt_token(session: AsyncSession, token: str) -> bool:
         # Decode token to get JTI
         payload = decode_jwt_token(token)
         jti = payload.get("jti")
-        
+
         if not jti:
             return False  # No JTI means invalid token
-        
+
         # Check if token is blacklisted
         if await is_token_blacklisted(session, jti):
             return False  # Token is blacklisted
-        
+
         # Check other validations (expiration, signature, etc.)
         return validate_token_claims(payload)
-        
+
     except JWTError:
         return False
 ```
@@ -201,7 +201,7 @@ if token is not None:
     expires_at = token.expires_at
     if expires_at.tzinfo is None:
         expires_at = expires_at.replace(tzinfo=UTC)
-    
+
     # Only return True if token exists AND is not expired
     if expires_at > now:
         return True
@@ -334,12 +334,12 @@ from src.repositories.blacklisted_token import blacklist_token, is_token_blackli
 @pytest.mark.asyncio
 async def test_blacklist_token():
     mock_session = AsyncMock()
-    
+
     jti = "test_token_123"
     expires_at = datetime.now(UTC) + timedelta(hours=1)
-    
+
     await blacklist_token(mock_session, jti, expires_at)
-    
+
     # Verify token was added to session
     mock_session.add.assert_called_once()
     added_token = mock_session.add.call_args[0][0]
@@ -349,28 +349,28 @@ async def test_blacklist_token():
 @pytest.mark.asyncio
 async def test_is_token_blacklisted_expired():
     mock_session = AsyncMock()
-    
+
     # Mock expired token
     expired_token = BlacklistedToken(
         jti="expired_token",
         expires_at=datetime.now(UTC) - timedelta(hours=1)  # Expired
     )
     mock_session.execute.return_value.scalar_one_or_none.return_value = expired_token
-    
+
     result = await is_token_blacklisted(mock_session, "expired_token")
     assert result is False  # Expired tokens not considered blacklisted
 
 @pytest.mark.asyncio
 async def test_is_token_blacklisted_valid():
     mock_session = AsyncMock()
-    
+
     # Mock valid blacklisted token
     valid_token = BlacklistedToken(
         jti="valid_token",
         expires_at=datetime.now(UTC) + timedelta(hours=1)  # Not expired
     )
     mock_session.execute.return_value.scalar_one_or_none.return_value = valid_token
-    
+
     result = await is_token_blacklisted(mock_session, "valid_token")
     assert result is True  # Valid blacklisted token
 ```
@@ -383,26 +383,26 @@ async def test_token_blacklist_lifecycle():
     async with test_session() as session:
         jti = "integration_test_token"
         expires_at = datetime.now(UTC) + timedelta(hours=1)
-        
+
         # Initially not blacklisted
         is_blacklisted = await is_token_blacklisted(session, jti)
         assert is_blacklisted is False
-        
+
         # Blacklist the token
         await blacklist_token(session, jti, expires_at)
         await session.commit()
-        
+
         # Now should be blacklisted
         is_blacklisted = await is_token_blacklisted(session, jti)
         assert is_blacklisted is True
-        
+
         # Test with expired token
         expired_jti = "expired_test_token"
         expired_time = datetime.now(UTC) - timedelta(hours=1)
-        
+
         await blacklist_token(session, expired_jti, expired_time)
         await session.commit()
-        
+
         # Expired token should not be considered blacklisted
         is_blacklisted = await is_token_blacklisted(session, expired_jti)
         assert is_blacklisted is False
@@ -436,10 +436,10 @@ async def cleanup_expired_tokens(session: AsyncSession) -> int:
         select(BlacklistedToken).where(BlacklistedToken.expires_at <= now)
     )
     expired_tokens = result.scalars().all()
-    
+
     for token in expired_tokens:
         await session.delete(token)
-    
+
     await session.commit()
     return len(expired_tokens)
 ```

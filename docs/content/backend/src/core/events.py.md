@@ -89,11 +89,11 @@ async def validate_config() -> None:
     """Runtime configuration validation"""
     missing: list[str] = []
     settings = get_settings()
-    
+
     # Dynamic attribute checking with type safety
     if not getattr(settings, "db_url", None):
         missing.append("REVIEWPOINT_DB_URL")
-    
+
     if missing:
         raise RuntimeError(f"Missing: {', '.join(missing)}")
 ```
@@ -106,7 +106,7 @@ async def db_healthcheck() -> None:
     # Ensure engine initialization
     if db_module.engine is None:
         ensure_engine_initialized()
-    
+
     # Execute health check query
     async with engine.connect() as conn:
         await conn.execute(text("SELECT 1"))
@@ -175,23 +175,23 @@ def validate_config():
     """Comprehensive configuration validation"""
     missing: list[str] = []
     settings = get_settings()
-    
+
     # Database URL validation
     db_url = cast(str | None, getattr(settings, "db_url", None))
     if not db_url:
         missing.append("REVIEWPOINT_DB_URL")
-    
+
     # Environment validation
     environment = cast(str | None, getattr(settings, "environment", None))
     if not environment:
         missing.append("REVIEWPOINT_ENVIRONMENT")
-    
+
     # Conditional JWT secret validation
     if hasattr(settings, "jwt_secret"):
         jwt_secret = cast(str | None, getattr(settings, "jwt_secret", None))
         if not jwt_secret:
             missing.append("REVIEWPOINT_JWT_SECRET")
-    
+
     if missing:
         raise RuntimeError(f"Missing required environment variables: {', '.join(missing)}")
 ```
@@ -205,20 +205,20 @@ async def db_healthcheck() -> None:
     """Database connectivity and health verification"""
     import src.core.database as db_module
     from src.core.database import ensure_engine_initialized
-    
+
     try:
         # Ensure engine initialization
         if db_module.engine is None:
             ensure_engine_initialized()
-        
+
         engine = db_module.engine
         if engine is None:
             raise RuntimeError("Database engine is not initialized.")
-        
+
         # Execute simple health check query
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
-            
+
     except SQLAlchemyError as e:
         logger.error(f"Database health check failed: {e}")
         raise RuntimeError(f"Database health check failed: {e}") from e
@@ -238,7 +238,7 @@ def log_startup_complete() -> None:
             pool_size = "n/a"
     except Exception:
         pool_size = "n/a"
-    
+
     logger.info(f"DB pool size: {pool_size}")
 ```
 
@@ -298,10 +298,10 @@ except RuntimeError as e:
 async def on_startup() -> None:
     # Quick configuration validation first
     await validate_config()  # Fast, no I/O
-    
+
     # Database health check with connection reuse
     await db_healthcheck()  # Uses connection pool
-    
+
     # Optional: Concurrent initialization
     # await asyncio.gather(
     #     cache.init(),
@@ -354,7 +354,7 @@ app.add_event_handler("shutdown", on_shutdown)
 async def extended_startup():
     """Extended startup with additional components"""
     await on_startup()  # Core startup
-    
+
     # Additional initialization
     await redis_client.connect()
     await message_queue.initialize()
@@ -408,7 +408,7 @@ async def test_config_validation():
 async def test_db_healthcheck():
     """Test database health check"""
     from core.events import db_healthcheck
-    
+
     # Should complete successfully with test database
     await db_healthcheck()
 ```
@@ -437,12 +437,12 @@ async def test_db_healthcheck():
 async def on_startup() -> None:
     await validate_config()
     await db_healthcheck()
-    
+
     # Extension points for additional initialization
     await init_cache()
     await init_message_queue()
     await register_with_service_discovery()
-    
+
     log_startup_complete()
 ```
 

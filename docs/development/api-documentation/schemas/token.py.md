@@ -204,18 +204,18 @@ async def login_endpoint(credentials: UserLoginRequest):
         email=credentials.email,
         password=credentials.password
     )
-    
+
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    
+
     # Generate tokens
     access_token = await token_service.create_access_token(
         data={"sub": str(user.id), "username": user.email},
         expires_delta=timedelta(hours=1)
     )
-    
+
     refresh_token = await token_service.create_refresh_token(user.id)
-    
+
     # Return token response
     return TokenResponse(
         access_token=access_token,
@@ -234,24 +234,24 @@ async def refresh_token_endpoint(request: RefreshTokenRequest):
         user_id = await token_service.validate_refresh_token(
             request.refresh_token
         )
-        
+
         if not user_id:
             raise HTTPException(status_code=401, detail="Invalid refresh token")
-        
+
         # Get user details
         user = await user_service.get_user(user_id)
-        
+
         # Generate new tokens
         new_access_token = await token_service.create_access_token(
             data={"sub": str(user.id), "username": user.email},
             expires_delta=timedelta(hours=1)
         )
-        
+
         new_refresh_token = await token_service.create_refresh_token(user.id)
-        
+
         # Invalidate old refresh token
         await token_service.blacklist_token(request.refresh_token)
-        
+
         # Return new tokens
         return TokenResponse(
             access_token=new_access_token,
@@ -259,7 +259,7 @@ async def refresh_token_endpoint(request: RefreshTokenRequest):
             token_type="bearer",
             expires_in=3600
         )
-        
+
     except Exception as e:
         logger.error(f"Token refresh failed: {e}")
         raise HTTPException(status_code=401, detail="Token refresh failed")
@@ -274,11 +274,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    
+
     try:
         # Decode token payload
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        
+
         # Validate token data
         token_data = TokenData(
             username=payload.get("username"),
@@ -286,22 +286,22 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
             exp=payload.get("exp"),
             scopes=payload.get("scopes", [])
         )
-        
+
         if token_data.username is None:
             raise credentials_exception
-            
+
         # Check token expiration
         if token_data.exp and token_data.exp < time.time():
             raise HTTPException(status_code=401, detail="Token expired")
-            
+
     except JWTError:
         raise credentials_exception
-    
+
     # Get user from database
     user = await user_service.get_user_by_email(token_data.username)
     if user is None:
         raise credentials_exception
-    
+
     return user
 ```
 
@@ -309,18 +309,18 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 
 ```python
 async def logout_endpoint(
-    request: RefreshTokenRequest, 
+    request: RefreshTokenRequest,
     current_user: User = Depends(get_current_user)
 ):
     try:
         # Blacklist the refresh token
         await token_service.blacklist_token(request.refresh_token)
-        
+
         # Optionally blacklist access token (requires token storage)
         # await token_service.blacklist_access_token(access_token)
-        
+
         return {"message": "Successfully logged out"}
-        
+
     except Exception as e:
         logger.error(f"Logout failed: {e}")
         raise HTTPException(status_code=500, detail="Logout failed")
@@ -352,13 +352,13 @@ async def logout_endpoint(
 async def secure_token_refresh(refresh_token: str):
     # Validate and use refresh token
     user_id = await validate_refresh_token(refresh_token)
-    
+
     # Immediately blacklist used token
     await blacklist_token(refresh_token)
-    
+
     # Generate new refresh token
     new_refresh_token = await create_refresh_token(user_id)
-    
+
     return new_refresh_token
 ```
 
@@ -401,11 +401,11 @@ async def create_tokens_bulk(user_id: int, scopes: list[str]):
     refresh_task = asyncio.create_task(
         create_refresh_token(user_id)
     )
-    
+
     access_token, refresh_token = await asyncio.gather(
         access_task, refresh_task
     )
-    
+
     return TokenResponse(
         access_token=access_token,
         refresh_token=refresh_token,
@@ -446,7 +446,7 @@ async def validate_token_response(token_data: dict) -> TokenResponse:
         for error in e.errors():
             field = error["loc"][-1]
             error_type = error["type"]
-            
+
             if field == "access_token" and "missing" in error_type:
                 raise HTTPException(
                     status_code=500,
@@ -457,7 +457,7 @@ async def validate_token_response(token_data: dict) -> TokenResponse:
                     status_code=500,
                     detail="Invalid token expiration configuration"
                 )
-        
+
         # Generic validation error
         raise HTTPException(
             status_code=500,
@@ -486,7 +486,7 @@ async def validate_refresh_request(request_data: dict) -> RefreshTokenRequest:
                         status_code=400,
                         detail="Refresh token must be a string"
                     )
-        
+
         raise HTTPException(
             status_code=400,
             detail="Invalid refresh token request"
@@ -532,7 +532,7 @@ def test_token_response_creation():
         "token_type": "bearer",
         "expires_in": 3600
     }
-    
+
     token_response = TokenResponse(**token_data)
     assert token_response.access_token == token_data["access_token"]
     assert token_response.refresh_token == token_data["refresh_token"]
@@ -544,7 +544,7 @@ def test_refresh_token_request():
     request_data = {
         "refresh_token": "valid_refresh_token"
     }
-    
+
     refresh_request = RefreshTokenRequest(**request_data)
     assert refresh_request.refresh_token == "valid_refresh_token"
 
@@ -556,7 +556,7 @@ def test_token_data_with_scopes():
         "sub": "12345",
         "exp": 1640995200
     }
-    
+
     token = TokenData(**token_data)
     assert token.username == "test@example.com"
     assert token.scopes == ["read", "write", "admin"]
@@ -570,27 +570,27 @@ def test_token_data_with_scopes():
 async def test_complete_auth_flow():
     # Test complete authentication flow
     client = TestClient(app)
-    
+
     # Login and get tokens
     login_response = client.post("/auth/login", json={
         "email": "test@example.com",
         "password": "testpass"
     })
-    
+
     assert login_response.status_code == 200
     tokens = TokenResponse(**login_response.json())
-    
+
     # Validate token structure
     assert tokens.access_token is not None
     assert tokens.refresh_token is not None
     assert tokens.token_type == "bearer"
     assert tokens.expires_in == 3600
-    
+
     # Test token refresh
     refresh_response = client.post("/auth/refresh", json={
         "refresh_token": tokens.refresh_token
     })
-    
+
     assert refresh_response.status_code == 200
     new_tokens = TokenResponse(**refresh_response.json())
     assert new_tokens.access_token != tokens.access_token
@@ -606,11 +606,11 @@ async def test_token_security():
         "sub": "12345",
         "exp": int(time.time()) - 3600  # Expired 1 hour ago
     }
-    
+
     with pytest.raises(HTTPException) as exc:
         await validate_token_claims(expired_token_data)
     assert exc.value.status_code == 401
-    
+
     # Test invalid refresh token
     with pytest.raises(HTTPException) as exc:
         await refresh_token_endpoint(RefreshTokenRequest(
@@ -671,7 +671,7 @@ JWT_CONFIG = {
 # Available token scopes
 TOKEN_SCOPES = {
     "read": "Read access to user data",
-    "write": "Write access to user data", 
+    "write": "Write access to user data",
     "admin": "Administrative access",
     "upload": "File upload permissions"
 }

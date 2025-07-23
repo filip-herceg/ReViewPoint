@@ -33,7 +33,7 @@ The main module is the entry point for the FastAPI application. It configures th
 def create_app() -> FastAPI:
     """
     Create and configure the FastAPI application instance.
-    
+
     Returns:
         FastAPI: Configured application instance
     """
@@ -187,9 +187,9 @@ All error responses follow a consistent format:
 
 ```json
 {
-    "detail": "Human readable error message",
-    "error_code": "MACHINE_READABLE_CODE",
-    "timestamp": "2024-01-01T00:00:00Z"
+  "detail": "Human readable error message",
+  "error_code": "MACHINE_READABLE_CODE",
+  "timestamp": "2024-01-01T00:00:00Z"
 }
 ```
 

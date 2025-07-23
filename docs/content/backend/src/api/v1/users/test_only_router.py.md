@@ -43,7 +43,7 @@ class PromoteAdminResponse(TypedDict):
 
 #### Test-Only Admin Role Assignment
 
-```python
+````python
 @router.post(
     "/promote-admin",
     summary="Promote user to admin (TEST ONLY)",
@@ -135,7 +135,7 @@ async def promote_user_to_admin_async(
     await session.commit()
     response: PromoteAdminResponse = {"detail": f"User {email} promoted to admin."}
     return response
-```
+````
 
 ## Security and Environment Controls
 
@@ -150,14 +150,14 @@ def enforce_test_mode_only():
     """Ensure endpoint only works in test environments."""
     if not is_test_mode():
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, 
+            status_code=status.HTTP_403_FORBIDDEN,
             detail="Not allowed in production."
         )
 
 # Applied to all test-only endpoints:
 if not is_test_mode():
     raise HTTPException(
-        status_code=status.HTTP_403_FORBIDDEN, 
+        status_code=status.HTTP_403_FORBIDDEN,
         detail="Not allowed in production."
     )
 ```
@@ -197,7 +197,7 @@ def setup_admin_user(email: str):
         json={"email": email},
         headers={"Content-Type": "application/json"}
     )
-    
+
     if response.status_code == 200:
         print(f"User {email} promoted to admin successfully")
     elif response.status_code == 403:
@@ -228,21 +228,21 @@ curl -X POST http://localhost:8000/api/v1/users/promote-admin \
 
 async def test_admin_functionality():
     """Test admin-only features."""
-    
+
     # Setup: Create regular user
     user_data = {
         "email": "testuser@example.com",
-        "name": "Test User", 
+        "name": "Test User",
         "password": "testpass123"
     }
-    
+
     # Promote to admin using test endpoint
     promote_response = await client.post(
         "/api/v1/users/promote-admin",
         json={"email": "testuser@example.com"}
     )
     assert promote_response.status_code == 200
-    
+
     # Test admin functionality
     admin_response = await client.get(
         "/api/v1/admin/users",
@@ -307,7 +307,7 @@ async def test_database_operation(
     # Direct SQLAlchemy operations
     result = await session.execute(select(User).where(User.email == email))
     user = result.scalars().first()
-    
+
     # Direct field modification
     user.is_admin = True
     await session.commit()

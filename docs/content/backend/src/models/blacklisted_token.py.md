@@ -9,6 +9,7 @@ The blacklisted token model provides secure JWT token revocation functionality f
 ### BlacklistedToken Entity
 
 **`BlacklistedToken`** class inheriting from `BaseModel`:
+
 - JWT token identifier (JTI) storage with unique constraints
 - Token expiration tracking for cleanup operations
 - Database indexing for efficient token verification
@@ -17,10 +18,12 @@ The blacklisted token model provides secure JWT token revocation functionality f
 ### Core Attributes
 
 #### Token Security Fields
+
 - `jti` - JWT token identifier with unique constraint and index
 - `expires_at` - Token expiration timestamp for cleanup
 
 #### Inherited Attributes
+
 - `id` - Primary key from BaseModel
 - `created_at` - Blacklisting timestamp
 - `updated_at` - Last modification timestamp
@@ -36,6 +39,7 @@ __tablename__ = "blacklisted_tokens"
 ### Column Definitions
 
 #### JWT Token Tracking
+
 ```python
 jti: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
 expires_at: Mapped[datetime] = mapped_column(
@@ -44,6 +48,7 @@ expires_at: Mapped[datetime] = mapped_column(
 ```
 
 **Security Features:**
+
 - **Unique Constraint**: Prevents duplicate JTI entries
 - **Database Index**: Fast token lookup during verification
 - **Non-nullable Fields**: Ensures complete token information
@@ -74,6 +79,7 @@ Authentication middleware uses the model for security checks:
 ### Logout Security
 
 Comprehensive logout protection:
+
 - **Immediate Revocation**: Tokens blacklisted instantly on logout
 - **Replay Prevention**: Blacklisted tokens cannot be reused
 - **Session Termination**: Complete session invalidation
@@ -82,6 +88,7 @@ Comprehensive logout protection:
 ### Token Lifecycle Management
 
 Complete token security lifecycle:
+
 - **Active Tokens**: Normal authentication and authorization
 - **Logout Trigger**: User-initiated or administrative logout
 - **Blacklist Storage**: Secure token identifier storage
@@ -92,6 +99,7 @@ Complete token security lifecycle:
 ### Database Performance
 
 Efficient blacklist operations through design optimization:
+
 - **Unique Index**: O(log n) lookup performance for JTI verification
 - **Minimal Storage**: Only essential data stored (JTI + expiration)
 - **Cleanup Strategy**: Expired tokens removed automatically
@@ -100,6 +108,7 @@ Efficient blacklist operations through design optimization:
 ### Memory Efficiency
 
 Lightweight model design for high-frequency operations:
+
 - **Minimal Attributes**: Only security-critical data stored
 - **String Efficiency**: JTI as string for UUID compatibility
 - **Timestamp Precision**: Timezone-aware datetime for accuracy
@@ -110,6 +119,7 @@ Lightweight model design for high-frequency operations:
 ### Automatic Cleanup Strategy
 
 The model supports automated maintenance:
+
 - **Expiration Tracking**: Expires_at enables cleanup queries
 - **Background Jobs**: Scheduled cleanup of expired tokens
 - **Storage Optimization**: Regular cleanup prevents table bloat
@@ -134,6 +144,7 @@ async def cleanup_expired_tokens():
 ### Middleware Integration
 
 Authentication middleware leverages the model:
+
 - **Request Interception**: Every authenticated request checked
 - **JTI Extraction**: Token JTI extracted from Authorization header
 - **Blacklist Verification**: Database lookup for JTI presence
@@ -142,6 +153,7 @@ Authentication middleware leverages the model:
 ### Repository Layer Support
 
 Blacklisted token repository provides:
+
 - **Create Operations**: New blacklist entries during logout
 - **Lookup Operations**: Fast JTI verification during authentication
 - **Cleanup Operations**: Expired token removal
@@ -152,6 +164,7 @@ Blacklisted token repository provides:
 ### Database Constraints
 
 Model validation through SQLAlchemy constraints:
+
 - **Unique Violation**: Duplicate JTI attempts handled gracefully
 - **Non-null Validation**: Ensures complete blacklist entries
 - **Type Validation**: Proper string and datetime types
@@ -160,6 +173,7 @@ Model validation through SQLAlchemy constraints:
 ### Security Edge Cases
 
 Comprehensive security coverage:
+
 - **Token Expiration**: Expired tokens automatically invalid
 - **Malformed JTI**: Database constraints prevent invalid entries
 - **Concurrent Logout**: Unique constraints handle race conditions
@@ -170,6 +184,7 @@ Comprehensive security coverage:
 ### Test-Friendly Design
 
 The model supports comprehensive security testing:
+
 - **Minimal Dependencies**: No foreign keys simplify testing
 - **Predictable Behavior**: Deterministic blacklist operations
 - **Cleanup Testing**: Expiration-based test scenarios
@@ -197,6 +212,7 @@ await repository.cleanup_expired_tokens()
 ### JTI Management
 
 Secure JTI handling patterns:
+
 - **UUID Standards**: Use UUID4 for JTI generation
 - **Uniqueness Guarantee**: Database constraints ensure uniqueness
 - **No PII**: JTI contains no personally identifiable information
@@ -205,6 +221,7 @@ Secure JTI handling patterns:
 ### Expiration Handling
 
 Proper expiration management:
+
 - **Timezone Awareness**: UTC storage prevents timezone issues
 - **Clock Synchronization**: Server time consistency critical
 - **Buffer Management**: Slight expiration buffer for clock skew
@@ -215,6 +232,7 @@ Proper expiration management:
 ### Security Monitoring
 
 The model supports security analytics:
+
 - **Logout Patterns**: Created_at timestamps for user behavior analysis
 - **Token Abuse**: Frequent blacklisting detection
 - **Cleanup Metrics**: Expired token volume monitoring
@@ -223,6 +241,7 @@ The model supports security analytics:
 ### Audit Trail
 
 Complete audit support:
+
 - **Blacklist Timestamp**: When token was revoked
 - **Token Expiration**: Original token validity period
 - **Automatic Cleanup**: Expired token removal tracking

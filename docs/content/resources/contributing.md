@@ -125,25 +125,31 @@ cd frontend && pnpm run test:coverage
 
 ```markdown
 ## Bug Description
+
 Clear description of the bug
 
 ## Steps to Reproduce
+
 1. Go to...
 2. Click on...
 3. See error
 
 ## Expected Behavior
+
 What you expected to happen
 
 ## Actual Behavior
+
 What actually happened
 
 ## Environment
+
 - OS: [e.g., Windows 11, macOS 14]
 - Browser: [e.g., Chrome 121, Firefox 122]
 - ReViewPoint Version: [e.g., v1.2.0]
 
 ## Additional Context
+
 Screenshots, logs, or additional information
 ```
 
@@ -159,18 +165,23 @@ Screenshots, logs, or additional information
 
 ```markdown
 ## Feature Description
+
 Clear description of the proposed feature
 
 ## Problem Statement
+
 What problem does this solve?
 
 ## Proposed Solution
+
 How should this feature work?
 
 ## Alternatives Considered
+
 What alternatives have you considered?
 
 ## Additional Context
+
 Mockups, examples, or additional context
 ```
 
@@ -289,6 +300,7 @@ docs/
 Instead, email security issues to: [security@reviewpoint.dev](mailto:security@reviewpoint.dev)
 
 Include:
+
 - Description of the vulnerability
 - Steps to reproduce
 - Potential impact
@@ -343,6 +355,7 @@ Contributors are recognized in:
 ### Common Setup Issues
 
 **PostgreSQL Connection Issues:**
+
 ```bash
 # Check if PostgreSQL is running
 pnpm run postgres:check
@@ -352,6 +365,7 @@ pnpm run postgres:start
 ```
 
 **Node/Python Version Issues:**
+
 ```bash
 # Check versions
 node --version  # Should be 18+
@@ -363,6 +377,7 @@ pyenv local 3.11
 ```
 
 **Dependency Issues:**
+
 ```bash
 # Clean install
 pnpm run clean
@@ -372,6 +387,7 @@ pnpm run install
 ### Advanced Development
 
 **Database Migrations:**
+
 ```bash
 # Create new migration
 cd backend && hatch run alembic revision --autogenerate -m "add new table"
@@ -381,6 +397,7 @@ pnpm run db:migrate
 ```
 
 **API Schema Updates:**
+
 ```bash
 # Export backend schema
 pnpm run api:export-schema
