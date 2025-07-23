@@ -57,9 +57,7 @@ describe("AriaLiveRegion Component", () => {
 	it("clears message after delay", async () => {
 		testLogger.debug("Testing message clearing");
 
-		render(
-			<AriaLiveRegion message="Test message" clearDelay={1000} />,
-		);
+		render(<AriaLiveRegion message="Test message" clearDelay={1000} />);
 
 		expect(screen.getByText("Test message")).toBeInTheDocument();
 
@@ -134,7 +132,7 @@ describe("useAriaLive Hook", () => {
 	const TestComponent = ({
 		defaultPoliteness,
 	}: {
-	   defaultPoliteness?: unknown;
+		defaultPoliteness?: unknown;
 	}) => {
 		const {
 			message,

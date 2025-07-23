@@ -317,7 +317,7 @@ const ReviewDetailPage: React.FC = () => {
 							acc[key] = module.configuration?.[key].default;
 							return acc;
 						},
-			   {} as Record<string, unknown>,
+						{} as Record<string, unknown>,
 					),
 				});
 				setConfigSidebarOpen(true);
@@ -589,7 +589,7 @@ const ReviewDetailPage: React.FC = () => {
 		};
 
 		return (
-			   (results as Record<string, unknown>)[module.id] || {
+			(results as Record<string, unknown>)[module.id] || {
 				status: "completed",
 				score: Math.round((Math.random() * 30 + 70) * 100) / 100,
 				findings: Math.floor(Math.random() * 5),
@@ -598,7 +598,7 @@ const ReviewDetailPage: React.FC = () => {
 		);
 	};
 
-const handleSaveModuleConfig = async (config: Record<string, unknown>) => {
+	const handleSaveModuleConfig = async (config: Record<string, unknown>) => {
 		console.log("Running module with config:", selectedModule?.id, config);
 
 		// TODO: Implement actual module execution
@@ -623,7 +623,7 @@ const handleSaveModuleConfig = async (config: Record<string, unknown>) => {
 			// Check if module supports the file type and is active
 			return (
 				subscription.status === "active" &&
-			   module.capabilities.supportedFormats.includes(review.fileType as string)
+				module.capabilities.supportedFormats.includes(review.fileType as string)
 			);
 		});
 	};
@@ -981,7 +981,13 @@ const handleSaveModuleConfig = async (config: Record<string, unknown>) => {
 																</p>
 																<div className="space-y-1">
 																	{result.claims.map(
-			   (claim: { claim: string; verified: boolean }, idx: number) => (
+																		(
+																			claim: {
+																				claim: string;
+																				verified: boolean;
+																			},
+																			idx: number,
+																		) => (
 																			<div
 																				key={`claim-${idx}-${claim.claim?.slice(0, 15) || idx}`}
 																				className="flex items-center gap-2 text-sm"
@@ -1067,7 +1073,9 @@ const handleSaveModuleConfig = async (config: Record<string, unknown>) => {
 																		<select
 																			value={severityFilter}
 																			onChange={(e) =>
-					   setSeverityFilter(e.target.value as string)
+																				setSeverityFilter(
+																					e.target.value as string,
+																				)
 																			}
 																			className="px-2 py-1 border rounded text-sm"
 																		>
@@ -1195,68 +1203,75 @@ const handleSaveModuleConfig = async (config: Record<string, unknown>) => {
 																					),
 																					severityFilter,
 																					typeFilter,
-			   ).map((issue: { type?: string }, _idx: number) => {
-																					const originalIdx =
-																						result.issues.indexOf(issue);
-																					return (
-																						<Button
-																							type="button"
-																							variant="ghost"
-																							key={`issue-button-${originalIdx}-${issue.type || "unknown"}`}
-																							onClick={() =>
-																								setSelectedIssue(
+																				).map(
+																					(
+																						issue: { type?: string },
+																						_idx: number,
+																					) => {
+																						const originalIdx =
+																							result.issues.indexOf(issue);
+																						return (
+																							<Button
+																								type="button"
+																								variant="ghost"
+																								key={`issue-button-${originalIdx}-${issue.type || "unknown"}`}
+																								onClick={() =>
+																									setSelectedIssue(
+																										selectedIssue ===
+																											originalIdx
+																											? null
+																											: originalIdx,
+																									)
+																								}
+																								className={`w-full text-left p-3 border-b hover:bg-white transition-colors justify-start h-auto ${
 																									selectedIssue === originalIdx
-																										? null
-																										: originalIdx,
-																								)
-																							}
-																							className={`w-full text-left p-3 border-b hover:bg-white transition-colors justify-start h-auto ${
-																								selectedIssue === originalIdx
-																									? "bg-white border-l-4 border-l-blue-500"
-																									: ""
-																							}`}
-																						>
-																							<div className="flex items-center justify-between mb-1">
-																								<div className="flex items-center gap-2">
-																									<Badge
-																										variant={
-																											issue.severity === "high"
-																												? "destructive"
-																												: issue.severity ===
-																														"medium"
-																													? "warning"
-																													: "secondary"
-																										}
-																										className="text-xs"
-																									>
-																										{issue.severity}
-																									</Badge>
-																									{selectedIssue ===
-																									originalIdx ? (
-																										<ChevronDown className="h-3 w-3 text-gray-400" />
-																									) : (
-																										<ChevronRight className="h-3 w-3 text-gray-400" />
-																									)}
+																										? "bg-white border-l-4 border-l-blue-500"
+																										: ""
+																								}`}
+																							>
+																								<div className="flex items-center justify-between mb-1">
+																									<div className="flex items-center gap-2">
+																										<Badge
+																											variant={
+																												issue.severity ===
+																												"high"
+																													? "destructive"
+																													: issue.severity ===
+																															"medium"
+																														? "warning"
+																														: "secondary"
+																											}
+																											className="text-xs"
+																										>
+																											{issue.severity}
+																										</Badge>
+																										{selectedIssue ===
+																										originalIdx ? (
+																											<ChevronDown className="h-3 w-3 text-gray-400" />
+																										) : (
+																											<ChevronRight className="h-3 w-3 text-gray-400" />
+																										)}
+																									</div>
 																								</div>
-																							</div>
-																							<div className="text-xs text-gray-600 font-mono mb-1">
-																								{issue.location}
-																							</div>
-																							<div className="text-sm font-medium text-gray-800 truncate">
-																								{issue.type
-																									.replace(/_/g, " ")
-																									.replace(
-																										/\b\w/g,
-																										(l: string) =>
-																											l.toUpperCase(),
-																									)}
-																							</div>
-																							<div className="text-xs text-gray-500 italic truncate mt-1">
-																								{issue.citation}
-																							</div>
-																						</Button>
-																					);
-																				})}
+																								<div className="text-xs text-gray-600 font-mono mb-1">
+																									{issue.location}
+																								</div>
+																								<div className="text-sm font-medium text-gray-800 truncate">
+																									{issue.type
+																										.replace(/_/g, " ")
+																										.replace(
+																											/\b\w/g,
+																											(l: string) =>
+																												l.toUpperCase(),
+																										)}
+																								</div>
+																								<div className="text-xs text-gray-500 italic truncate mt-1">
+																									{issue.citation}
+																								</div>
+																							</Button>
+																						);
+																					},
+																				)}
 																		</div>
 																	</div>
 

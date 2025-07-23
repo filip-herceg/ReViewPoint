@@ -65,7 +65,7 @@ describe("WebSocketStatus", () => {
 		});
 
 		it("should display connecting state", () => {
-	   (useWebSocketConnection as unknown).mockReturnValue({
+			(useWebSocketConnection as unknown).mockReturnValue({
 				...mockConnectionData,
 				state: "connecting",
 				isConnected: false,

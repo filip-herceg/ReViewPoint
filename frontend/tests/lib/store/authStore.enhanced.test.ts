@@ -123,7 +123,7 @@ describe("Enhanced Auth Store", () => {
 			testLogger.info("Testing logout flow");
 
 			const user = createStoreAuthUser();
-			const tokens = createStoreAuthTokens();			// First login
+			const tokens = createStoreAuthTokens(); // First login
 			const authStore = useAuthStore.getState();
 			authStore.login(user, tokens);
 

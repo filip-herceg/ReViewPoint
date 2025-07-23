@@ -152,15 +152,22 @@ describe("API error handling edge cases", () => {
 	it("handles 4xx/5xx error with status and message", async () => {
 		const error = new Error("Request failed");
 		// Define the shape of the error response
-		type ErrorWithResponse = Error & { response: { status: number; data: { error: string } } };
-		(error as ErrorWithResponse).response = { status: 500, data: { error: "Server error" } };
+		type ErrorWithResponse = Error & {
+			response: { status: number; data: { error: string } };
+		};
+		(error as ErrorWithResponse).response = {
+			status: 500,
+			data: { error: "Server error" },
+		};
 		getMockedRequest().mockRejectedValueOnce(error);
 
 		try {
 			await uploadsApi.listFiles();
 			expect.fail("Should have thrown an error");
 		} catch (err: unknown) {
-			expect((err as Error).message).toMatch(/server error|500|request failed/i);
+			expect((err as Error).message).toMatch(
+				/server error|500|request failed/i,
+			);
 		}
 	});
 

@@ -497,9 +497,9 @@ class WebSocketService {
 			return;
 		}
 
-	   const pingData = this.pendingPings.get(pingId);
-	   if (!pingData) return;
-	   const { timestamp, timeout } = pingData;
+		const pingData = this.pendingPings.get(pingId);
+		if (!pingData) return;
+		const { timestamp, timeout } = pingData;
 		clearTimeout(timeout);
 		this.pendingPings.delete(pingId);
 
@@ -533,7 +533,10 @@ class WebSocketService {
 	/**
 	 * Send message to server with validation and rate limiting
 	 */
-	   public send(type: WebSocketEventType, data: Record<string, unknown> = {}): void {
+	public send(
+		type: WebSocketEventType,
+		data: Record<string, unknown> = {},
+	): void {
 		// Validate input message
 		try {
 			WebSocketIncomingMessageSchema.parse({ type, data });
@@ -746,7 +749,7 @@ class WebSocketService {
 		logger.debug("[WebSocket] State changed", { from: oldState, to: newState });
 	}
 
-	   private emit(event: WebSocketEventType, data: unknown): void {
+	private emit(event: WebSocketEventType, data: unknown): void {
 		const listeners = this.eventListeners.get(event);
 		if (listeners) {
 			listeners.forEach((listener) => {

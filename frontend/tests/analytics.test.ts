@@ -2,14 +2,14 @@ import type { Mock } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 type ExtendedMock = Mock<
-  () => {
-	trackEvent: Mock<(...args: unknown[]) => void>;
-	trackPageview: Mock<(...args: unknown[]) => void>;
-	enableAutoPageviews: Mock<(...args: unknown[]) => void>;
-	enableAutoOutboundTracking: Mock<(...args: unknown[]) => void>;
-  }
+	() => {
+		trackEvent: Mock<(...args: unknown[]) => void>;
+		trackPageview: Mock<(...args: unknown[]) => void>;
+		enableAutoPageviews: Mock<(...args: unknown[]) => void>;
+		enableAutoOutboundTracking: Mock<(...args: unknown[]) => void>;
+	}
 > & {
-  invokeMockImplementationOnce: () => unknown;
+	invokeMockImplementationOnce: () => unknown;
 };
 
 vi.mock("plausible-tracker", () => {
@@ -56,23 +56,16 @@ beforeEach(() => {
 	// Ensure mockImplementation is properly set up (the mock should already have this from vi.mock())
 	if (!plausibleMock.mockImplementation) {
 		// Type assertion to bypass TypeScript checking for this edge case setup
-		(plausibleMock as unknown as Record<string, unknown>).mockImplementation = vi.fn(() =>
-			Object.assign(
-				() => ({
-					trackEvent: vi.fn(),
-					trackPageview: vi.fn(),
-					enableAutoPageviews: vi.fn(),
-					enableAutoOutboundTracking: vi.fn(),
-				}),
-				{
-					calls: [],
-					instances: [],
-					contexts: [],
-					invocationCallOrder: [],
-					results: [],
-					settledResults: [],
-					lastCall: [] as [],
-					mock: {
+		(plausibleMock as unknown as Record<string, unknown>).mockImplementation =
+			vi.fn(() =>
+				Object.assign(
+					() => ({
+						trackEvent: vi.fn(),
+						trackPageview: vi.fn(),
+						enableAutoPageviews: vi.fn(),
+						enableAutoOutboundTracking: vi.fn(),
+					}),
+					{
 						calls: [],
 						instances: [],
 						contexts: [],
@@ -80,33 +73,41 @@ beforeEach(() => {
 						results: [],
 						settledResults: [],
 						lastCall: [] as [],
+						mock: {
+							calls: [],
+							instances: [],
+							contexts: [],
+							invocationCallOrder: [],
+							results: [],
+							settledResults: [],
+							lastCall: [] as [],
+						},
+						mockClear: vi.fn(),
+						mockReset: vi.fn(),
+						mockRestore: vi.fn(),
+						getMockImplementation: vi.fn(),
+						mockImplementation: vi.fn(),
+						mockImplementationOnce: vi.fn(),
+						withImplementation: vi.fn(),
+						mockReturnThis: vi.fn(),
+						mockReturnValue: vi.fn(),
+						mockReturnValueOnce: vi.fn(),
+						mockResolvedValue: vi.fn(),
+						mockResolvedValueOnce: vi.fn(),
+						mockRejectedValue: vi.fn(),
+						mockRejectedValueOnce: vi.fn(),
+						getMockName: vi.fn(),
+						mockName: vi.fn(),
+						[Symbol.dispose]: vi.fn(),
+						new: () => ({
+							trackEvent: vi.fn(),
+							trackPageview: vi.fn(),
+							enableAutoPageviews: vi.fn(),
+							enableAutoOutboundTracking: vi.fn(),
+						}),
 					},
-					mockClear: vi.fn(),
-					mockReset: vi.fn(),
-					mockRestore: vi.fn(),
-					getMockImplementation: vi.fn(),
-					mockImplementation: vi.fn(),
-					mockImplementationOnce: vi.fn(),
-					withImplementation: vi.fn(),
-					mockReturnThis: vi.fn(),
-					mockReturnValue: vi.fn(),
-					mockReturnValueOnce: vi.fn(),
-					mockResolvedValue: vi.fn(),
-					mockResolvedValueOnce: vi.fn(),
-					mockRejectedValue: vi.fn(),
-					mockRejectedValueOnce: vi.fn(),
-					getMockName: vi.fn(),
-					mockName: vi.fn(),
-					[Symbol.dispose]: vi.fn(),
-					new: () => ({
-						trackEvent: vi.fn(),
-						trackPageview: vi.fn(),
-						enableAutoPageviews: vi.fn(),
-						enableAutoOutboundTracking: vi.fn(),
-					}),
-				},
-			),
-		);
+				),
+			);
 	}
 
 	// Debug log to inspect plausibleMock state

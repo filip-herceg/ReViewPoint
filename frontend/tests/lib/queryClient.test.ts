@@ -35,23 +35,25 @@ describe("queryClient error handling config", () => {
 		// Define a specific interface for query cache events
 		interface QueryCacheEvent {
 			type: string;
-			action?: { 
+			action?: {
 				type: string;
 				error?: Error;
 			};
 		}
-		
+
 		const errors: Error[] = [];
-		const unsubscribe = queryClient.getQueryCache().subscribe((event: QueryCacheEvent) => {
-			logger.info("Event captured:", event);
-			if (event?.type === "updated" && event.action) {
-				logger.info("Updated event action type:", event.action.type);
-				if (event.action.type === "error" && event.action.error) {
-					logger.error("Captured error event:", event.action.error);
-					errors.push(event.action.error);
+		const unsubscribe = queryClient
+			.getQueryCache()
+			.subscribe((event: QueryCacheEvent) => {
+				logger.info("Event captured:", event);
+				if (event?.type === "updated" && event.action) {
+					logger.info("Updated event action type:", event.action.type);
+					if (event.action.type === "error" && event.action.error) {
+						logger.error("Captured error event:", event.action.error);
+						errors.push(event.action.error);
+					}
 				}
-			}
-		});
+			});
 		// Simulate a query error
 		const query = queryClient.getQueryCache().build(queryClient, {
 			queryKey: ["test"],
@@ -78,18 +80,25 @@ describe("queryClient error handling config", () => {
 		// Define mutation cache event type
 		interface MutationCacheEvent {
 			type: string;
-			action?: { 
+			action?: {
 				type: string;
 				error?: Error;
 			};
 		}
-		
+
 		const errors: Error[] = [];
-		const unsubscribe = queryClient.getMutationCache().subscribe((event: MutationCacheEvent) => {
-			if (event?.type === "updated" && event.action && event.action.type === "error" && event.action.error) {
-				errors.push(event.action.error);
-			}
-		});
+		const unsubscribe = queryClient
+			.getMutationCache()
+			.subscribe((event: MutationCacheEvent) => {
+				if (
+					event?.type === "updated" &&
+					event.action &&
+					event.action.type === "error" &&
+					event.action.error
+				) {
+					errors.push(event.action.error);
+				}
+			});
 		// Simulate a mutation error
 		const mutation = queryClient.getMutationCache().build(queryClient, {
 			mutationKey: ["test-mutation"],
@@ -124,27 +133,28 @@ describe("queryClient error handling config", () => {
 		// Define event interfaces
 		interface QueryCacheEvent {
 			type: string;
-			action?: { 
+			action?: {
 				type: string;
 				error?: Error;
 			};
 			query?: unknown;
 		}
-		
+
 		interface MutationCacheEvent {
 			type: string;
-			action?: { 
+			action?: {
 				type: string;
 				error?: Error;
 			};
 			mutation?: unknown;
 		}
-		
+
 		// Setup spies for global listeners
 		const queryEvents: QueryCacheEvent[] = [];
 		const mutationEvents: MutationCacheEvent[] = [];
 		const queryListener = (event: QueryCacheEvent) => queryEvents.push(event);
-		const mutationListener = (event: MutationCacheEvent) => mutationEvents.push(event);
+		const mutationListener = (event: MutationCacheEvent) =>
+			mutationEvents.push(event);
 
 		// Register listeners
 		const unsubscribeQuery = queryClient

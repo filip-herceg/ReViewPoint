@@ -347,9 +347,9 @@ describe("useUserAvatar Hook", () => {
 		render(<TestComponent />);
 
 		expect(hookResult).toBeDefined();
-		expect(typeof hookResult!.handleImageLoad).toBe("function");
-		expect(typeof hookResult!.handleImageError).toBe("function");
-		expect(typeof hookResult!.showInitials).toBe("boolean");
+		expect(typeof hookResult?.handleImageLoad).toBe("function");
+		expect(typeof hookResult?.handleImageError).toBe("function");
+		expect(typeof hookResult?.showInitials).toBe("boolean");
 	});
 
 	it("handles image loading states", () => {
@@ -369,8 +369,8 @@ describe("useUserAvatar Hook", () => {
 		render(<TestComponent />);
 
 		// When no avatar, should show initials
-		expect(hookResult!.showInitials).toBe(true);
-		expect(hookResult!.imageLoaded).toBe(false);
-		expect(hookResult!.imageError).toBe(false);
+		expect(hookResult?.showInitials).toBe(true);
+		expect(hookResult?.imageLoaded).toBe(false);
+		expect(hookResult?.imageError).toBe(false);
 	});
 });

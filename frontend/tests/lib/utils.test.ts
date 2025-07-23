@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ClassValue } from "clsx";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock clsx with proper export structure
 vi.mock("clsx", () => {

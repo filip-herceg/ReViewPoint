@@ -1,5 +1,11 @@
 /**
- * WebSocket Configuration Verification
+ * WebSocket if if (config.WS_URL === "ws://localhost:8000/api/v1") {
+	console.log("🌟 Configuration looks correct!");
+	console.log(`🔗 Final WebSocket URL format will be: \${baseUrl}/ws/{token}`);
+	console.log(fig.WS_URL === "ws://localhost:8000/api/v1") {
+	console.log("🎯 Configuration looks correct!");
+	console.log(`🚀 Final WebSocket URL format will be: ${baseUrl}/ws/{token}`);
+	console.log(iguration Verification
  *
  * Simple test to verify that the frontend loads the correct WebSocket URL
  * from environment configuration.
@@ -17,7 +23,7 @@ console.log(`✅ Expected format: ws://localhost:8000/api/v1`);
 
 if (config.WS_URL === "ws://localhost:8000/api/v1") {
 	console.log("🎉 Configuration looks correct!");
-	console.log("📋 Final WebSocket URL format will be: ${baseUrl}/ws/{token}");
+	console.log(`� Final WebSocket URL format will be: \${baseUrl}/ws/{token}`);
 	console.log(
 		"📋 Example: ws://localhost:8000/api/v1/ws/eyJ0eXAiOiJKV1QiLCJhbGciOi...",
 	);

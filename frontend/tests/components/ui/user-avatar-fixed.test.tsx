@@ -381,13 +381,13 @@ describe("useUserAvatar Hook", () => {
 		render(<TestComponent />);
 
 		expect(hookResult).toBeDefined();
-		expect(typeof hookResult!.getInitials).toBe("function");
-		expect(typeof hookResult!.getAvatarColor).toBe("function");
+		expect(typeof hookResult?.getInitials).toBe("function");
+		expect(typeof hookResult?.getAvatarColor).toBe("function");
 
 		// Test utility functions
-		expect(hookResult!.getInitials("John Doe")).toBe("JD");
-		expect(hookResult!.getInitials("", "test@example.com")).toBe("TE");
-		expect(hookResult!.getAvatarColor("test")).toBeDefined();
+		expect(hookResult?.getInitials("John Doe")).toBe("JD");
+		expect(hookResult?.getInitials("", "test@example.com")).toBe("TE");
+		expect(hookResult?.getAvatarColor("test")).toBeDefined();
 	});
 
 	it("handles edge cases in utilities", () => {
@@ -403,9 +403,9 @@ describe("useUserAvatar Hook", () => {
 		render(<TestComponent />);
 
 		// Test edge cases
-		expect(hookResult!.getInitials("")).toBe("U");
-		expect(hookResult!.getInitials("A")).toBe("A");
-		expect(hookResult!.getInitials("A B C")).toBe("AB");
-		expect(hookResult!.getAvatarColor("")).toBeDefined();
+		expect(hookResult?.getInitials("")).toBe("U");
+		expect(hookResult?.getInitials("A")).toBe("A");
+		expect(hookResult?.getInitials("A B C")).toBe("AB");
+		expect(hookResult?.getAvatarColor("")).toBeDefined();
 	});
 });

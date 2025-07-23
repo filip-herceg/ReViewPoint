@@ -15,21 +15,21 @@ import { testLogger } from "../../test-utils";
 // Create test template for virtualized list items
 type TestItem = { id: string; name: string; value: number };
 function createTestItems(count: number) {
-  return Array.from({ length: count }, (_, index) => ({
-	id: `item-${index}`,
-	name: `Item ${index}`,
-	value: index,
-  }));
+	return Array.from({ length: count }, (_, index) => ({
+		id: `item-${index}`,
+		name: `Item ${index}`,
+		value: index,
+	}));
 }
 
 describe("VirtualizedList Component", () => {
 	const mockItems = createTestItems(100);
-type TestItem = { id: string; name: string; value: number };
-const mockRenderItem = (item: TestItem, index: number) => (
-  <div key={item.id} data-testid={`item-${index}`}>
-	{item.name}
-  </div>
-);
+	type TestItem = { id: string; name: string; value: number };
+	const mockRenderItem = (item: TestItem, index: number) => (
+		<div key={item.id} data-testid={`item-${index}`}>
+			{item.name}
+		</div>
+	);
 
 	beforeEach(() => {
 		testLogger.info("Starting VirtualizedList test");
@@ -232,11 +232,11 @@ const mockRenderItem = (item: TestItem, index: number) => (
 
 describe("VirtualizedGrid Component", () => {
 	const mockGridItems = createTestItems(50);
-const mockRenderGridItem = (item: TestItem, index: number) => (
-  <div key={item.id} data-testid={`grid-item-${index}`}>
-	{item.name}
-  </div>
-);
+	const mockRenderGridItem = (item: TestItem, index: number) => (
+		<div key={item.id} data-testid={`grid-item-${index}`}>
+			{item.name}
+		</div>
+	);
 
 	it("renders grid layout correctly", () => {
 		testLogger.debug("Testing grid layout");
@@ -334,7 +334,7 @@ const mockRenderGridItem = (item: TestItem, index: number) => (
 });
 
 describe("useVirtualizedList Hook", () => {
-const TestComponent = ({ items }: { items: unknown[] }) => {
+	const TestComponent = ({ items }: { items: unknown[] }) => {
 		const {
 			scrollTop,
 			scrollToIndex,

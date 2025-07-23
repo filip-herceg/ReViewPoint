@@ -1,6 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { AxiosRequestConfig } from "axios";
-import type { ApiResponse } from "@/lib/api/types/common";
 
 // Define interfaces matching those in the health.ts file
 interface PoolStats {
@@ -52,7 +50,7 @@ describe("Health API", () => {
 		getHealthStatus: () => Promise<HealthResponse>;
 		getMetrics: () => Promise<string>;
 	};
-	
+
 	let healthApi: HealthApi;
 	let mockRequest: ReturnType<typeof vi.fn>;
 	let mockLogger: {

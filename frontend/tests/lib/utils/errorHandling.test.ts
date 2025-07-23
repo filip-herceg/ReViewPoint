@@ -13,19 +13,19 @@ describe("getErrorMessage", () => {
 	});
 	it("returns Unknown error for null/undefined", () => {
 		expect(getErrorMessage(undefined)).toBe("Unknown error");
-		expect(getErrorMessage(null as any)).toBe("Unknown error");
+		expect(getErrorMessage(null as unknown)).toBe("Unknown error");
 	});
 	it("returns message for Error instance", () => {
 		expect(getErrorMessage(new Error("fail"))).toBe("fail");
 	});
 	it("returns string representation for number", () => {
-		expect(getErrorMessage(42 as any)).toBe("42");
+		expect(getErrorMessage(42 as unknown)).toBe("42");
 	});
 	it("returns string representation for boolean", () => {
-		expect(getErrorMessage(true as any)).toBe("true");
-		expect(getErrorMessage(false as any)).toBe("false");
+		expect(getErrorMessage(true as unknown)).toBe("true");
+		expect(getErrorMessage(false as unknown)).toBe("false");
 	});
 	it("returns fallback for array", () => {
-		expect(getErrorMessage([1, 2, 3] as any)).toBe("Unknown error type");
+		expect(getErrorMessage([1, 2, 3] as unknown)).toBe("Unknown error type");
 	});
 });

@@ -1,6 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { AxiosRequestConfig } from "axios";
-import type { ApiResponse } from "@/lib/api/types/common";
 
 // Define interfaces from uploads.ts
 interface FileUploadResponse {
@@ -53,13 +51,16 @@ describe("Uploads API", () => {
 		exportTest: () => Promise<{ status: string }>;
 		listFiles: (params?: FileListParams) => Promise<FileListResponse>;
 		getFiles: (params?: FileListParams) => Promise<FileListResponse>;
-		uploadFile: (file: File, options?: { onProgress?: (progress: number) => void }) => Promise<FileUploadResponse>;
-		deleteFile: (filename: string) => Promise<void | null>;
+		uploadFile: (
+			file: File,
+			options?: { onProgress?: (progress: number) => void },
+		) => Promise<FileUploadResponse>;
+		deleteFile: (filename: string) => Promise<undefined | null>;
 		exportFiles: (params?: FileListParams) => Promise<Blob>;
 		getFileByFilename: (filename: string) => Promise<FileDict>;
 		deleteFileById: (id: string) => Promise<void>;
 	};
-	
+
 	let uploadsApi: UploadsApi;
 	let mockRequest: ReturnType<typeof vi.fn>;
 	let mockLogger: {

@@ -20,6 +20,7 @@ import {
 	sanitizeFilename,
 	validateFilename,
 } from "@/lib/utils/fileUtils";
+
 import { testLogger } from "../../test-utils";
 
 // Test data templates
@@ -424,9 +425,9 @@ describe("fileUtils", () => {
 			testLogger.info("Testing error handling for invalid inputs");
 
 			// Test with invalid data types
-			expect(() => getFileExtension(null as any)).not.toThrow();
+			expect(() => getFileExtension(null as unknown)).not.toThrow();
 			expect(() => formatFileSize(NaN)).not.toThrow();
-			expect(() => getFileTypeGroup(undefined as any)).not.toThrow();
+			expect(() => getFileTypeGroup(undefined as unknown)).not.toThrow();
 		});
 
 		it("should log errors appropriately", () => {
@@ -437,9 +438,9 @@ describe("fileUtils", () => {
 
 			try {
 				// These should not throw but may log errors
-				getFileExtension(null as any);
+				getFileExtension(null as unknown);
 				formatFileSize(NaN);
-				getFileTypeGroup(undefined as any);
+				getFileTypeGroup(undefined as unknown);
 			} catch (error) {
 				// Should not reach here
 				expect(error).toBeUndefined();

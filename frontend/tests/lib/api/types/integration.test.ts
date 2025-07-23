@@ -7,9 +7,8 @@ import {
 	extractApiData,
 	isApiError,
 	isAuthError,
-	type User,
 	type Upload,
-	type AuthUser,
+	type User,
 } from "@/lib/api/types";
 import { useAuthStore } from "@/lib/store/authStore";
 import { useUploadStore } from "@/lib/store/uploadStore";
@@ -18,8 +17,8 @@ import {
 	createApiUpload,
 	createAuthError,
 	createAuthTokens,
-	createUser,
 	createAuthUser,
+	createUser,
 	createValidationError,
 } from "../../../test-templates";
 import { testLogger } from "../../../test-utils";

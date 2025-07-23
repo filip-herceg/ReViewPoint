@@ -5,7 +5,9 @@ import { testLogger } from "./test-utils";
 
 // Helper to temporarily set window.LOG_LEVEL
 function setLogLevel(level: string) {
-	(globalThis as any).window = { LOG_LEVEL: level };
+	(globalThis as unknown as { window: { LOG_LEVEL: string } }).window = {
+		LOG_LEVEL: level,
+	};
 	testLogger.info("Set LOG_LEVEL", level);
 }
 

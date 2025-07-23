@@ -78,7 +78,7 @@ const ModuleDetailPage: React.FC = () => {
 		}
 	};
 
-const handleSaveConfig = async (config: Record<string, unknown>) => {
+	const handleSaveConfig = async (config: Record<string, unknown>) => {
 		// TODO: Implement API call to save configuration
 		console.log("Saving config for module:", module?.id, config);
 
@@ -697,7 +697,7 @@ const handleSaveConfig = async (config: Record<string, unknown>) => {
 										acc[key] = module.configuration?.[key].default;
 										return acc;
 									},
-											   {} as Record<string, unknown>,
+									{} as Record<string, unknown>,
 								),
 							}
 						: null

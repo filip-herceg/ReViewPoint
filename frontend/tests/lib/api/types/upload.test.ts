@@ -104,7 +104,9 @@ describe("Upload Types", () => {
 
 				const uploadWithoutProgress = { ...baseUpload } as Partial<Upload>;
 				delete uploadWithoutProgress.progress;
-				expect(isUpload(uploadWithoutProgress as unknown as Upload)).toBe(false);
+				expect(isUpload(uploadWithoutProgress as unknown as Upload)).toBe(
+					false,
+				);
 			});
 		});
 

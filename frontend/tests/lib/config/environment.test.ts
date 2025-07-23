@@ -27,15 +27,6 @@ interface ImportMetaEnv {
 	[key: string]: string | boolean | undefined;
 }
 
-// Define GlobalWithImport interface for testing
-interface GlobalWithImport {
-	import?: {
-		meta: {
-			env: ImportMetaEnv;
-		}
-	};
-}
-
 // Mock import.meta.env
 const mockImportMeta = {
 	env: {} as ImportMetaEnv,
