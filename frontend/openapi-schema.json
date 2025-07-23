@@ -1,2871 +1,2871 @@
 {
-	"openapi": "3.1.0",
-	"info": {
-		"title": "ReViewPoint Core API",
-		"description": "API for modular scientific paper review platform. Provides authentication, user management, file upload, and LLM integration.",
-		"version": "0.1.0"
-	},
-	"paths": {
-		"/api/v1/auth/register": {
-			"post": {
-				"tags": ["Auth"],
-				"summary": "Register a new user",
-				"description": "Registers a new user account and returns a JWT access token.\n\n**Steps:**\n1. User submits registration data (email, password, name).\n2. System validates input and checks for duplicate email.\n3. On success, a new user is created and a JWT access token is returned.\n\n**Notes:**\n- Duplicate emails are not allowed.\n- Password must meet security requirements.\n- Rate limiting is applied to prevent abuse.",
-				"operationId": "register_api_v1_auth_register_post",
-				"parameters": [
-					{
-						"name": "X-API-Key",
-						"in": "header",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"title": "X-Api-Key"
-						}
-					}
-				],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/UserRegisterRequest",
-								"examples": [
-									{
-										"summary": "A typical registration",
-										"value": {
-											"email": "user@example.com",
-											"password": "strongpassword123",
-											"name": "Jane Doe"
-										}
-									}
-								]
-							}
-						}
-					}
-				},
-				"responses": {
-					"201": {
-						"description": "Successful Response",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/AuthResponse"
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Validation Error",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPValidationError"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/auth/login": {
-			"post": {
-				"tags": ["Auth"],
-				"summary": "User login",
-				"description": "Authenticates a user and returns a JWT access token.\n\n**Steps:**\n1. User submits email and password.\n2. System validates credentials and rate limits attempts.\n3. On success, a JWT access token is returned.\n\n**Notes:**\n- Invalid credentials or too many attempts will result in errors.\n- Use the returned token for authenticated requests.",
-				"operationId": "login_api_v1_auth_login_post",
-				"parameters": [
-					{
-						"name": "X-API-Key",
-						"in": "header",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"title": "X-Api-Key"
-						}
-					}
-				],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/UserLoginRequest"
-							}
-						}
-					}
-				},
-				"responses": {
-					"200": {
-						"description": "Successful Response",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/AuthResponse"
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Validation Error",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPValidationError"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/auth/logout": {
-			"post": {
-				"tags": ["Auth"],
-				"summary": "Logout user",
-				"description": "Logs out the current user and blacklists the access token.\n\n**Steps:**\n1. User sends a logout request with a valid access token.\n2. System blacklists the token and ends the session.\n\n**Notes:**\n- Blacklisted tokens cannot be reused.\n- Rate limiting is applied to prevent abuse.",
-				"operationId": "logout_api_v1_auth_logout_post",
-				"security": [
-					{
-						"OAuth2PasswordBearer": []
-					}
-				],
-				"parameters": [
-					{
-						"name": "X-API-Key",
-						"in": "header",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"title": "X-Api-Key"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "Successful Response",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/MessageResponse"
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Validation Error",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPValidationError"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/auth/refresh-token": {
-			"post": {
-				"tags": ["Auth"],
-				"summary": "Refresh JWT access token",
-				"description": "Refreshes the JWT access token using a valid refresh token.\n\n**Steps:**\n1. User provides a valid refresh token.\n2. System validates the token and issues a new access token.\n\n**Notes:**\n- Expired or blacklisted tokens will be rejected.\n- Rate limiting is applied to prevent abuse.",
-				"operationId": "refresh_token_api_v1_auth_refresh_token_post",
-				"parameters": [
-					{
-						"name": "X-API-Key",
-						"in": "header",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"title": "X-Api-Key"
-						}
-					}
-				],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"type": "object",
-								"additionalProperties": true,
-								"title": "Body"
-							}
-						}
-					}
-				},
-				"responses": {
-					"200": {
-						"description": "Successful Response",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/AuthResponse"
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Validation Error",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPValidationError"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/auth/request-password-reset": {
-			"post": {
-				"tags": ["Auth"],
-				"summary": "Request password reset",
-				"description": "Initiates a password reset flow.\n\n**Steps:**\n1. User submits email via this endpoint.\n2. System sends a password reset link to the email if it exists.\n3. User clicks the link and is directed to the reset form.\n4. User completes the process via `/reset-password`.\n\n**Notes:**\n- For security, this endpoint always returns a success message, even if the email is not registered.\n- Rate limiting is applied to prevent abuse.",
-				"operationId": "request_password_reset_api_v1_auth_request_password_reset_post",
-				"parameters": [
-					{
-						"name": "X-API-Key",
-						"in": "header",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"title": "X-Api-Key"
-						}
-					}
-				],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/PasswordResetRequest"
-							}
-						}
-					}
-				},
-				"responses": {
-					"200": {
-						"description": "Successful Response",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/MessageResponse"
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Validation Error",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPValidationError"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/auth/reset-password": {
-			"post": {
-				"tags": ["Auth"],
-				"summary": "Reset password",
-				"description": "Completes the password reset flow using a valid reset token.\n\n**Steps:**\n1. User receives a reset link from `/request-password-reset`.\n2. User submits the token and new password to this endpoint.\n3. System validates the token and updates the password.\n\n**Notes:**\n- The token must be valid and not expired.\n- Rate limiting is applied to prevent abuse.",
-				"operationId": "reset_password_api_v1_auth_reset_password_post",
-				"parameters": [
-					{
-						"name": "X-API-Key",
-						"in": "header",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"title": "X-Api-Key"
-						}
-					}
-				],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/PasswordResetConfirmRequest"
-							}
-						}
-					}
-				},
-				"responses": {
-					"200": {
-						"description": "Successful Response",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/MessageResponse"
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Validation Error",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPValidationError"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/auth/me": {
-			"get": {
-				"tags": ["Auth"],
-				"summary": "Get current user profile",
-				"description": "Returns the profile information of the currently authenticated user.\n\n**How it works:**\n- Requires a valid JWT Bearer token.\n- Returns user ID, email, name, bio, avatar, and timestamps.",
-				"operationId": "get_me_api_v1_auth_me_get",
-				"security": [
-					{
-						"OAuth2PasswordBearer": []
-					}
-				],
-				"parameters": [
-					{
-						"name": "X-API-Key",
-						"in": "header",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"title": "X-Api-Key"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "Successful Response",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/UserProfile"
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Validation Error",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPValidationError"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/health": {
-			"get": {
-				"tags": ["Health"],
-				"summary": "Health check",
-				"description": "Returns the health status of the API and database connection, including uptime and dependency versions.\n\n    **Features:**\n    - Checks database connectivity\n    - Returns API/server uptime\n    - Returns dependency versions (Python, FastAPI, SQLAlchemy)\n    - Adds response time in headers\n\n    **Example:**\n    ```bash\n    curl https://api.reviewpoint.org/api/v1/health\n    ```",
-				"operationId": "health_check_api_v1_health_get",
-				"parameters": [
-					{
-						"name": "X-API-Key",
-						"in": "header",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"title": "X-Api-Key"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "API and database are healthy",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HealthResponseDict"
-								},
-								"example": {
-									"status": "ok",
-									"db": {
-										"ok": true
-									},
-									"uptime": 123.45,
-									"response_time": "0.0012s",
-									"versions": {
-										"python": "3.11.0",
-										"fastapi": "0.95.0",
-										"sqlalchemy": "2.0.0"
-									}
-								}
-							}
-						}
-					},
-					"400": {
-						"description": "Validation error.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Invalid request."
-								}
-							}
-						}
-					},
-					"401": {
-						"description": "Unauthorized. Missing or invalid authentication.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Not authenticated."
-								}
-							}
-						}
-					},
-					"403": {
-						"description": "Forbidden. Not enough permissions.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Not enough permissions."
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Unprocessable Entity. Invalid input.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Invalid input."
-								}
-							}
-						}
-					},
-					"429": {
-						"description": "Too many requests.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Rate limit exceeded."
-								}
-							}
-						}
-					},
-					"500": {
-						"description": "Internal server error.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Unexpected error."
-								}
-							}
-						}
-					},
-					"503": {
-						"description": "Database unavailable or service unavailable.",
-						"content": {
-							"application/json": {
-								"example": {
-									"status": "error",
-									"db": {
-										"ok": false,
-										"error": "Database connection failed",
-										"pool": {}
-									},
-									"uptime": 12345.67,
-									"response_time": 0.0023,
-									"versions": {
-										"python": "3.11.8",
-										"fastapi": "0.110.0",
-										"sqlalchemy": "2.0.29"
-									},
-									"detail": "Database connection failed"
-								}
-							}
-						}
-					}
-				},
-				"x-codeSamples": [
-					{
-						"lang": "curl",
-						"label": "cURL",
-						"source": "curl https://api.reviewpoint.org/api/v1/health"
-					},
-					{
-						"lang": "Python",
-						"label": "Python (requests)",
-						"source": "import requests\nurl = 'https://api.reviewpoint.org/api/v1/health'\nresponse = requests.get(url)\nprint(response.json())"
-					},
-					{
-						"lang": "JavaScript",
-						"label": "JavaScript (fetch)",
-						"source": "fetch('https://api.reviewpoint.org/api/v1/health')\n  .then(res => res.json())\n  .then(console.log);"
-					},
-					{
-						"lang": "Go",
-						"label": "Go (net/http)",
-						"source": "package main\nimport (\n  \"net/http\"\n)\nfunc main() {\n  http.Get(\"https://api.reviewpoint.org/api/v1/health\")\n}"
-					},
-					{
-						"lang": "Java",
-						"label": "Java (OkHttp)",
-						"source": "OkHttpClient client = new OkHttpClient();\nRequest request = new Request.Builder()\n  .url(\"https://api.reviewpoint.org/api/v1/health\")\n  .get()\n  .build();\nResponse response = client.newCall(request).execute();"
-					},
-					{
-						"lang": "PHP",
-						"label": "PHP (cURL)",
-						"source": "$ch = curl_init('https://api.reviewpoint.org/api/v1/health');\n$response = curl_exec($ch);\ncurl_close($ch);"
-					},
-					{
-						"lang": "Ruby",
-						"label": "Ruby (Net::HTTP)",
-						"source": "require 'net/http'\nuri = URI('https://api.reviewpoint.org/api/v1/health')\nres = Net::HTTP.get(uri)\nputs res"
-					},
-					{
-						"lang": "HTTPie",
-						"label": "HTTPie",
-						"source": "http GET https://api.reviewpoint.org/api/v1/health"
-					},
-					{
-						"lang": "PowerShell",
-						"label": "PowerShell",
-						"source": "Invoke-RestMethod -Uri 'https://api.reviewpoint.org/api/v1/health' -Method Get"
-					}
-				]
-			}
-		},
-		"/api/v1/metrics": {
-			"get": {
-				"tags": ["Health"],
-				"summary": "Prometheus metrics",
-				"description": "Returns Prometheus-style metrics for uptime and database connection pool.\n\n    **Metrics Provided:**\n    - `app_uptime_seconds`: API uptime in seconds\n    - `db_pool_size`: Database connection pool size\n    - `db_pool_checkedin`: Idle connections\n    - `db_pool_checkedout`: Active connections\n    - `db_pool_overflow`: Overflow connections\n    - `db_pool_awaiting`: Awaiting connections\n\n    **Use case:**\n    - Monitoring with Prometheus or similar tools\n    - Health dashboards",
-				"operationId": "metrics_api_v1_metrics_get",
-				"responses": {
-					"200": {
-						"description": "Prometheus metrics in plain text",
-						"content": {
-							"application/json": {
-								"schema": {}
-							},
-							"text/plain": {
-								"example": "app_uptime_seconds 12345.67\ndb_pool_size 5\ndb_pool_checkedin 5\ndb_pool_checkedout 0\ndb_pool_overflow 0\ndb_pool_awaiting 0"
-							}
-						}
-					},
-					"400": {
-						"description": "Validation error.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Invalid request."
-								}
-							}
-						}
-					},
-					"401": {
-						"description": "Unauthorized. Missing or invalid authentication.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Not authenticated."
-								}
-							}
-						}
-					},
-					"403": {
-						"description": "Forbidden. Not enough permissions.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Not enough permissions."
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Unprocessable Entity. Invalid input.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Invalid input."
-								}
-							}
-						}
-					},
-					"429": {
-						"description": "Too many requests.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Rate limit exceeded."
-								}
-							}
-						}
-					},
-					"500": {
-						"description": "Internal server error.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Unexpected error."
-								}
-							}
-						}
-					},
-					"503": {
-						"description": "Service unavailable.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Service temporarily unavailable."
-								}
-							}
-						}
-					}
-				},
-				"x-codeSamples": [
-					{
-						"lang": "curl",
-						"label": "cURL",
-						"source": "curl https://api.reviewpoint.org/api/v1/metrics"
-					},
-					{
-						"lang": "Python",
-						"label": "Python (requests)",
-						"source": "import requests\nurl = 'https://api.reviewpoint.org/api/v1/metrics'\nresponse = requests.get(url)\nprint(response.text)"
-					},
-					{
-						"lang": "JavaScript",
-						"label": "JavaScript (fetch)",
-						"source": "fetch('https://api.reviewpoint.org/api/v1/metrics')\n  .then(res => res.text())\n  .then(console.log);"
-					},
-					{
-						"lang": "Go",
-						"label": "Go (net/http)",
-						"source": "package main\nimport (\n  \"net/http\"\n)\nfunc main() {\n  http.Get(\"https://api.reviewpoint.org/api/v1/metrics\")\n}"
-					},
-					{
-						"lang": "Java",
-						"label": "Java (OkHttp)",
-						"source": "OkHttpClient client = new OkHttpClient();\nRequest request = new Request.Builder()\n  .url(\"https://api.reviewpoint.org/api/v1/metrics\")\n  .get()\n  .build();\nResponse response = client.newCall(request).execute();"
-					},
-					{
-						"lang": "PHP",
-						"label": "PHP (cURL)",
-						"source": "$ch = curl_init('https://api.reviewpoint.org/api/v1/metrics');\n$response = curl_exec($ch);\ncurl_close($ch);"
-					},
-					{
-						"lang": "Ruby",
-						"label": "Ruby (Net::HTTP)",
-						"source": "require 'net/http'\nuri = URI('https://api.reviewpoint.org/api/v1/metrics')\nres = Net::HTTP.get(uri)\nputs res"
-					},
-					{
-						"lang": "HTTPie",
-						"label": "HTTPie",
-						"source": "http GET https://api.reviewpoint.org/api/v1/metrics"
-					},
-					{
-						"lang": "PowerShell",
-						"label": "PowerShell",
-						"source": "Invoke-RestMethod -Uri 'https://api.reviewpoint.org/api/v1/metrics' -Method Get"
-					}
-				]
-			}
-		},
-		"/api/v1/users/export": {
-			"get": {
-				"summary": "Export users as CSV (debug minimal)",
-				"description": "Export users as CSV (minimal).\nRaises:\n    HTTPException: If format is not 'csv'.",
-				"operationId": "export_users_csv_api_v1_users_export_get",
-				"parameters": [
-					{
-						"name": "email",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"description": "Filter by email",
-							"title": "Email"
-						},
-						"description": "Filter by email"
-					},
-					{
-						"name": "format",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"description": "Export format (only csv supported)",
-							"default": "csv",
-							"title": "Format"
-						},
-						"description": "Export format (only csv supported)"
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "Successful Response"
-					},
-					"422": {
-						"description": "Validation Error",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPValidationError"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/users/export-alive": {
-			"get": {
-				"summary": "Test endpoint for export router",
-				"description": "Test endpoint for export router.\nReturns:\n    ExportAliveResponse: Status dict.",
-				"operationId": "export_alive_api_v1_users_export_alive_get",
-				"responses": {
-					"200": {
-						"description": "Successful Response",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ExportAliveResponse"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/users/export-full": {
-			"get": {
-				"summary": "Export users as CSV (full)",
-				"description": "Export users as CSV (full).\nReturns:\n    Response: CSV file response.",
-				"operationId": "export_users_full_csv_api_v1_users_export_full_get",
-				"responses": {
-					"200": {
-						"description": "Successful Response"
-					}
-				}
-			}
-		},
-		"/api/v1/users/export-simple": {
-			"get": {
-				"summary": "Simple test endpoint for debugging",
-				"description": "Simple test endpoint for debugging.\nReturns:\n    ExportSimpleResponse: Status dict.",
-				"operationId": "export_simple_api_v1_users_export_simple_get",
-				"responses": {
-					"200": {
-						"description": "Successful Response",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/ExportSimpleResponse"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/users": {
-			"post": {
-				"summary": "Create a new user",
-				"description": "Create a new user.\nRaises:\n    HTTPException: If user already exists, data is invalid, or unexpected error occurs.",
-				"operationId": "create_user_api_v1_users_post",
-				"parameters": [
-					{
-						"name": "X-API-Key",
-						"in": "header",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"title": "X-Api-Key"
-						}
-					}
-				],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/UserCreateRequest"
-							}
-						}
-					}
-				},
-				"responses": {
-					"201": {
-						"description": "Successful Response",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/UserProfile"
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Validation Error",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPValidationError"
-								}
-							}
-						}
-					}
-				}
-			},
-			"get": {
-				"summary": "List users",
-				"description": "List users with optional filters.\nRaises:\n    HTTPException: If an unexpected error occurs.",
-				"operationId": "list_users_api_v1_users_get",
-				"security": [
-					{
-						"OAuth2PasswordBearer": []
-					}
-				],
-				"parameters": [
-					{
-						"name": "email",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"description": "Filter by email",
-							"title": "Email"
-						},
-						"description": "Filter by email"
-					},
-					{
-						"name": "name",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"description": "Filter by name",
-							"title": "Name"
-						},
-						"description": "Filter by name"
-					},
-					{
-						"name": "created_after",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"description": "Filter by created_after datetime",
-							"title": "Created After"
-						},
-						"description": "Filter by created_after datetime"
-					},
-					{
-						"name": "offset",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"type": "integer",
-							"minimum": 0,
-							"description": "Number of items to skip (offset)",
-							"default": 0,
-							"title": "Offset"
-						},
-						"description": "Number of items to skip (offset)"
-					},
-					{
-						"name": "limit",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"type": "integer",
-							"maximum": 100,
-							"minimum": 1,
-							"description": "Max number of items to return (max 100)",
-							"default": 20,
-							"title": "Limit"
-						},
-						"description": "Max number of items to return (max 100)"
-					},
-					{
-						"name": "X-API-Key",
-						"in": "header",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"title": "X-Api-Key"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "Successful Response",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/UserListResponse"
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Validation Error",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPValidationError"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/users/{user_id}": {
-			"get": {
-				"summary": "Get user by ID",
-				"description": "Get user by ID.\nRaises:\n    HTTPException: If user not found or unexpected error occurs.",
-				"operationId": "get_user_by_id_api_v1_users__user_id__get",
-				"security": [
-					{
-						"OAuth2PasswordBearer": []
-					}
-				],
-				"parameters": [
-					{
-						"name": "user_id",
-						"in": "path",
-						"required": true,
-						"schema": {
-							"type": "integer",
-							"title": "User Id"
-						}
-					},
-					{
-						"name": "X-API-Key",
-						"in": "header",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"title": "X-Api-Key"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "Successful Response",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/UserProfile"
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Validation Error",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPValidationError"
-								}
-							}
-						}
-					}
-				}
-			},
-			"put": {
-				"summary": "Update user information",
-				"description": "Update user information.\nRaises:\n    HTTPException: If user not found, email exists, invalid data, or unexpected error occurs.",
-				"operationId": "update_user_api_v1_users__user_id__put",
-				"security": [
-					{
-						"OAuth2PasswordBearer": []
-					}
-				],
-				"parameters": [
-					{
-						"name": "user_id",
-						"in": "path",
-						"required": true,
-						"schema": {
-							"type": "integer",
-							"title": "User Id"
-						}
-					}
-				],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/UserCreateRequest"
-							}
-						}
-					}
-				},
-				"responses": {
-					"200": {
-						"description": "Successful Response",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/UserProfile"
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Validation Error",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPValidationError"
-								}
-							}
-						}
-					}
-				}
-			},
-			"delete": {
-				"summary": "Delete user",
-				"description": "Delete user by ID.\nRaises:\n    HTTPException: If user not found or unexpected error occurs.",
-				"operationId": "delete_user_api_v1_users__user_id__delete",
-				"security": [
-					{
-						"OAuth2PasswordBearer": []
-					}
-				],
-				"parameters": [
-					{
-						"name": "user_id",
-						"in": "path",
-						"required": true,
-						"schema": {
-							"type": "integer",
-							"title": "User Id"
-						}
-					}
-				],
-				"responses": {
-					"204": {
-						"description": "Successful Response"
-					},
-					"422": {
-						"description": "Validation Error",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPValidationError"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/users/promote-admin": {
-			"post": {
-				"tags": ["Test Utilities"],
-				"summary": "Promote User To Admin Async",
-				"description": "Promote a user to admin by email. Only allowed in test mode.\n\nArgs:\n    email (str): The email of the user to promote.\n    session (AsyncSession): The SQLAlchemy async session.\n\nReturns:\n    PromoteAdminResponse: A dict with a detail message.\n\nRaises:\n    HTTPException: If not in test mode (403) or user not found (404).",
-				"operationId": "promote_user_to_admin_async_api_v1_users_promote_admin_post",
-				"requestBody": {
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/Body_promote_user_to_admin_async_api_v1_users_promote_admin_post"
-							}
-						}
-					},
-					"required": true
-				},
-				"responses": {
-					"200": {
-						"description": "Successful Response",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/PromoteAdminResponse"
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Validation Error",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPValidationError"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/uploads/root-test": {
-			"get": {
-				"tags": ["File", "File"],
-				"summary": "Root level test endpoint",
-				"description": "**Diagnostic Endpoint**\n\n    Checks if the uploads router is registered and responding. Useful for debugging router registration issues.\n\n    **Returns:**\n    - JSON status and router name.",
-				"operationId": "uploads_main_root_test",
-				"responses": {
-					"200": {
-						"description": "Root test successful",
-						"content": {
-							"application/json": {
-								"schema": {
-									"additionalProperties": {
-										"type": "string"
-									},
-									"type": "object",
-									"title": "Response Uploads Main Root Test"
-								},
-								"examples": {
-									"default": {
-										"value": {
-											"status": "uploads root test",
-											"router": "uploads"
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/uploads/test-alive": {
-			"get": {
-				"tags": ["File", "File"],
-				"summary": "Test endpoint for router registration",
-				"description": "**Health Check**\n\n    Confirms the uploads router is active and properly registered. Returns a simple status JSON object.\n\n    **Use case:**\n    - Health checks\n    - Integration tests",
-				"operationId": "_test_alive_response_api_v1_uploads_test_alive_get",
-				"responses": {
-					"200": {
-						"description": "Router is alive",
-						"content": {
-							"application/json": {
-								"schema": {
-									"additionalProperties": {
-										"type": "string"
-									},
-									"type": "object",
-									"title": "Response  Test Alive Response Api V1 Uploads Test Alive Get"
-								},
-								"examples": {
-									"default": {
-										"value": {
-											"status": "alive"
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/uploads/export-alive": {
-			"get": {
-				"tags": ["File", "File"],
-				"summary": "Test endpoint for export router",
-				"description": "**Export Router Health Check**\n\n    Returns 200 if the uploads export router is active. Used for integration and deployment checks.",
-				"operationId": "_export_alive_response_api_v1_uploads_export_alive_get",
-				"responses": {
-					"200": {
-						"description": "Export router is alive",
-						"content": {
-							"application/json": {
-								"schema": {
-									"additionalProperties": {
-										"type": "string"
-									},
-									"type": "object",
-									"title": "Response  Export Alive Response Api V1 Uploads Export Alive Get"
-								},
-								"examples": {
-									"default": {
-										"value": {
-											"status": "uploads export alive"
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/uploads/export-test": {
-			"get": {
-				"tags": ["File", "File"],
-				"summary": "Test endpoint for export router",
-				"description": "**Export Router Test**\n\n    Returns 200 if the uploads export router is active. Requires authentication.\n\n    **Returns:**\n    - JSON status\n    - Current user ID (if authenticated)",
-				"operationId": "export_test_api_v1_uploads_export_test_get",
-				"security": [
-					{
-						"OAuth2PasswordBearer": []
-					}
-				],
-				"parameters": [
-					{
-						"name": "X-API-Key",
-						"in": "header",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"title": "X-Api-Key"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "Export router test successful",
-						"content": {
-							"application/json": {
-								"schema": {
-									"type": "object",
-									"additionalProperties": {
-										"type": "string"
-									},
-									"title": "Response Export Test Api V1 Uploads Export Test Get"
-								},
-								"examples": {
-									"default": {
-										"value": {
-											"status": "uploads export test"
-										}
-									}
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Validation Error",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPValidationError"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/uploads/export": {
-			"get": {
-				"tags": ["File"],
-				"summary": "Export files as CSV",
-				"description": "**Export Operation**\n\n    Exports the list of uploaded files as a CSV file.\n\n    **Steps:**\n    1. Authenticated user requests export.\n    2. Server filters and sorts files as requested.\n    3. Returns a CSV with filename and URL columns.\n\n    **Notes:**\n    - Supports filtering by creation date and filename.\n    - Rate limiting and authentication required.",
-				"operationId": "export_files_csv_api_v1_uploads_export_get",
-				"security": [
-					{
-						"OAuth2PasswordBearer": []
-					}
-				],
-				"parameters": [
-					{
-						"name": "q",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"description": "Search by filename (partial match)",
-							"title": "Q"
-						},
-						"description": "Search by filename (partial match)"
-					},
-					{
-						"name": "sort",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"enum": ["created_at", "filename"],
-							"type": "string",
-							"description": "Sort by field: created_at, filename",
-							"default": "created_at",
-							"title": "Sort"
-						},
-						"description": "Sort by field: created_at, filename"
-					},
-					{
-						"name": "order",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"enum": ["desc", "asc"],
-							"type": "string",
-							"description": "Sort order: asc or desc",
-							"default": "desc",
-							"title": "Order"
-						},
-						"description": "Sort order: asc or desc"
-					},
-					{
-						"name": "fields",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"description": "Comma-separated list of fields to include in response (e.g. filename,url)",
-							"title": "Fields"
-						},
-						"description": "Comma-separated list of fields to include in response (e.g. filename,url)"
-					},
-					{
-						"name": "created_before",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"description": "Filter files created before this datetime (ISO 8601, e.g. 2024-01-01T00:00:00Z)",
-							"title": "Created Before"
-						},
-						"description": "Filter files created before this datetime (ISO 8601, e.g. 2024-01-01T00:00:00Z)"
-					},
-					{
-						"name": "created_after",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"description": "Filter files created after this datetime (ISO 8601, e.g. 2024-01-01T00:00:00Z)",
-							"title": "Created After"
-						},
-						"description": "Filter files created after this datetime (ISO 8601, e.g. 2024-01-01T00:00:00Z)"
-					},
-					{
-						"name": "offset",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"type": "integer",
-							"minimum": 0,
-							"description": "Number of items to skip (offset)",
-							"default": 0,
-							"title": "Offset"
-						},
-						"description": "Number of items to skip (offset)"
-					},
-					{
-						"name": "limit",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"type": "integer",
-							"maximum": 100,
-							"minimum": 1,
-							"description": "Max number of items to return (max 100)",
-							"default": 20,
-							"title": "Limit"
-						},
-						"description": "Max number of items to return (max 100)"
-					},
-					{
-						"name": "X-API-Key",
-						"in": "header",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"title": "X-Api-Key"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "Files exported as CSV",
-						"content": {
-							"application/json": {
-								"schema": {}
-							},
-							"text/csv": {
-								"examples": {
-									"default": {
-										"value": "filename,url\ndocument.pdf,/uploads/document.pdf"
-									}
-								}
-							}
-						}
-					},
-					"401": {
-						"description": "Unauthorized. Missing or invalid authentication.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Not authenticated."
-								}
-							}
-						}
-					},
-					"403": {
-						"description": "Forbidden. Not enough permissions.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Not enough permissions."
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Unprocessable Entity. Invalid input.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Invalid input."
-								}
-							}
-						}
-					},
-					"429": {
-						"description": "Too many requests.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Rate limit exceeded."
-								}
-							}
-						}
-					},
-					"500": {
-						"description": "Internal server error.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Unexpected error."
-								}
-							}
-						}
-					},
-					"503": {
-						"description": "Service unavailable.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Service temporarily unavailable."
-								}
-							}
-						}
-					}
-				},
-				"x-codeSamples": [
-					{
-						"lang": "curl",
-						"label": "cURL",
-						"source": "curl -H 'Authorization: Bearer <token>' 'https://api.reviewpoint.org/api/v1/uploads/export'"
-					},
-					{
-						"lang": "Python",
-						"label": "Python (requests)",
-						"source": "import requests\nurl = 'https://api.reviewpoint.org/api/v1/uploads/export'\nheaders = {'Authorization': 'Bearer <token>'}\nresponse = requests.get(url, headers=headers)\nprint(response.content.decode())"
-					},
-					{
-						"lang": "JavaScript",
-						"label": "JavaScript (fetch)",
-						"source": "fetch('https://api.reviewpoint.org/api/v1/uploads/export', {\n  headers: { 'Authorization': 'Bearer <token>' }\n})\n  .then(res => res.text())\n  .then(console.log);"
-					},
-					{
-						"lang": "Go",
-						"label": "Go (net/http)",
-						"source": "package main\nimport (\n  \"net/http\"\n)\nfunc main() {\n  req, _ := http.NewRequest(\"GET\", \"https://api.reviewpoint.org/api/v1/uploads/export\", nil)\n  req.Header.Set(\"Authorization\", \"Bearer <token>\")\n  http.DefaultClient.Do(req)\n}"
-					},
-					{
-						"lang": "Java",
-						"label": "Java (OkHttp)",
-						"source": "OkHttpClient client = new OkHttpClient();\nRequest request = new Request.Builder()\n  .url(\"https://api.reviewpoint.org/api/v1/uploads/export\")\n  .get()\n  .addHeader(\"Authorization\", \"Bearer <token>\")\n  .build();\nResponse response = client.newCall(request).execute();"
-					},
-					{
-						"lang": "PHP",
-						"label": "PHP (cURL)",
-						"source": "$ch = curl_init('https://api.reviewpoint.org/api/v1/uploads/export');\ncurl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer <token>']);\n$response = curl_exec($ch);\ncurl_close($ch);"
-					},
-					{
-						"lang": "Ruby",
-						"label": "Ruby (Net::HTTP)",
-						"source": "require 'net/http'\nuri = URI('https://api.reviewpoint.org/api/v1/uploads/export')\nreq = Net::HTTP::Get.new(uri)\nreq['Authorization'] = 'Bearer <token>'\nres = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }\nputs res.body"
-					},
-					{
-						"lang": "HTTPie",
-						"label": "HTTPie",
-						"source": "http GET https://api.reviewpoint.org/api/v1/uploads/export Authorization:'Bearer <token>'"
-					},
-					{
-						"lang": "PowerShell",
-						"label": "PowerShell",
-						"source": "$headers = @{Authorization='Bearer <token>'}\nInvoke-RestMethod -Uri 'https://api.reviewpoint.org/api/v1/uploads/export' -Headers $headers -Method Get"
-					}
-				]
-			}
-		},
-		"/api/v1/uploads": {
-			"post": {
-				"tags": ["File"],
-				"summary": "Upload a file",
-				"description": "**File Upload**\n\n    Uploads a file and returns its filename and URL.\n\n    **How it works:**\n    1. User sends a file using multipart/form-data.\n    2. The server validates the file type and size.\n    3. If valid, the file is saved and a URL is returned.\n\n    **Notes:**\n    - Only certain file types may be allowed (e.g., PDF, images).\n    - File size limits and rate limiting may apply.\n    - Use the returned URL to access or download the file.",
-				"operationId": "upload_file_api_v1_uploads_post",
-				"security": [
-					{
-						"OAuth2PasswordBearer": []
-					}
-				],
-				"parameters": [
-					{
-						"name": "X-API-Key",
-						"in": "header",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"title": "X-Api-Key"
-						}
-					}
-				],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"multipart/form-data": {
-							"schema": {
-								"$ref": "#/components/schemas/Body_upload_file_api_v1_uploads_post"
-							},
-							"example": {
-								"file": "(binary file, e.g. document.pdf)"
-							}
-						}
-					}
-				},
-				"responses": {
-					"201": {
-						"description": "File uploaded successfully",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/FileUploadResponse"
-								},
-								"example": {
-									"filename": "document.pdf",
-									"url": "/uploads/document.pdf"
-								}
-							}
-						}
-					},
-					"400": {
-						"description": "Invalid file",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "File type not allowed."
-								}
-							}
-						}
-					},
-					"401": {
-						"description": "Unauthorized. Missing or invalid authentication.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Not authenticated."
-								}
-							}
-						}
-					},
-					"413": {
-						"description": "File too large.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "File size exceeds limit."
-								}
-							}
-						}
-					},
-					"415": {
-						"description": "Unsupported Media Type.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Unsupported file type."
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Unprocessable Entity. Invalid input.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Invalid input."
-								}
-							}
-						}
-					},
-					"429": {
-						"description": "Too many requests.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Rate limit exceeded."
-								}
-							}
-						}
-					},
-					"500": {
-						"description": "Internal server error.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Unexpected error."
-								}
-							}
-						}
-					},
-					"503": {
-						"description": "Service unavailable.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Service temporarily unavailable."
-								}
-							}
-						}
-					}
-				},
-				"x-codeSamples": [
-					{
-						"lang": "curl",
-						"label": "cURL",
-						"source": "curl -X POST 'https://api.reviewpoint.org/api/v1/uploads' \\\n  -H 'Authorization: Bearer <token>' \\\n  -F 'file=@document.pdf'"
-					},
-					{
-						"lang": "Python",
-						"label": "Python (requests)",
-						"source": "import requests\nurl = 'https://api.reviewpoint.org/api/v1/uploads'\nheaders = {'Authorization': 'Bearer <token>'}\nfiles = {'file': open('document.pdf', 'rb')}\nresponse = requests.post(url, headers=headers, files=files)\nprint(response.json())"
-					},
-					{
-						"lang": "JavaScript",
-						"label": "JavaScript (fetch)",
-						"source": "const form = new FormData();\nform.append('file', fileInput.files[0]);\nfetch('https://api.reviewpoint.org/api/v1/uploads', {\n  method: 'POST',\n  headers: { 'Authorization': 'Bearer <token>' },\n  body: form\n})\n  .then(res => res.json())\n  .then(console.log);"
-					},
-					{
-						"lang": "Go",
-						"label": "Go (net/http)",
-						"source": "package main\nimport (\n  \"bytes\"\n  \"mime/multipart\"\n  \"net/http\"\n  \"os\"\n)\nfunc main() {\n  file, _ := os.Open(\"document.pdf\")\n  defer file.Close()\n  body := &bytes.Buffer{}\n  writer := multipart.NewWriter(body)\n  part, _ := writer.CreateFormFile(\"file\", \"document.pdf\")\n  io.Copy(part, file)\n  writer.Close()\n  req, _ := http.NewRequest(\"POST\", \"https://api.reviewpoint.org/api/v1/uploads\", body)\n  req.Header.Set(\"Authorization\", \"Bearer <token>\")\n  req.Header.Set(\"Content-Type\", writer.FormDataContentType())\n  http.DefaultClient.Do(req)\n}"
-					},
-					{
-						"lang": "Java",
-						"label": "Java (OkHttp)",
-						"source": "OkHttpClient client = new OkHttpClient();\nMediaType mediaType = MediaType.parse(\"application/pdf\");\nFile file = new File(\"document.pdf\");\nRequestBody fileBody = RequestBody.create(mediaType, file);\nMultipartBody requestBody = new MultipartBody.Builder()\n  .setType(MultipartBody.FORM)\n  .addFormDataPart(\"file\", file.getName(), fileBody)\n  .build();\nRequest request = new Request.Builder()\n  .url(\"https://api.reviewpoint.org/api/v1/uploads\")\n  .post(requestBody)\n  .addHeader(\"Authorization\", \"Bearer <token>\")\n  .build();\nResponse response = client.newCall(request).execute();"
-					},
-					{
-						"lang": "PHP",
-						"label": "PHP (cURL)",
-						"source": "$ch = curl_init('https://api.reviewpoint.org/api/v1/uploads');\ncurl_setopt($ch, CURLOPT_POST, 1);\ncurl_setopt($ch, CURLOPT_POSTFIELDS, ['file' => new CURLFile('document.pdf')]);\ncurl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer <token>']);\n$response = curl_exec($ch);\ncurl_close($ch);"
-					},
-					{
-						"lang": "Ruby",
-						"label": "Ruby (Net::HTTP)",
-						"source": "require 'net/http'\nrequire 'uri'\nrequire 'json'\nuri = URI('https://api.reviewpoint.org/api/v1/uploads')\nrequest = Net::HTTP::Post.new(uri)\nrequest['Authorization'] = 'Bearer <token>'\nform_data = [['file', File.open('document.pdf')]]\nrequest.set_form form_data, 'multipart/form-data'\nresponse = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|\n  http.request(request)\nend\nputs response.body"
-					},
-					{
-						"lang": "HTTPie",
-						"label": "HTTPie",
-						"source": "http -f POST https://api.reviewpoint.org/api/v1/uploads Authorization:'Bearer <token>' file@document.pdf"
-					},
-					{
-						"lang": "PowerShell",
-						"label": "PowerShell",
-						"source": "$file = Get-Item .\\document.pdf\n$Form = @{file = $file}\nInvoke-RestMethod -Uri 'https://api.reviewpoint.org/api/v1/uploads' -Method Post -Form $Form -Headers @{Authorization='Bearer <token>'}"
-					}
-				]
-			},
-			"get": {
-				"tags": ["File"],
-				"summary": "List all uploaded files",
-				"description": "**File Listing**\n\n    Returns a paginated list of all uploaded files for the current user.\n\n    **How it works:**\n    1. The server retrieves files uploaded by the current user.\n    2. Files can be filtered and sorted.\n    3. Returns a list of files with pagination information.\n\n    **Notes:**\n    - Supports filtering by filename and creation date.\n    - Supports sorting by creation date or filename.\n    - Supports field selection to limit the returned data.",
-				"operationId": "list_files_api_v1_uploads_get",
-				"security": [
-					{
-						"OAuth2PasswordBearer": []
-					}
-				],
-				"parameters": [
-					{
-						"name": "q",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"description": "Search term across all fields",
-							"title": "Q"
-						},
-						"description": "Search term across all fields"
-					},
-					{
-						"name": "fields",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"description": "Comma-separated list of fields to include",
-							"title": "Fields"
-						},
-						"description": "Comma-separated list of fields to include"
-					},
-					{
-						"name": "sort",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"enum": ["created_at", "filename"],
-							"type": "string",
-							"description": "Field to sort by",
-							"default": "created_at",
-							"title": "Sort"
-						},
-						"description": "Field to sort by"
-					},
-					{
-						"name": "order",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"enum": ["desc", "asc"],
-							"type": "string",
-							"description": "Sort order (asc or desc)",
-							"default": "desc",
-							"title": "Order"
-						},
-						"description": "Sort order (asc or desc)"
-					},
-					{
-						"name": "created_after",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"description": "Filter by creation date (ISO format)",
-							"title": "Created After"
-						},
-						"description": "Filter by creation date (ISO format)"
-					},
-					{
-						"name": "created_before",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"description": "Filter by creation date (ISO format)",
-							"title": "Created Before"
-						},
-						"description": "Filter by creation date (ISO format)"
-					},
-					{
-						"name": "offset",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"type": "integer",
-							"minimum": 0,
-							"description": "Number of items to skip (offset)",
-							"default": 0,
-							"title": "Offset"
-						},
-						"description": "Number of items to skip (offset)"
-					},
-					{
-						"name": "limit",
-						"in": "query",
-						"required": false,
-						"schema": {
-							"type": "integer",
-							"maximum": 100,
-							"minimum": 1,
-							"description": "Max number of items to return (max 100)",
-							"default": 20,
-							"title": "Limit"
-						},
-						"description": "Max number of items to return (max 100)"
-					},
-					{
-						"name": "X-API-Key",
-						"in": "header",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"title": "X-Api-Key"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "Files found",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/FileListResponse"
-								},
-								"examples": {
-									"default": {
-										"value": {
-											"files": [
-												{
-													"filename": "document.pdf",
-													"url": "/uploads/document.pdf"
-												}
-											],
-											"total": 1
-										}
-									}
-								}
-							}
-						}
-					},
-					"401": {
-						"description": "Unauthorized. Missing or invalid authentication.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Not authenticated."
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Validation Error",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/HTTPValidationError"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/v1/uploads/{filename}": {
-			"get": {
-				"tags": ["File"],
-				"summary": "Get uploaded file info",
-				"description": "Retrieves metadata for an uploaded file by filename.",
-				"operationId": "get_file_api_v1_uploads__filename__get",
-				"security": [
-					{
-						"OAuth2PasswordBearer": []
-					}
-				],
-				"parameters": [
-					{
-						"name": "filename",
-						"in": "path",
-						"required": true,
-						"schema": {
-							"type": "string",
-							"description": "The name of the file to retrieve.",
-							"title": "Filename"
-						},
-						"description": "The name of the file to retrieve."
-					},
-					{
-						"name": "X-API-Key",
-						"in": "header",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"title": "X-Api-Key"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "File found",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/FileUploadResponse"
-								},
-								"example": {
-									"filename": "document.pdf",
-									"url": "/uploads/document.pdf"
-								}
-							}
-						}
-					},
-					"401": {
-						"description": "Unauthorized. Missing or invalid authentication.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Not authenticated."
-								}
-							}
-						}
-					},
-					"403": {
-						"description": "Forbidden. Not enough permissions.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Not enough permissions."
-								}
-							}
-						}
-					},
-					"404": {
-						"description": "File not found",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "File not found."
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Unprocessable Entity. Invalid filename.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Invalid filename."
-								}
-							}
-						}
-					},
-					"429": {
-						"description": "Too many requests.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Rate limit exceeded."
-								}
-							}
-						}
-					},
-					"500": {
-						"description": "Internal server error.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Unexpected error."
-								}
-							}
-						}
-					},
-					"503": {
-						"description": "Service unavailable.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Service temporarily unavailable."
-								}
-							}
-						}
-					}
-				}
-			},
-			"delete": {
-				"tags": ["File"],
-				"summary": "Delete uploaded file",
-				"description": "Deletes an uploaded file by filename.",
-				"operationId": "delete_file_by_filename_api_v1_uploads__filename__delete",
-				"security": [
-					{
-						"OAuth2PasswordBearer": []
-					}
-				],
-				"parameters": [
-					{
-						"name": "filename",
-						"in": "path",
-						"required": true,
-						"schema": {
-							"type": "string",
-							"description": "The name of the file to delete.",
-							"title": "Filename"
-						},
-						"description": "The name of the file to delete."
-					},
-					{
-						"name": "X-API-Key",
-						"in": "header",
-						"required": false,
-						"schema": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "null"
-								}
-							],
-							"title": "X-Api-Key"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "Successful Response",
-						"content": {
-							"application/json": {
-								"schema": {}
-							}
-						}
-					},
-					"204": {
-						"description": "File deleted successfully",
-						"content": {
-							"application/json": {
-								"examples": {
-									"default": {
-										"value": {}
-									}
-								}
-							}
-						}
-					},
-					"401": {
-						"description": "Unauthorized. Missing or invalid authentication.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Not authenticated."
-								}
-							}
-						}
-					},
-					"403": {
-						"description": "Forbidden. Not enough permissions.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Not enough permissions."
-								}
-							}
-						}
-					},
-					"404": {
-						"description": "File not found",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "File not found."
-								}
-							}
-						}
-					},
-					"422": {
-						"description": "Unprocessable Entity. Invalid filename.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Invalid filename."
-								}
-							}
-						}
-					},
-					"429": {
-						"description": "Too many requests.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Rate limit exceeded."
-								}
-							}
-						}
-					},
-					"500": {
-						"description": "Internal server error.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Unexpected error."
-								}
-							}
-						}
-					},
-					"503": {
-						"description": "Service unavailable.",
-						"content": {
-							"application/json": {
-								"example": {
-									"detail": "Service temporarily unavailable."
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	},
-	"components": {
-		"schemas": {
-			"AuthResponse": {
-				"properties": {
-					"access_token": {
-						"type": "string",
-						"title": "Access Token"
-					},
-					"refresh_token": {
-						"type": "string",
-						"title": "Refresh Token"
-					},
-					"token_type": {
-						"type": "string",
-						"const": "bearer",
-						"title": "Token Type",
-						"default": "bearer"
-					}
-				},
-				"type": "object",
-				"required": ["access_token", "refresh_token"],
-				"title": "AuthResponse"
-			},
-			"Body_promote_user_to_admin_async_api_v1_users_promote_admin_post": {
-				"properties": {
-					"email": {
-						"type": "string",
-						"title": "Email"
-					}
-				},
-				"type": "object",
-				"required": ["email"],
-				"title": "Body_promote_user_to_admin_async_api_v1_users_promote_admin_post"
-			},
-			"Body_upload_file_api_v1_uploads_post": {
-				"properties": {
-					"file": {
-						"type": "string",
-						"format": "binary",
-						"title": "File",
-						"description": "The file to upload. Must be a valid file type."
-					}
-				},
-				"type": "object",
-				"required": ["file"],
-				"title": "Body_upload_file_api_v1_uploads_post"
-			},
-			"DBStatusDict": {
-				"properties": {
-					"ok": {
-						"type": "boolean",
-						"title": "Ok"
-					},
-					"error": {
-						"anyOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "null"
-							}
-						],
-						"title": "Error"
-					},
-					"pool": {
-						"$ref": "#/components/schemas/PoolStatsDict"
-					}
-				},
-				"type": "object",
-				"title": "DBStatusDict"
-			},
-			"ExportAliveResponse": {
-				"properties": {
-					"status": {
-						"type": "string",
-						"const": "users export alive",
-						"title": "Status"
-					}
-				},
-				"type": "object",
-				"required": ["status"],
-				"title": "ExportAliveResponse"
-			},
-			"ExportSimpleResponse": {
-				"properties": {
-					"users": {
-						"type": "string",
-						"const": "export simple status",
-						"title": "Users"
-					}
-				},
-				"type": "object",
-				"required": ["users"],
-				"title": "ExportSimpleResponse"
-			},
-			"FileDict": {
-				"properties": {
-					"filename": {
-						"type": "string",
-						"title": "Filename"
-					},
-					"url": {
-						"type": "string",
-						"title": "Url"
-					}
-				},
-				"type": "object",
-				"title": "FileDict"
-			},
-			"FileListResponse": {
-				"properties": {
-					"files": {
-						"items": {
-							"$ref": "#/components/schemas/FileDict"
-						},
-						"type": "array",
-						"title": "Files"
-					},
-					"total": {
-						"type": "integer",
-						"title": "Total"
-					}
-				},
-				"type": "object",
-				"required": ["files", "total"],
-				"title": "FileListResponse",
-				"examples": [
-					{
-						"files": [
-							{
-								"filename": "document.pdf",
-								"url": "/uploads/document.pdf"
-							},
-							{
-								"filename": "image.jpg",
-								"url": "/uploads/image.jpg"
-							},
-							{
-								"filename": "only_filename.pdf"
-							}
-						],
-						"total": 3
-					}
-				]
-			},
-			"FileUploadResponse": {
-				"properties": {
-					"filename": {
-						"type": "string",
-						"title": "Filename"
-					},
-					"url": {
-						"type": "string",
-						"title": "Url"
-					}
-				},
-				"type": "object",
-				"required": ["filename", "url"],
-				"title": "FileUploadResponse",
-				"example": {
-					"filename": "document.pdf",
-					"url": "/uploads/document.pdf"
-				}
-			},
-			"HTTPValidationError": {
-				"properties": {
-					"detail": {
-						"items": {
-							"$ref": "#/components/schemas/ValidationError"
-						},
-						"type": "array",
-						"title": "Detail"
-					}
-				},
-				"type": "object",
-				"title": "HTTPValidationError"
-			},
-			"HealthResponseDict": {
-				"properties": {
-					"status": {
-						"type": "string",
-						"enum": ["ok", "error"],
-						"title": "Status"
-					},
-					"db": {
-						"$ref": "#/components/schemas/DBStatusDict"
-					},
-					"uptime": {
-						"type": "number",
-						"title": "Uptime"
-					},
-					"response_time": {
-						"type": "number",
-						"title": "Response Time"
-					},
-					"versions": {
-						"$ref": "#/components/schemas/VersionsDict"
-					},
-					"detail": {
-						"anyOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "null"
-							}
-						],
-						"title": "Detail"
-					}
-				},
-				"type": "object",
-				"title": "HealthResponseDict"
-			},
-			"MessageResponse": {
-				"properties": {
-					"message": {
-						"type": "string",
-						"title": "Message"
-					}
-				},
-				"type": "object",
-				"required": ["message"],
-				"title": "MessageResponse"
-			},
-			"PasswordResetConfirmRequest": {
-				"properties": {
-					"token": {
-						"type": "string",
-						"title": "Token"
-					},
-					"new_password": {
-						"type": "string",
-						"maxLength": 128,
-						"minLength": 8,
-						"title": "New Password"
-					}
-				},
-				"type": "object",
-				"required": ["token", "new_password"],
-				"title": "PasswordResetConfirmRequest"
-			},
-			"PasswordResetRequest": {
-				"properties": {
-					"email": {
-						"type": "string",
-						"format": "email",
-						"title": "Email"
-					}
-				},
-				"type": "object",
-				"required": ["email"],
-				"title": "PasswordResetRequest"
-			},
-			"PoolStatsDict": {
-				"properties": {
-					"size": {
-						"anyOf": [
-							{
-								"type": "integer"
-							},
-							{
-								"type": "null"
-							}
-						],
-						"title": "Size"
-					},
-					"checkedin": {
-						"anyOf": [
-							{
-								"type": "integer"
-							},
-							{
-								"type": "null"
-							}
-						],
-						"title": "Checkedin"
-					},
-					"checkedout": {
-						"anyOf": [
-							{
-								"type": "integer"
-							},
-							{
-								"type": "null"
-							}
-						],
-						"title": "Checkedout"
-					},
-					"overflow": {
-						"anyOf": [
-							{
-								"type": "integer"
-							},
-							{
-								"type": "null"
-							}
-						],
-						"title": "Overflow"
-					},
-					"awaiting": {
-						"anyOf": [
-							{
-								"type": "integer"
-							},
-							{
-								"type": "null"
-							}
-						],
-						"title": "Awaiting"
-					}
-				},
-				"type": "object",
-				"title": "PoolStatsDict"
-			},
-			"PromoteAdminResponse": {
-				"properties": {
-					"detail": {
-						"type": "string",
-						"title": "Detail"
-					}
-				},
-				"type": "object",
-				"required": ["detail"],
-				"title": "PromoteAdminResponse"
-			},
-			"UserCreateRequest": {
-				"properties": {
-					"email": {
-						"type": "string",
-						"title": "Email"
-					},
-					"password": {
-						"type": "string",
-						"title": "Password"
-					},
-					"name": {
-						"type": "string",
-						"title": "Name"
-					}
-				},
-				"type": "object",
-				"required": ["email", "password", "name"],
-				"title": "UserCreateRequest",
-				"examples": [
-					{
-						"email": "user@example.com",
-						"name": "Jane Doe",
-						"password": "strongpassword123"
-					}
-				]
-			},
-			"UserListResponse": {
-				"properties": {
-					"users": {
-						"items": {
-							"$ref": "#/components/schemas/UserProfile"
-						},
-						"type": "array",
-						"title": "Users"
-					},
-					"total": {
-						"type": "integer",
-						"title": "Total"
-					}
-				},
-				"type": "object",
-				"required": ["users", "total"],
-				"title": "UserListResponse"
-			},
-			"UserLoginRequest": {
-				"properties": {
-					"email": {
-						"type": "string",
-						"format": "email",
-						"title": "Email"
-					},
-					"password": {
-						"type": "string",
-						"title": "Password"
-					}
-				},
-				"type": "object",
-				"required": ["email", "password"],
-				"title": "UserLoginRequest"
-			},
-			"UserProfile": {
-				"properties": {
-					"id": {
-						"type": "integer",
-						"title": "Id"
-					},
-					"email": {
-						"type": "string",
-						"title": "Email"
-					},
-					"name": {
-						"anyOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "null"
-							}
-						],
-						"title": "Name"
-					},
-					"bio": {
-						"anyOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "null"
-							}
-						],
-						"title": "Bio"
-					},
-					"avatar_url": {
-						"anyOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "null"
-							}
-						],
-						"title": "Avatar Url"
-					},
-					"created_at": {
-						"anyOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "null"
-							}
-						],
-						"title": "Created At"
-					},
-					"updated_at": {
-						"anyOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "null"
-							}
-						],
-						"title": "Updated At"
-					}
-				},
-				"additionalProperties": false,
-				"type": "object",
-				"required": ["id", "email"],
-				"title": "UserProfile"
-			},
-			"UserRegisterRequest": {
-				"properties": {
-					"email": {
-						"type": "string",
-						"format": "email",
-						"title": "Email"
-					},
-					"password": {
-						"type": "string",
-						"maxLength": 128,
-						"minLength": 8,
-						"title": "Password"
-					},
-					"name": {
-						"anyOf": [
-							{
-								"type": "string",
-								"maxLength": 128
-							},
-							{
-								"type": "null"
-							}
-						],
-						"title": "Name"
-					}
-				},
-				"type": "object",
-				"required": ["email", "password"],
-				"title": "UserRegisterRequest"
-			},
-			"ValidationError": {
-				"properties": {
-					"loc": {
-						"items": {
-							"anyOf": [
-								{
-									"type": "string"
-								},
-								{
-									"type": "integer"
-								}
-							]
-						},
-						"type": "array",
-						"title": "Location"
-					},
-					"msg": {
-						"type": "string",
-						"title": "Message"
-					},
-					"type": {
-						"type": "string",
-						"title": "Error Type"
-					}
-				},
-				"type": "object",
-				"required": ["loc", "msg", "type"],
-				"title": "ValidationError"
-			},
-			"VersionsDict": {
-				"properties": {
-					"python": {
-						"type": "string",
-						"title": "Python"
-					},
-					"fastapi": {
-						"anyOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "null"
-							}
-						],
-						"title": "Fastapi"
-					},
-					"sqlalchemy": {
-						"anyOf": [
-							{
-								"type": "string"
-							},
-							{
-								"type": "null"
-							}
-						],
-						"title": "Sqlalchemy"
-					}
-				},
-				"type": "object",
-				"required": ["python", "fastapi", "sqlalchemy"],
-				"title": "VersionsDict"
-			}
-		},
-		"securitySchemes": {
-			"OAuth2PasswordBearer": {
-				"type": "oauth2",
-				"flows": {
-					"password": {
-						"scopes": {},
-						"tokenUrl": "/api/v1/auth/login"
-					}
-				}
-			}
-		}
-	}
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ReViewPoint Core API",
+    "description": "API for modular scientific paper review platform. Provides authentication, user management, file upload, and LLM integration.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Register a new user",
+        "description": "Registers a new user account and returns a JWT access token.\n\n**Steps:**\n1. User submits registration data (email, password, name).\n2. System validates input and checks for duplicate email.\n3. On success, a new user is created and a JWT access token is returned.\n\n**Notes:**\n- Duplicate emails are not allowed.\n- Password must meet security requirements.\n- Rate limiting is applied to prevent abuse.",
+        "operationId": "register_api_v1_auth_register_post",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegisterRequest",
+                "examples": [
+                  {
+                    "summary": "A typical registration",
+                    "value": {
+                      "email": "user@example.com",
+                      "password": "strongpassword123",
+                      "name": "Jane Doe"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "User login",
+        "description": "Authenticates a user and returns a JWT access token.\n\n**Steps:**\n1. User submits email and password.\n2. System validates credentials and rate limits attempts.\n3. On success, a JWT access token is returned.\n\n**Notes:**\n- Invalid credentials or too many attempts will result in errors.\n- Use the returned token for authenticated requests.",
+        "operationId": "login_api_v1_auth_login_post",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Logout user",
+        "description": "Logs out the current user and blacklists the access token.\n\n**Steps:**\n1. User sends a logout request with a valid access token.\n2. System blacklists the token and ends the session.\n\n**Notes:**\n- Blacklisted tokens cannot be reused.\n- Rate limiting is applied to prevent abuse.",
+        "operationId": "logout_api_v1_auth_logout_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh-token": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Refresh JWT access token",
+        "description": "Refreshes the JWT access token using a valid refresh token.\n\n**Steps:**\n1. User provides a valid refresh token.\n2. System validates the token and issues a new access token.\n\n**Notes:**\n- Expired or blacklisted tokens will be rejected.\n- Rate limiting is applied to prevent abuse.",
+        "operationId": "refresh_token_api_v1_auth_refresh_token_post",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/request-password-reset": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Request password reset",
+        "description": "Initiates a password reset flow.\n\n**Steps:**\n1. User submits email via this endpoint.\n2. System sends a password reset link to the email if it exists.\n3. User clicks the link and is directed to the reset form.\n4. User completes the process via `/reset-password`.\n\n**Notes:**\n- For security, this endpoint always returns a success message, even if the email is not registered.\n- Rate limiting is applied to prevent abuse.",
+        "operationId": "request_password_reset_api_v1_auth_request_password_reset_post",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/reset-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Reset password",
+        "description": "Completes the password reset flow using a valid reset token.\n\n**Steps:**\n1. User receives a reset link from `/request-password-reset`.\n2. User submits the token and new password to this endpoint.\n3. System validates the token and updates the password.\n\n**Notes:**\n- The token must be valid and not expired.\n- Rate limiting is applied to prevent abuse.",
+        "operationId": "reset_password_api_v1_auth_reset_password_post",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetConfirmRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Get current user profile",
+        "description": "Returns the profile information of the currently authenticated user.\n\n**How it works:**\n- Requires a valid JWT Bearer token.\n- Returns user ID, email, name, bio, avatar, and timestamps.",
+        "operationId": "get_me_api_v1_auth_me_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Health check",
+        "description": "Returns the health status of the API and database connection, including uptime and dependency versions.\n\n    **Features:**\n    - Checks database connectivity\n    - Returns API/server uptime\n    - Returns dependency versions (Python, FastAPI, SQLAlchemy)\n    - Adds response time in headers\n\n    **Example:**\n    ```bash\n    curl https://api.reviewpoint.org/api/v1/health\n    ```",
+        "operationId": "health_check_api_v1_health_get",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "API and database are healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponseDict"
+                },
+                "example": {
+                  "status": "ok",
+                  "db": {
+                    "ok": true
+                  },
+                  "uptime": 123.45,
+                  "response_time": "0.0012s",
+                  "versions": {
+                    "python": "3.11.0",
+                    "fastapi": "0.95.0",
+                    "sqlalchemy": "2.0.0"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Invalid request."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Missing or invalid authentication.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Not authenticated."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. Not enough permissions.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Not enough permissions."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity. Invalid input.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Invalid input."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Rate limit exceeded."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Unexpected error."
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database unavailable or service unavailable.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "error",
+                  "db": {
+                    "ok": false,
+                    "error": "Database connection failed",
+                    "pool": {}
+                  },
+                  "uptime": 12345.67,
+                  "response_time": 0.0023,
+                  "versions": {
+                    "python": "3.11.8",
+                    "fastapi": "0.110.0",
+                    "sqlalchemy": "2.0.29"
+                  },
+                  "detail": "Database connection failed"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl https://api.reviewpoint.org/api/v1/health"
+          },
+          {
+            "lang": "Python",
+            "label": "Python (requests)",
+            "source": "import requests\nurl = 'https://api.reviewpoint.org/api/v1/health'\nresponse = requests.get(url)\nprint(response.json())"
+          },
+          {
+            "lang": "JavaScript",
+            "label": "JavaScript (fetch)",
+            "source": "fetch('https://api.reviewpoint.org/api/v1/health')\n  .then(res => res.json())\n  .then(console.log);"
+          },
+          {
+            "lang": "Go",
+            "label": "Go (net/http)",
+            "source": "package main\nimport (\n  \"net/http\"\n)\nfunc main() {\n  http.Get(\"https://api.reviewpoint.org/api/v1/health\")\n}"
+          },
+          {
+            "lang": "Java",
+            "label": "Java (OkHttp)",
+            "source": "OkHttpClient client = new OkHttpClient();\nRequest request = new Request.Builder()\n  .url(\"https://api.reviewpoint.org/api/v1/health\")\n  .get()\n  .build();\nResponse response = client.newCall(request).execute();"
+          },
+          {
+            "lang": "PHP",
+            "label": "PHP (cURL)",
+            "source": "$ch = curl_init('https://api.reviewpoint.org/api/v1/health');\n$response = curl_exec($ch);\ncurl_close($ch);"
+          },
+          {
+            "lang": "Ruby",
+            "label": "Ruby (Net::HTTP)",
+            "source": "require 'net/http'\nuri = URI('https://api.reviewpoint.org/api/v1/health')\nres = Net::HTTP.get(uri)\nputs res"
+          },
+          {
+            "lang": "HTTPie",
+            "label": "HTTPie",
+            "source": "http GET https://api.reviewpoint.org/api/v1/health"
+          },
+          {
+            "lang": "PowerShell",
+            "label": "PowerShell",
+            "source": "Invoke-RestMethod -Uri 'https://api.reviewpoint.org/api/v1/health' -Method Get"
+          }
+        ]
+      }
+    },
+    "/api/v1/metrics": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Prometheus metrics",
+        "description": "Returns Prometheus-style metrics for uptime and database connection pool.\n\n    **Metrics Provided:**\n    - `app_uptime_seconds`: API uptime in seconds\n    - `db_pool_size`: Database connection pool size\n    - `db_pool_checkedin`: Idle connections\n    - `db_pool_checkedout`: Active connections\n    - `db_pool_overflow`: Overflow connections\n    - `db_pool_awaiting`: Awaiting connections\n\n    **Use case:**\n    - Monitoring with Prometheus or similar tools\n    - Health dashboards",
+        "operationId": "metrics_api_v1_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Prometheus metrics in plain text",
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "text/plain": {
+                "example": "app_uptime_seconds 12345.67\ndb_pool_size 5\ndb_pool_checkedin 5\ndb_pool_checkedout 0\ndb_pool_overflow 0\ndb_pool_awaiting 0"
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Invalid request."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Missing or invalid authentication.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Not authenticated."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. Not enough permissions.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Not enough permissions."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity. Invalid input.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Invalid input."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Rate limit exceeded."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Unexpected error."
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Service temporarily unavailable."
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl https://api.reviewpoint.org/api/v1/metrics"
+          },
+          {
+            "lang": "Python",
+            "label": "Python (requests)",
+            "source": "import requests\nurl = 'https://api.reviewpoint.org/api/v1/metrics'\nresponse = requests.get(url)\nprint(response.text)"
+          },
+          {
+            "lang": "JavaScript",
+            "label": "JavaScript (fetch)",
+            "source": "fetch('https://api.reviewpoint.org/api/v1/metrics')\n  .then(res => res.text())\n  .then(console.log);"
+          },
+          {
+            "lang": "Go",
+            "label": "Go (net/http)",
+            "source": "package main\nimport (\n  \"net/http\"\n)\nfunc main() {\n  http.Get(\"https://api.reviewpoint.org/api/v1/metrics\")\n}"
+          },
+          {
+            "lang": "Java",
+            "label": "Java (OkHttp)",
+            "source": "OkHttpClient client = new OkHttpClient();\nRequest request = new Request.Builder()\n  .url(\"https://api.reviewpoint.org/api/v1/metrics\")\n  .get()\n  .build();\nResponse response = client.newCall(request).execute();"
+          },
+          {
+            "lang": "PHP",
+            "label": "PHP (cURL)",
+            "source": "$ch = curl_init('https://api.reviewpoint.org/api/v1/metrics');\n$response = curl_exec($ch);\ncurl_close($ch);"
+          },
+          {
+            "lang": "Ruby",
+            "label": "Ruby (Net::HTTP)",
+            "source": "require 'net/http'\nuri = URI('https://api.reviewpoint.org/api/v1/metrics')\nres = Net::HTTP.get(uri)\nputs res"
+          },
+          {
+            "lang": "HTTPie",
+            "label": "HTTPie",
+            "source": "http GET https://api.reviewpoint.org/api/v1/metrics"
+          },
+          {
+            "lang": "PowerShell",
+            "label": "PowerShell",
+            "source": "Invoke-RestMethod -Uri 'https://api.reviewpoint.org/api/v1/metrics' -Method Get"
+          }
+        ]
+      }
+    },
+    "/api/v1/users/export": {
+      "get": {
+        "summary": "Export users as CSV (debug minimal)",
+        "description": "Export users as CSV (minimal).\nRaises:\n    HTTPException: If format is not 'csv'.",
+        "operationId": "export_users_csv_api_v1_users_export_get",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by email",
+              "title": "Email"
+            },
+            "description": "Filter by email"
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Export format (only csv supported)",
+              "default": "csv",
+              "title": "Format"
+            },
+            "description": "Export format (only csv supported)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/export-alive": {
+      "get": {
+        "summary": "Test endpoint for export router",
+        "description": "Test endpoint for export router.\nReturns:\n    ExportAliveResponse: Status dict.",
+        "operationId": "export_alive_api_v1_users_export_alive_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportAliveResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/export-full": {
+      "get": {
+        "summary": "Export users as CSV (full)",
+        "description": "Export users as CSV (full).\nReturns:\n    Response: CSV file response.",
+        "operationId": "export_users_full_csv_api_v1_users_export_full_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          }
+        }
+      }
+    },
+    "/api/v1/users/export-simple": {
+      "get": {
+        "summary": "Simple test endpoint for debugging",
+        "description": "Simple test endpoint for debugging.\nReturns:\n    ExportSimpleResponse: Status dict.",
+        "operationId": "export_simple_api_v1_users_export_simple_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportSimpleResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users": {
+      "post": {
+        "summary": "Create a new user",
+        "description": "Create a new user.\nRaises:\n    HTTPException: If user already exists, data is invalid, or unexpected error occurs.",
+        "operationId": "create_user_api_v1_users_post",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List users",
+        "description": "List users with optional filters.\nRaises:\n    HTTPException: If an unexpected error occurs.",
+        "operationId": "list_users_api_v1_users_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by email",
+              "title": "Email"
+            },
+            "description": "Filter by email"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by name",
+              "title": "Name"
+            },
+            "description": "Filter by name"
+          },
+          {
+            "name": "created_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by created_after datetime",
+              "title": "Created After"
+            },
+            "description": "Filter by created_after datetime"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of items to skip (offset)",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Number of items to skip (offset)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Max number of items to return (max 100)",
+              "default": 20,
+              "title": "Limit"
+            },
+            "description": "Max number of items to return (max 100)"
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/{user_id}": {
+      "get": {
+        "summary": "Get user by ID",
+        "description": "Get user by ID.\nRaises:\n    HTTPException: If user not found or unexpected error occurs.",
+        "operationId": "get_user_by_id_api_v1_users__user_id__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update user information",
+        "description": "Update user information.\nRaises:\n    HTTPException: If user not found, email exists, invalid data, or unexpected error occurs.",
+        "operationId": "update_user_api_v1_users__user_id__put",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete user",
+        "description": "Delete user by ID.\nRaises:\n    HTTPException: If user not found or unexpected error occurs.",
+        "operationId": "delete_user_api_v1_users__user_id__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/promote-admin": {
+      "post": {
+        "tags": ["Test Utilities"],
+        "summary": "Promote User To Admin Async",
+        "description": "Promote a user to admin by email. Only allowed in test mode.\n\nArgs:\n    email (str): The email of the user to promote.\n    session (AsyncSession): The SQLAlchemy async session.\n\nReturns:\n    PromoteAdminResponse: A dict with a detail message.\n\nRaises:\n    HTTPException: If not in test mode (403) or user not found (404).",
+        "operationId": "promote_user_to_admin_async_api_v1_users_promote_admin_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_promote_user_to_admin_async_api_v1_users_promote_admin_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromoteAdminResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/uploads/root-test": {
+      "get": {
+        "tags": ["File", "File"],
+        "summary": "Root level test endpoint",
+        "description": "**Diagnostic Endpoint**\n\n    Checks if the uploads router is registered and responding. Useful for debugging router registration issues.\n\n    **Returns:**\n    - JSON status and router name.",
+        "operationId": "uploads_main_root_test",
+        "responses": {
+          "200": {
+            "description": "Root test successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Uploads Main Root Test"
+                },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "status": "uploads root test",
+                      "router": "uploads"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/uploads/test-alive": {
+      "get": {
+        "tags": ["File", "File"],
+        "summary": "Test endpoint for router registration",
+        "description": "**Health Check**\n\n    Confirms the uploads router is active and properly registered. Returns a simple status JSON object.\n\n    **Use case:**\n    - Health checks\n    - Integration tests",
+        "operationId": "_test_alive_response_api_v1_uploads_test_alive_get",
+        "responses": {
+          "200": {
+            "description": "Router is alive",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response  Test Alive Response Api V1 Uploads Test Alive Get"
+                },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "status": "alive"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/uploads/export-alive": {
+      "get": {
+        "tags": ["File", "File"],
+        "summary": "Test endpoint for export router",
+        "description": "**Export Router Health Check**\n\n    Returns 200 if the uploads export router is active. Used for integration and deployment checks.",
+        "operationId": "_export_alive_response_api_v1_uploads_export_alive_get",
+        "responses": {
+          "200": {
+            "description": "Export router is alive",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response  Export Alive Response Api V1 Uploads Export Alive Get"
+                },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "status": "uploads export alive"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/uploads/export-test": {
+      "get": {
+        "tags": ["File", "File"],
+        "summary": "Test endpoint for export router",
+        "description": "**Export Router Test**\n\n    Returns 200 if the uploads export router is active. Requires authentication.\n\n    **Returns:**\n    - JSON status\n    - Current user ID (if authenticated)",
+        "operationId": "export_test_api_v1_uploads_export_test_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Export router test successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Export Test Api V1 Uploads Export Test Get"
+                },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "status": "uploads export test"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/uploads/export": {
+      "get": {
+        "tags": ["File"],
+        "summary": "Export files as CSV",
+        "description": "**Export Operation**\n\n    Exports the list of uploaded files as a CSV file.\n\n    **Steps:**\n    1. Authenticated user requests export.\n    2. Server filters and sorts files as requested.\n    3. Returns a CSV with filename and URL columns.\n\n    **Notes:**\n    - Supports filtering by creation date and filename.\n    - Rate limiting and authentication required.",
+        "operationId": "export_files_csv_api_v1_uploads_export_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search by filename (partial match)",
+              "title": "Q"
+            },
+            "description": "Search by filename (partial match)"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": ["created_at", "filename"],
+              "type": "string",
+              "description": "Sort by field: created_at, filename",
+              "default": "created_at",
+              "title": "Sort"
+            },
+            "description": "Sort by field: created_at, filename"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": ["desc", "asc"],
+              "type": "string",
+              "description": "Sort order: asc or desc",
+              "default": "desc",
+              "title": "Order"
+            },
+            "description": "Sort order: asc or desc"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated list of fields to include in response (e.g. filename,url)",
+              "title": "Fields"
+            },
+            "description": "Comma-separated list of fields to include in response (e.g. filename,url)"
+          },
+          {
+            "name": "created_before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter files created before this datetime (ISO 8601, e.g. 2024-01-01T00:00:00Z)",
+              "title": "Created Before"
+            },
+            "description": "Filter files created before this datetime (ISO 8601, e.g. 2024-01-01T00:00:00Z)"
+          },
+          {
+            "name": "created_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter files created after this datetime (ISO 8601, e.g. 2024-01-01T00:00:00Z)",
+              "title": "Created After"
+            },
+            "description": "Filter files created after this datetime (ISO 8601, e.g. 2024-01-01T00:00:00Z)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of items to skip (offset)",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Number of items to skip (offset)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Max number of items to return (max 100)",
+              "default": 20,
+              "title": "Limit"
+            },
+            "description": "Max number of items to return (max 100)"
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Files exported as CSV",
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "text/csv": {
+                "examples": {
+                  "default": {
+                    "value": "filename,url\ndocument.pdf,/uploads/document.pdf"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Missing or invalid authentication.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Not authenticated."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. Not enough permissions.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Not enough permissions."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity. Invalid input.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Invalid input."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Rate limit exceeded."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Unexpected error."
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Service temporarily unavailable."
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl -H 'Authorization: Bearer <token>' 'https://api.reviewpoint.org/api/v1/uploads/export'"
+          },
+          {
+            "lang": "Python",
+            "label": "Python (requests)",
+            "source": "import requests\nurl = 'https://api.reviewpoint.org/api/v1/uploads/export'\nheaders = {'Authorization': 'Bearer <token>'}\nresponse = requests.get(url, headers=headers)\nprint(response.content.decode())"
+          },
+          {
+            "lang": "JavaScript",
+            "label": "JavaScript (fetch)",
+            "source": "fetch('https://api.reviewpoint.org/api/v1/uploads/export', {\n  headers: { 'Authorization': 'Bearer <token>' }\n})\n  .then(res => res.text())\n  .then(console.log);"
+          },
+          {
+            "lang": "Go",
+            "label": "Go (net/http)",
+            "source": "package main\nimport (\n  \"net/http\"\n)\nfunc main() {\n  req, _ := http.NewRequest(\"GET\", \"https://api.reviewpoint.org/api/v1/uploads/export\", nil)\n  req.Header.Set(\"Authorization\", \"Bearer <token>\")\n  http.DefaultClient.Do(req)\n}"
+          },
+          {
+            "lang": "Java",
+            "label": "Java (OkHttp)",
+            "source": "OkHttpClient client = new OkHttpClient();\nRequest request = new Request.Builder()\n  .url(\"https://api.reviewpoint.org/api/v1/uploads/export\")\n  .get()\n  .addHeader(\"Authorization\", \"Bearer <token>\")\n  .build();\nResponse response = client.newCall(request).execute();"
+          },
+          {
+            "lang": "PHP",
+            "label": "PHP (cURL)",
+            "source": "$ch = curl_init('https://api.reviewpoint.org/api/v1/uploads/export');\ncurl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer <token>']);\n$response = curl_exec($ch);\ncurl_close($ch);"
+          },
+          {
+            "lang": "Ruby",
+            "label": "Ruby (Net::HTTP)",
+            "source": "require 'net/http'\nuri = URI('https://api.reviewpoint.org/api/v1/uploads/export')\nreq = Net::HTTP::Get.new(uri)\nreq['Authorization'] = 'Bearer <token>'\nres = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) { |http| http.request(req) }\nputs res.body"
+          },
+          {
+            "lang": "HTTPie",
+            "label": "HTTPie",
+            "source": "http GET https://api.reviewpoint.org/api/v1/uploads/export Authorization:'Bearer <token>'"
+          },
+          {
+            "lang": "PowerShell",
+            "label": "PowerShell",
+            "source": "$headers = @{Authorization='Bearer <token>'}\nInvoke-RestMethod -Uri 'https://api.reviewpoint.org/api/v1/uploads/export' -Headers $headers -Method Get"
+          }
+        ]
+      }
+    },
+    "/api/v1/uploads": {
+      "post": {
+        "tags": ["File"],
+        "summary": "Upload a file",
+        "description": "**File Upload**\n\n    Uploads a file and returns its filename and URL.\n\n    **How it works:**\n    1. User sends a file using multipart/form-data.\n    2. The server validates the file type and size.\n    3. If valid, the file is saved and a URL is returned.\n\n    **Notes:**\n    - Only certain file types may be allowed (e.g., PDF, images).\n    - File size limits and rate limiting may apply.\n    - Use the returned URL to access or download the file.",
+        "operationId": "upload_file_api_v1_uploads_post",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_file_api_v1_uploads_post"
+              },
+              "example": {
+                "file": "(binary file, e.g. document.pdf)"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "File uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileUploadResponse"
+                },
+                "example": {
+                  "filename": "document.pdf",
+                  "url": "/uploads/document.pdf"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid file",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "File type not allowed."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Missing or invalid authentication.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Not authenticated."
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "File too large.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "File size exceeds limit."
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Unsupported Media Type.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Unsupported file type."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity. Invalid input.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Invalid input."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Rate limit exceeded."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Unexpected error."
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Service temporarily unavailable."
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL",
+            "source": "curl -X POST 'https://api.reviewpoint.org/api/v1/uploads' \\\n  -H 'Authorization: Bearer <token>' \\\n  -F 'file=@document.pdf'"
+          },
+          {
+            "lang": "Python",
+            "label": "Python (requests)",
+            "source": "import requests\nurl = 'https://api.reviewpoint.org/api/v1/uploads'\nheaders = {'Authorization': 'Bearer <token>'}\nfiles = {'file': open('document.pdf', 'rb')}\nresponse = requests.post(url, headers=headers, files=files)\nprint(response.json())"
+          },
+          {
+            "lang": "JavaScript",
+            "label": "JavaScript (fetch)",
+            "source": "const form = new FormData();\nform.append('file', fileInput.files[0]);\nfetch('https://api.reviewpoint.org/api/v1/uploads', {\n  method: 'POST',\n  headers: { 'Authorization': 'Bearer <token>' },\n  body: form\n})\n  .then(res => res.json())\n  .then(console.log);"
+          },
+          {
+            "lang": "Go",
+            "label": "Go (net/http)",
+            "source": "package main\nimport (\n  \"bytes\"\n  \"mime/multipart\"\n  \"net/http\"\n  \"os\"\n)\nfunc main() {\n  file, _ := os.Open(\"document.pdf\")\n  defer file.Close()\n  body := &bytes.Buffer{}\n  writer := multipart.NewWriter(body)\n  part, _ := writer.CreateFormFile(\"file\", \"document.pdf\")\n  io.Copy(part, file)\n  writer.Close()\n  req, _ := http.NewRequest(\"POST\", \"https://api.reviewpoint.org/api/v1/uploads\", body)\n  req.Header.Set(\"Authorization\", \"Bearer <token>\")\n  req.Header.Set(\"Content-Type\", writer.FormDataContentType())\n  http.DefaultClient.Do(req)\n}"
+          },
+          {
+            "lang": "Java",
+            "label": "Java (OkHttp)",
+            "source": "OkHttpClient client = new OkHttpClient();\nMediaType mediaType = MediaType.parse(\"application/pdf\");\nFile file = new File(\"document.pdf\");\nRequestBody fileBody = RequestBody.create(mediaType, file);\nMultipartBody requestBody = new MultipartBody.Builder()\n  .setType(MultipartBody.FORM)\n  .addFormDataPart(\"file\", file.getName(), fileBody)\n  .build();\nRequest request = new Request.Builder()\n  .url(\"https://api.reviewpoint.org/api/v1/uploads\")\n  .post(requestBody)\n  .addHeader(\"Authorization\", \"Bearer <token>\")\n  .build();\nResponse response = client.newCall(request).execute();"
+          },
+          {
+            "lang": "PHP",
+            "label": "PHP (cURL)",
+            "source": "$ch = curl_init('https://api.reviewpoint.org/api/v1/uploads');\ncurl_setopt($ch, CURLOPT_POST, 1);\ncurl_setopt($ch, CURLOPT_POSTFIELDS, ['file' => new CURLFile('document.pdf')]);\ncurl_setopt($ch, CURLOPT_HTTPHEADER, ['Authorization: Bearer <token>']);\n$response = curl_exec($ch);\ncurl_close($ch);"
+          },
+          {
+            "lang": "Ruby",
+            "label": "Ruby (Net::HTTP)",
+            "source": "require 'net/http'\nrequire 'uri'\nrequire 'json'\nuri = URI('https://api.reviewpoint.org/api/v1/uploads')\nrequest = Net::HTTP::Post.new(uri)\nrequest['Authorization'] = 'Bearer <token>'\nform_data = [['file', File.open('document.pdf')]]\nrequest.set_form form_data, 'multipart/form-data'\nresponse = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|\n  http.request(request)\nend\nputs response.body"
+          },
+          {
+            "lang": "HTTPie",
+            "label": "HTTPie",
+            "source": "http -f POST https://api.reviewpoint.org/api/v1/uploads Authorization:'Bearer <token>' file@document.pdf"
+          },
+          {
+            "lang": "PowerShell",
+            "label": "PowerShell",
+            "source": "$file = Get-Item .\\document.pdf\n$Form = @{file = $file}\nInvoke-RestMethod -Uri 'https://api.reviewpoint.org/api/v1/uploads' -Method Post -Form $Form -Headers @{Authorization='Bearer <token>'}"
+          }
+        ]
+      },
+      "get": {
+        "tags": ["File"],
+        "summary": "List all uploaded files",
+        "description": "**File Listing**\n\n    Returns a paginated list of all uploaded files for the current user.\n\n    **How it works:**\n    1. The server retrieves files uploaded by the current user.\n    2. Files can be filtered and sorted.\n    3. Returns a list of files with pagination information.\n\n    **Notes:**\n    - Supports filtering by filename and creation date.\n    - Supports sorting by creation date or filename.\n    - Supports field selection to limit the returned data.",
+        "operationId": "list_files_api_v1_uploads_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search term across all fields",
+              "title": "Q"
+            },
+            "description": "Search term across all fields"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma-separated list of fields to include",
+              "title": "Fields"
+            },
+            "description": "Comma-separated list of fields to include"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": ["created_at", "filename"],
+              "type": "string",
+              "description": "Field to sort by",
+              "default": "created_at",
+              "title": "Sort"
+            },
+            "description": "Field to sort by"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": ["desc", "asc"],
+              "type": "string",
+              "description": "Sort order (asc or desc)",
+              "default": "desc",
+              "title": "Order"
+            },
+            "description": "Sort order (asc or desc)"
+          },
+          {
+            "name": "created_after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by creation date (ISO format)",
+              "title": "Created After"
+            },
+            "description": "Filter by creation date (ISO format)"
+          },
+          {
+            "name": "created_before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by creation date (ISO format)",
+              "title": "Created Before"
+            },
+            "description": "Filter by creation date (ISO format)"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of items to skip (offset)",
+              "default": 0,
+              "title": "Offset"
+            },
+            "description": "Number of items to skip (offset)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Max number of items to return (max 100)",
+              "default": 20,
+              "title": "Limit"
+            },
+            "description": "Max number of items to return (max 100)"
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Files found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileListResponse"
+                },
+                "examples": {
+                  "default": {
+                    "value": {
+                      "files": [
+                        {
+                          "filename": "document.pdf",
+                          "url": "/uploads/document.pdf"
+                        }
+                      ],
+                      "total": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Missing or invalid authentication.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Not authenticated."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/uploads/{filename}": {
+      "get": {
+        "tags": ["File"],
+        "summary": "Get uploaded file info",
+        "description": "Retrieves metadata for an uploaded file by filename.",
+        "operationId": "get_file_api_v1_uploads__filename__get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "filename",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "The name of the file to retrieve.",
+              "title": "Filename"
+            },
+            "description": "The name of the file to retrieve."
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileUploadResponse"
+                },
+                "example": {
+                  "filename": "document.pdf",
+                  "url": "/uploads/document.pdf"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Missing or invalid authentication.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Not authenticated."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. Not enough permissions.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Not enough permissions."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "File not found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "File not found."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity. Invalid filename.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Invalid filename."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Rate limit exceeded."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Unexpected error."
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Service temporarily unavailable."
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["File"],
+        "summary": "Delete uploaded file",
+        "description": "Deletes an uploaded file by filename.",
+        "operationId": "delete_file_by_filename_api_v1_uploads__filename__delete",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "filename",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "The name of the file to delete.",
+              "title": "Filename"
+            },
+            "description": "The name of the file to delete."
+          },
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "204": {
+            "description": "File deleted successfully",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "default": {
+                    "value": {}
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Missing or invalid authentication.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Not authenticated."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. Not enough permissions.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Not enough permissions."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "File not found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "File not found."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity. Invalid filename.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Invalid filename."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Rate limit exceeded."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Unexpected error."
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "detail": "Service temporarily unavailable."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AuthResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "refresh_token": {
+            "type": "string",
+            "title": "Refresh Token"
+          },
+          "token_type": {
+            "type": "string",
+            "const": "bearer",
+            "title": "Token Type",
+            "default": "bearer"
+          }
+        },
+        "type": "object",
+        "required": ["access_token", "refresh_token"],
+        "title": "AuthResponse"
+      },
+      "Body_promote_user_to_admin_async_api_v1_users_promote_admin_post": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": ["email"],
+        "title": "Body_promote_user_to_admin_async_api_v1_users_promote_admin_post"
+      },
+      "Body_upload_file_api_v1_uploads_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File",
+            "description": "The file to upload. Must be a valid file type."
+          }
+        },
+        "type": "object",
+        "required": ["file"],
+        "title": "Body_upload_file_api_v1_uploads_post"
+      },
+      "DBStatusDict": {
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "title": "Ok"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "pool": {
+            "$ref": "#/components/schemas/PoolStatsDict"
+          }
+        },
+        "type": "object",
+        "title": "DBStatusDict"
+      },
+      "ExportAliveResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "users export alive",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": ["status"],
+        "title": "ExportAliveResponse"
+      },
+      "ExportSimpleResponse": {
+        "properties": {
+          "users": {
+            "type": "string",
+            "const": "export simple status",
+            "title": "Users"
+          }
+        },
+        "type": "object",
+        "required": ["users"],
+        "title": "ExportSimpleResponse"
+      },
+      "FileDict": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "title": "FileDict"
+      },
+      "FileListResponse": {
+        "properties": {
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/FileDict"
+            },
+            "type": "array",
+            "title": "Files"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": ["files", "total"],
+        "title": "FileListResponse",
+        "examples": [
+          {
+            "files": [
+              {
+                "filename": "document.pdf",
+                "url": "/uploads/document.pdf"
+              },
+              {
+                "filename": "image.jpg",
+                "url": "/uploads/image.jpg"
+              },
+              {
+                "filename": "only_filename.pdf"
+              }
+            ],
+            "total": 3
+          }
+        ]
+      },
+      "FileUploadResponse": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": ["filename", "url"],
+        "title": "FileUploadResponse",
+        "example": {
+          "filename": "document.pdf",
+          "url": "/uploads/document.pdf"
+        }
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponseDict": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["ok", "error"],
+            "title": "Status"
+          },
+          "db": {
+            "$ref": "#/components/schemas/DBStatusDict"
+          },
+          "uptime": {
+            "type": "number",
+            "title": "Uptime"
+          },
+          "response_time": {
+            "type": "number",
+            "title": "Response Time"
+          },
+          "versions": {
+            "$ref": "#/components/schemas/VersionsDict"
+          },
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HealthResponseDict"
+      },
+      "MessageResponse": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": ["message"],
+        "title": "MessageResponse"
+      },
+      "PasswordResetConfirmRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "title": "Token"
+          },
+          "new_password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "New Password"
+          }
+        },
+        "type": "object",
+        "required": ["token", "new_password"],
+        "title": "PasswordResetConfirmRequest"
+      },
+      "PasswordResetRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": ["email"],
+        "title": "PasswordResetRequest"
+      },
+      "PoolStatsDict": {
+        "properties": {
+          "size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size"
+          },
+          "checkedin": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checkedin"
+          },
+          "checkedout": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checkedout"
+          },
+          "overflow": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Overflow"
+          },
+          "awaiting": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Awaiting"
+          }
+        },
+        "type": "object",
+        "title": "PoolStatsDict"
+      },
+      "PromoteAdminResponse": {
+        "properties": {
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "required": ["detail"],
+        "title": "PromoteAdminResponse"
+      },
+      "UserCreateRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": ["email", "password", "name"],
+        "title": "UserCreateRequest",
+        "examples": [
+          {
+            "email": "user@example.com",
+            "name": "Jane Doe",
+            "password": "strongpassword123"
+          }
+        ]
+      },
+      "UserListResponse": {
+        "properties": {
+          "users": {
+            "items": {
+              "$ref": "#/components/schemas/UserProfile"
+            },
+            "type": "array",
+            "title": "Users"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": ["users", "total"],
+        "title": "UserListResponse"
+      },
+      "UserLoginRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": ["email", "password"],
+        "title": "UserLoginRequest"
+      },
+      "UserProfile": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "bio": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bio"
+          },
+          "avatar_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar Url"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": ["id", "email"],
+        "title": "UserProfile"
+      },
+      "UserRegisterRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 8,
+            "title": "Password"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": ["email", "password"],
+        "title": "UserRegisterRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": ["loc", "msg", "type"],
+        "title": "ValidationError"
+      },
+      "VersionsDict": {
+        "properties": {
+          "python": {
+            "type": "string",
+            "title": "Python"
+          },
+          "fastapi": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fastapi"
+          },
+          "sqlalchemy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sqlalchemy"
+          }
+        },
+        "type": "object",
+        "required": ["python", "fastapi", "sqlalchemy"],
+        "title": "VersionsDict"
+      }
+    },
+    "securitySchemes": {
+      "OAuth2PasswordBearer": {
+        "type": "oauth2",
+        "flows": {
+          "password": {
+            "scopes": {},
+            "tokenUrl": "/api/v1/auth/login"
+          }
+        }
+      }
+    }
+  }
 }

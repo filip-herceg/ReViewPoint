@@ -112,33 +112,33 @@ import { request } from "../base";
 
 // Types that match the backend
 interface PromoteAdminResponse {
-	detail: string;
+  detail: string;
 }
 
 export const usersTestOnlyApi = {
-	// Promote a user to admin by email (test mode only)
-	promoteUserToAdmin: async (email: string): Promise<PromoteAdminResponse> => {
-		logger.info("Promoting user to admin", { email });
-		const response = await request<PromoteAdminResponse>(
-			"/users/promote-admin",
-			{
-				method: "POST",
-				data: { email },
-			},
-		);
+  // Promote a user to admin by email (test mode only)
+  promoteUserToAdmin: async (email: string): Promise<PromoteAdminResponse> => {
+    logger.info("Promoting user to admin", { email });
+    const response = await request<PromoteAdminResponse>(
+      "/users/promote-admin",
+      {
+        method: "POST",
+        data: { email },
+      },
+    );
 
-		if (response.error) {
-			logger.warn("Failed to promote user to admin", {
-				error: response.error,
-				email,
-			});
-			throw new Error(response.error);
-		}
+    if (response.error) {
+      logger.warn("Failed to promote user to admin", {
+        error: response.error,
+        email,
+      });
+      throw new Error(response.error);
+    }
 
-		logger.info("User promoted to admin successfully", { email });
-		if (!response.data) {
-			throw new Error("User promotion succeeded but no data returned");
-		}
-		return response.data;
-	},
+    logger.info("User promoted to admin successfully", { email });
+    if (!response.data) {
+      throw new Error("User promotion succeeded but no data returned");
+    }
+    return response.data;
+  },
 };

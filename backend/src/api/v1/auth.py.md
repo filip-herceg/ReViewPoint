@@ -3,7 +3,7 @@
 **File:** `backend/src/api/v1/auth.py`  
 **Purpose:** FastAPI authentication endpoints for user registration, login, logout, token refresh, password reset, and profile access  
 **Lines of Code:** 787  
-**Type:** API Router Module  
+**Type:** API Router Module
 
 ## Overview
 
@@ -48,6 +48,7 @@ The Authentication API Router provides comprehensive user authentication functio
 ### 🔐 **User Registration**
 
 #### `POST /register`
+
 ```python
 @router.post("/register", response_model=AuthResponse, status_code=201)
 async def register(
@@ -61,6 +62,7 @@ async def register(
 **Purpose:** Create new user account with immediate authentication
 
 **Process Flow:**
+
 1. **Rate Limit Check**: 5 attempts per email per hour
 2. **Input Validation**: Email format, password strength, name optional
 3. **Uniqueness Check**: Ensure email not already registered
@@ -69,15 +71,17 @@ async def register(
 6. **Audit Logging**: Log registration attempt and success/failure
 
 **Request Schema:**
+
 ```json
 {
   "email": "user@example.com",
   "password": "SecurePassword123!",
-  "name": "Jane Doe"  // Optional
+  "name": "Jane Doe" // Optional
 }
 ```
 
 **Response Schema:**
+
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIs...",
@@ -88,6 +92,7 @@ async def register(
 ```
 
 **Error Handling:**
+
 - `400 Bad Request`: Invalid input data or user already exists
 - `429 Too Many Requests`: Rate limit exceeded
 - `422 Unprocessable Entity`: Validation errors
@@ -96,6 +101,7 @@ async def register(
 ### 🔑 **User Login**
 
 #### `POST /login`
+
 ```python
 @router.post("/login", response_model=AuthResponse)
 async def login(
@@ -109,6 +115,7 @@ async def login(
 **Purpose:** Authenticate user credentials and issue JWT tokens
 
 **Authentication Process:**
+
 1. **Rate Limit Check**: 10 attempts per IP per minute
 2. **Credential Validation**: Email and password verification
 3. **Account Status Check**: Ensure account is active and not locked
@@ -116,12 +123,14 @@ async def login(
 5. **Login Logging**: Log authentication success/failure
 
 **Security Features:**
+
 - **Password Verification**: Timing attack protection with bcrypt
 - **Account Lockout**: Protection against brute force attacks
 - **Token Security**: Cryptographically signed JWT tokens
 - **IP Rate Limiting**: Per-IP request limiting
 
 **Token Details:**
+
 - **Access Token**: 24-hour validity for API requests
 - **Refresh Token**: 7-day validity for token renewal
 - **Token Type**: Bearer (Authorization header format)
@@ -129,6 +138,7 @@ async def login(
 ### 🚪 **User Logout**
 
 #### `POST /logout`
+
 ```python
 @router.post("/logout", response_model=MessageResponse)
 async def logout(
@@ -142,6 +152,7 @@ async def logout(
 **Purpose:** Securely log out user and invalidate current session
 
 **Logout Process:**
+
 1. **Token Extraction**: Extract JWT from Authorization header
 2. **Token Validation**: Verify token signature and expiration
 3. **Token Blacklisting**: Add token to blacklist database
@@ -149,6 +160,7 @@ async def logout(
 5. **Audit Logging**: Log logout activity
 
 **Security Measures:**
+
 - **Token Blacklisting**: Prevents token reuse after logout
 - **Graceful Degradation**: Handles invalid/expired tokens
 - **Session Termination**: Complete user session cleanup
@@ -156,6 +168,7 @@ async def logout(
 ### 🔄 **Token Refresh**
 
 #### `POST /refresh-token`
+
 ```python
 @router.post("/refresh-token", response_model=AuthResponse)
 async def refresh_token(
@@ -168,6 +181,7 @@ async def refresh_token(
 **Purpose:** Refresh expired access tokens using valid refresh tokens
 
 **Refresh Process:**
+
 1. **Token Validation**: Verify refresh token signature and expiration
 2. **Blacklist Check**: Ensure token hasn't been revoked
 3. **Rate Limiting**: Prevent refresh token abuse
@@ -175,15 +189,17 @@ async def refresh_token(
 5. **Token Rotation**: Optional refresh token rotation
 
 **Flexible Input Format:**
+
 ```json
 // Option 1
 {"token": "refresh_token_here"}
 
-// Option 2  
+// Option 2
 {"refresh_token": "refresh_token_here"}
 ```
 
 **Error Scenarios:**
+
 - `401 Unauthorized`: Invalid/expired/blacklisted refresh token
 - `429 Too Many Requests`: Rate limit exceeded
 - `422 Unprocessable Entity`: Missing refresh token
@@ -191,6 +207,7 @@ async def refresh_token(
 ### 🔐 **Password Reset Flow**
 
 #### `POST /request-password-reset`
+
 ```python
 @router.post("/request-password-reset", response_model=MessageResponse)
 async def request_password_reset(
@@ -204,6 +221,7 @@ async def request_password_reset(
 **Purpose:** Initiate password reset flow with email verification
 
 **Reset Request Process:**
+
 1. **Rate Limiting**: Prevent email flooding attacks
 2. **Email Validation**: Validate email format
 3. **User Lookup**: Check if email exists (silent for security)
@@ -212,11 +230,13 @@ async def request_password_reset(
 6. **Security Response**: Always return success message
 
 **Security Features:**
+
 - **Information Disclosure Prevention**: Always returns success
 - **Token Expiration**: Time-limited reset tokens
 - **Rate Limiting**: Prevents email bombing
 
 #### `POST /reset-password`
+
 ```python
 @router.post("/reset-password", response_model=MessageResponse)
 async def reset_password(
@@ -230,6 +250,7 @@ async def reset_password(
 **Purpose:** Complete password reset using valid reset token
 
 **Reset Completion Process:**
+
 1. **Password Validation**: Ensure new password meets requirements
 2. **Token Verification**: Validate reset token signature and expiration
 3. **Password Update**: Hash and store new password
@@ -239,6 +260,7 @@ async def reset_password(
 ### 👤 **User Profile**
 
 #### `GET /me`
+
 ```python
 @router.get("/me", response_model=UserProfile)
 async def get_me(
@@ -249,6 +271,7 @@ async def get_me(
 **Purpose:** Retrieve current authenticated user's profile information
 
 **Profile Response:**
+
 ```json
 {
   "id": 123,
@@ -266,6 +289,7 @@ async def get_me(
 ### 🛡️ **Rate Limiting System**
 
 #### `check_rate_limit()`
+
 ```python
 async def check_rate_limit(
     user_action_limiter: UserActionLimiterProtocol,
@@ -278,12 +302,14 @@ async def check_rate_limit(
 **Purpose:** Centralized rate limiting logic for all endpoints
 
 **Rate Limiting Strategy:**
+
 - **Key-Based Limiting**: User ID, email, or IP-based keys
 - **Action-Specific**: Different limits per action type
 - **Graceful Handling**: Clear error messages for limit exceeded
 - **Logging Integration**: Comprehensive rate limit logging
 
 #### `rate_limit()` Decorator
+
 ```python
 def rate_limit(action: str, key_func: Callable[[Request], str] | None = None) -> object:
 ```
@@ -291,11 +317,12 @@ def rate_limit(action: str, key_func: Callable[[Request], str] | None = None) ->
 **Purpose:** FastAPI dependency for flexible rate limiting
 
 **Rate Limit Configurations:**
+
 ```python
 # Registration: 5 attempts per email per hour
 f"register:{data.email}"
 
-# Login: 10 attempts per IP per minute  
+# Login: 10 attempts per IP per minute
 f"login:{data.email}"
 
 # Password Reset: 3 attempts per email per hour
@@ -305,6 +332,7 @@ f"pwreset:{data.email}"
 ### ⚙️ **Common Dependencies**
 
 #### `common_auth_deps()`
+
 ```python
 def common_auth_deps(feature: str) -> tuple[object, object, object]:
     return (
@@ -317,6 +345,7 @@ def common_auth_deps(feature: str) -> tuple[object, object, object]:
 **Purpose:** Standardized dependency injection for auth endpoints
 
 **Common Dependencies:**
+
 - **Request ID**: For request tracing and correlation
 - **Feature Flags**: Runtime feature control per endpoint
 - **API Key**: Service-to-service authentication requirement
@@ -326,6 +355,7 @@ def common_auth_deps(feature: str) -> tuple[object, object, object]:
 ### 🔐 **Multi-Layer Authentication**
 
 #### API Key Protection
+
 ```python
 dependencies=[
     Depends(get_request_id),
@@ -335,6 +365,7 @@ dependencies=[
 ```
 
 **Security Layers:**
+
 1. **API Key Validation**: Service-to-service authentication
 2. **Feature Flags**: Runtime endpoint control
 3. **Rate Limiting**: Abuse prevention
@@ -342,6 +373,7 @@ dependencies=[
 5. **JWT Security**: Cryptographic token protection
 
 #### Password Security
+
 ```python
 get_password_validation_error: Callable[[str], str | None] = Depends(
     get_password_validation_error,
@@ -349,6 +381,7 @@ get_password_validation_error: Callable[[str], str | None] = Depends(
 ```
 
 **Password Requirements:**
+
 - **Minimum Length**: 8 characters minimum
 - **Complexity**: Configurable complexity requirements
 - **Validation**: Real-time password strength validation
@@ -356,17 +389,18 @@ get_password_validation_error: Callable[[str], str | None] = Depends(
 
 ### 🛡️ **Rate Limiting Matrix**
 
-| Endpoint | Rate Limit | Key | Duration |
-|----------|------------|-----|----------|
-| `/register` | 5 attempts | Email | 1 hour |
-| `/login` | 10 attempts | Email | 1 minute |
-| `/request-password-reset` | 3 attempts | Email | 1 hour |
-| `/logout` | 20 attempts | User ID | 1 minute |
-| `/refresh-token` | 30 attempts | Token | 1 minute |
+| Endpoint                  | Rate Limit  | Key     | Duration |
+| ------------------------- | ----------- | ------- | -------- |
+| `/register`               | 5 attempts  | Email   | 1 hour   |
+| `/login`                  | 10 attempts | Email   | 1 minute |
+| `/request-password-reset` | 3 attempts  | Email   | 1 hour   |
+| `/logout`                 | 20 attempts | User ID | 1 minute |
+| `/refresh-token`          | 30 attempts | Token   | 1 minute |
 
 ### 🔒 **Token Security**
 
 #### JWT Token Structure
+
 ```python
 payload = {
     "sub": user.id,          # Subject (user ID)
@@ -379,6 +413,7 @@ payload = {
 ```
 
 **Token Security Features:**
+
 - **Cryptographic Signing**: HMAC-SHA256 signatures
 - **Expiration Handling**: Time-based token invalidation
 - **Blacklist Support**: Token revocation system
@@ -389,6 +424,7 @@ payload = {
 ### 🛠️ **Comprehensive Error Management**
 
 #### Authentication Errors
+
 ```python
 try:
     access_token, refresh_token = await user_service.authenticate_user(
@@ -401,12 +437,14 @@ except ValidationError as e:
 ```
 
 **Error Response Pattern:**
+
 - **Consistent Status Codes**: Standard HTTP status code usage
 - **Security-Safe Messages**: No information disclosure
 - **Comprehensive Logging**: Detailed server-side logging
 - **Error Context**: Rich error context for debugging
 
 #### Rate Limiting Errors
+
 ```python
 http_error(
     429,
@@ -417,26 +455,27 @@ http_error(
 ```
 
 #### Validation Errors
+
 ```python
 if pw_error is not None:
     http_error(
-        400, 
-        pw_error, 
-        logger.warning, 
+        400,
+        pw_error,
+        logger.warning,
         {"token_prefix": data.token[:8]}
     )
 ```
 
 ### 📊 **Error Code Reference**
 
-| Status Code | Scenario | Endpoint | Description |
-|-------------|----------|----------|-------------|
-| `400` | Invalid input | All | Bad request data or validation failure |
-| `401` | Auth failure | Login, Logout, Refresh | Invalid credentials or tokens |
-| `409` | Conflict | Register | Email already exists |
-| `422` | Validation | All | Input validation errors |
-| `429` | Rate limit | All | Too many requests |
-| `500` | Server error | All | Unexpected server errors |
+| Status Code | Scenario      | Endpoint               | Description                            |
+| ----------- | ------------- | ---------------------- | -------------------------------------- |
+| `400`       | Invalid input | All                    | Bad request data or validation failure |
+| `401`       | Auth failure  | Login, Logout, Refresh | Invalid credentials or tokens          |
+| `409`       | Conflict      | Register               | Email already exists                   |
+| `422`       | Validation    | All                    | Input validation errors                |
+| `429`       | Rate limit    | All                    | Too many requests                      |
+| `500`       | Server error  | All                    | Unexpected server errors               |
 
 ## Usage Patterns
 
@@ -510,19 +549,19 @@ from unittest.mock import AsyncMock, patch
 async def test_register_success():
     """Test successful user registration."""
     client = TestClient(app)
-    
+
     with patch('src.api.v1.auth.get_user_service') as mock_service:
         mock_service.return_value.register_user = AsyncMock(return_value=mock_user)
         mock_service.return_value.authenticate_user = AsyncMock(
             return_value=("access_token", "refresh_token")
         )
-        
+
         response = client.post("/api/v1/auth/register", json={
             "email": "test@example.com",
             "password": "SecurePass123!",
             "name": "Test User"
         })
-        
+
         assert response.status_code == 201
         assert "access_token" in response.json()
         assert "refresh_token" in response.json()
@@ -531,15 +570,15 @@ async def test_register_success():
 async def test_login_invalid_credentials():
     """Test login with invalid credentials."""
     client = TestClient(app)
-    
+
     with patch('src.api.v1.auth.get_user_service') as mock_service:
         mock_service.return_value.authenticate_user.side_effect = UserNotFoundError()
-        
+
         response = client.post("/api/v1/auth/login", json={
             "email": "invalid@example.com",
             "password": "wrongpassword"
         })
-        
+
         assert response.status_code == 401
         assert response.json()["message"] == "Invalid credentials"
 ```
@@ -551,7 +590,7 @@ async def test_login_invalid_credentials():
 async def test_auth_flow_integration():
     """Test complete authentication flow."""
     client = TestClient(app)
-    
+
     # Register user
     register_response = client.post("/api/v1/auth/register", json={
         "email": "integration@example.com",
@@ -559,10 +598,10 @@ async def test_auth_flow_integration():
         "name": "Integration Test"
     })
     assert register_response.status_code == 201
-    
+
     tokens = register_response.json()
     access_token = tokens["access_token"]
-    
+
     # Get profile
     profile_response = client.get(
         "/api/v1/auth/me",
@@ -570,7 +609,7 @@ async def test_auth_flow_integration():
     )
     assert profile_response.status_code == 200
     assert profile_response.json()["email"] == "integration@example.com"
-    
+
     # Logout
     logout_response = client.post(
         "/api/v1/auth/logout",
@@ -585,14 +624,14 @@ async def test_auth_flow_integration():
 def test_rate_limiting():
     """Test rate limiting enforcement."""
     client = TestClient(app)
-    
+
     # Attempt login multiple times
     for _ in range(11):  # Exceed limit of 10
         response = client.post("/api/v1/auth/login", json={
             "email": "test@example.com",
             "password": "wrongpassword"
         })
-    
+
     # Last request should be rate limited
     assert response.status_code == 429
     assert "Too many" in response.json()["message"]
@@ -600,20 +639,20 @@ def test_rate_limiting():
 def test_token_blacklisting():
     """Test token blacklisting on logout."""
     client = TestClient(app)
-    
+
     # Login and get token
     login_response = client.post("/api/v1/auth/login", json={
         "email": "test@example.com",
         "password": "correctpassword"
     })
     access_token = login_response.json()["access_token"]
-    
+
     # Logout (blacklist token)
     client.post(
         "/api/v1/auth/logout",
         headers={"Authorization": f"Bearer {access_token}"}
     )
-    
+
     # Try to use blacklisted token
     response = client.get(
         "/api/v1/auth/me",
@@ -627,6 +666,7 @@ def test_token_blacklisting():
 ### ⚡ **Optimization Strategies**
 
 #### Database Query Optimization
+
 ```python
 # Efficient user lookup with single query
 user = await user_service.get_user_by_email(session, email)
@@ -635,12 +675,14 @@ if not user or not user.is_active or user.is_deleted:
 ```
 
 #### Token Caching
+
 ```python
 # Cache frequently accessed settings
 settings = get_settings()  # Cached configuration
 ```
 
 #### Rate Limiting Efficiency
+
 ```python
 # Efficient rate limit key generation
 user_id_or_host = str(getattr(user, "id", client_host))
@@ -694,4 +736,4 @@ key = f"{action}:{user_id_or_host}"
 
 ---
 
-*This authentication router provides comprehensive, secure, and scalable authentication services for the ReViewPoint application, implementing industry best practices for user authentication, authorization, and security.*
+_This authentication router provides comprehensive, secure, and scalable authentication services for the ReViewPoint application, implementing industry best practices for user authentication, authorization, and security._

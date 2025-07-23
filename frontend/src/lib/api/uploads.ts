@@ -125,368 +125,368 @@ const API_BASE_URL = "/api/uploads";
 
 // Types that match the backend
 interface FileUploadResponse {
-	filename: string;
-	url: string;
+  filename: string;
+  url: string;
 }
 
 interface FileDict {
-	filename: string;
-	url: string;
-	status?: string; // Add status field
-	progress?: number; // Add progress field
-	createdAt?: string; // Add createdAt field
+  filename: string;
+  url: string;
+  status?: string; // Add status field
+  progress?: number; // Add progress field
+  createdAt?: string; // Add createdAt field
 }
 
 interface FileListResponse {
-	files: FileDict[];
-	total: number;
+  files: FileDict[];
+  total: number;
 }
 
 interface FileListParams {
-	offset?: number;
-	limit?: number;
-	q?: string;
-	fields?: string;
-	sort?: "created_at" | "filename";
-	order?: "desc" | "asc";
-	created_after?: string;
-	created_before?: string;
+  offset?: number;
+  limit?: number;
+  q?: string;
+  fields?: string;
+  sort?: "created_at" | "filename";
+  order?: "desc" | "asc";
+  created_after?: string;
+  created_before?: string;
 }
 
 interface FileExportParams {
-	q?: string;
-	sort?: "created_at" | "filename";
-	order?: "desc" | "asc";
-	fields?: string;
-	created_before?: string;
-	created_after?: string;
+  q?: string;
+  sort?: "created_at" | "filename";
+  order?: "desc" | "asc";
+  fields?: string;
+  created_before?: string;
+  created_after?: string;
 }
 
 export const uploadsApi = {
-	// Test endpoints
-	rootTest: async (): Promise<{ status: string; router: string }> => {
-		logger.info("Testing uploads root endpoint");
-		const response = await request<{ status: string; router: string }>(
-			"/uploads/root-test",
-		);
+  // Test endpoints
+  rootTest: async (): Promise<{ status: string; router: string }> => {
+    logger.info("Testing uploads root endpoint");
+    const response = await request<{ status: string; router: string }>(
+      "/uploads/root-test",
+    );
 
-		if (response.error) {
-			logger.warn("Root test failed", { error: response.error });
-			throw new Error(response.error);
-		}
+    if (response.error) {
+      logger.warn("Root test failed", { error: response.error });
+      throw new Error(response.error);
+    }
 
-		logger.info("Root test successful");
-		if (!response.data) {
-			throw new Error("Root test succeeded but no data returned");
-		}
-		return response.data;
-	},
+    logger.info("Root test successful");
+    if (!response.data) {
+      throw new Error("Root test succeeded but no data returned");
+    }
+    return response.data;
+  },
 
-	testAlive: async (): Promise<{ status: string }> => {
-		logger.info("Testing uploads alive endpoint");
-		const response = await request<{ status: string }>("/uploads/test-alive");
+  testAlive: async (): Promise<{ status: string }> => {
+    logger.info("Testing uploads alive endpoint");
+    const response = await request<{ status: string }>("/uploads/test-alive");
 
-		if (response.error) {
-			logger.warn("Test alive failed", { error: response.error });
-			throw new Error(response.error);
-		}
+    if (response.error) {
+      logger.warn("Test alive failed", { error: response.error });
+      throw new Error(response.error);
+    }
 
-		logger.info("Test alive successful");
-		if (!response.data) {
-			throw new Error("Test alive succeeded but no data returned");
-		}
-		return response.data;
-	},
+    logger.info("Test alive successful");
+    if (!response.data) {
+      throw new Error("Test alive succeeded but no data returned");
+    }
+    return response.data;
+  },
 
-	exportAlive: async (): Promise<{ status: string }> => {
-		logger.info("Testing uploads export alive endpoint");
-		const response = await request<{ status: string }>("/uploads/export-alive");
+  exportAlive: async (): Promise<{ status: string }> => {
+    logger.info("Testing uploads export alive endpoint");
+    const response = await request<{ status: string }>("/uploads/export-alive");
 
-		if (response.error) {
-			logger.warn("Export alive test failed", { error: response.error });
-			throw new Error(response.error);
-		}
+    if (response.error) {
+      logger.warn("Export alive test failed", { error: response.error });
+      throw new Error(response.error);
+    }
 
-		logger.info("Export alive successful");
-		if (!response.data) {
-			throw new Error("Export alive succeeded but no data returned");
-		}
-		return response.data;
-	},
+    logger.info("Export alive successful");
+    if (!response.data) {
+      throw new Error("Export alive succeeded but no data returned");
+    }
+    return response.data;
+  },
 
-	exportTest: async (): Promise<{ status: string }> => {
-		logger.info("Testing uploads export endpoint");
-		const response = await request<{ status: string }>("/uploads/export-test");
+  exportTest: async (): Promise<{ status: string }> => {
+    logger.info("Testing uploads export endpoint");
+    const response = await request<{ status: string }>("/uploads/export-test");
 
-		if (response.error) {
-			logger.warn("Export test failed", { error: response.error });
-			throw new Error(response.error);
-		}
+    if (response.error) {
+      logger.warn("Export test failed", { error: response.error });
+      throw new Error(response.error);
+    }
 
-		logger.info("Export test successful");
-		if (!response.data) {
-			throw new Error("Export test succeeded but no data returned");
-		}
-		return response.data;
-	},
+    logger.info("Export test successful");
+    if (!response.data) {
+      throw new Error("Export test succeeded but no data returned");
+    }
+    return response.data;
+  },
 
-	// Export files as CSV
-	exportFiles: async (params?: FileExportParams): Promise<Blob> => {
-		logger.info("Exporting files as CSV", { params });
-		const queryParams = params
-			? new URLSearchParams(params as Record<string, string>).toString()
-			: "";
-		const url = queryParams
-			? `/uploads/export?${queryParams}`
-			: "/uploads/export";
+  // Export files as CSV
+  exportFiles: async (params?: FileExportParams): Promise<Blob> => {
+    logger.info("Exporting files as CSV", { params });
+    const queryParams = params
+      ? new URLSearchParams(params as Record<string, string>).toString()
+      : "";
+    const url = queryParams
+      ? `/uploads/export?${queryParams}`
+      : "/uploads/export";
 
-		const response = await request<Blob>(url, {
-			headers: {
-				Accept: "text/csv",
-			},
-		});
+    const response = await request<Blob>(url, {
+      headers: {
+        Accept: "text/csv",
+      },
+    });
 
-		if (response.error) {
-			logger.warn("Export files failed", { error: response.error });
-			throw new Error(response.error);
-		}
+    if (response.error) {
+      logger.warn("Export files failed", { error: response.error });
+      throw new Error(response.error);
+    }
 
-		logger.info("Files exported successfully");
-		if (!response.data) {
-			throw new Error("Files export succeeded but no data returned");
-		}
-		return response.data;
-	},
+    logger.info("Files exported successfully");
+    if (!response.data) {
+      throw new Error("Files export succeeded but no data returned");
+    }
+    return response.data;
+  },
 
-	// Upload a file
-	uploadFile: async (file: File): Promise<FileUploadResponse> => {
-		logger.info("Uploading file", { filename: file.name, size: file.size });
-		const formData = new FormData();
-		formData.append("file", file);
+  // Upload a file
+  uploadFile: async (file: File): Promise<FileUploadResponse> => {
+    logger.info("Uploading file", { filename: file.name, size: file.size });
+    const formData = new FormData();
+    formData.append("file", file);
 
-		const response = await request<FileUploadResponse>("/uploads", {
-			method: "POST",
-			data: formData,
-			headers: {
-				"Content-Type": "multipart/form-data",
-			},
-		});
+    const response = await request<FileUploadResponse>("/uploads", {
+      method: "POST",
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
-		if (response.error) {
-			logger.warn("File upload failed", {
-				error: response.error,
-				filename: file.name,
-			});
-			throw new Error(response.error);
-		}
+    if (response.error) {
+      logger.warn("File upload failed", {
+        error: response.error,
+        filename: file.name,
+      });
+      throw new Error(response.error);
+    }
 
-		logger.info("File uploaded successfully", {
-			filename: response.data?.filename,
-			url: response.data?.url,
-		});
-		if (!response.data) {
-			throw new Error("File upload succeeded but no data returned");
-		}
-		return response.data;
-	},
+    logger.info("File uploaded successfully", {
+      filename: response.data?.filename,
+      url: response.data?.url,
+    });
+    if (!response.data) {
+      throw new Error("File upload succeeded but no data returned");
+    }
+    return response.data;
+  },
 
-	// List uploaded files
-	listFiles: async (params?: FileListParams): Promise<FileListResponse> => {
-		logger.info("Listing files", { params });
-		const queryParams = params
-			? new URLSearchParams(params as Record<string, string>).toString()
-			: "";
-		const url = queryParams ? `/uploads?${queryParams}` : "/uploads";
+  // List uploaded files
+  listFiles: async (params?: FileListParams): Promise<FileListResponse> => {
+    logger.info("Listing files", { params });
+    const queryParams = params
+      ? new URLSearchParams(params as Record<string, string>).toString()
+      : "";
+    const url = queryParams ? `/uploads?${queryParams}` : "/uploads";
 
-		const response = await request<FileListResponse>(url);
+    const response = await request<FileListResponse>(url);
 
-		if (response.error) {
-			logger.warn("Failed to list files", { error: response.error });
-			throw new Error(response.error);
-		}
+    if (response.error) {
+      logger.warn("Failed to list files", { error: response.error });
+      throw new Error(response.error);
+    }
 
-		if (response.data) {
-			logger.info("Files listed successfully", {
-				total: response.data.total || 0,
-			});
-			return response.data;
-		} else {
-			logger.warn("Files list response has no data");
-			throw new Error("No data in response");
-		}
-	},
+    if (response.data) {
+      logger.info("Files listed successfully", {
+        total: response.data.total || 0,
+      });
+      return response.data;
+    } else {
+      logger.warn("Files list response has no data");
+      throw new Error("No data in response");
+    }
+  },
 
-	// Get file by filename
-	getFile: async (filename: string): Promise<FileUploadResponse> => {
-		logger.info("Getting file by filename", { filename });
-		const response = await request<FileUploadResponse>(
-			`/uploads/${encodeURIComponent(filename)}`,
-		);
+  // Get file by filename
+  getFile: async (filename: string): Promise<FileUploadResponse> => {
+    logger.info("Getting file by filename", { filename });
+    const response = await request<FileUploadResponse>(
+      `/uploads/${encodeURIComponent(filename)}`,
+    );
 
-		if (response.error) {
-			logger.warn("Failed to get file", { error: response.error, filename });
-			throw new Error(response.error);
-		}
+    if (response.error) {
+      logger.warn("Failed to get file", { error: response.error, filename });
+      throw new Error(response.error);
+    }
 
-		logger.info("File retrieved successfully", { filename });
-		if (!response.data) {
-			throw new Error("File retrieval succeeded but no data returned");
-		}
-		return response.data;
-	},
+    logger.info("File retrieved successfully", { filename });
+    if (!response.data) {
+      throw new Error("File retrieval succeeded but no data returned");
+    }
+    return response.data;
+  },
 
-	// Alias for backwards compatibility
-	getFileByFilename: async (filename: string): Promise<FileUploadResponse> => {
-		logger.info("Fetching file info", { filename });
-		const response = await request<FileUploadResponse>(
-			`/uploads/${encodeURIComponent(filename)}`,
-		);
+  // Alias for backwards compatibility
+  getFileByFilename: async (filename: string): Promise<FileUploadResponse> => {
+    logger.info("Fetching file info", { filename });
+    const response = await request<FileUploadResponse>(
+      `/uploads/${encodeURIComponent(filename)}`,
+    );
 
-		if (response.error) {
-			logger.warn("Failed to fetch file info", {
-				error: response.error,
-				filename,
-			});
-			throw new Error(response.error);
-		}
+    if (response.error) {
+      logger.warn("Failed to fetch file info", {
+        error: response.error,
+        filename,
+      });
+      throw new Error(response.error);
+    }
 
-		logger.info("File info fetched successfully", { filename });
-		if (!response.data) {
-			throw new Error("File info fetch succeeded but no data returned");
-		}
-		return response.data;
-	},
+    logger.info("File info fetched successfully", { filename });
+    if (!response.data) {
+      throw new Error("File info fetch succeeded but no data returned");
+    }
+    return response.data;
+  },
 
-	// Alias for backwards compatibility
-	getFiles: async (params?: FileListParams): Promise<FileListResponse> => {
-		logger.info("Fetching files list", { params });
-		const queryParams = params
-			? new URLSearchParams(params as Record<string, string>).toString()
-			: "";
-		const url = queryParams ? `/uploads?${queryParams}` : "/uploads";
+  // Alias for backwards compatibility
+  getFiles: async (params?: FileListParams): Promise<FileListResponse> => {
+    logger.info("Fetching files list", { params });
+    const queryParams = params
+      ? new URLSearchParams(params as Record<string, string>).toString()
+      : "";
+    const url = queryParams ? `/uploads?${queryParams}` : "/uploads";
 
-		const response = await request<FileListResponse>(url);
+    const response = await request<FileListResponse>(url);
 
-		if (response.error) {
-			logger.warn("Failed to fetch files", { error: response.error });
-			throw new Error(response.error);
-		}
+    if (response.error) {
+      logger.warn("Failed to fetch files", { error: response.error });
+      throw new Error(response.error);
+    }
 
-		logger.info("Files fetched successfully", {
-			total: response.data?.total,
-			count: response.data?.files.length,
-		});
+    logger.info("Files fetched successfully", {
+      total: response.data?.total,
+      count: response.data?.files.length,
+    });
 
-		if (!response.data) {
-			throw new Error("No data received from server");
-		}
+    if (!response.data) {
+      throw new Error("No data received from server");
+    }
 
-		return response.data;
-	},
+    return response.data;
+  },
 
-	// Delete file by filename
-	deleteFile: async (filename: string): Promise<null> => {
-		logger.info("Deleting file", { filename });
-		const response = await request<null>(
-			`/uploads/${encodeURIComponent(filename)}`,
-			{
-				method: "DELETE",
-			},
-		);
+  // Delete file by filename
+  deleteFile: async (filename: string): Promise<null> => {
+    logger.info("Deleting file", { filename });
+    const response = await request<null>(
+      `/uploads/${encodeURIComponent(filename)}`,
+      {
+        method: "DELETE",
+      },
+    );
 
-		if (response.error) {
-			logger.warn("File deletion failed", { error: response.error, filename });
-			throw new Error(response.error);
-		}
+    if (response.error) {
+      logger.warn("File deletion failed", { error: response.error, filename });
+      throw new Error(response.error);
+    }
 
-		logger.info("File deleted successfully", { filename });
-		return null;
-	},
+    logger.info("File deleted successfully", { filename });
+    return null;
+  },
 
-	// Create a new upload (v2)
-	createUpload: async (
-		file: File,
-	): Promise<{
-		id: string;
-		name: string;
-		status: string;
-		progress: number;
-		createdAt: string;
-	}> => {
-		logger.info("Creating new upload", {
-			filename: file.name,
-			size: file.size,
-		});
-		const formData = new FormData();
-		formData.append("file", file);
+  // Create a new upload (v2)
+  createUpload: async (
+    file: File,
+  ): Promise<{
+    id: string;
+    name: string;
+    status: string;
+    progress: number;
+    createdAt: string;
+  }> => {
+    logger.info("Creating new upload", {
+      filename: file.name,
+      size: file.size,
+    });
+    const formData = new FormData();
+    formData.append("file", file);
 
-		const response = await request<{
-			id: string;
-			name: string;
-			status: string;
-			progress: number;
-			createdAt: string;
-		}>(`${API_BASE_URL}`, {
-			method: "POST",
-			data: formData,
-			headers: {
-				"Content-Type": "multipart/form-data",
-			},
-		});
+    const response = await request<{
+      id: string;
+      name: string;
+      status: string;
+      progress: number;
+      createdAt: string;
+    }>(`${API_BASE_URL}`, {
+      method: "POST",
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
 
-		if (response.error) {
-			logger.warn("Upload creation failed", {
-				error: response.error,
-				filename: file.name,
-			});
-			throw new Error(response.error);
-		}
+    if (response.error) {
+      logger.warn("Upload creation failed", {
+        error: response.error,
+        filename: file.name,
+      });
+      throw new Error(response.error);
+    }
 
-		logger.info("Upload created successfully", {
-			id: response.data?.id,
-			filename: file.name,
-		});
+    logger.info("Upload created successfully", {
+      id: response.data?.id,
+      filename: file.name,
+    });
 
-		if (!response.data) {
-			throw new Error("No upload data received from server");
-		}
+    if (!response.data) {
+      throw new Error("No upload data received from server");
+    }
 
-		return response.data;
-	},
+    return response.data;
+  },
 
-	// Patch an existing file (v2)
-	patchFile: async (
-		id: string,
-		updates: Record<string, unknown>,
-	): Promise<void> => {
-		logger.info("Patching file", { id, updates });
-		const response = await request<void>(`${API_BASE_URL}/${id}`, {
-			method: "PATCH",
-			data: updates,
-		});
+  // Patch an existing file (v2)
+  patchFile: async (
+    id: string,
+    updates: Record<string, unknown>,
+  ): Promise<void> => {
+    logger.info("Patching file", { id, updates });
+    const response = await request<void>(`${API_BASE_URL}/${id}`, {
+      method: "PATCH",
+      data: updates,
+    });
 
-		if (response.error) {
-			logger.warn("File patching failed", { error: response.error, id });
-			throw new Error(response.error);
-		}
+    if (response.error) {
+      logger.warn("File patching failed", { error: response.error, id });
+      throw new Error(response.error);
+    }
 
-		logger.info("File patched successfully", { id });
-	},
+    logger.info("File patched successfully", { id });
+  },
 
-	// Delete a file by ID (v2)
-	deleteFileById: async (id: string): Promise<void> => {
-		logger.info("Deleting file by ID", { id });
-		const response = await request<void>(`${API_BASE_URL}/${id}`, {
-			method: "DELETE",
-		});
+  // Delete a file by ID (v2)
+  deleteFileById: async (id: string): Promise<void> => {
+    logger.info("Deleting file by ID", { id });
+    const response = await request<void>(`${API_BASE_URL}/${id}`, {
+      method: "DELETE",
+    });
 
-		if (response.error) {
-			logger.warn("File deletion failed", { error: response.error, id });
-			throw new Error(response.error);
-		}
+    if (response.error) {
+      logger.warn("File deletion failed", { error: response.error, id });
+      throw new Error(response.error);
+    }
 
-		logger.info("File deleted successfully", { id });
-	},
+    logger.info("File deleted successfully", { id });
+  },
 };
 
 // Export the createUpload function for direct use

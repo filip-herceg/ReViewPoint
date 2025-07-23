@@ -11,6 +11,7 @@ This document summarizes all safety and transparency features implemented for Re
 **File:** `scripts/install-prerequisites.ps1`
 
 **Features:**
+
 - **Complete tool disclosure** before installation
 - **Confirmation required** before proceeding
 - **Installation method explanation** (Chocolatey package manager)
@@ -18,11 +19,12 @@ This document summarizes all safety and transparency features implemented for Re
 - **Security information** (official sources only)
 
 **What users see before installation:**
+
 ```
 📦 TOOLS THAT WILL BE INSTALLED:
   1. Chocolatey - Package manager for Windows
   2. Git - Version control system
-  3. Node.js 18+ - JavaScript runtime  
+  3. Node.js 18+ - JavaScript runtime
   4. pnpm - Fast package manager (via npm)
   5. Python 3.11+ - Backend runtime
   6. pipx - Python application installer
@@ -46,19 +48,21 @@ This document summarizes all safety and transparency features implemented for Re
 
 **All development tasks now include prerequisite checks:**
 
-| Task Category | Tasks Updated | Safety Feature |
-|---------------|---------------|----------------|
-| **Development** | Start Backend, Start Frontend, Start Both | ✅ Checks tools before running |
-| **Testing** | Run Backend Tests, Run Fast Tests | ✅ Checks tools before running |
-| **Dependencies** | Install Dependencies | ✅ Checks tools before running |
+| Task Category    | Tasks Updated                             | Safety Feature                 |
+| ---------------- | ----------------------------------------- | ------------------------------ |
+| **Development**  | Start Backend, Start Frontend, Start Both | ✅ Checks tools before running |
+| **Testing**      | Run Backend Tests, Run Fast Tests         | ✅ Checks tools before running |
+| **Dependencies** | Install Dependencies                      | ✅ Checks tools before running |
 
 **Error Message Format:**
+
 ```
 ❌ [Tool] not found! Run "Setup Fresh Windows Machine" task first
 💡 Or run: .\scripts\install-prerequisites.ps1
 ```
 
 **Success Message Format:**
+
 ```
 ✅ Prerequisites OK, starting [service]...
 ```
@@ -115,18 +119,21 @@ This document summarizes all safety and transparency features implemented for Re
 ## 🔒 Safety Guarantees
 
 ### **Installation Safety:**
+
 - ✅ **User confirmation required** before any installation
 - ✅ **Complete tool list shown** before proceeding
 - ✅ **Official sources only** (no unofficial packages)
 - ✅ **Manual override available** (Docker Desktop guidance)
 
 ### **Task Execution Safety:**
+
 - ✅ **Prerequisite validation** on every development task
 - ✅ **Helpful error messages** with exact resolution steps
 - ✅ **No silent failures** - tasks either work or clearly explain why not
 - ✅ **Consistent error format** across all tasks
 
 ### **Documentation Safety:**
+
 - ✅ **Complete transparency** about what tools are installed
 - ✅ **Security information** provided (official sources, no telemetry)
 - ✅ **Error resolution guides** for every possible failure
@@ -135,12 +142,14 @@ This document summarizes all safety and transparency features implemented for Re
 ## 📊 Implementation Metrics
 
 ### **Coverage:**
+
 - **37 VS Code tasks** analyzed
 - **8 critical tasks** updated with prerequisite checks
 - **100% of development tasks** now have safety validation
 - **3 documentation files** updated with transparency information
 
 ### **Safety Features:**
+
 - **Complete tool disclosure** before installation
 - **User confirmation required** for all installations
 - **Prerequisite validation** on all critical tasks

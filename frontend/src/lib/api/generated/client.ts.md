@@ -4,7 +4,7 @@
 **Purpose:** Auto-generated type-safe HTTP client from OpenAPI schema  
 **Lines of Code:** 76  
 **Type:** Generated Infrastructure Module  
-**Generated:** 2025-07-08T06:10:00.000Z  
+**Generated:** 2025-07-08T06:10:00.000Z
 
 ## Overview
 
@@ -15,31 +15,36 @@ The generated API client provides a fully type-safe HTTP client generated direct
 ### Core Components
 
 #### Generated Client Instance
+
 ```typescript
 export const generatedApiClient = createClient<paths>({
-    baseUrl: import.meta.env?.VITE_API_BASE_URL || "http://localhost:8000",
-    headers: {
-        "Content-Type": "application/json",
-    },
+  baseUrl: import.meta.env?.VITE_API_BASE_URL || "http://localhost:8000",
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 ```
 
 #### Request/Response Interceptors
+
 ```typescript
 generatedApiClient.use({
-    onRequest({ request }) {
-        // Automatic request logging
-    },
-    onResponse({ response }) {
-        // Automatic response logging
-    }
+  onRequest({ request }) {
+    // Automatic request logging
+  },
+  onResponse({ response }) {
+    // Automatic response logging
+  },
 });
 ```
 
 #### Utility Functions
+
 ```typescript
-export function isApiError(error: unknown): error is { message: string; status?: number }
-export function getApiErrorMessage(error: unknown): string
+export function isApiError(
+  error: unknown,
+): error is { message: string; status?: number };
+export function getApiErrorMessage(error: unknown): string;
 ```
 
 ## Key Features
@@ -69,21 +74,21 @@ export function getApiErrorMessage(error: unknown): string
 ### Type-Safe API Calls
 
 ```typescript
-import { generatedApiClient } from '@/lib/api/generated/client';
+import { generatedApiClient } from "@/lib/api/generated/client";
 
 // Fully typed GET request
 const { data, error } = await generatedApiClient.GET("/api/v1/uploads");
 if (error) {
-    // error is typed based on API specification
-    console.error('API Error:', error);
+  // error is typed based on API specification
+  console.error("API Error:", error);
 } else {
-    // data is typed as FileListResponse
-    console.log('Files:', data.files);
+  // data is typed as FileListResponse
+  console.log("Files:", data.files);
 }
 
 // Typed POST request with body validation
 const { data, error } = await generatedApiClient.POST("/api/v1/uploads", {
-    body: formData  // Body type validated at compile time
+  body: formData, // Body type validated at compile time
 });
 ```
 
@@ -91,22 +96,25 @@ const { data, error } = await generatedApiClient.POST("/api/v1/uploads", {
 
 ```typescript
 // Compile-time validation of path parameters
-const { data, error } = await generatedApiClient.GET("/api/v1/uploads/{filename}", {
+const { data, error } = await generatedApiClient.GET(
+  "/api/v1/uploads/{filename}",
+  {
     params: {
-        path: { filename: "document.pdf" }  // filename parameter required and typed
-    }
-});
+      path: { filename: "document.pdf" }, // filename parameter required and typed
+    },
+  },
+);
 
 // Query parameter validation
 const { data, error } = await generatedApiClient.GET("/api/v1/uploads", {
-    params: {
-        query: {
-            limit: 50,        // ✅ Valid query parameter
-            offset: 0,        // ✅ Valid query parameter
-            sort: "created_at" // ✅ Valid enum value
-            // invalid: "test" // ❌ Compile error - invalid parameter
-        }
-    }
+  params: {
+    query: {
+      limit: 50, // ✅ Valid query parameter
+      offset: 0, // ✅ Valid query parameter
+      sort: "created_at", // ✅ Valid enum value
+      // invalid: "test" // ❌ Compile error - invalid parameter
+    },
+  },
 });
 ```
 
@@ -117,9 +125,9 @@ const { data, error } = await generatedApiClient.GET("/api/v1/uploads", {
 ```typescript
 // Safe error type checking
 if (isApiError(error)) {
-    // TypeScript knows error has message and optional status
-    console.log('Error message:', error.message);
-    console.log('Status code:', error.status);
+  // TypeScript knows error has message and optional status
+  console.log("Error message:", error.message);
+  console.log("Status code:", error.status);
 }
 
 // Extract error messages safely
@@ -130,18 +138,18 @@ const errorMessage = getApiErrorMessage(unknownError);
 ### Integration with Error Handling
 
 ```typescript
-import { handleApiError } from '@/lib/api/errorHandling';
+import { handleApiError } from "@/lib/api/errorHandling";
 
 const makeApiCall = async () => {
-    const { data, error } = await generatedApiClient.GET("/api/endpoint");
-    
-    if (error) {
-        // Combine generated client error handling with centralized error processing
-        const handledError = handleApiError(error);
-        throw new Error(handledError.message);
-    }
-    
-    return data;
+  const { data, error } = await generatedApiClient.GET("/api/endpoint");
+
+  if (error) {
+    // Combine generated client error handling with centralized error processing
+    const handledError = handleApiError(error);
+    throw new Error(handledError.message);
+  }
+
+  return data;
 };
 ```
 
@@ -152,12 +160,12 @@ const makeApiCall = async () => {
 ```typescript
 // Automatically logs all requests
 logger.debug("🔄 API Request:", {
-    method: "GET",
-    url: "http://localhost:8000/api/v1/uploads",
-    headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer ..."
-    }
+  method: "GET",
+  url: "http://localhost:8000/api/v1/uploads",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: "Bearer ...",
+  },
 });
 ```
 
@@ -166,9 +174,9 @@ logger.debug("🔄 API Request:", {
 ```typescript
 // Automatically logs all responses
 logger.debug("✅ API Response:", {
-    status: 200,
-    statusText: "OK",
-    url: "http://localhost:8000/api/v1/uploads"
+  status: 200,
+  statusText: "OK",
+  url: "http://localhost:8000/api/v1/uploads",
 });
 ```
 
@@ -191,9 +199,9 @@ npm run generate:api-types
 const response = await generatedApiClient.GET("/api/v1/uploads");
 
 // If backend changes response structure, TypeScript will error
-response.data.files.forEach(file => {
-    console.log(file.filename);  // ✅ Type-safe access
-    // console.log(file.invalid); // ❌ Compile error if property doesn't exist
+response.data.files.forEach((file) => {
+  console.log(file.filename); // ✅ Type-safe access
+  // console.log(file.invalid); // ❌ Compile error if property doesn't exist
 });
 ```
 
@@ -205,7 +213,7 @@ response.data.files.forEach(file => {
 // .env.development
 VITE_API_BASE_URL=http://localhost:8000
 
-// .env.production  
+// .env.production
 VITE_API_BASE_URL=https://api.reviewpoint.com
 ```
 
@@ -217,8 +225,8 @@ const baseUrl = import.meta.env?.VITE_API_BASE_URL || "http://localhost:8000";
 
 // Headers can be modified at runtime if needed
 generatedApiClient.headers = {
-    ...generatedApiClient.headers,
-    'Authorization': `Bearer ${token}`
+  ...generatedApiClient.headers,
+  Authorization: `Bearer ${token}`,
 };
 ```
 
@@ -254,14 +262,14 @@ const { data, error } = await generatedApiClient.GET("/api/v1/uploads");
 ```typescript
 // Integration with auth system
 generatedApiClient.use({
-    onRequest({ request }) {
-        // Add auth headers automatically
-        const token = getAuthToken();
-        if (token) {
-            request.headers.set('Authorization', `Bearer ${token}`);
-        }
-        return request;
+  onRequest({ request }) {
+    // Add auth headers automatically
+    const token = getAuthToken();
+    if (token) {
+      request.headers.set("Authorization", `Bearer ${token}`);
     }
+    return request;
+  },
 });
 ```
 
@@ -288,12 +296,12 @@ generatedApiClient.use({
 ```typescript
 // Testing with typed mocks
 const mockClient = {
-    GET: jest.fn().mockResolvedValue({
-        data: {
-            files: [],
-            total: 0
-        } as FileListResponse
-    })
+  GET: jest.fn().mockResolvedValue({
+    data: {
+      files: [],
+      total: 0,
+    } as FileListResponse,
+  }),
 };
 ```
 
@@ -301,12 +309,12 @@ const mockClient = {
 
 ```typescript
 // Test that API responses match expected types
-test('API response matches schema', async () => {
-    const { data } = await generatedApiClient.GET("/api/v1/uploads");
-    
-    expect(data).toHaveProperty('files');
-    expect(data).toHaveProperty('total');
-    expect(Array.isArray(data.files)).toBe(true);
+test("API response matches schema", async () => {
+  const { data } = await generatedApiClient.GET("/api/v1/uploads");
+
+  expect(data).toHaveProperty("files");
+  expect(data).toHaveProperty("total");
+  expect(Array.isArray(data.files)).toBe(true);
 });
 ```
 
@@ -316,7 +324,7 @@ test('API response matches schema', async () => {
 
 ```typescript
 // Before: Manual HTTP calls with no type safety
-const response = await fetch('/api/uploads');
+const response = await fetch("/api/uploads");
 const data = await response.json(); // Unknown type
 
 // After: Generated client with full type safety
@@ -368,4 +376,4 @@ const { data, error } = await generatedApiClient.GET("/api/v1/uploads");
 
 ---
 
-*This module provides the auto-generated foundation for type-safe API communication, ensuring compile-time validation and runtime consistency between frontend and backend systems.*
+_This module provides the auto-generated foundation for type-safe API communication, ensuring compile-time validation and runtime consistency between frontend and backend systems._

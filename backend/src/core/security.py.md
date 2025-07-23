@@ -3,7 +3,7 @@
 **File:** `backend/src/core/security.py`  
 **Purpose:** JWT authentication and token management for ReViewPoint backend  
 **Lines of Code:** 239  
-**Type:** Core Security Infrastructure Module  
+**Type:** Core Security Infrastructure Module
 
 ## Overview
 
@@ -23,6 +23,7 @@ The security module provides comprehensive JWT (JSON Web Token) authentication s
 ### Key Components
 
 #### JWT Payload Structure
+
 ```python
 class JWTPayload(TypedDict, total=False):
     sub: str              # Subject (user identifier)
@@ -34,12 +35,14 @@ class JWTPayload(TypedDict, total=False):
 ```
 
 **Standard JWT Claims:**
+
 - `sub` (Subject): User identifier or username
 - `exp` (Expiration): Unix timestamp when token expires
 - `iat` (Issued At): Unix timestamp when token was created
 - `jti` (JWT ID): Unique identifier for token blacklisting
 
 **Custom Claims:**
+
 - `role`: User authorization level
 - `is_authenticated`: Authentication status flag
 
@@ -48,6 +51,7 @@ class JWTPayload(TypedDict, total=False):
 ### 🔐 **Access Token Management**
 
 #### `create_access_token()`
+
 ```python
 def create_access_token(data: Mapping[str, str | int | bool]) -> str:
     """Create a JWT access token with the given data payload."""
@@ -56,6 +60,7 @@ def create_access_token(data: Mapping[str, str | int | bool]) -> str:
 **Purpose:** Creates short-lived access tokens for API authentication
 
 **Token Creation Process:**
+
 1. **Payload Preparation**: Merge user data with standard JWT claims
 2. **Expiration Setting**: Use configured expiration time (default: 30 minutes)
 3. **Timestamp Addition**: Add `iat` (issued at) and `exp` (expiration) claims
@@ -64,6 +69,7 @@ def create_access_token(data: Mapping[str, str | int | bool]) -> str:
 6. **Logging**: Log creation with sanitized claims (no sensitive data)
 
 **Configuration Integration:**
+
 ```python
 settings = get_settings()
 expire = datetime.now(UTC) + timedelta(minutes=settings.jwt_expire_minutes)
@@ -71,12 +77,14 @@ token = jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algo
 ```
 
 **Security Features:**
+
 - Configurable expiration time
 - Unique token identification (JTI)
 - Secure logging (excludes sensitive claims)
 - Comprehensive error handling
 
 #### `verify_access_token()` & `decode_access_token()`
+
 ```python
 def verify_access_token(token: str) -> JWTPayload:
     """Validate a JWT access token and return the decoded payload."""
@@ -88,6 +96,7 @@ def decode_access_token(token: str) -> JWTPayload:
 **Purpose:** Validates and decodes access tokens for request authentication
 
 **Validation Process:**
+
 1. **Authentication Check**: Bypass validation if auth is disabled (development mode)
 2. **Format Validation**: Verify token has 3 parts separated by dots
 3. **Secret Verification**: Ensure JWT secret is configured
@@ -96,17 +105,19 @@ def decode_access_token(token: str) -> JWTPayload:
 6. **Payload Return**: Return typed payload for application use
 
 **Development Mode Behavior:**
+
 ```python
 if not settings.auth_enabled:
     return JWTPayload(
         sub="dev-user",
-        role="admin", 
+        role="admin",
         is_authenticated=True,
         exp=int((now + timedelta(hours=24)).timestamp()),
     )
 ```
 
 **Security Validation:**
+
 - Token format validation (3-part JWT structure)
 - Secret key presence verification
 - Algorithm verification
@@ -116,6 +127,7 @@ if not settings.auth_enabled:
 ### 🔄 **Refresh Token Management**
 
 #### `create_refresh_token()`
+
 ```python
 def create_refresh_token(data: Mapping[str, str | int | bool]) -> str:
     """Create a JWT refresh token with the given data payload."""
@@ -124,12 +136,14 @@ def create_refresh_token(data: Mapping[str, str | int | bool]) -> str:
 **Purpose:** Creates long-lived refresh tokens for session management
 
 **Token Characteristics:**
+
 - **Expiration**: 7 days (extended lifetime)
 - **Purpose**: Renew access tokens without re-authentication
 - **Security**: Same secret and algorithm as access tokens
 - **Identification**: Unique JTI for blacklisting
 
 **Usage Pattern:**
+
 ```python
 refresh_token = create_refresh_token({
     "sub": user.username,
@@ -139,6 +153,7 @@ refresh_token = create_refresh_token({
 ```
 
 #### `verify_refresh_token()`
+
 ```python
 def verify_refresh_token(token: str) -> JWTPayload:
     """Validate a JWT refresh token and return the decoded payload."""
@@ -147,12 +162,14 @@ def verify_refresh_token(token: str) -> JWTPayload:
 **Purpose:** Validates refresh tokens for access token renewal
 
 **Enhanced Validation:**
+
 1. **Standard JWT Validation**: Signature and expiration verification
 2. **Required Claims Check**: Ensures `sub`, `jti`, and `exp` are present
 3. **Expiration Verification**: Explicitly checks if token is expired
 4. **Type Safety**: Returns typed payload structure
 
 **Required Claims Validation:**
+
 ```python
 if not ("sub" in payload and "jti" in payload and "exp" in payload):
     raise ValueError("Refresh token missing required claims (sub, jti, exp)")
@@ -177,6 +194,7 @@ settings = get_settings()
 ```
 
 **Configuration Dependencies:**
+
 - `jwt_secret_key`: Required in production, validated at runtime
 - `jwt_algorithm`: Cryptographic algorithm (HS256, HS512, RS256, etc.)
 - `jwt_expire_minutes`: Access token expiration time
@@ -184,12 +202,12 @@ settings = get_settings()
 
 ### Environment Variables
 
-| Variable | Purpose | Default | Required |
-|----------|---------|---------|----------|
-| `REVIEWPOINT_JWT_SECRET_KEY` | Token signing secret | None | Yes (prod) |
-| `REVIEWPOINT_JWT_ALGORITHM` | Signing algorithm | HS256 | No |
-| `REVIEWPOINT_JWT_EXPIRE_MINUTES` | Access token lifetime | 30 | No |
-| `REVIEWPOINT_AUTH_ENABLED` | Enable authentication | true | No |
+| Variable                         | Purpose               | Default | Required   |
+| -------------------------------- | --------------------- | ------- | ---------- |
+| `REVIEWPOINT_JWT_SECRET_KEY`     | Token signing secret  | None    | Yes (prod) |
+| `REVIEWPOINT_JWT_ALGORITHM`      | Signing algorithm     | HS256   | No         |
+| `REVIEWPOINT_JWT_EXPIRE_MINUTES` | Access token lifetime | 30      | No         |
+| `REVIEWPOINT_AUTH_ENABLED`       | Enable authentication | true    | No         |
 
 ## Usage Patterns
 
@@ -229,20 +247,20 @@ from src.core.security import create_access_token, create_refresh_token
 async def login_user(username: str, password: str):
     # Authenticate user (password verification, etc.)
     user = await authenticate_user(username, password)
-    
+
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    
+
     # Create tokens
     token_data = {
         "sub": user.username,
         "role": user.role,
         "is_authenticated": True
     }
-    
+
     access_token = create_access_token(token_data)
     refresh_token = create_refresh_token(token_data)
-    
+
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
@@ -260,22 +278,22 @@ async def refresh_access_token(refresh_token: str):
     try:
         # Validate refresh token
         payload = verify_refresh_token(refresh_token)
-        
+
         # Create new access token with same claims
         new_token_data = {
             "sub": payload["sub"],
             "role": payload["role"],
             "is_authenticated": payload["is_authenticated"]
         }
-        
+
         new_access_token = create_access_token(new_token_data)
-        
+
         return {
             "access_token": new_access_token,
             "token_type": "bearer",
             "expires_in": 30 * 60
         }
-        
+
     except (JWTError, ValueError) as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -327,6 +345,7 @@ if not settings.auth_enabled:
 ### 🛡️ **Error Categories**
 
 #### Configuration Errors
+
 ```python
 # Missing JWT secret
 if not settings.jwt_secret_key:
@@ -334,6 +353,7 @@ if not settings.jwt_secret_key:
 ```
 
 #### Token Format Errors
+
 ```python
 # Malformed token structure
 if not token or token.count(".") != 2:
@@ -341,6 +361,7 @@ if not token or token.count(".") != 2:
 ```
 
 #### Validation Errors
+
 ```python
 # Invalid signature or expired token
 try:
@@ -351,6 +372,7 @@ except JWTError as e:
 ```
 
 #### Payload Errors
+
 ```python
 # Invalid payload structure
 if not isinstance(payload, dict):
@@ -364,6 +386,7 @@ if not ("sub" in payload and "jti" in payload):
 ### 🔒 **Security Features**
 
 #### Token Uniqueness (JTI)
+
 ```python
 # Every token gets a unique identifier
 to_encode["jti"] = str(uuid.uuid4())
@@ -375,6 +398,7 @@ to_encode["jti"] = str(uuid.uuid4())
 ```
 
 #### Secure Logging
+
 ```python
 # Log creation without exposing sensitive data
 logger.debug(
@@ -387,6 +411,7 @@ logger.debug(
 ```
 
 #### Algorithm Protection
+
 ```python
 # Specify exact algorithm to prevent algorithm confusion attacks
 payload = jwt.decode(
@@ -397,6 +422,7 @@ payload = jwt.decode(
 ```
 
 #### Time-Based Security
+
 ```python
 # Access tokens: Short-lived (30 minutes)
 expire = datetime.now(UTC) + timedelta(minutes=settings.jwt_expire_minutes)
@@ -419,13 +445,14 @@ if not settings.auth_enabled:
     logger.warning("Authentication is DISABLED! Bypassing token verification")
     return JWTPayload(
         sub="dev-user",
-        role="admin", 
+        role="admin",
         is_authenticated=True,
         exp=int((now + timedelta(hours=24)).timestamp()),
     )
 ```
 
 **Development Benefits:**
+
 - No need for valid JWT secrets during development
 - Automatic admin permissions for testing
 - Extended token lifetime (24 hours)
@@ -447,7 +474,7 @@ def create_test_token(user_data: dict) -> str:
 def test_token_validation():
     token = create_test_token({"username": "alice", "role": "admin"})
     payload = verify_access_token(token)
-    
+
     assert payload["sub"] == "alice"
     assert payload["role"] == "admin"
     assert payload["is_authenticated"] is True
@@ -499,7 +526,7 @@ token_data = {
 # - 30-minute expiration reduces security window
 # - Minimal performance impact due to short lifetime
 
-# Refresh tokens: Infrequent creation, long lifetime  
+# Refresh tokens: Infrequent creation, long lifetime
 # - Created only on login
 # - 7-day expiration reduces refresh frequency
 # - Enables long-term sessions without constant re-authentication
@@ -601,18 +628,22 @@ if is_token_revoked(payload["jti"]):
 ### Common Error Scenarios
 
 #### `ValueError: JWT secret key is not configured`
+
 - **Cause**: Missing `REVIEWPOINT_JWT_SECRET_KEY` environment variable
 - **Solution**: Set proper JWT secret in environment configuration
 
 #### `JWTError: Invalid token format`
+
 - **Cause**: Malformed JWT token (not 3 parts separated by dots)
 - **Solution**: Verify token source and transmission
 
 #### `JWTError: Signature verification failed`
+
 - **Cause**: Token signed with different secret or tampered with
 - **Solution**: Verify JWT secret consistency and token integrity
 
 #### `ValueError: Token missing required claims`
+
 - **Cause**: JWT payload missing essential claims (sub, jti, exp)
 - **Solution**: Ensure token creation includes all required claims
 
@@ -633,4 +664,4 @@ if is_token_revoked(payload["jti"]):
 
 ---
 
-*This module provides the core security infrastructure for JWT-based authentication in the ReViewPoint backend, offering robust token management with comprehensive error handling and configurable security features.*
+_This module provides the core security infrastructure for JWT-based authentication in the ReViewPoint backend, offering robust token management with comprehensive error handling and configurable security features._

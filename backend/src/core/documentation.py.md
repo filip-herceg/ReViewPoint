@@ -3,7 +3,7 @@
 **File:** `backend/src/core/documentation.py`  
 **Purpose:** Comprehensive OpenAPI/Swagger documentation configuration with enhanced metadata, examples, and code samples  
 **Lines of Code:** 959  
-**Type:** Core Infrastructure Module  
+**Type:** Core Infrastructure Module
 
 ## Overview
 
@@ -23,6 +23,7 @@ The documentation module provides comprehensive OpenAPI specification enhancemen
 ### Key Components
 
 #### API Metadata Configuration
+
 ```python
 API_INFO: Final[APIInfo] = {
     "title": "ReViewPoint Core API",
@@ -35,6 +36,7 @@ API_INFO: Final[APIInfo] = {
 ```
 
 **Metadata Features:**
+
 - Comprehensive API description with feature breakdown
 - Contact information for support and development
 - MIT license information with URL
@@ -42,6 +44,7 @@ API_INFO: Final[APIInfo] = {
 - Version tracking for API evolution
 
 #### Server Environment Configuration
+
 ```python
 SERVERS: Final[Sequence[ServerInfo]] = [
     {"url": "https://api.reviewpoint.org", "description": "Production server"},
@@ -51,6 +54,7 @@ SERVERS: Final[Sequence[ServerInfo]] = [
 ```
 
 **Server Configuration:**
+
 - Production, staging, and development environments
 - API versioning support through URL variables
 - Environment-specific descriptions for clarity
@@ -60,6 +64,7 @@ SERVERS: Final[Sequence[ServerInfo]] = [
 ### 🔧 **Primary Enhancement Function**
 
 #### `get_enhanced_openapi_schema()`
+
 ```python
 def get_enhanced_openapi_schema(base_schema: dict[str, Any]) -> dict[str, Any]:
     """Enhance the base OpenAPI schema with comprehensive documentation."""
@@ -68,6 +73,7 @@ def get_enhanced_openapi_schema(base_schema: dict[str, Any]) -> dict[str, Any]:
 **Purpose:** Main function for comprehensive OpenAPI schema enhancement
 
 **Enhancement Process:**
+
 1. **API Info Update**: Adds comprehensive metadata from API_INFO configuration
 2. **Server Configuration**: Sets up multi-environment server information
 3. **Security Schemes**: Configures detailed authentication documentation
@@ -77,6 +83,7 @@ def get_enhanced_openapi_schema(base_schema: dict[str, Any]) -> dict[str, Any]:
 7. **Example Integration**: Adds realistic response examples
 
 **Schema Enhancement Features:**
+
 ```python
 # Update core API metadata
 base_schema["info"].update(API_INFO)
@@ -94,6 +101,7 @@ base_schema["security"] = [{"BearerAuth": []}, {"ApiKeyAuth": []}]
 ### 📝 **Endpoint Documentation Enhancement**
 
 #### `_enhance_endpoint_documentation()`
+
 ```python
 def _enhance_endpoint_documentation(paths: dict[str, Any]) -> None:
     """Enhance individual endpoint documentation with better descriptions and examples."""
@@ -102,36 +110,42 @@ def _enhance_endpoint_documentation(paths: dict[str, Any]) -> None:
 **Purpose:** Comprehensive enhancement of individual API endpoints
 
 **Enhancement Process:**
+
 1. **Tag Assignment**: Automatic categorization based on URL patterns
 2. **Security Configuration**: Authentication requirements per endpoint
 3. **Code Sample Addition**: Multi-language code examples
 4. **Response Example Enhancement**: Realistic response data
 
 #### `_add_tags_to_endpoints()`
+
 ```python
 def _add_tags_to_endpoints(path: str, path_item: dict[str, Any]) -> None:
     """Add appropriate tags to endpoints based on their paths."""
 ```
 
 **Tag Assignment Logic:**
+
 - `/auth` endpoints → "Auth" tag
-- `/users` endpoints → "User Management" tag  
+- `/users` endpoints → "User Management" tag
 - `/uploads` endpoints → "File" tag
 - `/health` or `/metrics` → "Health" tag
 - `/ws` or `/websocket` → "WebSocket" tag
 
 **Tag Benefits:**
+
 - Logical endpoint grouping in Swagger UI
 - Enhanced navigation and discoverability
 - Consistent categorization across API
 
 #### `_configure_endpoint_security()`
+
 ```python
 def _configure_endpoint_security(path: str, path_item: dict[str, Any]) -> None:
     """Configure security requirements for endpoints."""
 ```
 
 **Security Configuration Logic:**
+
 - **Public Endpoints**: No authentication required (login, register, health)
 - **User Profile Endpoint**: Multiple authentication options (Bearer, API Key, OAuth2)
 - **Protected Endpoints**: Bearer token OR API key authentication
@@ -142,6 +156,7 @@ def _configure_endpoint_security(path: str, path_item: dict[str, Any]) -> None:
 ### 🔐 **Authentication Schemes**
 
 #### Bearer Token Authentication
+
 ```python
 "BearerAuth": {
     "type": "http",
@@ -161,16 +176,18 @@ Use this for web applications and user-specific operations.
 ```
 
 **JWT Documentation Features:**
+
 - Clear token acquisition process
 - Header format specification
 - Token lifecycle information (24-hour access, 7-day refresh)
 - Refresh token usage instructions
 
 #### API Key Authentication
+
 ```python
 "ApiKeyAuth": {
     "type": "apiKey",
-    "in_": "header", 
+    "in_": "header",
     "name": "X-API-Key",
     "description": """
 **API Key Authentication**
@@ -186,12 +203,14 @@ Use this for service-to-service communication and automation.
 ```
 
 **API Key Documentation Features:**
+
 - Service-to-service authentication guidance
 - Security best practices
 - Header configuration details
 - Key management recommendations
 
 #### OAuth2 Flow Configuration
+
 ```python
 "OAuth2PasswordBearer": {
     "type": "oauth2",
@@ -200,7 +219,7 @@ Use this for service-to-service communication and automation.
             "tokenUrl": "/api/v1/auth/login",
             "scopes": {
                 "read": "Read access to user data",
-                "write": "Write access to user data", 
+                "write": "Write access to user data",
                 "admin": "Administrative access"
             }
         }
@@ -209,6 +228,7 @@ Use this for service-to-service communication and automation.
 ```
 
 **OAuth2 Documentation Features:**
+
 - Standard OAuth2 password flow
 - Scope-based authorization documentation
 - Token endpoint specification
@@ -219,6 +239,7 @@ Use this for service-to-service communication and automation.
 ### 💻 **Multi-Language Code Examples**
 
 #### Authentication Example
+
 ```python
 CODE_SAMPLES["auth_login"] = {
     "curl": "curl -X POST...",      # Complete curl command
@@ -228,6 +249,7 @@ CODE_SAMPLES["auth_login"] = {
 ```
 
 #### File Upload Example
+
 ```python
 CODE_SAMPLES["file_upload"] = {
     "curl": "curl -X POST ... -F 'file=@document.pdf'",
@@ -237,6 +259,7 @@ CODE_SAMPLES["file_upload"] = {
 ```
 
 #### WebSocket Connection Example
+
 ```python
 CODE_SAMPLES["websocket_connection"] = {
     "python": """
@@ -259,6 +282,7 @@ ws.onopen = function(event) {
 ```
 
 **Code Sample Features:**
+
 - Production-ready code examples
 - Error handling demonstrations
 - Best practices integration
@@ -267,6 +291,7 @@ ws.onopen = function(event) {
 ### 📋 **Response Examples**
 
 #### User Data Example
+
 ```python
 EXAMPLE_USER: Final[dict[str, Any]] = {
     "id": 123,
@@ -282,6 +307,7 @@ EXAMPLE_USER: Final[dict[str, Any]] = {
 ```
 
 #### File Metadata Example
+
 ```python
 EXAMPLE_FILE: Final[dict[str, Any]] = {
     "id": 456,
@@ -299,6 +325,7 @@ EXAMPLE_FILE: Final[dict[str, Any]] = {
 ```
 
 #### Authentication Response Example
+
 ```python
 EXAMPLE_AUTH_RESPONSE: Final[dict[str, Any]] = {
     "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -310,10 +337,11 @@ EXAMPLE_AUTH_RESPONSE: Final[dict[str, Any]] = {
 ```
 
 #### Error Response Examples
+
 ```python
 EXAMPLE_ERROR: Final[dict[str, Any]] = {
     "detail": "The provided credentials are invalid",
-    "status": "error", 
+    "status": "error",
     "feedback": "Please check your email and password and try again"
 }
 
@@ -335,6 +363,7 @@ EXAMPLE_VALIDATION_ERROR: Final[dict[str, Any]] = {
 ### 🏷️ **Endpoint Categorization**
 
 #### Authentication Operations
+
 ```python
 {
     "name": "Auth",
@@ -358,9 +387,10 @@ Key features:
 ```
 
 #### User Management Operations
+
 ```python
 {
-    "name": "User Management", 
+    "name": "User Management",
     "description": """
 **User profile and account management**
 
@@ -377,6 +407,7 @@ Key features:
 ```
 
 #### File Operations
+
 ```python
 {
     "name": "File",
@@ -410,21 +441,21 @@ def create_app() -> FastAPI:
         description="Scientific paper review platform",
         version="1.0.0"
     )
-    
+
     # Override default OpenAPI schema generation
     def custom_openapi():
         if app.openapi_schema:
             return app.openapi_schema
-        
+
         # Get base schema from FastAPI
         base_schema = app.openapi()
-        
+
         # Enhance with comprehensive documentation
         enhanced_schema = get_enhanced_openapi_schema(base_schema)
-        
+
         app.openapi_schema = enhanced_schema
         return enhanced_schema
-    
+
     app.openapi = custom_openapi
     return app
 ```
@@ -455,27 +486,27 @@ from src.main import app
 def test_enhanced_documentation():
     """Test that documentation enhancements are applied."""
     client = TestClient(app)
-    
+
     response = client.get("/openapi.json")
     assert response.status_code == 200
-    
+
     schema = response.json()
-    
+
     # Test enhanced metadata
     assert schema["info"]["contact"]["name"] == "ReViewPoint Team"
     assert schema["info"]["license"]["name"] == "MIT License"
-    
+
     # Test server configuration
     servers = schema["servers"]
     assert len(servers) == 3
     assert any("production" in s["description"].lower() for s in servers)
-    
+
     # Test security schemes
     security_schemes = schema["components"]["securitySchemes"]
     assert "BearerAuth" in security_schemes
     assert "ApiKeyAuth" in security_schemes
     assert "OAuth2PasswordBearer" in security_schemes
-    
+
     # Test tags
     tags = schema["tags"]
     tag_names = [tag["name"] for tag in tags]
@@ -483,7 +514,7 @@ def test_enhanced_documentation():
     assert "User Management" in tag_names
     assert "File" in tag_names
     assert "Health" in tag_names
-    
+
     # Test code samples
     auth_login = schema["paths"]["/api/v1/auth/login"]["post"]
     assert "x-codeSamples" in auth_login
@@ -497,7 +528,7 @@ def test_response_examples():
     """Test that response examples are properly added."""
     client = TestClient(app)
     schema = client.get("/openapi.json").json()
-    
+
     # Check component examples
     examples = schema["components"]["examples"]
     assert "UserExample" in examples
@@ -511,6 +542,7 @@ def test_response_examples():
 ### ⚙️ **Environment-Specific Configuration**
 
 #### Development Configuration
+
 ```python
 # Development server with detailed debugging
 SERVERS[2] = {
@@ -523,10 +555,11 @@ SERVERS[2] = {
 ```
 
 #### Production Configuration
+
 ```python
 # Production server with SSL and CDN
 SERVERS[0] = {
-    "url": "https://api.reviewpoint.org", 
+    "url": "https://api.reviewpoint.org",
     "description": "Production server",
     "variables": {
         "version": {"default": "v1", "description": "API version"}
@@ -535,6 +568,7 @@ SERVERS[0] = {
 ```
 
 #### Staging Configuration
+
 ```python
 # Staging environment for testing
 SERVERS[1] = {
@@ -551,30 +585,33 @@ SERVERS[1] = {
 ### ⚡ **Schema Generation Optimization**
 
 #### Efficient Enhancement Process
+
 ```python
 try:
     logger.info("Enhancing OpenAPI schema with comprehensive documentation")
-    
+
     # Batch updates for efficiency
     base_schema["info"].update(API_INFO)
     base_schema["servers"] = list(SERVERS)
     base_schema["components"]["securitySchemes"] = SECURITY_SCHEMES
-    
+
     logger.info("OpenAPI schema enhancement completed successfully")
     return base_schema
-    
+
 except Exception as e:
     logger.error(f"Failed to enhance OpenAPI schema: {e}")
     raise
 ```
 
 **Performance Features:**
+
 - Single-pass schema enhancement
 - Batch dictionary updates
 - Minimal object creation
 - Error handling without performance impact
 
 #### Memory Efficiency
+
 ```python
 # Reuse constant objects
 base_schema["servers"] = list(SERVERS)  # Convert tuple to list once
@@ -582,6 +619,7 @@ base_schema["tags"] = list(TAGS)        # Efficient list creation
 ```
 
 **Memory Optimization:**
+
 - Constant object reuse
 - Efficient list/dict operations
 - Minimal memory allocation during enhancement
@@ -591,13 +629,14 @@ base_schema["tags"] = list(TAGS)        # Efficient list creation
 ### 🛠️ **Schema Validation**
 
 #### Enhancement Error Handling
+
 ```python
 try:
     # Schema enhancement operations
     enhanced_schema = get_enhanced_openapi_schema(base_schema)
     logger.info("Schema enhancement successful")
     return enhanced_schema
-    
+
 except Exception as e:
     logger.error(f"Schema enhancement failed: {e}")
     # Return base schema as fallback
@@ -605,13 +644,14 @@ except Exception as e:
 ```
 
 #### Response Example Validation
+
 ```python
 def _add_response_examples(responses: dict[str, Any]) -> None:
     """Add comprehensive examples to response schemas."""
     for status_code, response in responses.items():
         if not isinstance(response, dict) or "content" not in response:
             continue  # Skip invalid response structures
-            
+
         # Safe example addition with validation
         content = response["content"]
         for media_type, media_info in content.items():
@@ -649,21 +689,21 @@ def test_comprehensive_schema_enhancement():
     """Test all aspects of schema enhancement."""
     base_schema = {"info": {}, "paths": {}}
     enhanced = get_enhanced_openapi_schema(base_schema)
-    
+
     # Test metadata enhancement
     assert enhanced["info"]["title"] == "ReViewPoint Core API"
     assert enhanced["info"]["contact"]["email"] == "support@reviewpoint.org"
-    
+
     # Test server configuration
     assert len(enhanced["servers"]) == 3
     server_urls = [s["url"] for s in enhanced["servers"]]
     assert "https://api.reviewpoint.org" in server_urls
-    
+
     # Test security configuration
     security_schemes = enhanced["components"]["securitySchemes"]
     assert "BearerAuth" in security_schemes
     assert security_schemes["BearerAuth"]["type"] == "http"
-    
+
     # Test examples
     examples = enhanced["components"]["examples"]
     assert "UserExample" in examples
@@ -677,12 +717,12 @@ def test_code_sample_integration():
             "post": {"operationId": "login"}
         }
     }
-    
+
     _add_endpoint_examples("/api/v1/auth/login", paths["/api/v1/auth/login"])
-    
+
     operation = paths["/api/v1/auth/login"]["post"]
     assert "x-codeSamples" in operation
-    
+
     code_samples = operation["x-codeSamples"]
     languages = [sample["lang"] for sample in code_samples]
     assert "curl" in languages
@@ -706,4 +746,4 @@ def test_code_sample_integration():
 
 ---
 
-*This module provides comprehensive OpenAPI documentation enhancement for the ReViewPoint backend, creating production-ready API documentation with rich metadata, multi-language code samples, realistic examples, and enhanced developer experience features essential for professional API consumption.*
+_This module provides comprehensive OpenAPI documentation enhancement for the ReViewPoint backend, creating production-ready API documentation with rich metadata, multi-language code samples, realistic examples, and enhanced developer experience features essential for professional API consumption._

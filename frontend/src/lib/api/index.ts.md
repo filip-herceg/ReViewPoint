@@ -18,7 +18,7 @@ The `index.ts` file serves as the central entry point and orchestration layer fo
 The module organizes APIs to mirror the backend router structure:
 
 - `auth` - Authentication and authorization endpoints
-- `health` - Health check and system status endpoints  
+- `health` - Health check and system status endpoints
 - `uploads` - File upload and management endpoints
 - `users` - User management endpoints (core, exports, test-only)
 
@@ -30,7 +30,7 @@ The module organizes APIs to mirror the backend router structure:
 export { authApi } from "./auth";
 
 // Usage
-import { authApi } from '@/lib/api';
+import { authApi } from "@/lib/api";
 
 const user = await authApi.login({ email, password });
 const current = await authApi.getCurrentUser();
@@ -55,7 +55,7 @@ export { usersExportsApi } from "./users/exports";
 export { usersTestOnlyApi } from "./users/test_only_router";
 
 // Usage
-import { usersApi } from '@/lib/api';
+import { usersApi } from "@/lib/api";
 
 const users = await usersApi.core.listUsers();
 const user = await usersApi.core.createUser(userData);
@@ -76,7 +76,7 @@ export { uploadsApi, createUpload } from "./uploads";
 export { uploadApiClient } from "./clients/uploads";
 
 // Usage
-import { uploadsApi } from '@/lib/api';
+import { uploadsApi } from "@/lib/api";
 
 const files = await uploadsApi.listFiles();
 const result = await uploadsApi.uploadFile(file);
@@ -97,7 +97,7 @@ const deleted = await uploadsApi.deleteFile(fileId);
 export { healthApi } from "./health";
 
 // Usage
-import { healthApi } from '@/lib/api';
+import { healthApi } from "@/lib/api";
 
 const status = await healthApi.getHealthStatus();
 const detailed = await healthApi.getDetailedHealth();
@@ -117,9 +117,9 @@ export { request } from "./base";
 export { generatedApiClient } from "./generated/client";
 
 // Usage
-import { request } from '@/lib/api';
+import { request } from "@/lib/api";
 
-const response = await request<CustomType>('/api/custom/endpoint');
+const response = await request<CustomType>("/api/custom/endpoint");
 ```
 
 **Utility Features:**
@@ -136,7 +136,7 @@ const response = await request<CustomType>('/api/custom/endpoint');
 ```typescript
 const api = {
   ...authApi,
-  ...uploadsApi, 
+  ...uploadsApi,
   ...usersApi,
   ...healthApi,
   createUpload,
@@ -148,7 +148,7 @@ export default api;
 **Legacy Usage Pattern:**
 
 ```typescript
-import api from '@/lib/api';
+import api from "@/lib/api";
 
 // All APIs available as flat methods
 const user = await api.login({ email, password });
@@ -169,8 +169,8 @@ const status = await api.getHealthStatus();
 ### Modern Named Exports (Recommended)
 
 ```typescript
-import { authApi, usersApi, uploadsApi, healthApi } from '@/lib/api';
-import type { User, AuthTokens, FileListResponse } from '@/lib/api/types';
+import { authApi, usersApi, uploadsApi, healthApi } from "@/lib/api";
+import type { User, AuthTokens, FileListResponse } from "@/lib/api/types";
 
 class ApiService {
   // Authentication
@@ -194,7 +194,7 @@ class ApiService {
   // Health Monitoring
   async checkSystemHealth(): Promise<boolean> {
     const response = await healthApi.getHealthStatus();
-    return response.status === 'healthy';
+    return response.status === "healthy";
   }
 }
 ```
@@ -202,8 +202,8 @@ class ApiService {
 ### Specialized Module Usage
 
 ```typescript
-import { usersCoreApi, usersExportsApi } from '@/lib/api';
-import type { UserExportParams } from '@/lib/api/types';
+import { usersCoreApi, usersExportsApi } from "@/lib/api";
+import type { UserExportParams } from "@/lib/api/types";
 
 class UserManagementService {
   // Core user operations
@@ -221,8 +221,8 @@ class UserManagementService {
 ### Error Handling Patterns
 
 ```typescript
-import { authApi, usersApi } from '@/lib/api';
-import type { ApiError } from '@/lib/api/types';
+import { authApi, usersApi } from "@/lib/api";
+import type { ApiError } from "@/lib/api/types";
 
 class ErrorHandlingService {
   async safeLogin(credentials: LoginCredentials): Promise<User | null> {
@@ -231,23 +231,21 @@ class ErrorHandlingService {
       return response.user;
     } catch (error) {
       if (error instanceof Error) {
-        console.error('Login failed:', error.message);
+        console.error("Login failed:", error.message);
         // Handle specific error types
-        if (error.message.includes('Invalid credentials')) {
-          throw new Error('Please check your email and password');
+        if (error.message.includes("Invalid credentials")) {
+          throw new Error("Please check your email and password");
         }
       }
       return null;
     }
   }
 
-  async safeUserOperation<T>(
-    operation: () => Promise<T>
-  ): Promise<T | null> {
+  async safeUserOperation<T>(operation: () => Promise<T>): Promise<T | null> {
     try {
       return await operation();
     } catch (error) {
-      console.error('User operation failed:', error);
+      console.error("User operation failed:", error);
       return null;
     }
   }
@@ -311,28 +309,32 @@ import type {
   AuthTokens,
   FileListResponse,
   ApiResponse,
-  PaginatedResponse
-} from '@/lib/api/types';
+  PaginatedResponse,
+} from "@/lib/api/types";
 
 // All API functions are fully typed
-const login: (credentials: AuthLoginRequest) => Promise<ApiResponse<AuthTokens>>;
-const listUsers: (params?: PaginationParams) => Promise<ApiResponse<PaginatedResponse<User>>>;
+const login: (
+  credentials: AuthLoginRequest,
+) => Promise<ApiResponse<AuthTokens>>;
+const listUsers: (
+  params?: PaginationParams,
+) => Promise<ApiResponse<PaginatedResponse<User>>>;
 const uploadFile: (file: File) => Promise<ApiResponse<FileUploadResponse>>;
 ```
 
 ### Type-Safe Error Handling
 
 ```typescript
-import { authApi } from '@/lib/api';
-import type { ApiError, AuthError } from '@/lib/api/types';
+import { authApi } from "@/lib/api";
+import type { ApiError, AuthError } from "@/lib/api/types";
 
 async function handleAuthOperation(): Promise<void> {
   try {
-    await authApi.login({ email: 'user@example.com', password: 'password' });
+    await authApi.login({ email: "user@example.com", password: "password" });
   } catch (error) {
     // Error is properly typed
     if (error instanceof Error) {
-      console.error('Auth error:', error.message);
+      console.error("Auth error:", error.message);
     }
   }
 }
@@ -353,15 +355,15 @@ authApi = {
   refreshToken,
   forgotPassword,
   resetPassword,
-  getCurrentUser
-}
+  getCurrentUser,
+};
 
 // Users Module (with sub-modules)
 usersApi = {
   core: { listUsers, createUser, updateUser, deleteUser },
   exports: { exportUsers, getExportStatus },
-  testOnly: { promoteAdmin, demoteAdmin }
-}
+  testOnly: { promoteAdmin, demoteAdmin },
+};
 
 // Uploads Module
 uploadsApi = {
@@ -369,15 +371,15 @@ uploadsApi = {
   uploadFile,
   downloadFile,
   deleteFile,
-  searchFiles
-}
+  searchFiles,
+};
 
 // Health Module
 healthApi = {
   getHealthStatus,
   getDetailedHealth,
-  checkDependencies
-}
+  checkDependencies,
+};
 ```
 
 ### Consistent Interface Patterns
@@ -409,14 +411,14 @@ interface ErrorResponse {
 ### Custom API Clients
 
 ```typescript
-import { request } from '@/lib/api';
-import type { ApiResponse } from '@/lib/api/types';
+import { request } from "@/lib/api";
+import type { ApiResponse } from "@/lib/api/types";
 
 class CustomApiClient {
   async customEndpoint<T>(data: unknown): Promise<ApiResponse<T>> {
-    return await request<T>('/api/custom/endpoint', {
-      method: 'POST',
-      data
+    return await request<T>("/api/custom/endpoint", {
+      method: "POST",
+      data,
     });
   }
 }
@@ -425,18 +427,18 @@ class CustomApiClient {
 ### API Composition
 
 ```typescript
-import { authApi, usersApi, uploadsApi } from '@/lib/api';
+import { authApi, usersApi, uploadsApi } from "@/lib/api";
 
 class CompositeApiService {
   async setupNewUser(userData: UserCreateRequest, avatarFile?: File) {
     // Create user
     const user = await usersApi.core.createUser(userData);
-    
+
     // Upload avatar if provided
     if (avatarFile) {
       await uploadsApi.uploadFile(avatarFile);
     }
-    
+
     // Return complete user data
     return user;
   }
@@ -446,14 +448,14 @@ class CompositeApiService {
 ### Middleware Integration
 
 ```typescript
-import { authApi } from '@/lib/api';
+import { authApi } from "@/lib/api";
 
 // Add request logging
 const originalLogin = authApi.login;
 authApi.login = async (credentials) => {
-  console.log('Attempting login for:', credentials.email);
+  console.log("Attempting login for:", credentials.email);
   const result = await originalLogin(credentials);
-  console.log('Login successful for:', credentials.email);
+  console.log("Login successful for:", credentials.email);
   return result;
 };
 ```
@@ -468,10 +470,10 @@ authApi.login = async (credentials) => {
 
 ```typescript
 // Tree-shakeable imports
-import { authApi } from '@/lib/api'; // Only auth module loaded
+import { authApi } from "@/lib/api"; // Only auth module loaded
 
 // Dynamic imports for performance
-const { uploadsApi } = await import('@/lib/api');
+const { uploadsApi } = await import("@/lib/api");
 ```
 
 ### Request Optimization
@@ -492,20 +494,20 @@ const { uploadsApi } = await import('@/lib/api');
 
 ```typescript
 // Development-only features
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === "development") {
   // Add development utilities
   (window as any).__api = api;
-  console.log('API modules loaded:', Object.keys(api));
+  console.log("API modules loaded:", Object.keys(api));
 }
 ```
 
 ### Testing Integration
 
 ```typescript
-import { authApi, usersApi } from '@/lib/api';
+import { authApi, usersApi } from "@/lib/api";
 
 // Easy mocking for tests
-jest.mock('@/lib/api', () => ({
+jest.mock("@/lib/api", () => ({
   authApi: {
     login: jest.fn(),
     getCurrentUser: jest.fn(),
@@ -513,21 +515,21 @@ jest.mock('@/lib/api', () => ({
   usersApi: {
     core: {
       listUsers: jest.fn(),
-    }
-  }
+    },
+  },
 }));
 ```
 
 ### Debug Utilities
 
 ```typescript
-import { request } from '@/lib/api';
+import { request } from "@/lib/api";
 
 // Debug wrapper
 const debugRequest = async <T>(url: string, options?: any) => {
-  console.log('API Request:', url, options);
+  console.log("API Request:", url, options);
   const response = await request<T>(url, options);
-  console.log('API Response:', response);
+  console.log("API Response:", response);
   return response;
 };
 ```
@@ -558,19 +560,22 @@ try {
 ### Error Recovery Patterns
 
 ```typescript
-import { authApi } from '@/lib/api';
+import { authApi } from "@/lib/api";
 
 class RobustApiService {
-  async loginWithRetry(credentials: LoginCredentials, maxRetries = 3): Promise<User> {
+  async loginWithRetry(
+    credentials: LoginCredentials,
+    maxRetries = 3,
+  ): Promise<User> {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         return await authApi.login(credentials);
       } catch (error) {
         if (attempt === maxRetries) throw error;
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
       }
     }
-    throw new Error('Max retries exceeded');
+    throw new Error("Max retries exceeded");
   }
 }
 ```
@@ -581,11 +586,11 @@ class RobustApiService {
 
 ```typescript
 // Old pattern
-import api from '@/lib/api';
+import api from "@/lib/api";
 const user = await api.login({ email, password });
 
 // New pattern (recommended)
-import { authApi } from '@/lib/api';
+import { authApi } from "@/lib/api";
 const user = await authApi.login({ email, password });
 ```
 
@@ -646,11 +651,11 @@ The frontend API structure directly mirrors the FastAPI backend organization:
 
 ```typescript
 // Frontend modules          // Backend routers
-authApi                  --> /api/v1/auth.py
-usersApi.core           --> /api/v1/users/core.py
-usersApi.exports        --> /api/v1/users/exports.py
-uploadsApi              --> /api/v1/uploads.py
-healthApi               --> /api/v1/health.py
+authApi-- > /api/1v / auth.py;
+usersApi.core-- > /api/1v / users / core.py;
+usersApi.exports-- > /api/1v / users / exports.py;
+uploadsApi-- > /api/1v / uploads.py;
+healthApi-- > /api/1v / health.py;
 ```
 
 ### Endpoint Mapping

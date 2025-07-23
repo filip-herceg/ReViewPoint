@@ -2,14 +2,14 @@ name: Backend CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
     paths:
-      - 'backend/**'
-      - '.github/workflows/backend.yaml'
+      - "backend/**"
+      - ".github/workflows/backend.yaml"
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
     paths:
-      - 'backend/**'
+      - "backend/**"
     # This prevents duplicate runs when pushing to a PR branch
     types: [opened, synchronize, reopened]
   workflow_dispatch:
@@ -31,7 +31,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install Hatch
         run: pip install hatch

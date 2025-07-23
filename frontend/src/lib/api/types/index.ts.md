@@ -20,7 +20,7 @@ The `types/index.ts` file serves as the central aggregation point for all TypeSc
 The module aggregates types from four specialized modules:
 
 - `auth.ts` - Authentication and authorization types
-- `user.ts` - User management and profile types  
+- `user.ts` - User management and profile types
 - `upload.ts` - File upload and management types
 - `common.ts` - Foundational API communication types
 
@@ -31,11 +31,11 @@ The module aggregates types from four specialized modules:
 ```typescript
 // JWT Token Management
 export type {
-  AuthTokens,           // Access and refresh token pair
-  AuthUser,            // Authenticated user information
-  JWTPayload,          // JWT token payload structure
-  TokenType,           // Token type enumeration
-  AuthState,           // Authentication state management
+  AuthTokens, // Access and refresh token pair
+  AuthUser, // Authenticated user information
+  JWTPayload, // JWT token payload structure
+  TokenType, // Token type enumeration
+  AuthState, // Authentication state management
 } from "./auth";
 ```
 
@@ -44,16 +44,16 @@ export type {
 ```typescript
 // API Request/Response Types
 export type {
-  AuthLoginRequest,                    // Login credentials
-  AuthLoginResponse,                   // Login success response
-  AuthRegisterRequest,                 // User registration data
-  AuthRegisterResponse,                // Registration success response
-  AuthPasswordResetRequest,            // Password reset initiation
-  AuthPasswordResetResponse,           // Password reset confirmation
-  AuthPasswordResetConfirmRequest,     // Password reset completion
-  AuthPasswordResetConfirmResponse,    // Password reset success
-  AuthLogoutResponse,                  // Logout confirmation
-  AuthTokenRefreshResponse,            // Token refresh response
+  AuthLoginRequest, // Login credentials
+  AuthLoginResponse, // Login success response
+  AuthRegisterRequest, // User registration data
+  AuthRegisterResponse, // Registration success response
+  AuthPasswordResetRequest, // Password reset initiation
+  AuthPasswordResetResponse, // Password reset confirmation
+  AuthPasswordResetConfirmRequest, // Password reset completion
+  AuthPasswordResetConfirmResponse, // Password reset success
+  AuthLogoutResponse, // Logout confirmation
+  AuthTokenRefreshResponse, // Token refresh response
 } from "./auth";
 ```
 
@@ -62,14 +62,14 @@ export type {
 ```typescript
 // Helper Functions and Constants
 export {
-  isAuthError,                // Type guard for auth errors
-  isAuthTokens,              // Type guard for token pairs
-  isTokenExpired,            // JWT expiration checker
-  extractUserFromToken,      // User extraction from JWT
-  decodeJWTPayload,         // JWT payload decoder
-  EMAIL_REGEX,              // Email validation regex
-  DEFAULT_PASSWORD_REQUIREMENTS,  // Password policy constants
-  AuthErrorType,            // Authentication error enumeration
+  isAuthError, // Type guard for auth errors
+  isAuthTokens, // Type guard for token pairs
+  isTokenExpired, // JWT expiration checker
+  extractUserFromToken, // User extraction from JWT
+  decodeJWTPayload, // JWT payload decoder
+  EMAIL_REGEX, // Email validation regex
+  DEFAULT_PASSWORD_REQUIREMENTS, // Password policy constants
+  AuthErrorType, // Authentication error enumeration
 } from "./auth";
 ```
 
@@ -80,13 +80,13 @@ export {
 ```typescript
 // User Profile and Management
 export type {
-  User,                     // Complete user profile
-  UserWithRoles,           // User with role information
-  UserPreferences,         // User settings and preferences
-  UserActivity,            // User activity tracking
-  UserSession,             // User session information
-  UserStats,               // User statistics
-  UserInvitation,          // User invitation system
+  User, // Complete user profile
+  UserWithRoles, // User with role information
+  UserPreferences, // User settings and preferences
+  UserActivity, // User activity tracking
+  UserSession, // User session information
+  UserStats, // User statistics
+  UserInvitation, // User invitation system
 } from "./user";
 ```
 
@@ -95,15 +95,15 @@ export type {
 ```typescript
 // CRUD Operation Types
 export type {
-  UserCreateRequest,           // User creation data
-  UserUpdateRequest,           // User profile updates
-  UserResponse,               // Single user response
-  UserListResponse,           // User list response
-  PaginatedUserListResponse,  // Paginated user listing
-  UserSearchParams,           // User search filters
-  UserInvitationRequest,      // User invitation data
+  UserCreateRequest, // User creation data
+  UserUpdateRequest, // User profile updates
+  UserResponse, // Single user response
+  UserListResponse, // User list response
+  PaginatedUserListResponse, // Paginated user listing
+  UserSearchParams, // User search filters
+  UserInvitationRequest, // User invitation data
   UserPreferencesUpdateRequest, // Preference updates
-  UserAvatarResponse,         // Avatar upload response
+  UserAvatarResponse, // Avatar upload response
 } from "./user";
 ```
 
@@ -112,16 +112,16 @@ export type {
 ```typescript
 // Helper Functions and Enums
 export {
-  isUser,                    // Type guard for user objects
-  isUserAdmin,              // Admin role checker
-  isUserPreferences,        // Type guard for preferences
-  isUserRole,               // Role validation
-  userHasRole,              // Role permission checker
-  getUserDisplayName,       // Display name formatter
-  getUserInitials,          // User initials generator
-  formatUserCreatedAt,      // Date formatter
-  UserRole,                 // User role enumeration
-  UserTheme,                // Theme preference enum
+  isUser, // Type guard for user objects
+  isUserAdmin, // Admin role checker
+  isUserPreferences, // Type guard for preferences
+  isUserRole, // Role validation
+  userHasRole, // Role permission checker
+  getUserDisplayName, // Display name formatter
+  getUserInitials, // User initials generator
+  formatUserCreatedAt, // Date formatter
+  UserRole, // User role enumeration
+  UserTheme, // Theme preference enum
   DEFAULT_USER_PREFERENCES, // Default preference values
 } from "./user";
 ```
@@ -133,11 +133,11 @@ export {
 ```typescript
 // Core File Types
 export type {
-  File,                     // File entity structure
-  FileListItem,            // File list item representation
-  Upload,                  // Upload operation data
-  FileUploadResponse,      // Upload success response
-  FileListResponse,        // File listing response
+  File, // File entity structure
+  FileListItem, // File list item representation
+  Upload, // Upload operation data
+  FileUploadResponse, // Upload success response
+  FileListResponse, // File listing response
   PaginatedFileListResponse, // Paginated file listing
 } from "./upload";
 ```
@@ -147,13 +147,13 @@ export type {
 ```typescript
 // Upload Process Management
 export type {
-  FileUploadConfig,        // Upload configuration options
-  UploadCreateRequest,     // Upload initiation data
-  FileDeleteRequest,       // File deletion request
-  FileDownloadRequest,     // File download request
-  FileSearchParams,        // File search filters
-  BulkFileOperation,       // Batch operations
-  FileActionResult,        // Operation result data
+  FileUploadConfig, // Upload configuration options
+  UploadCreateRequest, // Upload initiation data
+  FileDeleteRequest, // File deletion request
+  FileDownloadRequest, // File download request
+  FileSearchParams, // File search filters
+  BulkFileOperation, // Batch operations
+  FileActionResult, // Operation result data
 } from "./upload";
 ```
 
@@ -162,13 +162,13 @@ export type {
 ```typescript
 // Advanced File Management
 export type {
-  FileManagementState,     // File manager state
-  FileManagementConfig,    // Manager configuration
-  FilePreviewConfig,       // Preview settings
-  FileSharing,            // File sharing options
-  FileUpdateEvent,        // File change events
-  UploadStatus,           // Upload progress states
-  UploadError,            // Upload error types
+  FileManagementState, // File manager state
+  FileManagementConfig, // Manager configuration
+  FilePreviewConfig, // Preview settings
+  FileSharing, // File sharing options
+  FileUpdateEvent, // File change events
+  UploadStatus, // Upload progress states
+  UploadError, // Upload error types
 } from "./upload";
 ```
 
@@ -177,15 +177,15 @@ export type {
 ```typescript
 // Helper Functions and Validation
 export {
-  isUpload,                // Type guard for uploads
-  isUploadCompleted,       // Completion status checker
-  isUploadInProgress,      // Progress status checker
-  isUploadFailed,          // Failure status checker
-  isUploadError,           // Error type guard
-  validateUploadStatus,    // Status validation
+  isUpload, // Type guard for uploads
+  isUploadCompleted, // Completion status checker
+  isUploadInProgress, // Progress status checker
+  isUploadFailed, // Failure status checker
+  isUploadError, // Error type guard
+  validateUploadStatus, // Status validation
   calculateUploadProgress, // Progress calculation
-  formatUploadSize,        // Size formatting
-  UploadErrorType,         // Upload error enumeration
+  formatUploadSize, // Size formatting
+  UploadErrorType, // Upload error enumeration
 } from "./upload";
 ```
 
@@ -196,12 +196,12 @@ export {
 ```typescript
 // Foundation Response Types
 export type {
-  ApiResponse,             // Standard API response wrapper
-  PaginatedResponse,       // Paginated data response
-  ListResponse,           // Simple list response
-  MessageResponse,        // Text message response
-  ApiError,              // Structured error response
-  FieldError,            // Field validation error
+  ApiResponse, // Standard API response wrapper
+  PaginatedResponse, // Paginated data response
+  ListResponse, // Simple list response
+  MessageResponse, // Text message response
+  ApiError, // Structured error response
+  FieldError, // Field validation error
 } from "./common";
 ```
 
@@ -210,14 +210,14 @@ export type {
 ```typescript
 // HTTP Communication Types
 export type {
-  HttpMethod,             // HTTP method enumeration
-  ApiEndpoint,           // Endpoint configuration
-  RequestBody,           // Request payload types
-  RequestMetadata,       // Request tracking data
-  PaginationParams,      // Pagination parameters
-  UploadProgress,        // File upload progress
-  TypedAxiosError,       // Enhanced Axios error
-  ISODateString,         // ISO 8601 date strings
+  HttpMethod, // HTTP method enumeration
+  ApiEndpoint, // Endpoint configuration
+  RequestBody, // Request payload types
+  RequestMetadata, // Request tracking data
+  PaginationParams, // Pagination parameters
+  UploadProgress, // File upload progress
+  TypedAxiosError, // Enhanced Axios error
+  ISODateString, // ISO 8601 date strings
 } from "./common";
 ```
 
@@ -226,14 +226,14 @@ export type {
 ```typescript
 // Helper Functions and Validation
 export {
-  isApiError,            // API error type guard
-  isApiResponse,         // Response type guard
-  isPaginatedResponse,   // Pagination type guard
-  extractApiData,        // Data extraction utility
-  createApiResponse,     // Response factory
+  isApiError, // API error type guard
+  isApiResponse, // Response type guard
+  isPaginatedResponse, // Pagination type guard
+  extractApiData, // Data extraction utility
+  createApiResponse, // Response factory
   createApiErrorResponse, // Error response factory
-  buildApiUrl,           // URL construction utility
-  HttpStatusCode,        // HTTP status enumeration
+  buildApiUrl, // URL construction utility
+  HttpStatusCode, // HTTP status enumeration
 } from "./common";
 ```
 
@@ -278,10 +278,10 @@ export type RequiredKeys<T> = {
 export type ExtractApiData<T> = T extends ApiResponse<infer U> ? U : never;
 
 // Paginated Item Extraction
-export type ExtractPaginatedItem<T> = T extends PaginatedResponse<infer U> 
-  ? U : never;
+export type ExtractPaginatedItem<T> =
+  T extends PaginatedResponse<infer U> ? U : never;
 
-// List Item Extraction  
+// List Item Extraction
 export type ExtractListItem<T> = T extends ListResponse<infer U> ? U : never;
 ```
 
@@ -295,8 +295,8 @@ export type AnyApiError = ApiError | AuthError | UploadError;
 export type AnyApiResponse<T = unknown> = ApiResponse<T>;
 
 // Form Data Union
-export type ApiFormData = 
-  | AuthRegisterRequest 
+export type ApiFormData =
+  | AuthRegisterRequest
   | AuthLoginRequest
   | UserUpdateRequest
   | UserCreateRequest
@@ -351,7 +351,7 @@ export interface ApiState<T> {
 export function createDefaultApiState<T>(): ApiState<T> {
   return {
     data: null,
-    status: "idle", 
+    status: "idle",
     error: null,
     lastUpdated: null,
   };
@@ -360,7 +360,9 @@ export function createDefaultApiState<T>(): ApiState<T> {
 // State Type Guards
 export function isApiStateLoading<T>(state: ApiState<T>): boolean;
 export function isApiStateError<T>(state: ApiState<T>): boolean;
-export function isApiStateSuccess<T>(state: ApiState<T>): state is ApiState<T> & { data: T };
+export function isApiStateSuccess<T>(
+  state: ApiState<T>,
+): state is ApiState<T> & { data: T };
 ```
 
 ## Usage Examples
@@ -371,8 +373,10 @@ export function isApiStateSuccess<T>(state: ApiState<T>): state is ApiState<T> &
 import type { ApiResponse, User } from "@/lib/api/types";
 
 async function fetchUser(id: string): Promise<User | null> {
-  const response: ApiResponse<User> = await apiClient.get(`/api/v1/users/${id}`);
-  
+  const response: ApiResponse<User> = await apiClient.get(
+    `/api/v1/users/${id}`,
+  );
+
   if (response.data) {
     return response.data;
   } else {
@@ -388,7 +392,7 @@ async function fetchUser(id: string): Promise<User | null> {
 import type { RequiredFields, User, DeepPartial } from "@/lib/api/types";
 
 // Make email required for user updates
-type UserUpdateWithEmail = RequiredFields<User, 'email'>;
+type UserUpdateWithEmail = RequiredFields<User, "email">;
 
 // Create partial user for form state
 type UserFormState = DeepPartial<User>;
@@ -400,7 +404,11 @@ type UserData = ExtractApiData<ApiResponse<User>>;
 ### State Management Integration
 
 ```typescript
-import { ApiState, createDefaultApiState, isApiStateSuccess } from "@/lib/api/types";
+import {
+  ApiState,
+  createDefaultApiState,
+  isApiStateSuccess,
+} from "@/lib/api/types";
 
 interface UserStore {
   users: ApiState<User[]>;
@@ -469,7 +477,9 @@ All API functions are fully typed through this system:
 ```typescript
 import type { AuthLoginRequest, AuthLoginResponse } from "@/lib/api/types";
 
-export const login = async (credentials: AuthLoginRequest): Promise<ApiResponse<AuthLoginResponse>> => {
+export const login = async (
+  credentials: AuthLoginRequest,
+): Promise<ApiResponse<AuthLoginResponse>> => {
   // Implementation with full type safety
 };
 ```
@@ -501,7 +511,7 @@ export const login = async (credentials: AuthLoginRequest): Promise<ApiResponse<
 ```typescript
 // Conditional response types based on success/error
 type ConditionalResponse<T> = T extends { error: string }
-  ? ErrorApiResponse 
+  ? ErrorApiResponse
   : DataApiResponse<T>;
 ```
 
@@ -547,7 +557,7 @@ Field errors are strongly typed for form validation:
 import type { FieldError } from "@/lib/api/types";
 
 function displayFieldErrors(errors: FieldError[]) {
-  return errors.map(error => `${error.field}: ${error.message}`);
+  return errors.map((error) => `${error.field}: ${error.message}`);
 }
 ```
 
@@ -558,7 +568,7 @@ function displayFieldErrors(errors: FieldError[]) {
 The module relies on advanced TypeScript features:
 
 - Conditional types for type extraction
-- Mapped types for utility functions  
+- Mapped types for utility functions
 - Template literal types for string validation
 - Type guards for runtime validation
 
@@ -573,7 +583,7 @@ import type { AxiosError } from "axios";
 ```typescript
 // Specialized type modules
 import type { ... } from "./auth";
-import type { ... } from "./common"; 
+import type { ... } from "./common";
 import type { ... } from "./upload";
 import type { ... } from "./user";
 ```
@@ -600,7 +610,7 @@ Types are designed to match FastAPI backend schemas:
 interface User {
   id: string;
   email: string;
-  created_at: ISODateString;  // Matches datetime serialization
+  created_at: ISODateString; // Matches datetime serialization
   updated_at: ISODateString;
 }
 ```

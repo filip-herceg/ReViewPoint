@@ -60,16 +60,16 @@ import { describe, expect, it } from "vitest";
  * 5. Remove this warning and documentation
  */
 describe.skip("Error Monitoring System - PERMANENTLY DISABLED", () => {
-	it("should remain disabled until infinite loops are fixed", () => {
-		// This test is permanently skipped
-		// See file header comments for details on why this is disabled
-		expect(true).toBe(true);
-	});
+  it("should remain disabled until infinite loops are fixed", () => {
+    // This test is permanently skipped
+    // See file header comments for details on why this is disabled
+    expect(true).toBe(true);
+  });
 
-	it("should not be re-enabled without fixing root cause", () => {
-		// The original error monitoring tests caused the test suite to hang indefinitely
-		// This was due to infinite loops in async operations, event listeners, or promises
-		// DO NOT remove this skip without thoroughly investigating and fixing the root cause
-		expect(true).toBe(true);
-	});
+  it("should not be re-enabled without fixing root cause", () => {
+    // The original error monitoring tests caused the test suite to hang indefinitely
+    // This was due to infinite loops in async operations, event listeners, or promises
+    // DO NOT remove this skip without thoroughly investigating and fixing the root cause
+    expect(true).toBe(true);
+  });
 });

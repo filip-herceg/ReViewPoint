@@ -422,6 +422,7 @@ Modular, scalable, and LLM-powered platform for scientific paper review.
 - [Developer Documentation](developer-overview.md)
 
 ## Project Overview
+
 [Short, 2-3 sentence description]
 ```
 
@@ -431,18 +432,23 @@ Modular, scalable, and LLM-powered platform for scientific paper review.
 # [File Name] - [Short Description]
 
 ## Purpose
+
 [What this file does]
 
 ## Key Components
+
 [Main classes/functions]
 
 ## Dependencies
+
 [Important imports/dependencies]
 
 ## Usage Examples
+
 [Where possible, usage examples]
 
 ## Related Files
+
 [Links to related files]
 ```
 
@@ -746,12 +752,14 @@ Welcome to the ReViewPoint developer documentation. This section provides compre
 ## Quick Links
 
 ### Guidelines & Standards
+
 - [Development Guidelines](../resources/guidelines.md) - Coding standards and workflow
 - [Testing Guide](../resources/testing.md) - Comprehensive testing instructions
 - [CI/CD Documentation](../resources/ci-cd.md) - Pipeline and deployment info
 - [Contributing Guide](../resources/contributing.md) - How to contribute to the project
 
 ### Architecture Documentation
+
 - [Backend Architecture](backend/README.md) - Complete backend code structure
 - [Frontend Architecture](frontend/README.md) - Complete frontend code structure
 
@@ -1145,12 +1153,12 @@ class DocsMigrationTool:
     def __init__(self):
         self.source_mapping = self.build_source_file_mapping()
         self.content_templates = self.load_templates()
-    
+
     def migrate_source_docs(self):
         """Automated migration of all source code documentation"""
         for source_file, doc_file in self.source_mapping.items():
             self.migrate_single_file(source_file, doc_file)
-    
+
     def validate_migration(self):
         """Complete validation of the migration"""
         return {
@@ -1209,7 +1217,7 @@ class ContentIntelligence:
         """AI-powered suggestions for cross-references"""
         related_files = self.analyze_code_relationships(current_file)
         return self.generate_link_suggestions(related_files)
-    
+
     def detect_content_gaps(self):
         """Identifies missing documentation"""
         source_files = self.scan_source_code()
@@ -1355,8 +1363,8 @@ class ContentIntelligence:
      template:
        spec:
          containers:
-         - name: mkdocs
-           image: docs:latest
+           - name: mkdocs
+             image: docs:latest
    ```
 
 2. **Automated Deployment Pipeline**:

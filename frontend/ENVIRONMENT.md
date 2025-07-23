@@ -9,7 +9,7 @@ The frontend uses multiple environment files for different scenarios:
 ```
 frontend/
 ├── .env.example          # 📖 Comprehensive documentation template
-├── .env.template         # 📚 Detailed configuration guide  
+├── .env.template         # 📚 Detailed configuration guide
 ├── .env.local.example    # 🚀 Quick local development setup
 ├── .env.development      # 🛠️ Development environment defaults
 ├── .env.staging          # 🎭 Staging environment configuration
@@ -56,21 +56,21 @@ frontend/
 
 ### 🌐 API Configuration
 
-| Variable | Description | Examples |
-|----------|-------------|----------|
-| `VITE_API_BASE_URL` | Backend API endpoint | `http://localhost:8000`<br>`https://api.reviewpoint.com` |
-| `VITE_API_TIMEOUT` | Request timeout (ms) | `10000` (dev)<br>`20000` (prod) |
-| `VITE_WS_URL` | WebSocket endpoint | `ws://localhost:8000/api/v1`<br>`wss://api.reviewpoint.com/api/v1` |
+| Variable            | Description          | Examples                                                           |
+| ------------------- | -------------------- | ------------------------------------------------------------------ |
+| `VITE_API_BASE_URL` | Backend API endpoint | `http://localhost:8000`<br>`https://api.reviewpoint.com`           |
+| `VITE_API_TIMEOUT`  | Request timeout (ms) | `10000` (dev)<br>`20000` (prod)                                    |
+| `VITE_WS_URL`       | WebSocket endpoint   | `ws://localhost:8000/api/v1`<br>`wss://api.reviewpoint.com/api/v1` |
 
 ### 📊 Monitoring Configuration
 
-| Variable | Description | Values |
-|----------|-------------|--------|
-| `VITE_SENTRY_DSN` | Error tracking service | Sentry DSN URL or empty |
-| `VITE_ENABLE_ANALYTICS` | Usage analytics | `true` \| `false` |
-| `VITE_LOG_LEVEL` | Console logging level | `error` \| `warn` \| `info` \| `debug` \| `trace` |
-| `VITE_ENABLE_ERROR_REPORTING` | Auto error reporting | `true` \| `false` |
-| `VITE_ENABLE_PERFORMANCE_MONITORING` | Performance tracking | `true` \| `false` |
+| Variable                             | Description            | Values                                            |
+| ------------------------------------ | ---------------------- | ------------------------------------------------- |
+| `VITE_SENTRY_DSN`                    | Error tracking service | Sentry DSN URL or empty                           |
+| `VITE_ENABLE_ANALYTICS`              | Usage analytics        | `true` \| `false`                                 |
+| `VITE_LOG_LEVEL`                     | Console logging level  | `error` \| `warn` \| `info` \| `debug` \| `trace` |
+| `VITE_ENABLE_ERROR_REPORTING`        | Auto error reporting   | `true` \| `false`                                 |
+| `VITE_ENABLE_PERFORMANCE_MONITORING` | Performance tracking   | `true` \| `false`                                 |
 
 ### 🎛️ Feature Flags
 
@@ -79,7 +79,7 @@ All feature flags follow the pattern `VITE_FEATURE_ENABLE_*` and accept `true` o
 #### Authentication Features
 
 - `VITE_FEATURE_ENABLE_PASSWORD_RESET` - Password reset via email
-- `VITE_FEATURE_ENABLE_SOCIAL_LOGIN` - OAuth social login  
+- `VITE_FEATURE_ENABLE_SOCIAL_LOGIN` - OAuth social login
 - `VITE_FEATURE_ENABLE_TWO_FACTOR_AUTH` - Two-factor authentication
 
 #### Upload Features
@@ -96,7 +96,7 @@ All feature flags follow the pattern `VITE_FEATURE_ENABLE_*` and accept `true` o
 - `VITE_FEATURE_ENABLE_REVIEW_COMMENTS` - Comment system
 - `VITE_FEATURE_ENABLE_REVIEW_EXPORT` - Export functionality
 
-#### UI Features  
+#### UI Features
 
 - `VITE_FEATURE_ENABLE_DARK_MODE` - Light/dark theme switching
 - `VITE_FEATURE_ENABLE_NOTIFICATIONS` - Push notifications

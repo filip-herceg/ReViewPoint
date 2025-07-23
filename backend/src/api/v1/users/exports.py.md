@@ -3,7 +3,7 @@
 **File:** `backend/src/api/v1/users/exports.py`  
 **Purpose:** User data export functionality with CSV formats and health monitoring  
 **Lines of Code:** 361  
-**Type:** FastAPI Router Module  
+**Type:** FastAPI Router Module
 
 ## Overview
 
@@ -54,30 +54,35 @@ The User Export API provides comprehensive data export capabilities for user inf
 **Purpose:** Export user data in minimal CSV format for basic reporting
 
 **Requirements:**
+
 - Valid API key or export-specific API key
 - Feature flag `users:export` must be enabled
 
 **Query Parameters:**
+
 ```python
 email: str | None = None        # Filter by specific email address
 format: str | None = "csv"      # Export format (only csv supported)
 ```
 
 **CSV Columns:**
+
 ```python
 class UserMinimalRow(TypedDict):
     id: int         # User unique identifier
-    email: str      # User email address  
+    email: str      # User email address
     name: str       # User display name
 ```
 
 **Example Request:**
+
 ```http
 GET /api/v1/users/export?format=csv&email=john@example.com
 Authorization: Bearer your-api-key
 ```
 
 **Example CSV Response:**
+
 ```csv
 id,email,name
 123,john.doe@example.com,John Doe
@@ -85,6 +90,7 @@ id,email,name
 ```
 
 **Implementation:**
+
 ```python
 async def export_users_csv(
     session: AsyncSession,
@@ -93,33 +99,33 @@ async def export_users_csv(
     format: str | None = "csv",
 ) -> Response:
     """Export users in minimal CSV format."""
-    
+
     # Validate format parameter
     if format and format.lower() != "csv":
         raise HTTPException(400, "Unsupported format. Only 'csv' is supported.")
-    
+
     # Query users from database
     users_data, total_count = await list_users(session)
-    
+
     # Apply email filter if provided
     if email:
         users_data = [user for user in users_data if user.email == email]
-    
+
     # Generate CSV content
     output = StringIO()
     csv_writer = csv.writer(output)
     csv_writer.writerow(["id", "email", "name"])
-    
+
     for user in users_data:
         csv_writer.writerow([user.id, user.email, user.name])
-    
+
     csv_content = output.getvalue()
-    
+
     # Return with proper headers
     headers = {
         "Content-Disposition": f"attachment; filename={CSV_EXPORT_FILENAME}"
     }
-    
+
     return Response(
         content=csv_content,
         media_type="text/csv",
@@ -128,12 +134,14 @@ async def export_users_csv(
 ```
 
 **Response Headers:**
+
 ```http
 Content-Type: text/csv
 Content-Disposition: attachment; filename="users_export.csv"
 ```
 
 **Use Cases:**
+
 - Basic user reporting and analytics
 - Simple data backup operations
 - Third-party system integration
@@ -147,11 +155,13 @@ Content-Disposition: attachment; filename="users_export.csv"
 **Purpose:** Export comprehensive user data with all available fields
 
 **Requirements:**
+
 - Valid API key or export-specific API key
 - Feature flag `users:export_full` must be enabled
 - Higher privilege level than minimal export
 
 **CSV Columns:**
+
 ```python
 class UserFullRow(TypedDict):
     id: int             # User unique identifier
@@ -164,12 +174,14 @@ class UserFullRow(TypedDict):
 ```
 
 **Example Request:**
+
 ```http
 GET /api/v1/users/export-full
 Authorization: Bearer your-export-api-key
 ```
 
 **Example CSV Response:**
+
 ```csv
 id,email,name,created_at,updated_at,is_active,is_admin
 123,john.doe@example.com,John Doe,2025-01-08T10:30:00Z,2025-01-08T15:45:00Z,true,false
@@ -177,26 +189,27 @@ id,email,name,created_at,updated_at,is_active,is_admin
 ```
 
 **Implementation:**
+
 ```python
 async def export_users_full_csv(
     session: AsyncSession,
     current_user: User | None,
 ) -> Response:
     """Export comprehensive user data with all fields."""
-    
+
     # Query all users
     users_data, total_count = await list_users(session)
-    
+
     # Generate comprehensive CSV
     output = StringIO()
     csv_writer = csv.writer(output)
-    
+
     # Write header with all columns
     csv_writer.writerow([
-        "id", "email", "name", "created_at", 
+        "id", "email", "name", "created_at",
         "updated_at", "is_active", "is_admin"
     ])
-    
+
     # Write user data with full details
     for user in users_data:
         csv_writer.writerow([
@@ -208,28 +221,30 @@ async def export_users_full_csv(
             user.is_active,
             user.is_admin,
         ])
-    
+
     csv_content = output.getvalue()
-    
+
     # Return with full export filename
     headers = {
         "Content-Disposition": f"attachment; filename={CSV_FULL_EXPORT_FILENAME}"
     }
-    
+
     return Response(
         content=csv_content,
-        media_type="text/csv", 
+        media_type="text/csv",
         headers=headers
     )
 ```
 
 **Response Headers:**
+
 ```http
 Content-Type: text/csv
 Content-Disposition: attachment; filename="users_full_export.csv"
 ```
 
 **Use Cases:**
+
 - Complete data backup and archival
 - Detailed analytics and business intelligence
 - User account auditing and compliance
@@ -245,28 +260,33 @@ Content-Disposition: attachment; filename="users_full_export.csv"
 **Purpose:** Health check endpoint for export router functionality
 
 **Requirements:**
+
 - Feature flag `users:export_alive` must be enabled
 - No authentication required (health check endpoint)
 
 **Response Schema:**
+
 ```python
 class ExportAliveResponse(TypedDict):
     status: Literal["users export alive"]
 ```
 
 **Example Request:**
+
 ```http
 GET /api/v1/users/export-alive
 ```
 
 **Example Response:**
+
 ```json
 {
-    "status": "users export alive"
+  "status": "users export alive"
 }
 ```
 
 **Implementation:**
+
 ```python
 async def export_alive() -> ExportAliveResponse:
     """Health check for export router functionality."""
@@ -274,6 +294,7 @@ async def export_alive() -> ExportAliveResponse:
 ```
 
 **Use Cases:**
+
 - Service health monitoring and alerts
 - Export feature availability testing
 - System diagnostics and troubleshooting
@@ -287,28 +308,33 @@ async def export_alive() -> ExportAliveResponse:
 **Purpose:** Simple test endpoint for debugging export functionality
 
 **Requirements:**
+
 - Feature flag `users:export_simple` must be enabled
 - No authentication required (debug endpoint)
 
 **Response Schema:**
+
 ```python
 class ExportSimpleResponse(TypedDict):
     users: Literal["export simple status"]
 ```
 
 **Example Request:**
+
 ```http
 GET /api/v1/users/export-simple
 ```
 
 **Example Response:**
+
 ```json
 {
-    "users": "export simple status"
+  "users": "export simple status"
 }
 ```
 
 **Implementation:**
+
 ```python
 async def export_simple() -> ExportSimpleResponse:
     """Simple test endpoint for debugging export functionality."""
@@ -316,6 +342,7 @@ async def export_simple() -> ExportSimpleResponse:
 ```
 
 **Use Cases:**
+
 - Development and debugging workflows
 - Feature flag testing and validation
 - Export system diagnostics
@@ -327,16 +354,19 @@ async def export_simple() -> ExportSimpleResponse:
 ### 🔐 **Authentication Options**
 
 #### Export API Key Support
+
 ```python
 current_user: User | None = Depends(get_current_user_with_export_api_key)
 ```
 
 **Authentication Methods:**
+
 - **Standard API Key**: Regular API key authentication
 - **Export-Specific API Key**: Specialized key for export operations
 - **Flexible Authentication**: Supports both authentication methods
 
 #### Feature Flag Protection
+
 ```python
 dependencies=[
     Depends(require_feature("users:export")),        # Minimal export
@@ -349,6 +379,7 @@ dependencies=[
 ### 🛡️ **Data Protection**
 
 #### Format Validation
+
 ```python
 # Strict format validation
 if format and format.lower() != "csv":
@@ -356,6 +387,7 @@ if format and format.lower() != "csv":
 ```
 
 #### Secure File Headers
+
 ```python
 headers = {
     "Content-Disposition": f"attachment; filename={filename}",
@@ -368,6 +400,7 @@ headers = {
 ### 🚨 **Comprehensive Error Responses**
 
 #### Format Validation Errors
+
 ```python
 # Unsupported format error
 {
@@ -377,15 +410,17 @@ headers = {
 ```
 
 #### Authentication Errors
+
 ```python
 # Invalid API key
 {
-    "detail": "Invalid or missing API key", 
+    "detail": "Invalid or missing API key",
     "status_code": 401
 }
 ```
 
 #### Feature Flag Errors
+
 ```python
 # Feature not enabled
 {
@@ -407,6 +442,7 @@ headers = {
 ### 📊 **Export Workflows**
 
 #### Basic Export Operations
+
 ```python
 import requests
 
@@ -444,6 +480,7 @@ if response.status_code == 200:
 ```
 
 #### Health Monitoring
+
 ```python
 import requests
 
@@ -454,13 +491,13 @@ def check_export_health():
             "https://api.reviewpoint.org/api/v1/users/export-alive",
             timeout=5
         )
-        
+
         if response.status_code == 200:
             data = response.json()
             return data["status"] == "users export alive"
-        
+
         return False
-        
+
     except requests.RequestException:
         return False
 
@@ -480,24 +517,24 @@ from datetime import datetime
 
 async def scheduled_user_export():
     """Automated daily user export for backup purposes."""
-    
+
     async with aiohttp.ClientSession() as session:
         # Export full user data
         async with session.get(
             "https://api.reviewpoint.org/api/v1/users/export-full",
             headers={"Authorization": f"Bearer {export_api_key}"}
         ) as response:
-            
+
             if response.status == 200:
                 # Generate timestamped filename
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 filename = f"users_backup_{timestamp}.csv"
-                
+
                 # Save to backup directory
                 csv_content = await response.text()
                 async with aiofiles.open(f"backups/{filename}", "w") as f:
                     await f.write(csv_content)
-                
+
                 print(f"✅ User backup saved: {filename}")
                 return True
             else:
@@ -521,25 +558,25 @@ import csv
 from io import StringIO
 
 class TestUserExports:
-    
+
     @pytest.mark.asyncio
     async def test_minimal_csv_export(self, client, export_api_key):
         """Test minimal CSV export functionality."""
-        
+
         response = client.get(
             "/api/v1/users/export?format=csv",
             headers={"Authorization": f"Bearer {export_api_key}"}
         )
-        
+
         assert response.status_code == 200
         assert response.headers["content-type"] == "text/csv; charset=utf-8"
         assert "attachment" in response.headers["content-disposition"]
-        
+
         # Validate CSV content
         csv_reader = csv.reader(StringIO(response.text))
         headers = next(csv_reader)
         assert headers == ["id", "email", "name"]
-        
+
         # Check data rows
         rows = list(csv_reader)
         assert len(rows) > 0
@@ -547,76 +584,76 @@ class TestUserExports:
             assert len(row) == 3  # id, email, name
             assert row[0].isdigit()  # id should be numeric
             assert "@" in row[1]     # email should contain @
-    
+
     @pytest.mark.asyncio
     async def test_full_csv_export(self, client, export_api_key):
         """Test comprehensive CSV export functionality."""
-        
+
         response = client.get(
             "/api/v1/users/export-full",
             headers={"Authorization": f"Bearer {export_api_key}"}
         )
-        
+
         assert response.status_code == 200
         assert response.headers["content-type"] == "text/csv; charset=utf-8"
-        
+
         # Validate comprehensive CSV headers
         csv_reader = csv.reader(StringIO(response.text))
         headers = next(csv_reader)
         expected_headers = [
-            "id", "email", "name", "created_at", 
+            "id", "email", "name", "created_at",
             "updated_at", "is_active", "is_admin"
         ]
         assert headers == expected_headers
-        
+
         # Check full data rows
         rows = list(csv_reader)
         for row in rows:
             assert len(row) == 7  # All columns
             assert row[5] in ["true", "false"]  # is_active boolean
             assert row[6] in ["true", "false"]  # is_admin boolean
-    
+
     @pytest.mark.asyncio
     async def test_export_with_email_filter(self, client, export_api_key):
         """Test email filtering in export."""
-        
+
         response = client.get(
             "/api/v1/users/export?email=test@example.com",
             headers={"Authorization": f"Bearer {export_api_key}"}
         )
-        
+
         assert response.status_code == 200
-        
+
         # Validate filtered results
         csv_reader = csv.reader(StringIO(response.text))
         next(csv_reader)  # Skip headers
-        
+
         rows = list(csv_reader)
         for row in rows:
             assert row[1] == "test@example.com"  # email column
-    
+
     @pytest.mark.asyncio
     async def test_unsupported_format(self, client, export_api_key):
         """Test handling of unsupported export formats."""
-        
+
         response = client.get(
             "/api/v1/users/export?format=json",
             headers={"Authorization": f"Bearer {export_api_key}"}
         )
-        
+
         assert response.status_code == 400
         assert "Unsupported format" in response.json()["detail"]
-    
+
     @pytest.mark.asyncio
     async def test_export_health_endpoints(self, client):
         """Test export system health monitoring."""
-        
+
         # Test export alive endpoint
         response = client.get("/api/v1/users/export-alive")
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "users export alive"
-        
+
         # Test simple export endpoint
         response = client.get("/api/v1/users/export-simple")
         assert response.status_code == 200
@@ -630,40 +667,40 @@ class TestUserExports:
 @pytest.mark.asyncio
 async def test_export_system_integration(client, export_api_key):
     """Test complete export system integration."""
-    
+
     # 1. Check system health
     health_response = client.get("/api/v1/users/export-alive")
     assert health_response.status_code == 200
-    
+
     # 2. Perform minimal export
     minimal_response = client.get(
         "/api/v1/users/export",
         headers={"Authorization": f"Bearer {export_api_key}"}
     )
     assert minimal_response.status_code == 200
-    
+
     # 3. Perform full export
     full_response = client.get(
         "/api/v1/users/export-full",
         headers={"Authorization": f"Bearer {export_api_key}"}
     )
     assert full_response.status_code == 200
-    
+
     # 4. Compare export consistency
     minimal_csv = csv.reader(StringIO(minimal_response.text))
     full_csv = csv.reader(StringIO(full_response.text))
-    
+
     minimal_headers = next(minimal_csv)
     full_headers = next(full_csv)
-    
+
     # Verify minimal headers are subset of full headers
     for header in minimal_headers:
         assert header in full_headers
-    
+
     # Verify data consistency
     minimal_rows = list(minimal_csv)
     full_rows = list(full_csv)
-    
+
     assert len(minimal_rows) == len(full_rows)
 ```
 
@@ -707,4 +744,4 @@ async def test_export_system_integration(client, export_api_key):
 
 ---
 
-*This User Export API provides secure, flexible, and comprehensive data export capabilities with multiple formats, health monitoring, and robust error handling for administrative and operational needs.*
+_This User Export API provides secure, flexible, and comprehensive data export capabilities with multiple formats, health monitoring, and robust error handling for administrative and operational needs._

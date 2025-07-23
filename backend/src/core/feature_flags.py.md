@@ -3,7 +3,7 @@
 **File:** `backend/src/core/feature_flags.py`  
 **Purpose:** Environment variable-based feature flag system for ReViewPoint backend  
 **Lines of Code:** 157  
-**Type:** Core Infrastructure Module  
+**Type:** Core Infrastructure Module
 
 ## Overview
 
@@ -23,10 +23,11 @@ The feature flags module provides a flexible, environment variable-based feature
 ### Key Components
 
 #### Constants and Configuration
+
 ```python
 # Environment variable constants
 ENV_FILE_VAR: Final[str] = "ENV_FILE"
-REVIEWPOINT_FEATURES_VAR: Final[str] = "REVIEWPOINT_FEATURES" 
+REVIEWPOINT_FEATURES_VAR: Final[str] = "REVIEWPOINT_FEATURES"
 FEATURE_PREFIX: Final[str] = "REVIEWPOINT_FEATURE_"
 
 # Boolean string constants
@@ -35,11 +36,13 @@ FALSE_VALUE: Final[str] = "false"
 ```
 
 **Configuration Variables:**
+
 - `ENV_FILE_VAR`: Specifies custom .env file location
 - `REVIEWPOINT_FEATURES_VAR`: Comma-separated list of enabled features
 - `FEATURE_PREFIX`: Prefix for individual feature environment variables
 
 #### File Path Discovery
+
 ```python
 # File path constants for .env file discovery
 CONFIG_ENV_PATH: Final[str] = "config/.env"
@@ -54,6 +57,7 @@ Automatic discovery of .env files in common locations for flexible deployment sc
 ### 🚩 **FeatureFlags Class**
 
 #### `is_enabled()` Method
+
 ```python
 @staticmethod
 def is_enabled(feature_name: str) -> bool:
@@ -63,6 +67,7 @@ def is_enabled(feature_name: str) -> bool:
 **Purpose:** Primary interface for checking feature flag status
 
 **Feature Resolution Logic:**
+
 1. **Environment Loading**: Ensures .env files are loaded into os.environ
 2. **Grouped Features**: Checks `REVIEWPOINT_FEATURES` for feature name
 3. **Specific Variables**: Checks `REVIEWPOINT_FEATURE_<FEATURE_NAME>`
@@ -70,6 +75,7 @@ def is_enabled(feature_name: str) -> bool:
 5. **Priority Resolution**: False values override true values
 
 **Hierarchical Feature Support:**
+
 ```python
 # Feature name: "api:v2:endpoints"
 # Creates environment variables:
@@ -80,6 +86,7 @@ def is_enabled(feature_name: str) -> bool:
 ```
 
 **Resolution Priority (Highest to Lowest):**
+
 1. Explicit false in specific variable (`REVIEWPOINT_FEATURE_API_V2_ENDPOINTS=false`)
 2. Explicit false in base variable (`REVIEWPOINT_FEATURE_API=false`)
 3. Explicit true in specific variable (`REVIEWPOINT_FEATURE_API_V2_ENDPOINTS=true`)
@@ -102,6 +109,7 @@ REVIEWPOINT_FEATURE_EMBEDDINGS_PROCESSING=true
 ```
 
 **Usage in Code:**
+
 ```python
 from src.core.feature_flags import FeatureFlags
 
@@ -123,6 +131,7 @@ REVIEWPOINT_FEATURES="new_api,advanced_search,api:v2:endpoints,embeddings:proces
 ```
 
 **Usage Benefits:**
+
 - Simpler configuration for multiple features
 - Easy to read and manage feature sets
 - Ideal for environment-specific feature bundles
@@ -141,6 +150,7 @@ REVIEWPOINT_FEATURE_DEBUG_MODE=true        # Explicitly enabled
 ### 🔧 **Automatic Environment Loading**
 
 #### `_ensure_env_loaded()` Function
+
 ```python
 def _ensure_env_loaded() -> None:
     """Ensure environment variables from .env file are loaded."""
@@ -149,6 +159,7 @@ def _ensure_env_loaded() -> None:
 **Purpose:** Loads .env files into os.environ for feature flag access
 
 **Loading Process:**
+
 1. **Single Loading**: Uses module-level flag to prevent repeated loading
 2. **File Discovery**: Searches multiple locations for .env files
 3. **Parse and Load**: Reads key-value pairs and sets environment variables
@@ -156,6 +167,7 @@ def _ensure_env_loaded() -> None:
 5. **Error Tolerance**: Continues gracefully if loading fails
 
 **File Discovery Order:**
+
 ```python
 # 1. Custom path from ENV_FILE environment variable
 env_path = os.getenv("ENV_FILE")
@@ -163,7 +175,7 @@ env_path = os.getenv("ENV_FILE")
 # 2. Standard locations (first found wins)
 locations = [
     "config/.env",
-    "backend/config/.env", 
+    "backend/config/.env",
     "backend/.env"
 ]
 ```
@@ -190,6 +202,7 @@ REVIEWPOINT_DB_URL=postgresql://localhost/db
 ```
 
 **Parsing Features:**
+
 - Comment support (lines starting with #)
 - Key-value assignment with = separator
 - Quote removal (both single and double quotes)
@@ -208,10 +221,10 @@ class APIRouter:
         # Conditionally include endpoints based on feature flags
         if FeatureFlags.is_enabled("api:v2"):
             self.include_v2_endpoints()
-            
+
         if FeatureFlags.is_enabled("api:experimental"):
             self.include_experimental_endpoints()
-    
+
     def get_user_data(self, user_id: int):
         # Use different implementations based on feature flags
         if FeatureFlags.is_enabled("optimized_queries"):
@@ -263,7 +276,7 @@ class DebugService:
         self.debug_mode = FeatureFlags.is_enabled("debug:detailed_logging")
         self.profiling = FeatureFlags.is_enabled("debug:profiling")
         self.mock_external_apis = FeatureFlags.is_enabled("debug:mock_apis")
-    
+
     def log_request(self, request):
         if self.debug_mode:
             # Detailed request logging
@@ -281,20 +294,20 @@ from src.core.feature_flags import FeatureFlags
 
 def create_app() -> FastAPI:
     app = FastAPI()
-    
+
     # Conditionally include routers based on feature flags
     if FeatureFlags.is_enabled("api:auth"):
         from src.api.auth import auth_router
         app.include_router(auth_router, prefix="/auth")
-    
+
     if FeatureFlags.is_enabled("api:admin"):
         from src.api.admin import admin_router
         app.include_router(admin_router, prefix="/admin")
-    
+
     if FeatureFlags.is_enabled("api:uploads"):
         from src.api.uploads import upload_router
         app.include_router(upload_router, prefix="/uploads")
-    
+
     return app
 ```
 
@@ -385,7 +398,7 @@ class ServiceFactory:
         else:
             from src.services.search.basic import BasicSearchService
             return BasicSearchService()
-    
+
     @staticmethod
     def create_cache_service():
         """Create cache service based on enabled features."""
@@ -408,20 +421,20 @@ from src.core.feature_flags import FeatureFlags
 
 def create_app() -> FastAPI:
     app = FastAPI()
-    
+
     # Conditionally add middleware based on feature flags
     if FeatureFlags.is_enabled("middleware:cors"):
         from fastapi.middleware.cors import CORSMiddleware
         app.add_middleware(CORSMiddleware, allow_origins=["*"])
-    
+
     if FeatureFlags.is_enabled("middleware:compression"):
         from fastapi.middleware.gzip import GZipMiddleware
         app.add_middleware(GZipMiddleware)
-    
+
     if FeatureFlags.is_enabled("middleware:rate_limiting"):
         from src.middleware.rate_limit import RateLimitMiddleware
         app.add_middleware(RateLimitMiddleware)
-    
+
     return app
 ```
 
@@ -433,12 +446,12 @@ from loguru import logger
 
 class FeatureFlagMonitor:
     """Monitor and log feature flag usage."""
-    
+
     @staticmethod
     def log_feature_usage(feature_name: str, context: dict = None):
         """Log when a feature is checked."""
         is_enabled = FeatureFlags.is_enabled(feature_name)
-        
+
         logger.info(
             "Feature flag checked: {} = {}",
             feature_name,
@@ -449,25 +462,25 @@ class FeatureFlagMonitor:
                 "context": context or {}
             }
         )
-        
+
         return is_enabled
-    
+
     @staticmethod
     def audit_enabled_features() -> dict[str, bool]:
         """Audit all known features and their status."""
         known_features = [
             "api:v2",
-            "api:experimental", 
+            "api:experimental",
             "debug:detailed_logging",
             "optimized_queries",
             "new_ui",
             "advanced_search"
         ]
-        
+
         status = {}
         for feature in known_features:
             status[feature] = FeatureFlags.is_enabled(feature)
-        
+
         logger.info("Feature flag audit: {}", status)
         return status
 ```
@@ -486,35 +499,35 @@ class TestFeatureFlags:
         """Test individual feature flag functionality."""
         monkeypatch.setenv("REVIEWPOINT_FEATURE_NEW_API", "true")
         assert FeatureFlags.is_enabled("new_api") is True
-        
+
         monkeypatch.setenv("REVIEWPOINT_FEATURE_NEW_API", "false")
         assert FeatureFlags.is_enabled("new_api") is False
-    
+
     def test_grouped_features(self, monkeypatch):
         """Test grouped features functionality."""
         monkeypatch.setenv("REVIEWPOINT_FEATURES", "feature1,feature2,feature3")
-        
+
         assert FeatureFlags.is_enabled("feature1") is True
         assert FeatureFlags.is_enabled("feature2") is True
         assert FeatureFlags.is_enabled("feature4") is False
-    
+
     def test_hierarchical_features(self, monkeypatch):
         """Test hierarchical feature naming."""
         monkeypatch.setenv("REVIEWPOINT_FEATURE_API", "true")
-        
+
         # Base feature enables sub-features
         assert FeatureFlags.is_enabled("api:v2:endpoints") is True
         assert FeatureFlags.is_enabled("api:experimental") is True
-        
+
         # Specific override
         monkeypatch.setenv("REVIEWPOINT_FEATURE_API_V2_ENDPOINTS", "false")
         assert FeatureFlags.is_enabled("api:v2:endpoints") is False
-    
+
     def test_priority_resolution(self, monkeypatch):
         """Test that false values override true values."""
         monkeypatch.setenv("REVIEWPOINT_FEATURES", "feature1")
         monkeypatch.setenv("REVIEWPOINT_FEATURE_FEATURE1", "false")
-        
+
         # Explicit false overrides grouped true
         assert FeatureFlags.is_enabled("feature1") is False
 
@@ -522,17 +535,17 @@ class TestFeatureFlags:
 def clean_environment():
     """Clean environment for feature flag tests."""
     old_environ = os.environ.copy()
-    
+
     # Remove all REVIEWPOINT_FEATURE* variables
     for key in list(os.environ.keys()):
         if key.startswith("REVIEWPOINT_FEATURE"):
             del os.environ[key]
-    
+
     if "REVIEWPOINT_FEATURES" in os.environ:
         del os.environ["REVIEWPOINT_FEATURES"]
-    
+
     yield
-    
+
     # Restore environment
     os.environ.clear()
     os.environ.update(old_environ)
@@ -580,13 +593,13 @@ from src.core.feature_flags import FeatureFlags
 
 class CachedFeatureFlags:
     """Cached feature flag checks for performance."""
-    
+
     @staticmethod
     @lru_cache(maxsize=128)
     def is_enabled(feature_name: str) -> bool:
         """Cached feature flag check."""
         return FeatureFlags.is_enabled(feature_name)
-    
+
     @staticmethod
     def clear_cache():
         """Clear the feature flag cache."""
@@ -605,19 +618,19 @@ from src.core.feature_flags import FeatureFlags
 
 class LazyFeatureService:
     """Service with lazy feature evaluation."""
-    
+
     def __init__(self):
         # Don't check flags during initialization
         self._advanced_search = None
         self._new_ui = None
-    
+
     @property
     def advanced_search_enabled(self) -> bool:
         """Lazy evaluation of advanced search feature."""
         if self._advanced_search is None:
             self._advanced_search = FeatureFlags.is_enabled("advanced_search")
         return self._advanced_search
-    
+
     @property
     def new_ui_enabled(self) -> bool:
         """Lazy evaluation of new UI feature."""
@@ -662,13 +675,13 @@ def get_recommendations(user_id: int):
             return get_ml_recommendations(user_id)
     except Exception as e:
         logger.warning("ML recommendations failed: {}", e)
-    
+
     try:
         if FeatureFlags.is_enabled("recommendations:collaborative"):
             return get_collaborative_recommendations(user_id)
     except Exception as e:
         logger.warning("Collaborative recommendations failed: {}", e)
-    
+
     # Fallback to basic recommendations
     return get_basic_recommendations(user_id)
 ```
@@ -681,12 +694,12 @@ from src.core.feature_flags import FeatureFlags
 def validate_feature_configuration():
     """Validate feature flag configuration at startup."""
     required_features = ["api:auth", "database:migrations"]
-    
+
     for feature in required_features:
         if not FeatureFlags.is_enabled(feature):
             logger.error("Required feature not enabled: {}", feature)
             raise ValueError(f"Required feature {feature} is not enabled")
-    
+
     # Warn about deprecated features
     deprecated_features = ["old_api", "legacy_auth"]
     for feature in deprecated_features:
@@ -710,4 +723,4 @@ def validate_feature_configuration():
 
 ---
 
-*This module provides flexible, environment-based feature flag management for the ReViewPoint backend, enabling controlled feature rollouts, A/B testing, and environment-specific functionality without code deployment.*
+_This module provides flexible, environment-based feature flag management for the ReViewPoint backend, enabling controlled feature rollouts, A/B testing, and environment-specific functionality without code deployment._

@@ -3,7 +3,7 @@
 **File:** `backend/src/core/config.py`  
 **Purpose:** Centralized runtime configuration management for ReViewPoint backend  
 **Lines of Code:** 384  
-**Type:** Core Infrastructure Module  
+**Type:** Core Infrastructure Module
 
 ## Overview
 
@@ -22,6 +22,7 @@ The configuration module provides a centralized, type-safe, and environment-awar
 ### Key Components
 
 #### Settings Class
+
 ```python
 class Settings(BaseSettings):
     """Typed runtime configuration container."""
@@ -30,6 +31,7 @@ class Settings(BaseSettings):
 The main configuration class that inherits from Pydantic BaseSettings, providing automatic environment variable binding and validation.
 
 #### Environment Variable Prefix
+
 ```python
 ENV_PREFIX: Final[str] = "REVIEWPOINT_"
 ```
@@ -37,6 +39,7 @@ ENV_PREFIX: Final[str] = "REVIEWPOINT_"
 All configuration values are read from environment variables prefixed with `REVIEWPOINT_` (e.g., `REVIEWPOINT_DB_URL`, `REVIEWPOINT_JWT_SECRET_KEY`).
 
 #### Lazy Getter Pattern
+
 ```python
 @lru_cache
 def get_settings() -> Settings:
@@ -57,6 +60,7 @@ log_level: Literal["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"] = "INFO"
 ```
 
 **Environment Variables:**
+
 - `REVIEWPOINT_APP_NAME` - Application name (default: "ReViewPoint")
 - `REVIEWPOINT_ENVIRONMENT` - Runtime environment (dev/test/prod)
 - `REVIEWPOINT_DEBUG` - Enable debug mode
@@ -72,13 +76,16 @@ db_url: str | None = Field(
 ```
 
 **Environment Variables:**
+
 - `REVIEWPOINT_DB_URL` - Database connection URL
 
 **Supported Database Schemes:**
+
 - `postgresql+asyncpg://` - Production PostgreSQL with async driver
 - `sqlite+aiosqlite://` - Development/testing SQLite with async driver
 
 **Environment-Specific Behavior:**
+
 - **Production**: Requires PostgreSQL, fails if SQLite is used
 - **Development**: Allows both PostgreSQL and SQLite
 - **Testing**: Automatically uses in-memory SQLite (`sqlite+aiosqlite:///:memory:`)
@@ -95,6 +102,7 @@ pwd_rounds: int = 100_000
 ```
 
 **Environment Variables:**
+
 - `REVIEWPOINT_AUTH_ENABLED` - Enable/disable authentication
 - `REVIEWPOINT_JWT_SECRET_KEY` - JWT signing secret (required in production)
 - `REVIEWPOINT_JWT_ALGORITHM` - JWT algorithm (default: HS256)
@@ -102,6 +110,7 @@ pwd_rounds: int = 100_000
 - `REVIEWPOINT_JWT_SECRET` - Legacy alias for jwt_secret_key (deprecated)
 
 **Password Security:**
+
 - PBKDF2-SHA256 with 100,000 rounds for strong password hashing
 - Configurable algorithms for future cryptographic upgrades
 
@@ -113,10 +122,12 @@ max_upload_mb: int = 50
 ```
 
 **Environment Variables:**
+
 - `REVIEWPOINT_UPLOAD_DIR` - File upload directory path
 - `REVIEWPOINT_MAX_UPLOAD_MB` - Maximum file size in megabytes
 
 **Features:**
+
 - Automatic directory creation if it doesn't exist
 - Configurable size limits for uploaded files
 - Path-based upload organization
@@ -130,6 +141,7 @@ api_prod_url: str = Field("https://api.reviewpoint.org", description="Production
 ```
 
 **Environment Variables:**
+
 - `REVIEWPOINT_ALLOWED_ORIGINS` - CORS allowed origins (JSON array or comma-separated)
 - `REVIEWPOINT_API_LOCAL_URL` - Local development API URL
 - `REVIEWPOINT_API_PROD_URL` - Production API URL
@@ -142,6 +154,7 @@ api_key_enabled: bool = Field(default=True, description="Enable API key validati
 ```
 
 **Environment Variables:**
+
 - `REVIEWPOINT_ENABLE_EMBEDDINGS` - Enable embedding features
 - `REVIEWPOINT_API_KEY_ENABLED` - Enable API key authentication
 - `REVIEWPOINT_API_KEY` - API key for authentication
@@ -178,6 +191,7 @@ def check_db_scheme(cls: type[Settings], v: str | None) -> str:
 ```
 
 **Validation Rules:**
+
 - Production: Must use `postgresql+asyncpg://`
 - Development: Allows `postgresql+asyncpg://` or `sqlite+aiosqlite://`
 - Testing: Automatically defaults to `sqlite+aiosqlite:///:memory:`
@@ -191,6 +205,7 @@ def model_post_init(self: Settings, __context: object) -> None:
 ```
 
 **Automatic Adjustments:**
+
 - **Test Environment**: Forces SQLite in-memory DB and WARNING log level
 - **JWT Secret Handling**: Backward compatibility with legacy `jwt_secret` field
 - **Security Validation**: Ensures JWT secret is provided in production
@@ -205,6 +220,7 @@ def parse_allowed_origins(cls: type[Settings], v: object) -> list[str]:
 ```
 
 **Intelligent Parsing:**
+
 - JSON arrays: `["http://localhost:3000", "https://app.com"]`
 - Comma-separated: `"http://localhost:3000,https://app.com"`
 - Empty handling: Returns empty list for None or empty strings
@@ -287,6 +303,7 @@ jwt_secret_key: str | None = Field(None, repr=False, description="Secret key for
 ```
 
 **Security Features:**
+
 - `repr=False` prevents secrets from appearing in logs or debugging output
 - `to_public_dict()` method excludes sensitive fields from public exposure
 - Runtime validation ensures secrets are provided in production
@@ -300,6 +317,7 @@ if IS_PYTEST:
 ```
 
 **Protection Mechanisms:**
+
 - Test environments ignore `.env` files to prevent data leakage
 - Automatic warnings when `.env` files are detected during testing
 - Environment-specific validation rules prevent misconfigurations
@@ -313,6 +331,7 @@ jwt_algorithm: str = "HS256"
 ```
 
 **Security Standards:**
+
 - PBKDF2-SHA256 with 100,000 rounds exceeds current security recommendations
 - HS256 JWT algorithm provides strong symmetric encryption
 - Configurable for future cryptographic upgrades
@@ -321,31 +340,31 @@ jwt_algorithm: str = "HS256"
 
 ### **Required Variables**
 
-| Variable | Environment | Description | Example |
-|----------|-------------|-------------|---------|
-| `REVIEWPOINT_DB_URL` | prod, dev | Database connection URL | `postgresql+asyncpg://user:pass@localhost/db` |
-| `REVIEWPOINT_JWT_SECRET_KEY` | prod, dev | JWT signing secret | `your-secret-key-here` |
+| Variable                     | Environment | Description             | Example                                       |
+| ---------------------------- | ----------- | ----------------------- | --------------------------------------------- |
+| `REVIEWPOINT_DB_URL`         | prod, dev   | Database connection URL | `postgresql+asyncpg://user:pass@localhost/db` |
+| `REVIEWPOINT_JWT_SECRET_KEY` | prod, dev   | JWT signing secret      | `your-secret-key-here`                        |
 
 ### **Optional Variables**
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `REVIEWPOINT_ENVIRONMENT` | `dev` | Runtime environment |
-| `REVIEWPOINT_DEBUG` | `false` | Enable debug mode |
-| `REVIEWPOINT_LOG_LEVEL` | `INFO` | Logging verbosity |
-| `REVIEWPOINT_AUTH_ENABLED` | `true` | Enable authentication |
-| `REVIEWPOINT_UPLOAD_DIR` | `uploads` | File upload directory |
-| `REVIEWPOINT_MAX_UPLOAD_MB` | `50` | Max file size in MB |
-| `REVIEWPOINT_ALLOWED_ORIGINS` | `[]` | CORS allowed origins |
+| Variable                      | Default   | Description           |
+| ----------------------------- | --------- | --------------------- |
+| `REVIEWPOINT_ENVIRONMENT`     | `dev`     | Runtime environment   |
+| `REVIEWPOINT_DEBUG`           | `false`   | Enable debug mode     |
+| `REVIEWPOINT_LOG_LEVEL`       | `INFO`    | Logging verbosity     |
+| `REVIEWPOINT_AUTH_ENABLED`    | `true`    | Enable authentication |
+| `REVIEWPOINT_UPLOAD_DIR`      | `uploads` | File upload directory |
+| `REVIEWPOINT_MAX_UPLOAD_MB`   | `50`      | Max file size in MB   |
+| `REVIEWPOINT_ALLOWED_ORIGINS` | `[]`      | CORS allowed origins  |
 
 ### **Service Integration Variables**
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `REVIEWPOINT_STORAGE_URL` | External storage URL | No |
-| `REVIEWPOINT_EMAIL_HOST` | SMTP server host | No |
-| `REVIEWPOINT_EMAIL_PORT` | SMTP server port | No |
-| `REVIEWPOINT_SENTRY_DSN` | Sentry error tracking | No |
+| Variable                  | Description           | Required |
+| ------------------------- | --------------------- | -------- |
+| `REVIEWPOINT_STORAGE_URL` | External storage URL  | No       |
+| `REVIEWPOINT_EMAIL_HOST`  | SMTP server host      | No       |
+| `REVIEWPOINT_EMAIL_PORT`  | SMTP server port      | No       |
+| `REVIEWPOINT_SENTRY_DSN`  | Sentry error tracking | No       |
 
 ## Testing Integration
 
@@ -358,6 +377,7 @@ IS_PYTEST: Final[bool] = "pytest" in sys.modules or any(
 ```
 
 **Automatic Test Mode Features:**
+
 - Detects pytest execution context
 - Ignores `.env` files during tests
 - Forces in-memory SQLite database
@@ -371,11 +391,11 @@ from src.core.config import clear_settings_cache, reload_settings
 def test_configuration_change():
     # Modify environment for test
     os.environ["REVIEWPOINT_DEBUG"] = "true"
-    
+
     # Reload configuration
     settings = reload_settings()
     assert settings.debug is True
-    
+
     # Cleanup
     clear_settings_cache()
 ```
@@ -407,6 +427,7 @@ def get_settings() -> Settings:
 ```
 
 **Performance Benefits:**
+
 - Single configuration load per application lifecycle
 - No repeated environment variable parsing
 - Memory-efficient with LRU cache eviction
@@ -424,6 +445,7 @@ def some_function():
 ```
 
 **Initialization Benefits:**
+
 - Ensures environment variables are set before loading
 - Prevents import-time configuration errors
 - Supports dynamic configuration in tests
@@ -469,6 +491,7 @@ jwt_secret: str | None = Field(None, repr=False, description="[DEPRECATED] Use j
 ```
 
 **Migration Strategy:**
+
 - Supports both old (`REVIEWPOINT_JWT_SECRET`) and new (`REVIEWPOINT_JWT_SECRET_KEY`) variables
 - Automatic fallback from new to old variable
 - Deprecation warnings for legacy usage
@@ -482,6 +505,7 @@ new_feature_enabled: bool = Field(False, description="Enable new experimental fe
 ```
 
 **Evolution Principles:**
+
 - New fields default to safe values
 - Backward compatibility maintained for existing fields
 - Deprecation process for removed fields
@@ -522,4 +546,4 @@ new_feature_enabled: bool = Field(False, description="Enable new experimental fe
 
 ---
 
-*This module serves as the foundational configuration layer for the entire ReViewPoint backend, providing type-safe, environment-aware configuration management with comprehensive validation and security features.*
+_This module serves as the foundational configuration layer for the entire ReViewPoint backend, providing type-safe, environment-aware configuration management with comprehensive validation and security features._

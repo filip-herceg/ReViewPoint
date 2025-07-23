@@ -3,7 +3,7 @@
 **File:** `backend/src/core/app_logging.py`  
 **Purpose:** Centralized logging configuration and setup for ReViewPoint backend  
 **Lines of Code:** 140  
-**Type:** Core Infrastructure Module  
+**Type:** Core Infrastructure Module
 
 ## Overview
 
@@ -23,10 +23,11 @@ The application logging module provides centralized logging configuration using 
 ### Key Components
 
 #### Color Configuration
+
 ```python
 COLOR_MAP: Final[Mapping[LevelName, str]] = {
     "DEBUG": "\x1b[36m",     # cyan
-    "INFO": "\x1b[32m",      # green  
+    "INFO": "\x1b[32m",      # green
     "WARNING": "\x1b[33m",   # yellow
     "ERROR": "\x1b[31m",     # red
     "CRITICAL": "\x1b[41m",  # red background
@@ -36,6 +37,7 @@ COLOR_MAP: Final[Mapping[LevelName, str]] = {
 ANSI color codes for different log levels to improve visual parsing of log output.
 
 #### Test Environment Detection
+
 ```python
 def _is_testing() -> bool:
     """Check if we're currently running in a test environment."""
@@ -48,6 +50,7 @@ Automatically detects testing environments to adjust logging behavior (disable f
 ### 🔧 **Primary Configuration Function**
 
 #### `init_logging()`
+
 ```python
 def init_logging(
     *,
@@ -64,15 +67,16 @@ def init_logging(
 
 **Parameters:**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `level` | `str` | `"INFO"` | Root log level (DEBUG, INFO, WARNING, ERROR, CRITICAL) |
-| `color` | `bool` | `True` | Enable ANSI colors for console output |
-| `json_format` | `bool` | `False` | Emit JSON lines instead of human format |
-| `json` | `bool` | `False` | Alternative parameter for JSON format |
-| `logfile` | `str \| None` | `None` | Optional file path for log output |
+| Parameter     | Type          | Default  | Description                                            |
+| ------------- | ------------- | -------- | ------------------------------------------------------ |
+| `level`       | `str`         | `"INFO"` | Root log level (DEBUG, INFO, WARNING, ERROR, CRITICAL) |
+| `color`       | `bool`        | `True`   | Enable ANSI colors for console output                  |
+| `json_format` | `bool`        | `False`  | Emit JSON lines instead of human format                |
+| `json`        | `bool`        | `False`  | Alternative parameter for JSON format                  |
+| `logfile`     | `str \| None` | `None`   | Optional file path for log output                      |
 
 **Configuration Process:**
+
 1. **Handler Cleanup**: Safely removes all existing Loguru handlers
 2. **Console Sink Setup**: Configures stdout with specified format and colors
 3. **File Sink Setup**: Optionally configures file output (disabled during tests)
@@ -82,18 +86,21 @@ def init_logging(
 ### 📝 **Console Output Configuration**
 
 #### Human-Readable Format
+
 ```python
 # Default console format with colors and structured layout
 format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan> | <level>{message}</level>"
 ```
 
 **Format Components:**
+
 - **Timestamp**: Green-colored ISO format (`2024-01-15 14:30:45`)
 - **Level**: Color-coded level name with padding (`INFO    `, `ERROR   `)
 - **Logger Name**: Cyan-colored module/logger name
 - **Message**: Level-colored log message content
 
 **Example Output:**
+
 ```
 2024-01-15 14:30:45 | INFO     | src.api.auth | User authentication successful
 2024-01-15 14:30:46 | ERROR    | src.core.database | Database connection failed
@@ -101,29 +108,34 @@ format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> |
 ```
 
 #### JSON Format
+
 ```python
 # Structured JSON output for log aggregation systems
 loguru_logger.add(sys.stdout, level=level, serialize=True, colorize=False)
 ```
 
 **JSON Structure:**
+
 ```json
 {
   "text": "User authentication successful",
   "record": {
-    "elapsed": {"repr": "0:00:00.123456", "total": 0.123456},
+    "elapsed": { "repr": "0:00:00.123456", "total": 0.123456 },
     "exception": null,
     "extra": {},
-    "file": {"name": "auth.py", "path": "/path/to/auth.py"},
+    "file": { "name": "auth.py", "path": "/path/to/auth.py" },
     "function": "authenticate_user",
-    "level": {"icon": "ℹ️", "name": "INFO", "no": 20},
+    "level": { "icon": "ℹ️", "name": "INFO", "no": 20 },
     "line": 42,
     "message": "User authentication successful",
     "module": "auth",
     "name": "src.api.auth",
-    "process": {"id": 1234, "name": "MainProcess"},
-    "thread": {"id": 5678, "name": "MainThread"},
-    "time": {"repr": "2024-01-15T14:30:45.123456+00:00", "timestamp": 1705330245.123456}
+    "process": { "id": 1234, "name": "MainProcess" },
+    "thread": { "id": 5678, "name": "MainThread" },
+    "time": {
+      "repr": "2024-01-15T14:30:45.123456+00:00",
+      "timestamp": 1705330245.123456
+    }
   }
 }
 ```
@@ -131,25 +143,28 @@ loguru_logger.add(sys.stdout, level=level, serialize=True, colorize=False)
 ### 📁 **File Logging Configuration**
 
 #### File Output Setup
+
 ```python
 if logfile is not None and not _is_testing():
     fp: Path = Path(logfile)
     fp.parent.mkdir(parents=True, exist_ok=True)
     loguru_logger.add(
-        str(fp), 
-        level=level, 
-        serialize=(json or json_format), 
+        str(fp),
+        level=level,
+        serialize=(json or json_format),
         encoding="utf-8"
     )
 ```
 
 **File Logging Features:**
+
 - **Automatic Directory Creation**: Creates parent directories if they don't exist
 - **Test Environment Protection**: Disabled during testing to prevent file handle conflicts
 - **Format Consistency**: Uses same format as console (human or JSON)
 - **UTF-8 Encoding**: Ensures proper character handling for international content
 
 **Usage Examples:**
+
 ```python
 # Basic file logging
 init_logging(logfile="logs/app.log")
@@ -164,6 +179,7 @@ init_logging(level="DEBUG", logfile="logs/debug.log")
 ### 🔌 **Standard Library Integration**
 
 #### InterceptHandler Class
+
 ```python
 class InterceptHandler(logging.Handler):
     def emit(self, record: logging.LogRecord) -> None:
@@ -173,12 +189,14 @@ class InterceptHandler(logging.Handler):
 **Purpose:** Intercepts Python standard library logging calls and routes them through Loguru
 
 **Integration Process:**
+
 1. **Handler Replacement**: Replaces all root logging handlers with InterceptHandler
 2. **Level Mapping**: Maps standard logging levels to Loguru levels
 3. **Frame Detection**: Maintains proper stack trace depth for accurate source location
 4. **Exception Propagation**: Preserves exception information in log records
 
 **Benefits:**
+
 - **Unified Output**: All logging appears in consistent Loguru format
 - **Third-Party Integration**: FastAPI, SQLAlchemy, etc. logs appear unified
 - **Source Tracking**: Maintains accurate file/line information
@@ -187,12 +205,13 @@ class InterceptHandler(logging.Handler):
 ### 🧪 **Test Environment Handling**
 
 #### Test Detection Logic
+
 ```python
 def _is_testing() -> bool:
     """Check if we're currently running in a test environment."""
     import os
     import sys
-    
+
     return (
         "PYTEST_CURRENT_TEST" in os.environ
         or "pytest" in sys.modules
@@ -201,11 +220,13 @@ def _is_testing() -> bool:
 ```
 
 **Detection Methods:**
+
 - **Environment Variable**: Checks for `PYTEST_CURRENT_TEST`
 - **Module Detection**: Looks for pytest in loaded modules
 - **Command Line**: Scans argv for test-related arguments
 
 **Test-Specific Behavior:**
+
 - **File Logging Disabled**: Prevents file handle conflicts in parallel tests
 - **Handler Preservation**: Maintains pytest-caplog and other test handlers
 - **Format Consistency**: Applies unified formatting to captured test logs
@@ -231,6 +252,7 @@ init_logging(
 ### Environment-Specific Configuration
 
 #### Development Environment
+
 ```python
 # Enhanced debugging with colors and file output
 init_logging(
@@ -242,6 +264,7 @@ init_logging(
 ```
 
 #### Production Environment
+
 ```python
 # Structured logging for log aggregation systems
 init_logging(
@@ -253,6 +276,7 @@ init_logging(
 ```
 
 #### Testing Environment
+
 ```python
 # Minimal logging during tests
 init_logging(
@@ -275,20 +299,20 @@ from src.core.config import get_settings
 def create_app():
     """Create FastAPI application with proper logging."""
     settings = get_settings()
-    
+
     # Initialize logging first
     init_logging(
         level=settings.log_level,
         json_format=settings.environment == "prod",
         logfile=f"logs/{settings.app_name}.log"
     )
-    
+
     # Now safe to use logger
     from loguru import logger
     logger.info("Starting ReViewPoint backend")
     logger.info(f"Environment: {settings.environment}")
     logger.info(f"Debug mode: {settings.debug}")
-    
+
     # Create FastAPI app...
     return app
 ```
@@ -302,13 +326,13 @@ from loguru import logger
 class UserService:
     async def create_user(self, user_data: dict):
         logger.info("Creating new user: {}", user_data.get("username"))
-        
+
         try:
             # Database operations
             user = await self.db.create_user(user_data)
             logger.info("User created successfully: {}", user.id)
             return user
-            
+
         except Exception as e:
             logger.error("Failed to create user: {}", str(e))
             logger.exception("Full exception details:")
@@ -344,18 +368,18 @@ def timed_operation(operation_name: str):
         async def wrapper(*args, **kwargs):
             start_time = time.time()
             logger.debug(f"Starting {operation_name}")
-            
+
             try:
                 result = await func(*args, **kwargs)
                 duration = time.time() - start_time
                 logger.info(f"Completed {operation_name} in {duration:.3f}s")
                 return result
-                
+
             except Exception as e:
                 duration = time.time() - start_time
                 logger.error(f"Failed {operation_name} after {duration:.3f}s: {e}")
                 raise
-                
+
         return wrapper
     return decorator
 
@@ -376,12 +400,12 @@ from loguru import logger
 def log_user_activity(user_id: int, action: str, details: dict):
     # ✅ Log user ID (not PII)
     logger.info("User activity - ID: {}, Action: {}", user_id, action)
-    
+
     # ✅ Log non-sensitive details
-    safe_details = {k: v for k, v in details.items() 
+    safe_details = {k: v for k, v in details.items()
                    if k not in ["password", "email", "ssn", "credit_card"]}
     logger.debug("Activity details: {}", safe_details)
-    
+
     # ❌ Never log sensitive information
     # logger.info("User login: {}", {"password": "secret123"})  # DON'T DO THIS
 ```
@@ -398,10 +422,10 @@ def secure_error_logging():
     except Exception as e:
         # ✅ Log error type and general message
         logger.error("Database operation failed: {}", type(e).__name__)
-        
+
         # ✅ Log stack trace for debugging (be careful in production)
         logger.exception("Full error details:")
-        
+
         # ❌ Don't log sensitive error details in production
         if settings.environment != "prod":
             logger.debug("Detailed error: {}", str(e))
@@ -420,10 +444,10 @@ def efficient_logging():
     logger.debug("Detailed debugging info")      # Only in debug mode
     logger.info("Important application events")  # Always visible
     logger.error("Error conditions")             # Always visible
-    
+
     # ✅ Use lazy evaluation for expensive operations
     logger.debug("Complex data: {}", lambda: expensive_serialization())
-    
+
     # ✅ Use structured logging for searchability
     logger.info("User action", extra={
         "user_id": user.id,
@@ -472,15 +496,15 @@ app = FastAPI()
 async def log_requests(request: Request, call_next):
     """Log all HTTP requests."""
     start_time = time.time()
-    
+
     logger.info(
         "Request started: {} {}",
         request.method,
         request.url.path
     )
-    
+
     response = await call_next(request)
-    
+
     duration = time.time() - start_time
     logger.info(
         "Request completed: {} {} - {} in {:.3f}s",
@@ -489,7 +513,7 @@ async def log_requests(request: Request, call_next):
         response.status_code,
         duration
     )
-    
+
     return response
 ```
 
@@ -502,15 +526,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 async def database_operation_with_logging(session: AsyncSession):
     """Example of database operations with proper logging."""
     logger.debug("Starting database transaction")
-    
+
     try:
         # Database operations
         result = await session.execute(query)
         await session.commit()
-        
+
         logger.info("Database transaction completed successfully")
         return result
-        
+
     except Exception as e:
         await session.rollback()
         logger.error("Database transaction failed: {}", str(e))
@@ -542,7 +566,7 @@ def setup_test_logging():
 def test_logging_capture(caplog):
     """Test that logging works correctly."""
     logger.info("Test log message")
-    
+
     # Verify log was captured
     assert "Test log message" in caplog.text
     assert caplog.records[0].levelname == "INFO"
@@ -555,10 +579,10 @@ def test_with_debug_logging():
     """Enable debug logging for specific test."""
     with logger.contextualize(test_case="user_creation"):
         logger.debug("Starting user creation test")
-        
+
         # Test operations
         result = create_user({"username": "test_user"})
-        
+
         logger.debug("User creation test completed: {}", result.id)
 ```
 
@@ -587,6 +611,7 @@ def test_with_debug_logging():
 ### Common Issues and Solutions
 
 #### File Permission Errors
+
 ```python
 try:
     init_logging(logfile="/var/log/app.log")
@@ -597,6 +622,7 @@ except OSError as e:
 ```
 
 #### Handler Conflicts
+
 ```python
 # The module handles this automatically, but be aware:
 # Multiple init_logging() calls are safe
@@ -620,4 +646,4 @@ init_logging(level="DEBUG")   # Second call - safely reconfigures
 
 ---
 
-*This module provides the foundational logging infrastructure for the entire ReViewPoint backend, offering flexible, efficient, and secure logging capabilities with seamless integration across all application components.*
+_This module provides the foundational logging infrastructure for the entire ReViewPoint backend, offering flexible, efficient, and secure logging capabilities with seamless integration across all application components._

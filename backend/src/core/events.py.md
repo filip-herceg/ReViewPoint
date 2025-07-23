@@ -3,7 +3,7 @@
 **File:** `backend/src/core/events.py`  
 **Purpose:** FastAPI application lifecycle management and startup/shutdown event handling  
 **Lines of Code:** 149  
-**Type:** Core Infrastructure Module  
+**Type:** Core Infrastructure Module
 
 ## Overview
 
@@ -23,6 +23,7 @@ The events module provides comprehensive application lifecycle management for th
 ### Key Components
 
 #### Startup Validation Sequence
+
 ```python
 async def on_startup() -> None:
     """FastAPI startup event handler."""
@@ -33,12 +34,14 @@ async def on_startup() -> None:
 ```
 
 **Startup Process:**
+
 - Environment variable validation
 - Database connectivity verification
 - Connection pool initialization monitoring
 - Comprehensive error handling and logging
 
 #### Shutdown Cleanup Sequence
+
 ```python
 async def on_shutdown() -> None:
     """FastAPI shutdown event handler."""
@@ -49,6 +52,7 @@ async def on_shutdown() -> None:
 ```
 
 **Shutdown Process:**
+
 - Pending task completion (placeholder for custom logic)
 - Database connection pool disposal
 - Resource cleanup verification
@@ -59,6 +63,7 @@ async def on_shutdown() -> None:
 ### 🔧 **Configuration Validation**
 
 #### `validate_config()`
+
 ```python
 async def validate_config() -> None:
     """Validate required environment variables and config logic."""
@@ -67,6 +72,7 @@ async def validate_config() -> None:
 **Purpose:** Comprehensive runtime validation of critical configuration
 
 **Validation Process:**
+
 1. **Database URL Check**: Validates REVIEWPOINT_DB_URL is configured
 2. **Environment Check**: Ensures REVIEWPOINT_ENVIRONMENT is set
 3. **JWT Secret Validation**: Verifies JWT secret is configured (if JWT auth enabled)
@@ -74,6 +80,7 @@ async def validate_config() -> None:
 5. **Early Failure**: Raises RuntimeError with all missing variables at once
 
 **Configuration Requirements:**
+
 ```python
 # Required environment variables
 REVIEWPOINT_DB_URL          # Database connection string
@@ -82,6 +89,7 @@ REVIEWPOINT_JWT_SECRET      # JWT signing secret (if using JWT auth)
 ```
 
 **Error Handling:**
+
 ```python
 if missing:
     raise RuntimeError(
@@ -92,6 +100,7 @@ if missing:
 ### 🏥 **Database Health Checking**
 
 #### `db_healthcheck()`
+
 ```python
 async def db_healthcheck() -> None:
     """Run a simple DB health check query."""
@@ -100,12 +109,14 @@ async def db_healthcheck() -> None:
 **Purpose:** Verify database connectivity before serving requests
 
 **Health Check Process:**
+
 1. **Engine Initialization**: Ensures database engine is properly initialized
 2. **Connection Test**: Establishes connection to database
 3. **Query Execution**: Executes simple SELECT 1 query to verify functionality
 4. **Error Reporting**: Comprehensive error handling with specific error types
 
 **Connection Verification:**
+
 ```python
 async with engine.connect() as conn:
     connection: AsyncConnection = conn
@@ -113,6 +124,7 @@ async with engine.connect() as conn:
 ```
 
 **Error Handling:**
+
 - **SQLAlchemyError**: Database-specific errors with detailed logging
 - **RuntimeError**: Engine initialization failures
 - **General Exception**: Unexpected errors during health check
@@ -120,6 +132,7 @@ async with engine.connect() as conn:
 ### 📊 **Startup Monitoring**
 
 #### `log_startup_complete()`
+
 ```python
 def log_startup_complete() -> None:
     """Log startup completion information."""
@@ -128,12 +141,14 @@ def log_startup_complete() -> None:
 **Purpose:** Comprehensive logging of startup state and configuration
 
 **Monitoring Information:**
+
 1. **Environment Configuration**: Current environment (dev/prod/test)
 2. **Database Type**: Database engine type from connection URL
 3. **Connection Pool Status**: Pool size information (when available)
 4. **Startup Confirmation**: Success confirmation with key metrics
 
 **Pool Size Detection:**
+
 ```python
 pool = getattr(db_module.engine, "pool", None)
 if pool is not None and hasattr(pool, "size") and callable(pool.size):
@@ -145,6 +160,7 @@ else:
 ### 🚀 **Startup Event Handler**
 
 #### `on_startup()`
+
 ```python
 async def on_startup() -> None:
     """FastAPI startup event handler."""
@@ -153,12 +169,14 @@ async def on_startup() -> None:
 **Purpose:** Main FastAPI startup event coordinating all initialization
 
 **Startup Sequence:**
+
 1. **Configuration Validation**: Verify all required environment variables
 2. **Database Health Check**: Confirm database connectivity
 3. **Resource Initialization**: Setup connection pools and resources
 4. **Completion Logging**: Record successful startup with system information
 
 **Error Handling:**
+
 ```python
 except Exception as e:
     error_msg: str = str(e)
@@ -167,6 +185,7 @@ except Exception as e:
 ```
 
 **Integration with FastAPI:**
+
 ```python
 from fastapi import FastAPI
 from src.core.events import on_startup
@@ -178,6 +197,7 @@ app.add_event_handler("startup", on_startup)
 ### 🛑 **Shutdown Event Handler**
 
 #### `on_shutdown()`
+
 ```python
 async def on_shutdown() -> None:
     """FastAPI shutdown event handler."""
@@ -186,6 +206,7 @@ async def on_shutdown() -> None:
 **Purpose:** Graceful application shutdown with proper resource cleanup
 
 **Shutdown Sequence:**
+
 1. **Shutdown Initiation**: Log shutdown start
 2. **Task Completion**: Allow pending operations to complete (placeholder for custom logic)
 3. **Database Cleanup**: Dispose of database connection pool
@@ -193,6 +214,7 @@ async def on_shutdown() -> None:
 5. **Completion Logging**: Record successful shutdown
 
 **Database Connection Cleanup:**
+
 ```python
 from src.core.database import engine
 
@@ -202,6 +224,7 @@ if engine is not None:
 ```
 
 **Error Handling:**
+
 ```python
 except Exception as e:
     logger.error(f"Shutdown error: {error_msg}")
@@ -225,11 +248,11 @@ def create_app() -> FastAPI:
         description="Scientific paper review platform",
         version="1.0.0"
     )
-    
+
     # Register lifecycle events
     app.add_event_handler("startup", on_startup)
     app.add_event_handler("shutdown", on_shutdown)
-    
+
     return app
 
 # Application will now:
@@ -249,11 +272,11 @@ async def manual_health_check():
         # Validate configuration
         await validate_config()
         print("✓ Configuration valid")
-        
+
         # Check database health
         await db_healthcheck()
         print("✓ Database healthy")
-        
+
     except RuntimeError as e:
         print(f"✗ Health check failed: {e}")
 ```
@@ -267,11 +290,11 @@ from src.core.config import get_settings
 def debug_startup_state():
     """Debug startup state and configuration."""
     settings = get_settings()
-    
+
     print("Current Configuration:")
     print(f"Environment: {settings.environment}")
     print(f"Database URL: {settings.db_url}")
-    
+
     # Log complete startup information
     log_startup_complete()
 ```
@@ -287,18 +310,18 @@ async def test_startup_sequence():
     """Test complete startup sequence."""
     # Should validate config without error
     await validate_config()
-    
+
     # Should connect to test database
     await db_healthcheck()
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_config_validation_failure():
     """Test configuration validation with missing variables."""
     # Mock missing environment variables
     with patch.dict(os.environ, {}, clear=True):
         with pytest.raises(RuntimeError) as exc_info:
             await validate_config()
-        
+
         assert "Missing required environment variables" in str(exc_info.value)
 ```
 
@@ -307,18 +330,21 @@ async def test_config_validation_failure():
 ### 🛠️ **Startup Error Scenarios**
 
 #### Configuration Validation Failures
+
 ```python
 # Missing environment variables
-RuntimeError: Missing required environment variables: 
+RuntimeError: Missing required environment variables:
 REVIEWPOINT_DB_URL, REVIEWPOINT_ENVIRONMENT
 ```
 
 **Recovery Approach:**
+
 - Fix environment configuration
 - Restart application
 - Verify all required variables are set
 
 #### Database Health Check Failures
+
 ```python
 # Database connectivity issues
 SQLAlchemyError: Database health check failed: connection refused
@@ -326,18 +352,21 @@ RuntimeError: Database health check failed: connection refused
 ```
 
 **Recovery Approach:**
+
 - Verify database service is running
 - Check network connectivity
 - Validate database credentials
 - Confirm database exists and is accessible
 
 #### Engine Initialization Failures
+
 ```python
 # Database engine not initialized
 RuntimeError: Database engine is not initialized.
 ```
 
 **Recovery Approach:**
+
 - Check database URL format
 - Verify database drivers are installed
 - Validate connection string syntax
@@ -345,23 +374,27 @@ RuntimeError: Database engine is not initialized.
 ### 🔄 **Shutdown Error Scenarios**
 
 #### Database Disposal Errors
+
 ```python
 # Connection cleanup issues during shutdown
 RuntimeError: Shutdown failed: Error disposing database connections
 ```
 
 **Recovery Approach:**
+
 - Force terminate application if cleanup fails
 - Check for connection leaks
 - Review database session management
 
 #### Resource Cleanup Failures
+
 ```python
 # General resource cleanup errors
 RuntimeError: Shutdown failed: Resource cleanup error
 ```
 
 **Recovery Approach:**
+
 - Implement force shutdown procedures
 - Log resource states for debugging
 - Review custom cleanup logic
@@ -371,11 +404,13 @@ RuntimeError: Shutdown failed: Resource cleanup error
 ### 🏗️ **Development Environment**
 
 **Features:**
+
 - Detailed startup logging for debugging
 - SQLite database health checking
 - Fast startup for development iteration
 
 **Configuration:**
+
 ```bash
 REVIEWPOINT_ENVIRONMENT=dev
 REVIEWPOINT_DB_URL=sqlite+aiosqlite:///./reviewpoint_dev.db
@@ -384,11 +419,13 @@ REVIEWPOINT_DB_URL=sqlite+aiosqlite:///./reviewpoint_dev.db
 ### 🚀 **Production Environment**
 
 **Features:**
+
 - Comprehensive health monitoring
 - PostgreSQL connection pool management
 - Robust error handling and recovery
 
 **Configuration:**
+
 ```bash
 REVIEWPOINT_ENVIRONMENT=prod
 REVIEWPOINT_DB_URL=postgresql+asyncpg://user:pass@host:5432/db
@@ -398,11 +435,13 @@ REVIEWPOINT_JWT_SECRET=production-secret
 ### 🧪 **Test Environment**
 
 **Features:**
+
 - Isolated database health checking
 - Fast startup/shutdown for test execution
 - Memory or temporary database support
 
 **Configuration:**
+
 ```bash
 REVIEWPOINT_ENVIRONMENT=test
 REVIEWPOINT_DB_URL=sqlite+aiosqlite:///:memory:
@@ -413,23 +452,27 @@ REVIEWPOINT_DB_URL=sqlite+aiosqlite:///:memory:
 ### ⚡ **Startup Performance**
 
 #### Connection Pool Initialization
+
 ```python
 # Database health check initializes connection pool
 await connection.execute(text("SELECT 1"))
 ```
 
 **Performance Benefits:**
+
 - Early connection pool warmup
 - Connection validation before request serving
 - Reduced first-request latency
 
 #### Configuration Caching
+
 ```python
 from src.core.config import get_settings
 settings = get_settings()  # Cached after first call
 ```
 
 **Performance Features:**
+
 - Cached configuration after initial load
 - No repeated environment variable parsing
 - Fast configuration access during startup
@@ -437,11 +480,13 @@ settings = get_settings()  # Cached after first call
 ### 🔄 **Shutdown Performance**
 
 #### Graceful Connection Cleanup
+
 ```python
 await engine.dispose()  # Proper connection pool disposal
 ```
 
 **Performance Benefits:**
+
 - Clean database connection termination
 - No connection leaks or hanging processes
 - Fast application shutdown
@@ -476,7 +521,7 @@ async def test_complete_startup_sequence():
     """Test entire startup sequence."""
     # Should complete without errors
     await on_startup()
-    
+
     # Verify database is healthy
     from src.core.database import engine
     assert engine is not None
@@ -487,7 +532,7 @@ async def test_startup_failure_handling():
     # Mock database connection failure
     with patch('src.core.events.db_healthcheck') as mock_health:
         mock_health.side_effect = SQLAlchemyError("Connection failed")
-        
+
         with pytest.raises(RuntimeError):
             await on_startup()
 ```
@@ -500,10 +545,10 @@ async def test_graceful_shutdown():
     """Test graceful shutdown process."""
     # Setup application state
     await on_startup()
-    
+
     # Should shutdown cleanly
     await on_shutdown()
-    
+
     # Verify resources cleaned up
     from src.core.database import engine
     # Engine should be disposed but may still exist
@@ -542,4 +587,4 @@ async def test_database_health_check_failure():
 
 ---
 
-*This module provides robust application lifecycle management for the ReViewPoint backend, ensuring reliable startup validation, database health monitoring, and graceful shutdown procedures essential for production deployment.*
+_This module provides robust application lifecycle management for the ReViewPoint backend, ensuring reliable startup validation, database health monitoring, and graceful shutdown procedures essential for production deployment._

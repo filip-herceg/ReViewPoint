@@ -3,7 +3,7 @@
 **File:** `backend/src/core/sync_database.py`  
 **Purpose:** Synchronous SQLAlchemy session management for blocking database operations  
 **Lines of Code:** 53  
-**Type:** Core Infrastructure Module  
+**Type:** Core Infrastructure Module
 
 ## Overview
 
@@ -23,24 +23,28 @@ The sync_database module provides synchronous SQLAlchemy session management for 
 ### Key Components
 
 #### Engine Validation System
+
 ```python
 def _validate_sync_engine(engine: Engine | AsyncEngine | None) -> Engine:
     """Helper function to validate and return a sync engine."""
 ```
 
 **Validation Process:**
+
 - Checks for engine existence (not None)
 - Validates engine type (must be synchronous Engine, not AsyncEngine)
 - Provides clear error messages for misconfigurations
 - Returns validated synchronous engine
 
 #### Session Factory Management
+
 ```python
 def get_sync_session_factory() -> sessionmaker[Session]:
     """Returns a sessionmaker for synchronous SQLAlchemy engines."""
 ```
 
 **Factory Features:**
+
 - Creates sessionmaker bound to validated synchronous engine
 - Ensures proper session configuration
 - Type-safe session factory creation
@@ -51,6 +55,7 @@ def get_sync_session_factory() -> sessionmaker[Session]:
 ### 🔧 **Engine Validation Function**
 
 #### `_validate_sync_engine()`
+
 ```python
 def _validate_sync_engine(engine: Engine | AsyncEngine | None) -> Engine:
     """Helper function to validate and return a sync engine."""
@@ -59,12 +64,14 @@ def _validate_sync_engine(engine: Engine | AsyncEngine | None) -> Engine:
 **Purpose:** Ensures engine compatibility for synchronous operations
 
 **Validation Logic:**
+
 1. **Null Check**: Verifies engine is not None
 2. **Type Validation**: Confirms engine is synchronous (not AsyncEngine)
 3. **Error Reporting**: Provides clear guidance for misconfigurations
 4. **Type Return**: Returns validated Engine with proper typing
 
 **Error Scenarios:**
+
 ```python
 # No engine configured
 if engine is None:
@@ -79,6 +86,7 @@ if isinstance(engine, AsyncEngine):
 ```
 
 **Benefits:**
+
 - Prevents runtime errors from engine type mismatches
 - Clear error messages for debugging
 - Type safety for downstream session operations
@@ -86,6 +94,7 @@ if isinstance(engine, AsyncEngine):
 ### 🏭 **Session Factory Function**
 
 #### `get_sync_session_factory()`
+
 ```python
 def get_sync_session_factory() -> sessionmaker[Session]:
     """Returns a sessionmaker for synchronous SQLAlchemy engines."""
@@ -94,12 +103,14 @@ def get_sync_session_factory() -> sessionmaker[Session]:
 **Purpose:** Creates a configured sessionmaker for synchronous database operations
 
 **Factory Creation Process:**
+
 1. **Engine Import**: Gets engine from `database.py` module
 2. **Engine Validation**: Validates engine compatibility for sync operations
 3. **SessionMaker Creation**: Creates sessionmaker bound to validated engine
 4. **Type Return**: Returns properly typed sessionmaker
 
 **Usage Integration:**
+
 ```python
 from src.core.sync_database import get_sync_session_factory
 
@@ -108,6 +119,7 @@ db_session = SessionLocal()
 ```
 
 **Configuration Features:**
+
 - Automatic binding to existing database engine
 - Type-safe session creation
 - Consistent configuration with async sessions
@@ -116,6 +128,7 @@ db_session = SessionLocal()
 ### 📦 **Session Context Manager**
 
 #### `get_session()`
+
 ```python
 def get_session() -> Generator[Session, None, None]:
     """Yields a SQLAlchemy Session object. Closes the session after use."""
@@ -124,6 +137,7 @@ def get_session() -> Generator[Session, None, None]:
 **Purpose:** Provides a context-managed database session with automatic cleanup
 
 **Session Lifecycle:**
+
 1. **Factory Creation**: Gets sessionmaker from validated engine
 2. **Session Creation**: Creates new session instance
 3. **Session Yielding**: Provides session to calling code
@@ -131,6 +145,7 @@ def get_session() -> Generator[Session, None, None]:
 5. **Exception Propagation**: Allows exceptions to bubble up while ensuring cleanup
 
 **Context Management:**
+
 ```python
 try:
     yield db  # Provide session to calling code
@@ -139,6 +154,7 @@ finally:
 ```
 
 **Usage Pattern:**
+
 ```python
 from src.core.sync_database import get_session
 
@@ -162,11 +178,11 @@ def migrate_user_data():
     for db in get_session():
         # Perform bulk operations
         users = db.query(User).filter(User.legacy_field.is_(None)).all()
-        
+
         for user in users:
             user.legacy_field = "migrated"
             db.add(user)
-        
+
         db.commit()
         print(f"Migrated {len(users)} users")
 
@@ -200,7 +216,7 @@ def cleanup_test_data():
 def test_user_operations():
     user = create_test_user("test@example.com", "Test User")
     assert user.id is not None
-    
+
     cleanup_test_data()
 ```
 
@@ -217,11 +233,11 @@ def generate_usage_report():
         # User statistics
         total_users = db.query(User).count()
         active_users = db.query(User).filter(User.is_active == True).count()
-        
+
         # File statistics
         total_files = db.query(File).count()
         total_size = db.query(db.func.sum(File.size)).scalar() or 0
-        
+
         print(f"Usage Report:")
         print(f"Total Users: {total_users}")
         print(f"Active Users: {active_users}")
@@ -245,7 +261,7 @@ def export_users_to_dataframe() -> pd.DataFrame:
     for db in get_session():
         # Execute synchronous query
         users = db.query(User).all()
-        
+
         # Convert to DataFrame
         data = []
         for user in users:
@@ -256,7 +272,7 @@ def export_users_to_dataframe() -> pd.DataFrame:
                 'created_at': user.created_at,
                 'is_active': user.is_active
             })
-        
+
         return pd.DataFrame(data)
 
 # Usage with synchronous libraries
@@ -269,24 +285,28 @@ df.to_csv("users_export.csv", index=False)
 ### 🛠️ **Engine Configuration Errors**
 
 #### No Engine Configured
+
 ```python
 # Error scenario
 RuntimeError: No SQLAlchemy engine is configured.
 ```
 
 **Resolution:**
+
 - Ensure `database.py` module is properly initialized
 - Verify environment configuration includes database URL
 - Check application startup sequence
 
 #### Async Engine Mismatch
+
 ```python
 # Error scenario
-RuntimeError: Synchronous session requested, but engine is an AsyncEngine. 
+RuntimeError: Synchronous session requested, but engine is an AsyncEngine.
 Use async session for AsyncEngine.
 ```
 
 **Resolution:**
+
 - Use async sessions from `database.py` for async operations
 - Configure synchronous engine if sync operations are required
 - Review application architecture for operation type consistency
@@ -294,6 +314,7 @@ Use async session for AsyncEngine.
 ### 🔄 **Session Management Errors**
 
 #### Session Creation Failures
+
 ```python
 for db in get_session():
     try:
@@ -306,11 +327,13 @@ for db in get_session():
 ```
 
 **Error Handling Features:**
+
 - Automatic session cleanup even on exceptions
 - Exception propagation for proper error handling
 - Resource leak prevention through guaranteed cleanup
 
 #### Connection Pool Exhaustion
+
 ```python
 # Proper usage to prevent connection leaks
 def bulk_operation():
@@ -319,11 +342,11 @@ def bulk_operation():
         # Batch operations to minimize session duration
         batch_size = 100
         users = db.query(User).limit(batch_size).all()
-        
+
         for user in users:
             # Process user
             pass
-        
+
         db.commit()
     # Session automatically closed here
 ```
@@ -333,6 +356,7 @@ def bulk_operation():
 ### ⚡ **Session Lifecycle Optimization**
 
 #### Short-Lived Sessions
+
 ```python
 def efficient_data_access():
     """Use short-lived sessions for optimal performance."""
@@ -346,6 +370,7 @@ def efficient_data_access():
 ```
 
 #### Batch Operations
+
 ```python
 def efficient_bulk_insert(user_data_list):
     """Efficient bulk operations with session management."""
@@ -359,6 +384,7 @@ def efficient_bulk_insert(user_data_list):
 ### 🔄 **Connection Pool Management**
 
 #### Pool Configuration Awareness
+
 ```python
 def pool_aware_operations():
     """Operations that consider connection pool limits."""
@@ -367,7 +393,7 @@ def pool_aware_operations():
         # Perform all related operations in single session
         users = db.query(User).all()
         files = db.query(File).all()
-        
+
         # Process data
         results = process_data(users, files)
         return results
@@ -413,12 +439,12 @@ def test_get_session_context_manager():
     """Test session context manager."""
     with patch('src.core.database.engine') as mock_engine:
         mock_engine.return_value = create_engine("sqlite:///:memory:")
-        
+
         sessions_created = []
         for db in get_session():
             sessions_created.append(db)
             assert db is not None
-        
+
         assert len(sessions_created) == 1
         # Session should be closed after context
 ```
@@ -429,22 +455,22 @@ def test_get_session_context_manager():
 def test_session_lifecycle():
     """Test complete session lifecycle."""
     session_closed = False
-    
+
     class MockSession:
         def close(self):
             nonlocal session_closed
             session_closed = True
-    
+
     with patch('src.core.sync_database.get_sync_session_factory') as mock_factory:
         mock_factory.return_value = lambda: MockSession()
-        
+
         try:
             for db in get_session():
                 assert isinstance(db, MockSession)
                 raise Exception("Test exception")
         except Exception:
             pass
-        
+
         # Session should be closed even after exception
         assert session_closed
 
@@ -452,16 +478,16 @@ def test_multiple_session_usage():
     """Test multiple session operations."""
     with patch('src.core.database.engine') as mock_engine:
         mock_engine.return_value = create_engine("sqlite:///:memory:")
-        
+
         # Each call should create a new session
         session_count = 0
-        
+
         for db in get_session():
             session_count += 1
-            
+
         for db in get_session():
             session_count += 1
-            
+
         assert session_count == 2
 ```
 
@@ -490,6 +516,7 @@ def test_multiple_session_usage():
 ### 🔄 **Sync vs Async Database Access**
 
 #### Synchronous Database Module (`sync_database.py`)
+
 ```python
 # Synchronous operation
 for db in get_session():
@@ -498,12 +525,14 @@ for db in get_session():
 ```
 
 **Use Cases:**
+
 - Database migrations and administrative scripts
 - Integration with synchronous libraries (pandas, etc.)
 - Testing utilities and fixtures
 - Blocking operations where async is not beneficial
 
 #### Asynchronous Database Module (`database.py`)
+
 ```python
 # Asynchronous operation
 async with get_db() as db:
@@ -512,6 +541,7 @@ async with get_db() as db:
 ```
 
 **Use Cases:**
+
 - Web API endpoints and request handling
 - High-concurrency operations
 - Real-time features and WebSocket connections
@@ -519,14 +549,14 @@ async with get_db() as db:
 
 ### 📊 **Feature Comparison**
 
-| Feature | Sync Database | Async Database |
-|---------|---------------|----------------|
-| **Concurrency** | Blocking operations | Non-blocking operations |
-| **Performance** | Lower concurrency | Higher concurrency |
-| **Complexity** | Simpler syntax | More complex syntax |
-| **Use Cases** | Scripts, migrations | Web APIs, real-time |
-| **Session Management** | Context manager | Async context manager |
-| **Error Handling** | Standard exceptions | Async exception handling |
+| Feature                | Sync Database       | Async Database           |
+| ---------------------- | ------------------- | ------------------------ |
+| **Concurrency**        | Blocking operations | Non-blocking operations  |
+| **Performance**        | Lower concurrency   | Higher concurrency       |
+| **Complexity**         | Simpler syntax      | More complex syntax      |
+| **Use Cases**          | Scripts, migrations | Web APIs, real-time      |
+| **Session Management** | Context manager     | Async context manager    |
+| **Error Handling**     | Standard exceptions | Async exception handling |
 
 ## Related Files
 
@@ -544,4 +574,4 @@ async with get_db() as db:
 
 ---
 
-*This module provides essential synchronous database access for scenarios requiring blocking database operations while maintaining proper session lifecycle management and resource cleanup. It complements the main async database module for comprehensive database access patterns.*
+_This module provides essential synchronous database access for scenarios requiring blocking database operations while maintaining proper session lifecycle management and resource cleanup. It complements the main async database module for comprehensive database access patterns._

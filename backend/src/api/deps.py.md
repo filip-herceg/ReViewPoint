@@ -3,7 +3,7 @@
 **File:** `backend/src/api/deps.py`  
 **Purpose:** Comprehensive dependency injection utilities for FastAPI API endpoints  
 **Lines of Code:** 958  
-**Type:** API Infrastructure Module  
+**Type:** API Infrastructure Module
 
 ## Overview
 
@@ -24,22 +24,25 @@ The API dependencies module provides a comprehensive dependency injection system
 ### Key Components
 
 #### Dependency Registry System
+
 ```python
 class DependencyRegistry:
     _instances: dict[str, DependencyEntry] = {}
-    
+
     @classmethod
-    def register(cls, key: str, factory: Callable[[], object], 
+    def register(cls, key: str, factory: Callable[[], object],
                 singleton: bool = True, cache_ttl: float | None = None) -> None
 ```
 
 **Registry Features:**
+
 - Singleton pattern support
 - Cache TTL for time-sensitive dependencies
 - Lazy loading with factory functions
 - Type-safe dependency resolution
 
 #### Authentication Infrastructure
+
 ```python
 oauth2_scheme: Final[OAuth2PasswordBearer] = OAuth2PasswordBearer(
     tokenUrl="/api/v1/auth/login"
@@ -48,6 +51,7 @@ api_key_header: Final[APIKeyHeader] = APIKeyHeader(name="X-API-Key", auto_error=
 ```
 
 **Authentication Components:**
+
 - JWT Bearer token authentication
 - API key header authentication
 - Development mode bypass
@@ -58,6 +62,7 @@ api_key_header: Final[APIKeyHeader] = APIKeyHeader(name="X-API-Key", auto_error=
 ### 🔐 **Authentication Dependencies**
 
 #### `get_current_user()`
+
 ```python
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -69,6 +74,7 @@ async def get_current_user(
 **Purpose:** Primary authentication dependency for protected endpoints
 
 **Authentication Process:**
+
 1. **Development Mode Check**: Returns dev admin user if auth disabled
 2. **Token Validation**: Verifies JWT signature and expiration
 3. **Payload Extraction**: Extracts user ID and role from token
@@ -77,11 +83,13 @@ async def get_current_user(
 6. **Role Attachment**: Attaches JWT role to user object
 
 **Error Handling:**
+
 - Invalid/expired tokens → 401 Unauthorized
 - Missing user ID in payload → 401 Unauthorized
 - User not found/inactive/deleted → 401 Unauthorized
 
 #### `optional_get_current_user()`
+
 ```python
 async def optional_get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -93,12 +101,14 @@ async def optional_get_current_user(
 **Purpose:** Authentication for endpoints that support both authenticated and anonymous access
 
 **Features:**
+
 - No exceptions on authentication failure
 - Returns None for invalid/missing tokens
 - Same validation logic as get_current_user
 - Useful for endpoints with optional authentication
 
 #### `get_current_active_user()`
+
 ```python
 async def get_current_active_user(
     user: User | None = Depends(get_current_user),
@@ -109,6 +119,7 @@ async def get_current_active_user(
 **Purpose:** Additional layer ensuring user account status
 
 **Validation:**
+
 - User existence check
 - Active status verification
 - Deleted status check
@@ -117,6 +128,7 @@ async def get_current_active_user(
 ### 🔑 **API Key Authentication**
 
 #### `validate_api_key()`
+
 ```python
 async def validate_api_key(
     api_key: str | None = Security(api_key_header),
@@ -127,12 +139,14 @@ async def validate_api_key(
 **Purpose:** API key validation for service-to-service authentication
 
 **Validation Logic:**
+
 - Respects global API key enable/disable setting
 - Compares against configured API key
 - Returns boolean for flexible usage
 - No exceptions for flexible integration
 
 #### `require_api_key()`
+
 ```python
 def require_api_key(api_key: str | None = Header(None, alias="X-API-Key")) -> None:
     """Dependency to require a valid API key."""
@@ -141,12 +155,14 @@ def require_api_key(api_key: str | None = Header(None, alias="X-API-Key")) -> No
 **Purpose:** Enforces API key requirement for protected endpoints
 
 **Enforcement:**
+
 - 401 Unauthorized for missing API key
 - 401 Unauthorized for invalid API key
 - 500 Internal Server Error for misconfiguration
 - Respects global API key settings
 
 #### `get_current_user_with_export_api_key()`
+
 ```python
 async def get_current_user_with_export_api_key(
     request: Request,
@@ -158,6 +174,7 @@ async def get_current_user_with_export_api_key(
 **Purpose:** Sophisticated authentication dependency for export endpoints
 
 **Authentication Matrix:**
+
 - **Auth Disabled**: Returns development admin user
 - **Auth + API Key Enabled**: Requires both JWT and API key
 - **Auth Enabled, API Key Disabled**: JWT required if provided, optional otherwise
@@ -166,6 +183,7 @@ async def get_current_user_with_export_api_key(
 ### 📊 **Database Session Management**
 
 #### `get_db()`
+
 ```python
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Provide SQLAlchemy AsyncSession for database operations."""
@@ -174,6 +192,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 **Purpose:** Primary database session dependency
 
 **Session Lifecycle:**
+
 1. **Engine Initialization**: Ensures database engine is ready
 2. **Session Creation**: Creates new AsyncSession instance
 3. **Session Yielding**: Provides session to endpoint
@@ -181,6 +200,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 5. **Session Cleanup**: Guaranteed session closure
 
 **Error Handling:**
+
 ```python
 try:
     yield session
@@ -194,6 +214,7 @@ finally:
 ### 📄 **Pagination System**
 
 #### `pagination_params()`
+
 ```python
 def pagination_params(
     offset: int = Query(0, ge=0, description="Number of items to skip"),
@@ -205,12 +226,14 @@ def pagination_params(
 **Purpose:** Consistent pagination across all list endpoints
 
 **Pagination Features:**
+
 - Offset-based pagination
 - Configurable limits with maximum enforcement
 - Input validation with descriptive errors
 - Standardized parameter naming
 
 **Usage Pattern:**
+
 ```python
 @router.get("/users")
 async def list_users(
@@ -225,12 +248,13 @@ async def list_users(
 ### 🏭 **Service Locator Pattern**
 
 #### `DependencyRegistry`
+
 ```python
 class DependencyRegistry:
     @classmethod
-    def register(cls, key: str, factory: Callable[[], object], 
+    def register(cls, key: str, factory: Callable[[], object],
                 singleton: bool = True, cache_ttl: float | None = None) -> None
-    
+
     @classmethod
     def get(cls, key: str) -> object
 ```
@@ -238,12 +262,14 @@ class DependencyRegistry:
 **Purpose:** Dynamic service resolution for improved testability
 
 **Registry Features:**
+
 - **Singleton Management**: Optional singleton instances
 - **Cache TTL**: Time-based cache invalidation
 - **Lazy Loading**: Factory-based instantiation
 - **Error Handling**: Clear error messages for missing dependencies
 
 **Registered Services:**
+
 ```python
 registry.register("user_service", lambda: importlib.import_module("src.services.user"))
 registry.register("user_repository", lambda: user_repository)
@@ -251,6 +277,7 @@ registry.register("blacklist_token", lambda: importlib.import_module(...).blackl
 ```
 
 #### Service Accessor Functions
+
 ```python
 def get_user_service() -> UserService
 def get_blacklist_token() -> Callable[..., Awaitable[None]]
@@ -262,6 +289,7 @@ def get_user_action_limiter() -> Callable[..., Awaitable[None]]
 ### 🔍 **Request Tracing**
 
 #### `get_request_id()`
+
 ```python
 def get_request_id(request: Request) -> str:
     """Extract or generate request ID for tracing."""
@@ -270,6 +298,7 @@ def get_request_id(request: Request) -> str:
 **Purpose:** Request correlation for observability and debugging
 
 **Request ID Logic:**
+
 1. **Header Extraction**: Reads X-Request-ID header
 2. **UUID Validation**: Validates UUID format
 3. **ID Generation**: Generates UUID if missing/invalid
@@ -277,6 +306,7 @@ def get_request_id(request: Request) -> str:
 5. **Trace Propagation**: Available across request lifecycle
 
 #### `get_current_request_id()`
+
 ```python
 def get_current_request_id() -> str | None:
     """Get current request ID from context variable."""
@@ -287,12 +317,14 @@ def get_current_request_id() -> str | None:
 ### 🚩 **Feature Flag Integration**
 
 #### `get_feature_flags()`
+
 ```python
 def get_feature_flags() -> FeatureFlagsProtocol:
     """Get feature flags instance for runtime feature control."""
 ```
 
 #### `require_feature()`
+
 ```python
 def require_feature(feature_name: str) -> Callable[[FeatureFlagsProtocol], Awaitable[bool]]:
     """Create dependency that requires specific feature to be enabled."""
@@ -301,6 +333,7 @@ def require_feature(feature_name: str) -> Callable[[FeatureFlagsProtocol], Await
 **Purpose:** Runtime feature control at endpoint level
 
 **Usage Pattern:**
+
 ```python
 @router.get("/experimental-feature")
 async def experimental_endpoint(
@@ -312,12 +345,13 @@ async def experimental_endpoint(
 ### 🏥 **Health Check System**
 
 #### `HealthCheck`
+
 ```python
 class HealthCheck:
     @classmethod
-    def register(cls, name: str, 
+    def register(cls, name: str,
                 check_func: Callable[[], bool | Awaitable[bool]]) -> None
-    
+
     @classmethod
     async def check_all(cls) -> dict[str, dict[str, str | bool]]
 ```
@@ -325,6 +359,7 @@ class HealthCheck:
 **Purpose:** Centralized health monitoring for dependencies
 
 **Health Check Features:**
+
 - **Registration System**: Register health checks by name
 - **Async Support**: Both sync and async health check functions
 - **Error Handling**: Graceful handling of check failures
@@ -333,6 +368,7 @@ class HealthCheck:
 ### 📈 **Dependency Metrics**
 
 #### `measure_dependency()`
+
 ```python
 def measure_dependency(func: Callable[..., Awaitable[object]]) -> Callable[..., Awaitable[object]]:
     """Decorator to measure dependency performance and errors."""
@@ -341,6 +377,7 @@ def measure_dependency(func: Callable[..., Awaitable[object]]) -> Callable[..., 
 **Purpose:** Performance monitoring for dependency functions
 
 **Metrics Collected:**
+
 - **Call Count**: Number of dependency invocations
 - **Error Count**: Number of failed invocations
 - **Total Time**: Cumulative execution time
@@ -349,6 +386,7 @@ def measure_dependency(func: Callable[..., Awaitable[object]]) -> Callable[..., 
 ### ⚙️ **Dynamic Configuration**
 
 #### `get_refreshable_settings()`
+
 ```python
 def get_refreshable_settings() -> object:
     """Get settings that automatically refresh based on TTL."""
@@ -357,6 +395,7 @@ def get_refreshable_settings() -> object:
 **Purpose:** Dynamic configuration reloading without restart
 
 **Refresh Features:**
+
 - **Time-based Refresh**: Configurable refresh interval
 - **Lazy Loading**: Reload only when accessed
 - **Module Reloading**: Dynamic import reloading
@@ -404,8 +443,8 @@ async def list_users(
 ):
     """Standard paginated list pattern."""
     users = await user_repo.list(
-        db, 
-        offset=pagination.offset, 
+        db,
+        offset=pagination.offset,
         limit=pagination.limit
     )
     return {"users": users, "pagination": pagination}
@@ -460,6 +499,7 @@ async def complex_operation(
 ### 🔐 **Authentication Security**
 
 #### JWT Token Validation
+
 ```python
 # Comprehensive token validation
 payload = verify_access_token(token)
@@ -472,6 +512,7 @@ if not user or not user.is_active or user.is_deleted:
 ```
 
 **Security Features:**
+
 - Token signature verification
 - Expiration checking
 - User status validation
@@ -479,6 +520,7 @@ if not user or not user.is_active or user.is_deleted:
 - Development mode safety
 
 #### API Key Security
+
 ```python
 # Secure API key comparison
 if api_key != configured_api_key:
@@ -486,6 +528,7 @@ if api_key != configured_api_key:
 ```
 
 **Security Measures:**
+
 - Direct string comparison (constant time)
 - Configuration validation
 - Header-based transmission
@@ -494,6 +537,7 @@ if api_key != configured_api_key:
 ### 🛡️ **Input Validation**
 
 #### Pagination Security
+
 ```python
 if offset < 0:
     http_error(400, "Offset must be >= 0")
@@ -502,6 +546,7 @@ if limit < 1 or limit > MAX_LIMIT:
 ```
 
 **Validation Features:**
+
 - Range validation for offset/limit
 - Maximum limit enforcement
 - Input sanitization
@@ -510,6 +555,7 @@ if limit < 1 or limit > MAX_LIMIT:
 ### 🔒 **Session Security**
 
 #### Database Session Safety
+
 ```python
 try:
     yield session
@@ -521,6 +567,7 @@ finally:
 ```
 
 **Security Measures:**
+
 - Automatic rollback on errors
 - Guaranteed session cleanup
 - Connection leak prevention
@@ -531,17 +578,20 @@ finally:
 ### ⚡ **Dependency Caching**
 
 #### LRU Cache Usage
+
 ```python
 get_user_repository: Callable[[], object] = lru_cache()(get_user_repository_func)
 ```
 
 **Performance Features:**
+
 - Function result caching
 - Memory-efficient LRU eviction
 - Repeated dependency optimization
 - Cache hit/miss tracking
 
 #### Registry Caching
+
 ```python
 if not singleton or instance is None:
     instance = factory()
@@ -549,6 +599,7 @@ if not singleton or instance is None:
 ```
 
 **Caching Strategy:**
+
 - Singleton pattern for expensive objects
 - TTL-based cache invalidation
 - Lazy instantiation
@@ -557,6 +608,7 @@ if not singleton or instance is None:
 ### 🔄 **Session Pool Management**
 
 #### Connection Pool Optimization
+
 ```python
 # Efficient session lifecycle
 session = AsyncSessionLocal()
@@ -567,6 +619,7 @@ finally:
 ```
 
 **Performance Benefits:**
+
 - Single session per request
 - Immediate connection release
 - Pool exhaustion prevention
@@ -575,6 +628,7 @@ finally:
 ### 📊 **Metrics and Monitoring**
 
 #### Dependency Performance Tracking
+
 ```python
 dependency_metrics[name]["count"] += 1
 dependency_metrics[name]["total_time"] += duration
@@ -583,6 +637,7 @@ if status == "error":
 ```
 
 **Monitoring Features:**
+
 - Execution time tracking
 - Error rate monitoring
 - Call frequency analysis
@@ -603,7 +658,7 @@ async def test_get_current_user_valid_token():
     # Mock dependencies
     mock_session = AsyncMock()
     mock_token = "valid_jwt_token"
-    
+
     # Test authentication
     user = await get_current_user(mock_token, mock_session)
     assert user is not None
@@ -614,10 +669,10 @@ async def test_get_current_user_invalid_token():
     """Test authentication failure handling."""
     mock_session = AsyncMock()
     mock_token = "invalid_token"
-    
+
     with pytest.raises(HTTPException) as exc_info:
         await get_current_user(mock_token, mock_session)
-    
+
     assert exc_info.value.status_code == 401
 
 def test_pagination_params_validation():
@@ -626,7 +681,7 @@ def test_pagination_params_validation():
     params = pagination_params(offset=0, limit=20)
     assert params.offset == 0
     assert params.limit == 20
-    
+
     # Invalid parameters should raise HTTPException
     with pytest.raises(HTTPException):
         pagination_params(offset=-1, limit=20)
@@ -641,11 +696,11 @@ from src.main import app
 def test_protected_endpoint_authentication():
     """Test endpoint with authentication dependency."""
     client = TestClient(app)
-    
+
     # Test without authentication
     response = client.get("/api/v1/protected")
     assert response.status_code == 401
-    
+
     # Test with valid token
     headers = {"Authorization": "Bearer valid_token"}
     response = client.get("/api/v1/protected", headers=headers)
@@ -662,7 +717,7 @@ def test_service_dependency_injection():
     # Mock service
     mock_service = Mock()
     registry.register("test_service", lambda: mock_service)
-    
+
     # Test service resolution
     service = registry.get("test_service")
     assert service is mock_service
@@ -682,6 +737,7 @@ except (JWTError, ValueError, TypeError) as err:
 ```
 
 **Error Scenarios:**
+
 - Invalid JWT signature → 401 Unauthorized
 - Expired token → 401 Unauthorized
 - Malformed token → 401 Unauthorized
@@ -699,6 +755,7 @@ except Exception as exc:
 ```
 
 **Error Handling:**
+
 - Automatic rollback on database errors
 - Connection cleanup on failures
 - Exception propagation for proper handling
@@ -713,6 +770,7 @@ if offset < 0:
 ```
 
 **Validation Features:**
+
 - Input range validation
 - Descriptive error messages
 - Consistent HTTP status codes
@@ -756,4 +814,4 @@ if offset < 0:
 
 ---
 
-*This module provides the foundational dependency injection system for the ReViewPoint API, ensuring consistent security, database access, and cross-cutting concerns across all endpoints while maintaining high performance and testability.*
+_This module provides the foundational dependency injection system for the ReViewPoint API, ensuring consistent security, database access, and cross-cutting concerns across all endpoints while maintaining high performance and testability._

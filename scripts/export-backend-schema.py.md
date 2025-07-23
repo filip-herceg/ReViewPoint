@@ -1,10 +1,10 @@
 # Export Backend Schema Script
 
-| Item               | Value                                                              |
-| ------------------ | ------------------------------------------------------------------ |
-| **Type**           | Python Script                                                     |
-| **Responsibility** | Export OpenAPI schema from running backend server                 |
-| **Status**         | 🟢 Done                                                            |
+| Item               | Value                                             |
+| ------------------ | ------------------------------------------------- |
+| **Type**           | Python Script                                     |
+| **Responsibility** | Export OpenAPI schema from running backend server |
+| **Status**         | 🟢 Done                                           |
 
 ## 1. Purpose
 
@@ -26,11 +26,13 @@ python scripts/export-backend-schema.py --url http://localhost:8001
 ## 3. Configuration
 
 ### Default Settings
+
 - **Backend URL**: `http://localhost:8000`
 - **Output File**: `frontend/openapi-schema.json`
 - **Schema Endpoint**: `/openapi.json`
 
 ### Command Line Options
+
 - `--url`: Backend server URL (default: `http://localhost:8000`)
 - `--output`: Output file path (default: `frontend/openapi-schema.json`)
 - `--validate`: Validate schema after export
@@ -45,6 +47,7 @@ python scripts/export-backend-schema.py --url http://localhost:8001
 ## 5. Integration
 
 This script is typically run:
+
 - As part of the build process
 - When regenerating frontend API types
 - During CI/CD pipeline for API validation

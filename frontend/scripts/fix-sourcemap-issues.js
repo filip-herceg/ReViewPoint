@@ -16,15 +16,15 @@ console.log("🔧 Fixing source map issues...");
 // Clear Vite cache
 const viteCacheDir = path.join(__dirname, "..", "node_modules", ".vite");
 if (fs.existsSync(viteCacheDir)) {
-	console.log("🗑️  Clearing Vite cache...");
-	fs.rmSync(viteCacheDir, { recursive: true, force: true });
+  console.log("🗑️  Clearing Vite cache...");
+  fs.rmSync(viteCacheDir, { recursive: true, force: true });
 }
 
 // Clear dist directory
 const distDir = path.join(__dirname, "..", "dist");
 if (fs.existsSync(distDir)) {
-	console.log("🗑️  Clearing dist directory...");
-	fs.rmSync(distDir, { recursive: true, force: true });
+  console.log("🗑️  Clearing dist directory...");
+  fs.rmSync(distDir, { recursive: true, force: true });
 }
 
 // Clear browser cache instructions

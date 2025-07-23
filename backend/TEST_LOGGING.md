@@ -49,6 +49,7 @@ hatch run pytest
 ## Log Level Details
 
 ### DEBUG Level
+
 - SQL queries and database operations
 - Internal application state
 - Framework debugging information
@@ -56,6 +57,7 @@ hatch run pytest
 - Fixture setup and teardown details
 
 ### INFO Level
+
 - Test execution progress
 - Major application operations
 - Database connection status
@@ -63,18 +65,21 @@ hatch run pytest
 - Cache operations
 
 ### WARNING Level (Default)
+
 - Deprecation warnings
 - Configuration issues
 - Performance warnings
 - Test skips and important notices
 
 ### ERROR Level
+
 - Test failures and exceptions
 - Application errors
 - Database connection issues
 - Critical validation failures
 
 ### CRITICAL Level
+
 - System-level failures
 - Application crashes
 - Critical security issues

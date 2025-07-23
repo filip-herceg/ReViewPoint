@@ -3,7 +3,7 @@
 **File:** `backend/src/api/v1/users/core.py`  
 **Purpose:** Complete CRUD operations for user management with admin controls and validation  
 **Lines of Code:** 606  
-**Type:** FastAPI Router Module  
+**Type:** FastAPI Router Module
 
 ## Overview
 
@@ -54,19 +54,22 @@ The User Management Core API provides comprehensive Create, Read, Update, Delete
 **Purpose:** Create a new user account with validation and security checks
 
 **Requirements:**
+
 - Valid API key in Authorization header
 - Feature flag `users:create` must be enabled
 - Admin privileges required
 
 **Request Schema:**
+
 ```python
 class UserCreateRequest:
     email: str          # Valid email address (unique)
-    password: str       # Secure password (minimum 8 characters)  
+    password: str       # Secure password (minimum 8 characters)
     name: str          # User's display name
 ```
 
 **Example Request:**
+
 ```json
 POST /api/v1/users
 Authorization: Bearer your-api-key
@@ -79,19 +82,21 @@ Authorization: Bearer your-api-key
 ```
 
 **Example Response (201 Created):**
+
 ```json
 {
-    "id": 123,
-    "email": "newuser@example.com",
-    "name": "John Doe",
-    "bio": null,
-    "avatar_url": null,
-    "created_at": "2025-01-08T10:30:00Z",
-    "updated_at": "2025-01-08T10:30:00Z"
+  "id": 123,
+  "email": "newuser@example.com",
+  "name": "John Doe",
+  "bio": null,
+  "avatar_url": null,
+  "created_at": "2025-01-08T10:30:00Z",
+  "updated_at": "2025-01-08T10:30:00Z"
 }
 ```
 
 **Implementation Details:**
+
 ```python
 async def create_user(
     user: UserCreateRequest,
@@ -99,7 +104,7 @@ async def create_user(
     user_service: UserService,
 ) -> UserResponse:
     """Create new user with comprehensive validation."""
-    
+
     try:
         # Register user through service layer
         db_user = await user_service.register_user(session, {
@@ -107,25 +112,26 @@ async def create_user(
             "password": user.password,
             "name": user.name,
         })
-        
+
         # Log successful creation
         logger.info("user_created", extra={
-            "user_id": db_user.id, 
+            "user_id": db_user.id,
             "email": db_user.email
         })
-        
+
         return UserResponse(
             id=db_user.id,
             email=db_user.email,
             name=db_user.name
         )
-        
+
     except UserAlreadyExistsError:
         # Handle email conflicts with detailed logging
         raise HTTPException(409, "Email already exists.")
 ```
 
 **Response Codes:**
+
 - **201 Created**: User created successfully
 - **400 Bad Request**: Invalid user data
 - **401 Unauthorized**: Invalid API key
@@ -141,11 +147,13 @@ async def create_user(
 **Purpose:** Retrieve paginated list of users with comprehensive filtering
 
 **Requirements:**
+
 - Valid API key in Authorization header
 - Feature flag `users:list` must be enabled
 - Admin privileges required
 
 **Query Parameters:**
+
 ```python
 offset: int = 0                    # Records to skip (pagination)
 limit: int = 50                    # Max records (max: 100)
@@ -155,30 +163,33 @@ created_after: str | None = None   # Filter by creation date (ISO format)
 ```
 
 **Example Request:**
+
 ```
 GET /api/v1/users?offset=0&limit=10&name=john&created_after=2025-01-01T00:00:00Z
 Authorization: Bearer your-api-key
 ```
 
 **Example Response (200 OK):**
+
 ```json
 {
-    "users": [
-        {
-            "id": 123,
-            "email": "john.doe@example.com",
-            "name": "John Doe",
-            "bio": "Software developer",
-            "avatar_url": "https://example.com/avatar.jpg",
-            "created_at": "2025-01-08T10:30:00Z",
-            "updated_at": "2025-01-08T10:30:00Z"
-        }
-    ],
-    "total": 1
+  "users": [
+    {
+      "id": 123,
+      "email": "john.doe@example.com",
+      "name": "John Doe",
+      "bio": "Software developer",
+      "avatar_url": "https://example.com/avatar.jpg",
+      "created_at": "2025-01-08T10:30:00Z",
+      "updated_at": "2025-01-08T10:30:00Z"
+    }
+  ],
+  "total": 1
 }
 ```
 
 **Implementation Features:**
+
 ```python
 async def list_users(
     params: PaginationParams,
@@ -189,12 +200,12 @@ async def list_users(
     user_service: UserService,
 ) -> UserListResponse:
     """List users with advanced filtering and pagination."""
-    
+
     # Parse date filter if provided
     created_after_dt = None
     if created_after:
         created_after_dt = parse_flexible_datetime(created_after)
-    
+
     # Query with filters
     users = await user_service.list_users(
         session,
@@ -204,14 +215,14 @@ async def list_users(
         name=name,
         created_after=created_after_dt,
     )
-    
+
     # Log operation
     logger.info("users_listed", extra={
         "offset": params.offset,
         "limit": params.limit,
         "filters": {"email": email, "name": name}
     })
-    
+
     return UserListResponse(
         users=[UserResponse(**user.dict()) for user in users],
         total=len(users)
@@ -219,6 +230,7 @@ async def list_users(
 ```
 
 **Filtering Capabilities:**
+
 - **Email Filtering**: Partial email address matching
 - **Name Filtering**: Partial name matching (case-insensitive)
 - **Date Filtering**: Users created after specified date
@@ -232,35 +244,40 @@ async def list_users(
 **Purpose:** Retrieve detailed information for a specific user
 
 **Requirements:**
+
 - Valid API key in Authorization header
 - Feature flag `users:read` must be enabled
 - Admin privileges required
 
 **Path Parameters:**
+
 ```python
 user_id: int    # User unique identifier (positive integer)
 ```
 
 **Example Request:**
+
 ```
 GET /api/v1/users/123
 Authorization: Bearer your-api-key
 ```
 
 **Example Response (200 OK):**
+
 ```json
 {
-    "id": 123,
-    "email": "john.doe@example.com",
-    "name": "John Doe",
-    "bio": "Software developer passionate about clean code",
-    "avatar_url": "https://example.com/avatars/123.jpg",
-    "created_at": "2025-01-08T10:30:00Z",
-    "updated_at": "2025-01-08T15:45:00Z"
+  "id": 123,
+  "email": "john.doe@example.com",
+  "name": "John Doe",
+  "bio": "Software developer passionate about clean code",
+  "avatar_url": "https://example.com/avatars/123.jpg",
+  "created_at": "2025-01-08T10:30:00Z",
+  "updated_at": "2025-01-08T15:45:00Z"
 }
 ```
 
 **Implementation:**
+
 ```python
 async def get_user_by_id(
     user_id: int,
@@ -268,12 +285,12 @@ async def get_user_by_id(
     user_service: UserService,
 ) -> UserResponse:
     """Get user by ID with comprehensive error handling."""
-    
+
     try:
         user = await user_service.get_user_by_id(session, user_id)
         if not user:
             raise HTTPException(404, "User not found")
-        
+
         return UserResponse(
             id=user.id,
             email=user.email,
@@ -283,7 +300,7 @@ async def get_user_by_id(
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -292,6 +309,7 @@ async def get_user_by_id(
 ```
 
 **Response Codes:**
+
 - **200 OK**: User retrieved successfully
 - **401 Unauthorized**: Invalid API key
 - **403 Forbidden**: Admin access required
@@ -305,15 +323,18 @@ async def get_user_by_id(
 **Purpose:** Update existing user information with validation
 
 **Requirements:**
+
 - Valid API key in Authorization header
 - Admin privileges required
 
 **Path Parameters:**
+
 ```python
 user_id: int    # User ID to update (positive integer)
 ```
 
 **Request Schema:**
+
 ```python
 class UserCreateRequest:
     email: str          # New email address (must be unique)
@@ -322,6 +343,7 @@ class UserCreateRequest:
 ```
 
 **Example Request:**
+
 ```json
 PUT /api/v1/users/123
 Authorization: Bearer your-api-key
@@ -334,19 +356,21 @@ Authorization: Bearer your-api-key
 ```
 
 **Example Response (200 OK):**
+
 ```json
 {
-    "id": 123,
-    "email": "updated@example.com", 
-    "name": "Updated Name",
-    "bio": null,
-    "avatar_url": null,
-    "created_at": "2025-01-08T10:30:00Z",
-    "updated_at": "2025-01-08T16:20:00Z"
+  "id": 123,
+  "email": "updated@example.com",
+  "name": "Updated Name",
+  "bio": null,
+  "avatar_url": null,
+  "created_at": "2025-01-08T10:30:00Z",
+  "updated_at": "2025-01-08T16:20:00Z"
 }
 ```
 
 **Implementation:**
+
 ```python
 async def update_user(
     user_id: int,
@@ -355,20 +379,20 @@ async def update_user(
     user_service: UserService,
 ) -> UserResponse:
     """Update user with comprehensive validation."""
-    
+
     try:
         updated_user = await user_service.update_user(
             session, user_id, user.model_dump()
         )
-        
+
         logger.info("user_updated", extra={"user_id": user_id})
-        
+
         return UserResponse(
             id=updated_user.id,
             email=updated_user.email,
             name=updated_user.name
         )
-        
+
     except UserNotFoundError:
         raise HTTPException(404, "User not found.")
     except UserAlreadyExistsError:
@@ -378,6 +402,7 @@ async def update_user(
 ```
 
 **Validation Features:**
+
 - **Email Uniqueness**: Ensures email isn't already taken
 - **Password Security**: Automatic secure hashing
 - **Data Validation**: Input format and constraint validation
@@ -391,26 +416,31 @@ async def update_user(
 **Purpose:** Permanently delete a user account from the system
 
 **Requirements:**
+
 - Valid API key in Authorization header
 - Admin privileges required
 
 **Path Parameters:**
+
 ```python
 user_id: int    # User ID to delete (positive integer)
 ```
 
 **Example Request:**
+
 ```
 DELETE /api/v1/users/123
 Authorization: Bearer your-api-key
 ```
 
 **Example Response (204 No Content):**
+
 ```
 HTTP/1.1 204 No Content
 ```
 
 **Implementation:**
+
 ```python
 async def delete_user(
     user_id: int,
@@ -418,24 +448,25 @@ async def delete_user(
     user_service: UserService,
 ) -> Response:
     """Delete user with proper cleanup."""
-    
+
     try:
         await user_service.delete_user(session, user_id)
         logger.info("user_deleted", extra={"user_id": user_id})
         return Response(status_code=204)
-        
+
     except UserNotFoundError:
         logger.warning("User not found.", extra={"user_id": user_id})
         return Response(status_code=404, content="User not found.")
     except Exception as e:
         logger.error("Unexpected error.", extra={
-            "user_id": user_id, 
+            "user_id": user_id,
             "error": str(e)
         })
         return Response(status_code=500, content="Unexpected error.")
 ```
 
 **Deletion Behavior:**
+
 - **Permanent Removal**: User is permanently deleted from database
 - **Cascade Operations**: Related records are handled according to constraints
 - **Audit Trail**: Deletion is logged for compliance
@@ -447,6 +478,7 @@ async def delete_user(
 ### 🔐 **Authentication & Authorization**
 
 #### API Key Authentication
+
 ```python
 dependencies=[
     Depends(require_api_key),      # Validates API key
@@ -455,6 +487,7 @@ dependencies=[
 ```
 
 #### Feature Flag Protection
+
 ```python
 dependencies=[
     Depends(require_feature("users:create")),  # Feature must be enabled
@@ -466,6 +499,7 @@ dependencies=[
 ### 🛡️ **Input Validation**
 
 #### Request Validation
+
 ```python
 class UserCreateRequest(BaseModel):
     email: str = Field(..., pattern=EMAIL_REGEX)
@@ -474,6 +508,7 @@ class UserCreateRequest(BaseModel):
 ```
 
 #### Path Parameter Validation
+
 ```python
 user_id: int = Path(..., description="User ID", gt=0)
 ```
@@ -483,6 +518,7 @@ user_id: int = Path(..., description="User ID", gt=0)
 ### 🚨 **Comprehensive Error Responses**
 
 #### User Creation Errors
+
 ```python
 try:
     db_user = await user_service.register_user(session, user_data)
@@ -498,17 +534,19 @@ except Exception as e:
 ```
 
 #### Error Response Format
+
 ```json
 {
-    "detail": "Email already exists.",
-    "status_code": 409,
-    "timestamp": "2025-01-08T10:30:00Z"
+  "detail": "Email already exists.",
+  "status_code": 409,
+  "timestamp": "2025-01-08T10:30:00Z"
 }
 ```
 
 ### 📝 **Audit Logging**
 
 #### Operation Logging
+
 ```python
 # Successful operations
 logger.info("user_created", extra={
@@ -536,6 +574,7 @@ logger.error("Unexpected error.", extra={
 ### 📊 **Administrative Operations**
 
 #### Complete User Management Workflow
+
 ```python
 # 1. Create a new user
 user_data = {
@@ -619,7 +658,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 class TestUserManagement:
-    
+
     @pytest.mark.asyncio
     async def test_create_user_success(self, client, admin_api_key):
         """Test successful user creation."""
@@ -628,19 +667,19 @@ class TestUserManagement:
             "password": "SecurePass123!",
             "name": "Test User"
         }
-        
+
         response = client.post(
             "/api/v1/users",
             json=user_data,
             headers={"Authorization": f"Bearer {admin_api_key}"}
         )
-        
+
         assert response.status_code == 201
         user = response.json()
         assert user["email"] == user_data["email"]
         assert user["name"] == user_data["name"]
         assert "id" in user
-    
+
     @pytest.mark.asyncio
     async def test_create_user_duplicate_email(self, client, admin_api_key):
         """Test email uniqueness validation."""
@@ -649,7 +688,7 @@ class TestUserManagement:
             "password": "SecurePass123!",
             "name": "User One"
         }
-        
+
         # Create first user
         response1 = client.post(
             "/api/v1/users",
@@ -657,7 +696,7 @@ class TestUserManagement:
             headers={"Authorization": f"Bearer {admin_api_key}"}
         )
         assert response1.status_code == 201
-        
+
         # Attempt to create duplicate
         response2 = client.post(
             "/api/v1/users",
@@ -666,7 +705,7 @@ class TestUserManagement:
         )
         assert response2.status_code == 409
         assert "Email already exists" in response2.json()["detail"]
-    
+
     @pytest.mark.asyncio
     async def test_list_users_pagination(self, client, admin_api_key):
         """Test user listing with pagination."""
@@ -674,13 +713,13 @@ class TestUserManagement:
             "/api/v1/users?offset=0&limit=5",
             headers={"Authorization": f"Bearer {admin_api_key}"}
         )
-        
+
         assert response.status_code == 200
         data = response.json()
         assert "users" in data
         assert "total" in data
         assert len(data["users"]) <= 5
-    
+
     @pytest.mark.asyncio
     async def test_get_user_not_found(self, client, admin_api_key):
         """Test handling of non-existent user."""
@@ -688,7 +727,7 @@ class TestUserManagement:
             "/api/v1/users/99999",
             headers={"Authorization": f"Bearer {admin_api_key}"}
         )
-        
+
         assert response.status_code == 404
         assert "User not found" in response.json()["detail"]
 ```
@@ -699,14 +738,14 @@ class TestUserManagement:
 @pytest.mark.asyncio
 async def test_complete_user_lifecycle(client, admin_api_key):
     """Test complete user management lifecycle."""
-    
+
     # 1. Create user
     user_data = {
         "email": "lifecycle@example.com",
         "password": "SecurePass123!",
         "name": "Lifecycle User"
     }
-    
+
     create_response = client.post(
         "/api/v1/users",
         json=user_data,
@@ -715,7 +754,7 @@ async def test_complete_user_lifecycle(client, admin_api_key):
     assert create_response.status_code == 201
     user = create_response.json()
     user_id = user["id"]
-    
+
     # 2. Retrieve user
     get_response = client.get(
         f"/api/v1/users/{user_id}",
@@ -724,14 +763,14 @@ async def test_complete_user_lifecycle(client, admin_api_key):
     assert get_response.status_code == 200
     retrieved_user = get_response.json()
     assert retrieved_user["email"] == user_data["email"]
-    
+
     # 3. Update user
     update_data = {
         "email": "updated@example.com",
         "password": "NewPassword123!",
         "name": "Updated User"
     }
-    
+
     update_response = client.put(
         f"/api/v1/users/{user_id}",
         json=update_data,
@@ -740,14 +779,14 @@ async def test_complete_user_lifecycle(client, admin_api_key):
     assert update_response.status_code == 200
     updated_user = update_response.json()
     assert updated_user["email"] == update_data["email"]
-    
+
     # 4. Delete user
     delete_response = client.delete(
         f"/api/v1/users/{user_id}",
         headers={"Authorization": f"Bearer {admin_api_key}"}
     )
     assert delete_response.status_code == 204
-    
+
     # 5. Verify deletion
     verify_response = client.get(
         f"/api/v1/users/{user_id}",
@@ -796,4 +835,4 @@ async def test_complete_user_lifecycle(client, admin_api_key):
 
 ---
 
-*This User Management Core API provides comprehensive, secure, and auditable user account management capabilities with admin-level controls and enterprise-grade validation.*
+_This User Management Core API provides comprehensive, secure, and auditable user account management capabilities with admin-level controls and enterprise-grade validation._

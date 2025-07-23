@@ -25,12 +25,12 @@ The `base.ts` module provides the foundational HTTP client infrastructure for th
 
 ```typescript
 export const apiClient = axios.create({
-  baseURL: API_BASE,           // Empty string - explicit endpoint calls
-  timeout: 10000,              // 10 second timeout
-  withCredentials: true,       // Include cookies for CORS
+  baseURL: API_BASE, // Empty string - explicit endpoint calls
+  timeout: 10000, // 10 second timeout
+  withCredentials: true, // Include cookies for CORS
   headers: {
-    "Content-Type": "application/json"
-  }
+    "Content-Type": "application/json",
+  },
 });
 ```
 
@@ -46,23 +46,25 @@ export const apiClient = axios.create({
 ### Token Injection Logic
 
 ```typescript
-apiClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
-  // Skip token injection for auth endpoints to prevent loops
-  if (config.url?.includes("/auth/")) {
-    return config;
-  }
-
-  try {
-    const token = await tokenService.getValidAccessToken();
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+apiClient.interceptors.request.use(
+  async (config: InternalAxiosRequestConfig) => {
+    // Skip token injection for auth endpoints to prevent loops
+    if (config.url?.includes("/auth/")) {
+      return config;
     }
-  } catch (error) {
-    // Continue with request even if token fetch fails
-  }
 
-  return config;
-});
+    try {
+      const token = await tokenService.getValidAccessToken();
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (error) {
+      // Continue with request even if token fetch fails
+    }
+
+    return config;
+  },
+);
 ```
 
 **Key Features:**
@@ -93,7 +95,7 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 ```
 
@@ -155,17 +157,21 @@ The request wrapper implements sophisticated error type checking and message ext
 
 ```typescript
 // Type guard for axios-like errors
-const isAxiosError = (err: unknown): err is { response?: { data?: Record<string, unknown> } } => {
+const isAxiosError = (
+  err: unknown,
+): err is { response?: { data?: Record<string, unknown> } } => {
   return typeof err === "object" && err !== null && "response" in err;
 };
 
 // Error message extraction from response data
-const errorMessage = typeof data === "string" ? data
-  : typeof (data as Record<string, unknown>).error === "string" 
-    ? ((data as Record<string, unknown>).error as string)
-    : typeof (data as Record<string, unknown>).message === "string"
-      ? ((data as Record<string, unknown>).message as string)
-      : "Unknown error";
+const errorMessage =
+  typeof data === "string"
+    ? data
+    : typeof (data as Record<string, unknown>).error === "string"
+      ? ((data as Record<string, unknown>).error as string)
+      : typeof (data as Record<string, unknown>).message === "string"
+        ? ((data as Record<string, unknown>).message as string)
+        : "Unknown error";
 ```
 
 ## Authentication Integration
@@ -233,12 +239,12 @@ import { apiClient } from "@/lib/api/base";
 // Direct axios usage with interceptors
 const response = await apiClient.post("/api/v1/files/upload", formData, {
   headers: {
-    "Content-Type": "multipart/form-data"
+    "Content-Type": "multipart/form-data",
   },
-  timeout: 30000,  // Extended timeout for file uploads
+  timeout: 30000, // Extended timeout for file uploads
   onUploadProgress: (progressEvent) => {
     // Upload progress handling
-  }
+  },
 });
 ```
 
@@ -249,7 +255,7 @@ import { request, ApiResponse } from "@/lib/api/base";
 
 async function fetchUserData(userId: string): Promise<User | null> {
   const response: ApiResponse<User> = await request(`/api/v1/users/${userId}`);
-  
+
   if (response.data) {
     return response.data;
   } else {
@@ -288,7 +294,7 @@ import { apiClient } from "@/lib/api/base";
 const cancelToken = axios.CancelToken.source();
 
 const response = await apiClient.get("/api/v1/data", {
-  cancelToken: cancelToken.token
+  cancelToken: cancelToken.token,
 });
 
 // Cancel if needed
@@ -300,16 +306,21 @@ cancelToken.cancel("Request cancelled by user");
 ```typescript
 import { request } from "@/lib/api/base";
 
-async function requestWithRetry<T>(url: string, maxRetries = 3): Promise<ApiResponse<T>> {
+async function requestWithRetry<T>(
+  url: string,
+  maxRetries = 3,
+): Promise<ApiResponse<T>> {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     const response = await request<T>(url);
-    
+
     if (response.data || attempt === maxRetries) {
       return response;
     }
-    
+
     // Exponential backoff
-    await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+    await new Promise((resolve) =>
+      setTimeout(resolve, Math.pow(2, attempt) * 1000),
+    );
   }
 }
 ```
@@ -421,14 +432,14 @@ The base client is designed to work with ReViewPoint's FastAPI backend:
 ```typescript
 // Success response
 {
-  data: T  // Actual response data
+  data: T; // Actual response data
 }
 
 // Error response
 {
-  error: string    // Error message
+  error: string; // Error message
   // or
-  message: string  // Alternative error field
+  message: string; // Alternative error field
 }
 ```
 

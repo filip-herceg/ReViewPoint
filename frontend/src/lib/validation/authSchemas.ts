@@ -44,12 +44,12 @@ import logger from "@/logger";
  * Uses the same regex pattern as the backend for consistency
  */
 export const emailSchema = z
-	.string()
-	.min(1, "Email is required")
-	.email("Please enter a valid email address")
-	.regex(EMAIL_REGEX, "Please enter a valid email address")
-	.max(254, "Email address is too long") // RFC 5321 limit
-	.transform((email) => email.toLowerCase().trim());
+  .string()
+  .min(1, "Email is required")
+  .email("Please enter a valid email address")
+  .regex(EMAIL_REGEX, "Please enter a valid email address")
+  .max(254, "Email address is too long") // RFC 5321 limit
+  .transform((email) => email.toLowerCase().trim());
 
 /**
  * Password validation schema
@@ -59,58 +59,58 @@ export const emailSchema = z
  * - At least one digit
  */
 export const passwordSchema = z
-	.string()
-	.min(
-		DEFAULT_PASSWORD_REQUIREMENTS.minLength,
-		`Password must be at least ${DEFAULT_PASSWORD_REQUIREMENTS.minLength} characters`,
-	)
-	.max(
-		DEFAULT_PASSWORD_REQUIREMENTS.maxLength,
-		`Password must be no more than ${DEFAULT_PASSWORD_REQUIREMENTS.maxLength} characters`,
-	)
-	.refine(
-		(password) => /[A-Za-z]/.test(password),
-		"Password must contain at least one letter",
-	)
-	.refine((password) => {
-		if (!DEFAULT_PASSWORD_REQUIREMENTS.requiresNumber) return true;
-		return /\d/.test(password);
-	}, "Password must contain at least one digit")
-	.refine((password) => {
-		if (!DEFAULT_PASSWORD_REQUIREMENTS.requiresUppercase) return true;
-		return /[A-Z]/.test(password);
-	}, "Password must contain at least one uppercase letter")
-	.refine((password) => {
-		if (!DEFAULT_PASSWORD_REQUIREMENTS.requiresLowercase) return true;
-		return /[a-z]/.test(password);
-	}, "Password must contain at least one lowercase letter")
-	.refine((password) => {
-		if (!DEFAULT_PASSWORD_REQUIREMENTS.requiresSpecial) return true;
-		return /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password);
-	}, "Password must contain at least one special character");
+  .string()
+  .min(
+    DEFAULT_PASSWORD_REQUIREMENTS.minLength,
+    `Password must be at least ${DEFAULT_PASSWORD_REQUIREMENTS.minLength} characters`,
+  )
+  .max(
+    DEFAULT_PASSWORD_REQUIREMENTS.maxLength,
+    `Password must be no more than ${DEFAULT_PASSWORD_REQUIREMENTS.maxLength} characters`,
+  )
+  .refine(
+    (password) => /[A-Za-z]/.test(password),
+    "Password must contain at least one letter",
+  )
+  .refine((password) => {
+    if (!DEFAULT_PASSWORD_REQUIREMENTS.requiresNumber) return true;
+    return /\d/.test(password);
+  }, "Password must contain at least one digit")
+  .refine((password) => {
+    if (!DEFAULT_PASSWORD_REQUIREMENTS.requiresUppercase) return true;
+    return /[A-Z]/.test(password);
+  }, "Password must contain at least one uppercase letter")
+  .refine((password) => {
+    if (!DEFAULT_PASSWORD_REQUIREMENTS.requiresLowercase) return true;
+    return /[a-z]/.test(password);
+  }, "Password must contain at least one lowercase letter")
+  .refine((password) => {
+    if (!DEFAULT_PASSWORD_REQUIREMENTS.requiresSpecial) return true;
+    return /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password);
+  }, "Password must contain at least one special character");
 
 /**
  * Name validation schema
  */
 export const nameSchema = z
-	.string()
-	.min(1, "Name is required")
-	.min(2, "Name must be at least 2 characters")
-	.max(100, "Name must be no more than 100 characters")
-	.regex(
-		/^[a-zA-Z\s'-]+$/,
-		"Name can only contain letters, spaces, hyphens, and apostrophes",
-	)
-	.transform((name) => name.trim());
+  .string()
+  .min(1, "Name is required")
+  .min(2, "Name must be at least 2 characters")
+  .max(100, "Name must be no more than 100 characters")
+  .regex(
+    /^[a-zA-Z\s'-]+$/,
+    "Name can only contain letters, spaces, hyphens, and apostrophes",
+  )
+  .transform((name) => name.trim());
 
 /**
  * Token validation schema (for password reset, email verification, etc.)
  */
 export const tokenSchema = z
-	.string()
-	.min(1, "Token is required")
-	.min(10, "Invalid token format")
-	.max(500, "Token is too long");
+  .string()
+  .min(1, "Token is required")
+  .min(10, "Invalid token format")
+  .max(500, "Token is too long");
 
 // ===========================
 // Authentication form schemas
@@ -120,29 +120,29 @@ export const tokenSchema = z
  * Login form validation schema
  */
 export const loginSchema = z.object({
-	email: emailSchema,
-	password: z.string().min(1, "Password is required"),
+  email: emailSchema,
+  password: z.string().min(1, "Password is required"),
 });
 
 // Separate type for login form that includes remember me
 export type LoginFormData = z.infer<typeof loginSchema> & {
-	rememberMe?: boolean;
+  rememberMe?: boolean;
 };
 
 /**
  * Registration form validation schema
  */
 export const registerSchema = z
-	.object({
-		name: nameSchema,
-		email: emailSchema,
-		password: passwordSchema,
-		confirmPassword: z.string().min(1, "Please confirm your password"),
-	})
-	.refine((data) => data.password === data.confirmPassword, {
-		message: "Passwords do not match",
-		path: ["confirmPassword"],
-	});
+  .object({
+    name: nameSchema,
+    email: emailSchema,
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 export type RegisterFormData = z.infer<typeof registerSchema>;
 
@@ -150,7 +150,7 @@ export type RegisterFormData = z.infer<typeof registerSchema>;
  * Forgot password form validation schema
  */
 export const forgotPasswordSchema = z.object({
-	email: emailSchema,
+  email: emailSchema,
 });
 
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
@@ -159,15 +159,15 @@ export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
  * Reset password form validation schema
  */
 export const resetPasswordSchema = z
-	.object({
-		token: tokenSchema,
-		password: passwordSchema,
-		confirmPassword: z.string().min(1, "Please confirm your password"),
-	})
-	.refine((data) => data.password === data.confirmPassword, {
-		message: "Passwords do not match",
-		path: ["confirmPassword"],
-	});
+  .object({
+    token: tokenSchema,
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
@@ -175,19 +175,19 @@ export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
  * Change password form validation schema (for authenticated users)
  */
 export const changePasswordSchema = z
-	.object({
-		currentPassword: z.string().min(1, "Current password is required"),
-		newPassword: passwordSchema,
-		confirmNewPassword: z.string().min(1, "Please confirm your new password"),
-	})
-	.refine((data) => data.newPassword === data.confirmNewPassword, {
-		message: "New passwords do not match",
-		path: ["confirmNewPassword"],
-	})
-	.refine((data) => data.currentPassword !== data.newPassword, {
-		message: "New password must be different from current password",
-		path: ["newPassword"],
-	});
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: passwordSchema,
+    confirmNewPassword: z.string().min(1, "Please confirm your new password"),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: "New passwords do not match",
+    path: ["confirmNewPassword"],
+  })
+  .refine((data) => data.currentPassword !== data.newPassword, {
+    message: "New password must be different from current password",
+    path: ["newPassword"],
+  });
 
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 
@@ -199,66 +199,66 @@ export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
  * Get user-friendly validation error messages
  */
 export function getValidationErrors(error: z.ZodError): Record<string, string> {
-	const errors: Record<string, string> = {};
+  const errors: Record<string, string> = {};
 
-	for (const issue of error.issues) {
-		const path = issue.path.join(".");
-		if (path) {
-			errors[path] = issue.message;
-		}
-	}
+  for (const issue of error.issues) {
+    const path = issue.path.join(".");
+    if (path) {
+      errors[path] = issue.message;
+    }
+  }
 
-	logger.debug("Validation errors extracted", {
-		errorCount: error.issues.length,
-		fields: Object.keys(errors),
-	});
+  logger.debug("Validation errors extracted", {
+    errorCount: error.issues.length,
+    fields: Object.keys(errors),
+  });
 
-	return errors;
+  return errors;
 }
 
 /**
  * Validate form data and return formatted errors
  */
 export function validateFormData<T>(
-	schema: z.ZodSchema<T>,
-	data: unknown,
+  schema: z.ZodSchema<T>,
+  data: unknown,
 ):
-	| { success: true; data: T }
-	| { success: false; errors: Record<string, string> } {
-	try {
-		const result = schema.safeParse(data);
+  | { success: true; data: T }
+  | { success: false; errors: Record<string, string> } {
+  try {
+    const result = schema.safeParse(data);
 
-		if (result.success) {
-			logger.debug("Form validation successful");
-			return { success: true, data: result.data };
-		} else {
-			const errors = getValidationErrors(result.error);
-			logger.warn("Form validation failed", { errors });
-			return { success: false, errors };
-		}
-	} catch (error) {
-		logger.error("Unexpected validation error", { error });
-		return {
-			success: false,
-			errors: { _form: "An unexpected validation error occurred" },
-		};
-	}
+    if (result.success) {
+      logger.debug("Form validation successful");
+      return { success: true, data: result.data };
+    } else {
+      const errors = getValidationErrors(result.error);
+      logger.warn("Form validation failed", { errors });
+      return { success: false, errors };
+    }
+  } catch (error) {
+    logger.error("Unexpected validation error", { error });
+    return {
+      success: false,
+      errors: { _form: "An unexpected validation error occurred" },
+    };
+  }
 }
 
 /**
  * Create a custom validation function for React Hook Form
  */
 export function createValidator<T>(schema: z.ZodSchema<T>) {
-	return (data: unknown) => {
-		const result = validateFormData(schema, data);
-		if (result.success) {
-			return true;
-		} else {
-			// Return the first error for React Hook Form
-			const firstError = Object.values(result.errors)[0];
-			return firstError || "Validation failed";
-		}
-	};
+  return (data: unknown) => {
+    const result = validateFormData(schema, data);
+    if (result.success) {
+      return true;
+    } else {
+      // Return the first error for React Hook Form
+      const firstError = Object.values(result.errors)[0];
+      return firstError || "Validation failed";
+    }
+  };
 }
 
 // ===========================

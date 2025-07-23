@@ -4,192 +4,192 @@
    THEME VARIABLES (CSS VARS)
    ========================= */
 :root {
-	--radius: 0.75rem;
-	/* Modern Light Theme - Slate Color Palette */
-	--background: #f8fafc;
-	/* Slate 50 */
-	--foreground: #334155;
-	/* Slate 700 */
-	--text-main: #1e293b;
-	/* Slate 800 */
-	--text-secondary: #64748b;
-	/* Slate 500 */
-	--text-accent: #475569;
-	/* Slate 600 */
-	--text-inverse: #ffffff;
-	--text-success: #22c55e;
-	--text-warning: #f59e0b;
-	--text-error: #ef4444;
-	--card-foreground: var(--text-main);
-	--popover-foreground: var(--text-main);
-	--secondary-foreground: var(--text-main);
-	--muted-foreground: var(--text-secondary);
-	--accent-foreground: var(--text-accent);
-	--destructive-foreground: var(--text-inverse);
-	--primary-foreground: #f1f5f9;
-	/* Slate 100 */
-	--sidebar-foreground: var(--text-accent);
-	--sidebar-primary-foreground: var(--text-inverse);
-	--sidebar-accent-foreground: var(--text-accent);
-	--card: #ffffff;
-	--popover: #ffffff;
-	--primary: #475569;
-	/* Slate 600 */
-	--secondary: #f1f5f9;
-	/* Slate 100 */
-	--muted: #f8fafc;
-	/* Slate 50 */
-	--accent: #e2e8f0;
-	/* Slate 200 */
-	--destructive: #ef4444;
-	--border: #e2e8f0;
-	/* Slate 200 */
-	--input: #e2e8f0;
-	--ring: #475569;
-	/* Slate 600 */
-	--chart-1: #475569;
-	/* Slate 600 */
-	--chart-2: #64748b;
-	/* Slate 500 */
-	--chart-3: #94a3b8;
-	/* Slate 400 */
-	--chart-4: #ef4444;
-	/* Red */
-	--chart-5: #22c55e;
-	/* Green */
-	--sidebar: #f1f5f9;
-	/* Slate 100 */
-	--sidebar-primary: #475569;
-	/* Slate 600 */
-	--sidebar-accent: #e2e8f0;
-	/* Slate 200 */
-	--shadow-color: #000000;
-	--glass-bg: #ffffff;
-	--glass-border: #ffffff;
-	--overlay-light: #ffffff;
-	--nav-shimmer: #ffffff;
-	--gradient-accent1: #6366f1;
-	--gradient-accent2: #3b82f6;
-	--gradient-accent3: #10b981;
-	--sidebar-border: #e2e8f0;
-	--sidebar-ring: #475569;
-	--space-0: 0rem;
-	--space-1: 0.25rem;
-	--space-2: 0.5rem;
-	--space-3: 0.75rem;
-	--space-4: 1rem;
-	--space-6: 1.5rem;
-	--space-8: 2rem;
-	--space-12: 3rem;
-	--space-16: 4rem;
-	--space-20: 5rem;
-	--space-24: 6rem;
-	--space-32: 8rem;
-	--font-size-xs: 0.75rem;
-	--font-size-sm: 0.875rem;
-	--font-size-base: 1rem;
-	--font-size-lg: 1.125rem;
-	--font-size-xl: 1.25rem;
-	--font-size-2xl: 1.5rem;
-	--font-size-3xl: 1.875rem;
-	--font-size-4xl: 2.25rem;
-	--color-success: #22c55e;
-	--color-success-foreground: #ffffff;
-	--color-warning: #f59e0b;
-	--color-warning-foreground: #ffffff;
-	--color-error: #ef4444;
-	--color-error-foreground: #ffffff;
-	--color-info: #3b82f6;
-	--color-info-foreground: #ffffff;
+  --radius: 0.75rem;
+  /* Modern Light Theme - Slate Color Palette */
+  --background: #f8fafc;
+  /* Slate 50 */
+  --foreground: #334155;
+  /* Slate 700 */
+  --text-main: #1e293b;
+  /* Slate 800 */
+  --text-secondary: #64748b;
+  /* Slate 500 */
+  --text-accent: #475569;
+  /* Slate 600 */
+  --text-inverse: #ffffff;
+  --text-success: #22c55e;
+  --text-warning: #f59e0b;
+  --text-error: #ef4444;
+  --card-foreground: var(--text-main);
+  --popover-foreground: var(--text-main);
+  --secondary-foreground: var(--text-main);
+  --muted-foreground: var(--text-secondary);
+  --accent-foreground: var(--text-accent);
+  --destructive-foreground: var(--text-inverse);
+  --primary-foreground: #f1f5f9;
+  /* Slate 100 */
+  --sidebar-foreground: var(--text-accent);
+  --sidebar-primary-foreground: var(--text-inverse);
+  --sidebar-accent-foreground: var(--text-accent);
+  --card: #ffffff;
+  --popover: #ffffff;
+  --primary: #475569;
+  /* Slate 600 */
+  --secondary: #f1f5f9;
+  /* Slate 100 */
+  --muted: #f8fafc;
+  /* Slate 50 */
+  --accent: #e2e8f0;
+  /* Slate 200 */
+  --destructive: #ef4444;
+  --border: #e2e8f0;
+  /* Slate 200 */
+  --input: #e2e8f0;
+  --ring: #475569;
+  /* Slate 600 */
+  --chart-1: #475569;
+  /* Slate 600 */
+  --chart-2: #64748b;
+  /* Slate 500 */
+  --chart-3: #94a3b8;
+  /* Slate 400 */
+  --chart-4: #ef4444;
+  /* Red */
+  --chart-5: #22c55e;
+  /* Green */
+  --sidebar: #f1f5f9;
+  /* Slate 100 */
+  --sidebar-primary: #475569;
+  /* Slate 600 */
+  --sidebar-accent: #e2e8f0;
+  /* Slate 200 */
+  --shadow-color: #000000;
+  --glass-bg: #ffffff;
+  --glass-border: #ffffff;
+  --overlay-light: #ffffff;
+  --nav-shimmer: #ffffff;
+  --gradient-accent1: #6366f1;
+  --gradient-accent2: #3b82f6;
+  --gradient-accent3: #10b981;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #475569;
+  --space-0: 0rem;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+  --color-success: #22c55e;
+  --color-success-foreground: #ffffff;
+  --color-warning: #f59e0b;
+  --color-warning-foreground: #ffffff;
+  --color-error: #ef4444;
+  --color-error-foreground: #ffffff;
+  --color-info: #3b82f6;
+  --color-info-foreground: #ffffff;
 }
 
 .dark {
-	--background: #020617;
-	/* Slate 950 */
-	--foreground: #cbd5e1;
-	/* Slate 300 */
-	--text-main: #f1f5f9;
-	/* Slate 100 */
-	--text-secondary: #cbd5e1;
-	/* Slate 300 */
-	--text-accent: #94a3b8;
-	/* Slate 400 */
-	--text-inverse: #1e293b;
-	/* Slate 800 */
-	--card: #0f172a;
-	/* Slate 900 */
-	--card-foreground: #f1f5f9;
-	/* Slate 100 */
-	--popover: #0f172a;
-	/* Slate 900 */
-	--popover-foreground: #f1f5f9;
-	/* Slate 100 */
-	--primary: #94a3b8;
-	/* Slate 400 */
-	--primary-foreground: #f1f5f9;
-	/* Slate 100 */
-	--secondary: #1e293b;
-	/* Slate 800 */
-	--secondary-foreground: #cbd5e1;
-	/* Slate 300 */
-	--muted: #1e293b;
-	/* Slate 800 */
-	--muted-foreground: #94a3b8;
-	/* Slate 400 */
-	--accent: #1e293b;
-	/* Slate 800 */
-	--accent-foreground: #cbd5e1;
-	/* Slate 300 */
-	--destructive: #f87171;
-	--destructive-foreground: #ffffff;
-	--border: #334155;
-	/* Slate 700 */
-	--input: #334155;
-	/* Slate 700 */
-	--ring: #94a3b8;
-	/* Slate 400 */
-	--chart-1: #94a3b8;
-	/* Slate 400 */
-	--chart-2: #64748b;
-	/* Slate 500 */
-	--chart-3: #cbd5e1;
-	/* Slate 300 */
-	--chart-4: #f87171;
-	/* Red */
-	--chart-5: #34d399;
-	/* Green */
-	--sidebar: #0f172a;
-	/* Slate 900 */
-	--sidebar-foreground: #cbd5e1;
-	/* Slate 300 */
-	--sidebar-primary: #94a3b8;
-	/* Slate 400 */
-	--sidebar-primary-foreground: #0f172a;
-	/* Slate 900 */
-	--sidebar-accent: #1e293b;
-	/* Slate 800 */
-	--sidebar-accent-foreground: #cbd5e1;
-	/* Slate 300 */
-	--sidebar-border: #334155;
-	/* Slate 700 */
-	--sidebar-ring: #94a3b8;
-	/* Slate 400 */
-	--shadow-color: #000000;
-	--glass-bg: #0f172a;
-	--glass-border: #ffffff;
-	--overlay-light: #ffffff;
-	--nav-shimmer: #ffffff;
-	--gradient-accent1: #6366f1;
-	--gradient-accent2: #3b82f6;
-	--gradient-accent3: #34d399;
-	--color-success: #34d399;
-	--color-success-foreground: #ffffff;
-	--color-warning: #fbbf24;
-	--color-warning-foreground: #0f172a;
-	--color-error: #f87171;
-	--color-error-foreground: #ffffff;
-	--color-info: #60a5fa;
-	--color-info-foreground: #ffffff;
+  --background: #020617;
+  /* Slate 950 */
+  --foreground: #cbd5e1;
+  /* Slate 300 */
+  --text-main: #f1f5f9;
+  /* Slate 100 */
+  --text-secondary: #cbd5e1;
+  /* Slate 300 */
+  --text-accent: #94a3b8;
+  /* Slate 400 */
+  --text-inverse: #1e293b;
+  /* Slate 800 */
+  --card: #0f172a;
+  /* Slate 900 */
+  --card-foreground: #f1f5f9;
+  /* Slate 100 */
+  --popover: #0f172a;
+  /* Slate 900 */
+  --popover-foreground: #f1f5f9;
+  /* Slate 100 */
+  --primary: #94a3b8;
+  /* Slate 400 */
+  --primary-foreground: #f1f5f9;
+  /* Slate 100 */
+  --secondary: #1e293b;
+  /* Slate 800 */
+  --secondary-foreground: #cbd5e1;
+  /* Slate 300 */
+  --muted: #1e293b;
+  /* Slate 800 */
+  --muted-foreground: #94a3b8;
+  /* Slate 400 */
+  --accent: #1e293b;
+  /* Slate 800 */
+  --accent-foreground: #cbd5e1;
+  /* Slate 300 */
+  --destructive: #f87171;
+  --destructive-foreground: #ffffff;
+  --border: #334155;
+  /* Slate 700 */
+  --input: #334155;
+  /* Slate 700 */
+  --ring: #94a3b8;
+  /* Slate 400 */
+  --chart-1: #94a3b8;
+  /* Slate 400 */
+  --chart-2: #64748b;
+  /* Slate 500 */
+  --chart-3: #cbd5e1;
+  /* Slate 300 */
+  --chart-4: #f87171;
+  /* Red */
+  --chart-5: #34d399;
+  /* Green */
+  --sidebar: #0f172a;
+  /* Slate 900 */
+  --sidebar-foreground: #cbd5e1;
+  /* Slate 300 */
+  --sidebar-primary: #94a3b8;
+  /* Slate 400 */
+  --sidebar-primary-foreground: #0f172a;
+  /* Slate 900 */
+  --sidebar-accent: #1e293b;
+  /* Slate 800 */
+  --sidebar-accent-foreground: #cbd5e1;
+  /* Slate 300 */
+  --sidebar-border: #334155;
+  /* Slate 700 */
+  --sidebar-ring: #94a3b8;
+  /* Slate 400 */
+  --shadow-color: #000000;
+  --glass-bg: #0f172a;
+  --glass-border: #ffffff;
+  --overlay-light: #ffffff;
+  --nav-shimmer: #ffffff;
+  --gradient-accent1: #6366f1;
+  --gradient-accent2: #3b82f6;
+  --gradient-accent3: #34d399;
+  --color-success: #34d399;
+  --color-success-foreground: #ffffff;
+  --color-warning: #fbbf24;
+  --color-warning-foreground: #0f172a;
+  --color-error: #f87171;
+  --color-error-foreground: #ffffff;
+  --color-info: #60a5fa;
+  --color-info-foreground: #ffffff;
 }
 
 /* =========================
@@ -197,232 +197,280 @@
    ========================= */
 /* Backgrounds */
 .bg-background {
-	background-color: var(--background) !important;
+  background-color: var(--background) !important;
 }
 
 .bg-foreground {
-	background-color: var(--foreground) !important;
+  background-color: var(--foreground) !important;
 }
 
 .bg-card {
-	background-color: var(--card) !important;
+  background-color: var(--card) !important;
 }
 
 .bg-muted {
-	background-color: var(--muted) !important;
+  background-color: var(--muted) !important;
 }
 
 .bg-accent {
-	background-color: var(--accent) !important;
+  background-color: var(--accent) !important;
 }
 
 .bg-primary {
-	background-color: var(--primary) !important;
+  background-color: var(--primary) !important;
 }
 
 .bg-secondary {
-	background-color: var(--secondary) !important;
+  background-color: var(--secondary) !important;
 }
 
 .bg-success {
-	background-color: var(--color-success) !important;
+  background-color: var(--color-success) !important;
 }
 
 .bg-warning {
-	background-color: var(--color-warning) !important;
+  background-color: var(--color-warning) !important;
 }
 
 .bg-error {
-	background-color: var(--color-error) !important;
+  background-color: var(--color-error) !important;
 }
 
 .bg-destructive {
-	background-color: var(--destructive) !important;
+  background-color: var(--destructive) !important;
 }
 
 .bg-info {
-	background-color: var(--color-info) !important;
+  background-color: var(--color-info) !important;
 }
 
 /* Background Opacity Variants */
 .bg-success\/10 {
-	background-color: color-mix(in srgb, var(--color-success) 10%, transparent) !important;
+  background-color: color-mix(
+    in srgb,
+    var(--color-success) 10%,
+    transparent
+  ) !important;
 }
 
 .bg-success\/20 {
-	background-color: color-mix(in srgb, var(--color-success) 20%, transparent) !important;
+  background-color: color-mix(
+    in srgb,
+    var(--color-success) 20%,
+    transparent
+  ) !important;
 }
 
 .bg-warning\/10 {
-	background-color: color-mix(in srgb, var(--color-warning) 10%, transparent) !important;
+  background-color: color-mix(
+    in srgb,
+    var(--color-warning) 10%,
+    transparent
+  ) !important;
 }
 
 .bg-warning\/20 {
-	background-color: color-mix(in srgb, var(--color-warning) 20%, transparent) !important;
+  background-color: color-mix(
+    in srgb,
+    var(--color-warning) 20%,
+    transparent
+  ) !important;
 }
 
 .bg-destructive\/10 {
-	background-color: color-mix(in srgb, var(--destructive) 10%, transparent) !important;
+  background-color: color-mix(
+    in srgb,
+    var(--destructive) 10%,
+    transparent
+  ) !important;
 }
 
 .bg-destructive\/20 {
-	background-color: color-mix(in srgb, var(--destructive) 20%, transparent) !important;
+  background-color: color-mix(
+    in srgb,
+    var(--destructive) 20%,
+    transparent
+  ) !important;
 }
 
 .bg-info\/10 {
-	background-color: color-mix(in srgb, var(--color-info) 10%, transparent) !important;
+  background-color: color-mix(
+    in srgb,
+    var(--color-info) 10%,
+    transparent
+  ) !important;
 }
 
 .bg-info\/20 {
-	background-color: color-mix(in srgb, var(--color-info) 20%, transparent) !important;
+  background-color: color-mix(
+    in srgb,
+    var(--color-info) 20%,
+    transparent
+  ) !important;
 }
 
 .bg-primary\/10 {
-	background-color: color-mix(in srgb, var(--primary) 10%, transparent) !important;
+  background-color: color-mix(
+    in srgb,
+    var(--primary) 10%,
+    transparent
+  ) !important;
 }
 
 .bg-primary\/20 {
-	background-color: color-mix(in srgb, var(--primary) 20%, transparent) !important;
+  background-color: color-mix(
+    in srgb,
+    var(--primary) 20%,
+    transparent
+  ) !important;
 }
 
 .bg-muted\/30 {
-	background-color: color-mix(in srgb, var(--muted) 30%, transparent) !important;
+  background-color: color-mix(
+    in srgb,
+    var(--muted) 30%,
+    transparent
+  ) !important;
 }
 
 .bg-accent\/10 {
-	background-color: color-mix(in srgb, var(--accent) 10%, transparent) !important;
+  background-color: color-mix(
+    in srgb,
+    var(--accent) 10%,
+    transparent
+  ) !important;
 }
 
 .bg-card\/80 {
-	background-color: color-mix(in srgb, var(--card) 80%, transparent) !important;
+  background-color: color-mix(in srgb, var(--card) 80%, transparent) !important;
 }
 
 /* Text / Foregrounds */
 .text-foreground {
-	color: var(--foreground) !important;
+  color: var(--foreground) !important;
 }
 
 .text-background {
-	color: var(--background) !important;
+  color: var(--background) !important;
 }
 
 .text-primary {
-	color: var(--primary) !important;
+  color: var(--primary) !important;
 }
 
 .text-secondary {
-	color: var(--text-secondary) !important;
+  color: var(--text-secondary) !important;
 }
 
 .text-muted-foreground,
 .text-muted {
-	color: var(--muted-foreground) !important;
+  color: var(--muted-foreground) !important;
 }
 
 .text-accent {
-	color: var(--text-accent) !important;
+  color: var(--text-accent) !important;
 }
 
 .text-success,
 .text-success-foreground {
-	color: var(--color-success) !important;
+  color: var(--color-success) !important;
 }
 
 .text-warning {
-	color: var(--color-warning) !important;
+  color: var(--color-warning) !important;
 }
 
 .text-warning-foreground {
-	color: #fff !important;
+  color: #fff !important;
 }
 
 .text-error,
 .text-destructive {
-	color: var(--destructive) !important;
+  color: var(--destructive) !important;
 }
 
 .text-destructive-foreground {
-	color: var(--destructive-foreground) !important;
+  color: var(--destructive-foreground) !important;
 }
 
 .text-info,
 .text-info-foreground {
-	color: var(--color-info) !important;
+  color: var(--color-info) !important;
 }
 
 .text-inverse {
-	color: var(--text-inverse) !important;
+  color: var(--text-inverse) !important;
 }
 
 .text-accent-foreground {
-	color: var(--accent-foreground) !important;
+  color: var(--accent-foreground) !important;
 }
 
 .text-primary-foreground {
-	color: var(--primary-foreground, #f1f5f9) !important;
+  color: var(--primary-foreground, #f1f5f9) !important;
 }
 
 /* Borders */
 .border-border,
 .border-default {
-	border-color: var(--border) !important;
+  border-color: var(--border) !important;
 }
 
 .border-input {
-	border-color: var(--input) !important;
+  border-color: var(--input) !important;
 }
 
 .border-primary {
-	border-color: var(--primary) !important;
+  border-color: var(--primary) !important;
 }
 
 .border-secondary {
-	border-color: var(--secondary) !important;
+  border-color: var(--secondary) !important;
 }
 
 .border-accent {
-	border-color: var(--accent) !important;
+  border-color: var(--accent) !important;
 }
 
 .border-success {
-	border-color: var(--color-success) !important;
+  border-color: var(--color-success) !important;
 }
 
 .border-warning {
-	border-color: var(--color-warning) !important;
+  border-color: var(--color-warning) !important;
 }
 
 .border-error,
 .border-destructive {
-	border-color: var(--destructive) !important;
+  border-color: var(--destructive) !important;
 }
 
 .border-info {
-	border-color: var(--color-info) !important;
+  border-color: var(--color-info) !important;
 }
 
 /* Rings (focus, etc) */
 .ring-primary,
 .focus\:ring-primary:focus,
 .focus\:ring-primary:focus-visible {
-	--tw-ring-color: var(--primary) !important;
+  --tw-ring-color: var(--primary) !important;
 }
 
 .ring-success {
-	--tw-ring-color: var(--color-success) !important;
+  --tw-ring-color: var(--color-success) !important;
 }
 
 .ring-warning {
-	--tw-ring-color: var(--color-warning) !important;
+  --tw-ring-color: var(--color-warning) !important;
 }
 
 .ring-error,
 .ring-destructive {
-	--tw-ring-color: var(--destructive) !important;
+  --tw-ring-color: var(--destructive) !important;
 }
 
 .ring-info {
-	--tw-ring-color: var(--color-info) !important;
+  --tw-ring-color: var(--color-info) !important;
 }
 
 /* =========================
@@ -430,68 +478,68 @@
    ========================= */
 /* Shadows, Glass, Gradients, Typography, Buttons, Interactive, etc. */
 .glass-card {
-	background-color: color-mix(in srgb, var(--card) 80%, transparent);
-	backdrop-filter: blur(12px);
-	border: 1px solid color-mix(in srgb, var(--border) 20%, transparent);
+  background-color: color-mix(in srgb, var(--card) 80%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in srgb, var(--border) 20%, transparent);
 }
 
 .shadow-elegant {
-	box-shadow: 0 8px 32px 0
-		color-mix(in srgb, var(--shadow-color) 10%, transparent);
+  box-shadow: 0 8px 32px 0
+    color-mix(in srgb, var(--shadow-color) 10%, transparent);
 }
 
 .shadow-elegant-lg {
-	box-shadow: 0 16px 48px 0
-		color-mix(in srgb, var(--shadow-color) 15%, transparent);
+  box-shadow: 0 16px 48px 0
+    color-mix(in srgb, var(--shadow-color) 15%, transparent);
 }
 
 /* 6. Gradients */
 .bg-gradient-mesh,
 .gradient-mesh {
-	background: linear-gradient(
-		135deg,
-		color-mix(in srgb, var(--gradient-accent1) 10%, transparent) 0%,
-		color-mix(in srgb, var(--gradient-accent2) 10%, transparent) 50%,
-		color-mix(in srgb, var(--gradient-accent3) 10%, transparent) 100%
-	);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--gradient-accent1) 10%, transparent) 0%,
+    color-mix(in srgb, var(--gradient-accent2) 10%, transparent) 50%,
+    color-mix(in srgb, var(--gradient-accent3) 10%, transparent) 100%
+  );
 }
 
 .dark .bg-gradient-mesh,
 .dark .gradient-mesh {
-	background: linear-gradient(
-		135deg,
-		color-mix(in srgb, var(--gradient-accent1) 15%, transparent) 0%,
-		color-mix(in srgb, var(--gradient-accent2) 15%, transparent) 50%,
-		color-mix(in srgb, var(--gradient-accent3) 15%, transparent) 100%
-	);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--gradient-accent1) 15%, transparent) 0%,
+    color-mix(in srgb, var(--gradient-accent2) 15%, transparent) 50%,
+    color-mix(in srgb, var(--gradient-accent3) 15%, transparent) 100%
+  );
 }
 
 .bg-gradient-to-br {
-	background-image: linear-gradient(
-		to bottom right,
-		var(--background),
-		color-mix(in srgb, var(--muted) 30%, transparent),
-		color-mix(in srgb, var(--accent) 10%, transparent)
-	);
+  background-image: linear-gradient(
+    to bottom right,
+    var(--background),
+    color-mix(in srgb, var(--muted) 30%, transparent),
+    color-mix(in srgb, var(--accent) 10%, transparent)
+  );
 }
 
 .bg-gradient-to-r {
-	background-image: linear-gradient(
-		to right,
-		var(--foreground),
-		var(--primary),
-		var(--foreground)
-	);
+  background-image: linear-gradient(
+    to right,
+    var(--foreground),
+    var(--primary),
+    var(--foreground)
+  );
 }
 
 /* 7. Utility / Misc */
 .text-transparent {
-	color: transparent !important;
+  color: transparent !important;
 }
 
 .bg-clip-text {
-	-webkit-background-clip: text;
-	background-clip: text;
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
 /* =========================
@@ -499,283 +547,288 @@
    ========================= */
 /* Base Styles */
 * {
-	border-color: var(--border);
+  border-color: var(--border);
 }
 
 body {
-	background-color: var(--background);
-	color: var(--text-main);
-	font-feature-settings:
-		"rlig" 1,
-		"calt" 1;
-	font-family:
-		"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
+  background-color: var(--background);
+  color: var(--text-main);
+  font-feature-settings:
+    "rlig" 1,
+    "calt" 1;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Roboto",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Modern Typography Classes */
 .text-display-xl {
-	font-size: var(--font-size-4xl);
-	font-weight: 800;
-	line-height: 1;
-	letter-spacing: -0.025em;
+  font-size: var(--font-size-4xl);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.025em;
 }
 
 .text-display-lg {
-	font-size: var(--font-size-3xl);
-	font-weight: 700;
-	line-height: 1.125;
-	letter-spacing: -0.025em;
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  line-height: 1.125;
+  letter-spacing: -0.025em;
 }
 
 .text-display-md {
-	font-size: var(--font-size-2xl);
-	font-weight: 600;
-	line-height: 1.2;
-	letter-spacing: -0.025em;
+  font-size: var(--font-size-2xl);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
 }
 
 .text-body-lg {
-	font-size: var(--font-size-lg);
-	font-weight: 400;
-	line-height: 1.6;
+  font-size: var(--font-size-lg);
+  font-weight: 400;
+  line-height: 1.6;
 }
 
 .text-body-md {
-	font-size: var(--font-size-base);
-	font-weight: 400;
-	line-height: 1.5;
+  font-size: var(--font-size-base);
+  font-weight: 400;
+  line-height: 1.5;
 }
 
 .text-body-sm {
-	font-size: var(--font-size-sm);
-	font-weight: 400;
-	line-height: 1.4;
+  font-size: var(--font-size-sm);
+  font-weight: 400;
+  line-height: 1.4;
 }
 
 .text-caption {
-	font-size: var(--font-size-xs);
-	line-height: 1.25;
-	letter-spacing: 0.025em;
-	font-weight: 500;
+  font-size: var(--font-size-xs);
+  line-height: 1.25;
+  letter-spacing: 0.025em;
+  font-weight: 500;
 }
 
 /* Modern Interactive Elements */
 .interactive-scale {
-	transition: transform 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 .interactive-scale:hover {
-	transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 .interactive-scale:active {
-	transform: scale(0.95);
+  transform: scale(0.95);
 }
 
 .interactive-lift {
-	transition: all 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .interactive-lift:hover {
-	box-shadow:
-		0 10px 25px -5px color-mix(in srgb, var(--shadow-color) 10%, transparent),
-		0 8px 10px -6px color-mix(in srgb, var(--shadow-color) 10%, transparent);
-	transform: translateY(-4px);
+  box-shadow:
+    0 10px 25px -5px color-mix(in srgb, var(--shadow-color) 10%, transparent),
+    0 8px 10px -6px color-mix(in srgb, var(--shadow-color) 10%, transparent);
+  transform: translateY(-4px);
 }
 
 .interactive-press {
-	transition: transform 0.15s ease;
+  transition: transform 0.15s ease;
 }
 
 .interactive-press:active {
-	transform: scale(0.95);
+  transform: scale(0.95);
 }
 
 /* Glass morphism effects */
 .glass {
-	backdrop-filter: blur(12px);
-	background-color: color-mix(in srgb, var(--glass-bg) 80%, transparent);
-	border: 1px solid color-mix(in srgb, var(--glass-border) 20%, transparent);
+  backdrop-filter: blur(12px);
+  background-color: color-mix(in srgb, var(--glass-bg) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--glass-border) 20%, transparent);
 }
 
 .dark .glass {
-	background-color: color-mix(in srgb, var(--glass-bg) 80%, transparent);
-	border: 1px solid color-mix(in srgb, var(--glass-border) 10%, transparent);
+  background-color: color-mix(in srgb, var(--glass-bg) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--glass-border) 10%, transparent);
 }
 
 /* Navigation specific styles */
 .nav-item {
-	position: relative;
-	overflow: hidden;
-	transition: transform 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease;
 }
 
 .nav-item:hover {
-	transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 .nav-item:active {
-	transform: scale(0.95);
+  transform: scale(0.95);
 }
 
 .nav-item::before {
-	content: "";
-	position: absolute;
-	top: 0;
-	left: -100%;
-	width: 100%;
-	height: 100%;
-	background: linear-gradient(
-		90deg,
-		transparent,
-		color-mix(in srgb, var(--nav-shimmer) 20%, transparent),
-		transparent
-	);
-	transition: left 0.5s;
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--nav-shimmer) 20%, transparent),
+    transparent
+  );
+  transition: left 0.5s;
 }
 
 .nav-item:hover::before {
-	left: 100%;
+  left: 100%;
 }
 
 /* Sidebar specific animations */
 .sidebar-item-enter {
-	animation: slideInLeft 0.3s ease-out;
+  animation: slideInLeft 0.3s ease-out;
 }
 
 .sidebar-item-active {
-	position: relative;
+  position: relative;
 }
 
 .sidebar-item-active::after {
-	content: "";
-	position: absolute;
-	right: 0;
-	top: 50%;
-	transform: translateY(-50%);
-	width: 3px;
-	height: 60%;
-	background: var(--sidebar-primary);
-	border-radius: 2px;
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: var(--sidebar-primary);
+  border-radius: 2px;
 }
 
 @keyframes slideInLeft {
-	from {
-		opacity: 0;
-		transform: translateX(-20px);
-	}
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
 
-	to {
-		opacity: 1;
-		transform: translateX(0);
-	}
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* Modern gradient backgrounds */
 .gradient-bg {
-	background: linear-gradient(
-		135deg,
-		var(--background) 0%,
-		var(--muted) 25%,
-		color-mix(in srgb, var(--accent) 10%, transparent) 50%,
-		var(--background) 100%
-	);
+  background: linear-gradient(
+    135deg,
+    var(--background) 0%,
+    var(--muted) 25%,
+    color-mix(in srgb, var(--accent) 10%, transparent) 50%,
+    var(--background) 100%
+  );
 }
 
 .gradient-primary {
-	background: linear-gradient(
-		135deg,
-		var(--primary) 0%,
-		color-mix(in srgb, var(--primary) 80%, transparent) 100%
-	);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    color-mix(in srgb, var(--primary) 80%, transparent) 100%
+  );
 }
 
 .gradient-sidebar {
-	background: linear-gradient(
-		135deg,
-		var(--sidebar) 0%,
-		var(--sidebar-accent) 50%,
-		var(--sidebar) 100%
-	);
+  background: linear-gradient(
+    135deg,
+    var(--sidebar) 0%,
+    var(--sidebar-accent) 50%,
+    var(--sidebar) 100%
+  );
 }
 
 /* Modern Glass Effect */
 .glass-modern {
-	background: color-mix(in srgb, var(--glass-bg) 10%, transparent);
-	backdrop-filter: blur(10px);
-	border: 1px solid color-mix(in srgb, var(--glass-border) 20%, transparent);
+  background: color-mix(in srgb, var(--glass-bg) 10%, transparent);
+  backdrop-filter: blur(10px);
+  border: 1px solid color-mix(in srgb, var(--glass-border) 20%, transparent);
 }
 
 .dark .glass-modern {
-	background: color-mix(in srgb, var(--shadow-color) 20%, transparent);
-	border: 1px solid color-mix(in srgb, var(--glass-border) 10%, transparent);
+  background: color-mix(in srgb, var(--shadow-color) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--glass-border) 10%, transparent);
 }
 
 /* Modern Gradient Backgrounds */
 .gradient-mesh {
-	background: linear-gradient(
-		135deg,
-		color-mix(in srgb, var(--gradient-accent1) 10%, transparent) 0%,
-		color-mix(in srgb, var(--gradient-accent2) 10%, transparent) 50%,
-		color-mix(in srgb, var(--gradient-accent3) 10%, transparent) 100%
-	);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--gradient-accent1) 10%, transparent) 0%,
+    color-mix(in srgb, var(--gradient-accent2) 10%, transparent) 50%,
+    color-mix(in srgb, var(--gradient-accent3) 10%, transparent) 100%
+  );
 }
 
 .dark .gradient-mesh {
-	background: linear-gradient(
-		135deg,
-		color-mix(in srgb, var(--gradient-accent1) 15%, transparent) 0%,
-		color-mix(in srgb, var(--gradient-accent2) 15%, transparent) 50%,
-		color-mix(in srgb, var(--gradient-accent3) 15%, transparent) 100%
-	);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--gradient-accent1) 15%, transparent) 0%,
+    color-mix(in srgb, var(--gradient-accent2) 15%, transparent) 50%,
+    color-mix(in srgb, var(--gradient-accent3) 15%, transparent) 100%
+  );
 }
 
 /* Smooth hover effects */
 .hover-lift {
-	transition:
-		transform 0.2s ease,
-		box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .hover-lift:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 8px 25px -8px
-		color-mix(in srgb, var(--shadow-color) 15%, transparent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -8px
+    color-mix(in srgb, var(--shadow-color) 15%, transparent);
 }
 
 /* Modern focus states */
 .focus-ring:focus {
-	outline: none;
-	box-shadow:
-		0 0 0 2px var(--primary),
-		0 0 0 4px var(--background);
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--primary),
+    0 0 0 4px var(--background);
 }
 
 /* Animated background patterns using centralized colors */
 .animated-bg {
-	background: linear-gradient(
-		-45deg,
-		var(--gradient-accent1),
-		var(--gradient-accent2),
-		var(--gradient-accent3),
-		var(--primary)
-	);
-	background-size: 400% 400%;
-	animation: gradient 15s ease infinite;
+  background: linear-gradient(
+    -45deg,
+    var(--gradient-accent1),
+    var(--gradient-accent2),
+    var(--gradient-accent3),
+    var(--primary)
+  );
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
 }
 
 @keyframes gradient {
-	0% {
-		background-position: 0% 50%;
-	}
+  0% {
+    background-position: 0% 50%;
+  }
 
-	50% {
-		background-position: 100% 50%;
-	}
+  50% {
+    background-position: 100% 50%;
+  }
 
-	100% {
-		background-position: 0% 50%;
-	}
+  100% {
+    background-position: 0% 50%;
+  }
 }

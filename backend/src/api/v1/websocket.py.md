@@ -3,7 +3,7 @@
 **File:** `backend/src/api/v1/websocket.py`  
 **Purpose:** Production-ready WebSocket endpoint for real-time bidirectional communication with comprehensive connection management  
 **Lines of Code:** 1,588  
-**Type:** WebSocket API Router  
+**Type:** WebSocket API Router
 
 ## Overview
 
@@ -51,10 +51,11 @@ The WebSocket Real-Time Communication API provides a comprehensive, production-r
 ### 🔗 **WebSocket Connection Manager**
 
 #### `WebSocketConnectionManager`
+
 ```python
 class WebSocketConnectionManager:
     """Enhanced WebSocket connection manager with comprehensive features."""
-    
+
     def __init__(self) -> None:
         self.connections: dict[str, ConnectionInfo] = {}
         self.user_connections: dict[str, set[str]] = defaultdict(set)
@@ -62,6 +63,7 @@ class WebSocketConnectionManager:
 ```
 
 **Core Features:**
+
 - **Connection Pooling**: Centralized connection management with limits
 - **User Mapping**: Track multiple connections per user
 - **Rate Limiting**: Integrated per-user message rate limiting
@@ -69,27 +71,29 @@ class WebSocketConnectionManager:
 - **Performance Monitoring**: Connection statistics and health metrics
 
 #### Connection Lifecycle Management
+
 ```python
 async def connect(self, websocket: WebSocket, user: User) -> str:
     """Accept new WebSocket connection with validation and limits."""
-    
+
     # Enforce connection limits
     if len(self.connections) >= MAX_TOTAL_CONNECTIONS:
         raise HTTPException(503, "Server at maximum capacity")
-    
+
     if len(self.user_connections[str(user.id)]) >= MAX_CONNECTIONS_PER_USER:
         raise HTTPException(429, "Maximum connections per user exceeded")
-    
+
     # Create connection with unique ID
     connection_id = str(uuid4())
     connection_info = ConnectionInfo(websocket, user, connection_id)
-    
+
     # Register connection
     self.connections[connection_id] = connection_info
     self.user_connections[str(user.id)].add(connection_id)
 ```
 
 **Connection Limits:**
+
 - **Per User**: 3 concurrent connections maximum
 - **Server Total**: 1,000 total connections maximum
 - **Timeout**: 60 seconds for inactive connections
@@ -98,10 +102,11 @@ async def connect(self, websocket: WebSocket, user: User) -> str:
 ### 📊 **Rate Limiting System**
 
 #### `RateLimiter`
+
 ```python
 class RateLimiter:
     """Rate limiting for WebSocket connections."""
-    
+
     def __init__(self, max_messages: int, window_seconds: int) -> None:
         self.max_messages = max_messages  # 100 messages
         self.window_seconds = window_seconds  # 60 seconds
@@ -109,12 +114,14 @@ class RateLimiter:
 ```
 
 **Rate Limiting Features:**
+
 - **Per-User Limits**: Individual rate limits per authenticated user
 - **Sliding Window**: Time-based sliding window algorithm
 - **Message Counting**: Track message frequency across time windows
 - **Automatic Reset**: Self-cleaning time windows
 
 **Rate Limit Configuration:**
+
 ```python
 RATE_LIMIT_MAX_MESSAGES: Final[int] = 100    # per window
 RATE_LIMIT_WINDOW: Final[int] = 60           # seconds
@@ -123,10 +130,11 @@ RATE_LIMIT_WINDOW: Final[int] = 60           # seconds
 ### 💓 **Heartbeat & Connection Monitoring**
 
 #### `ConnectionInfo`
+
 ```python
 class ConnectionInfo:
     """Information about a WebSocket connection."""
-    
+
     def __init__(self, websocket: WebSocket, user: User, connection_id: str) -> None:
         self.websocket = websocket
         self.user = user
@@ -138,12 +146,14 @@ class ConnectionInfo:
 ```
 
 **Connection Tracking:**
+
 - **Activity Monitoring**: Track last message and heartbeat times
 - **Subscription Management**: Per-connection event subscriptions
 - **Connection Metadata**: Creation time, user info, message counts
 - **Stale Detection**: Identify inactive connections for cleanup
 
 #### Heartbeat Configuration
+
 ```python
 HEARTBEAT_INTERVAL: Final[int] = 30    # seconds
 CONNECTION_TIMEOUT: Final[int] = 60    # seconds
@@ -154,6 +164,7 @@ CONNECTION_TIMEOUT: Final[int] = 60    # seconds
 ### 🔌 **Main WebSocket Connection**
 
 #### `POST /ws/{token}`
+
 ```python
 @router.websocket("/ws/{token}")
 async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
@@ -162,6 +173,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
 **Purpose:** Establish authenticated WebSocket connection for real-time communication
 
 **Connection Process:**
+
 1. **Token Authentication**: Validate JWT token from URL path
 2. **User Verification**: Extract and validate user from token
 3. **Connection Limits**: Enforce per-user and server-wide limits
@@ -171,6 +183,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str) -> None:
 7. **Message Loop**: Enter persistent message handling loop
 
 **Authentication:**
+
 ```python
 async def authenticate_websocket(token: str) -> User:
     """Authenticate WebSocket connection using JWT token."""
@@ -179,7 +192,7 @@ async def authenticate_websocket(token: str) -> User:
         user_id = payload.get("sub")
         if not user_id:
             raise HTTPException(401, "Invalid token: missing user ID")
-        
+
         # Additional user validation...
         return user
     except Exception as e:
@@ -187,6 +200,7 @@ async def authenticate_websocket(token: str) -> User:
 ```
 
 **Connection Established Message:**
+
 ```json
 {
   "type": "connection.established",
@@ -206,6 +220,7 @@ async def authenticate_websocket(token: str) -> User:
 ### 📨 **Client → Server Messages**
 
 #### Ping/Heartbeat
+
 ```json
 {
   "type": "ping",
@@ -220,15 +235,12 @@ async def authenticate_websocket(token: str) -> User:
 **Purpose:** Keep connection alive and measure latency
 
 #### Event Subscription
+
 ```json
 {
   "type": "subscribe",
   "data": {
-    "events": [
-      "upload.progress",
-      "upload.completed", 
-      "system.notification"
-    ]
+    "events": ["upload.progress", "upload.completed", "system.notification"]
   },
   "timestamp": "2025-01-08T10:30:00Z",
   "id": "msg_124"
@@ -238,6 +250,7 @@ async def authenticate_websocket(token: str) -> User:
 **Purpose:** Subscribe to specific event types for targeted notifications
 
 **Valid Subscription Events:**
+
 ```python
 VALID_SUBSCRIPTION_EVENTS = {
     "upload.progress",      # File upload progress updates
@@ -256,6 +269,7 @@ VALID_SUBSCRIPTION_EVENTS = {
 ```
 
 #### Event Unsubscription
+
 ```json
 {
   "type": "unsubscribe",
@@ -268,6 +282,7 @@ VALID_SUBSCRIPTION_EVENTS = {
 ```
 
 #### Upload Cancellation
+
 ```json
 {
   "type": "upload.cancel",
@@ -282,6 +297,7 @@ VALID_SUBSCRIPTION_EVENTS = {
 ### 📤 **Server → Client Messages**
 
 #### Pong Response
+
 ```json
 {
   "type": "pong",
@@ -295,6 +311,7 @@ VALID_SUBSCRIPTION_EVENTS = {
 ```
 
 #### Upload Progress
+
 ```json
 {
   "type": "upload.progress",
@@ -311,6 +328,7 @@ VALID_SUBSCRIPTION_EVENTS = {
 ```
 
 #### System Notification
+
 ```json
 {
   "type": "system.notification",
@@ -325,6 +343,7 @@ VALID_SUBSCRIPTION_EVENTS = {
 ```
 
 #### Error Messages
+
 ```json
 {
   "type": "error",
@@ -343,26 +362,28 @@ VALID_SUBSCRIPTION_EVENTS = {
 ### 🎯 **Targeted Broadcasting**
 
 #### Send to Specific User
+
 ```python
 async def send_to_user(
-    self, 
-    user_id: str, 
+    self,
+    user_id: str,
     message: dict[str, Any]
 ) -> bool:
     """Send message to all connections of a specific user."""
-    
+
     connections_sent = 0
     user_connections = self.user_connections.get(user_id, set())
-    
+
     for connection_id in user_connections.copy():
         success = await self.send_to_connection(connection_id, message)
         if success:
             connections_sent += 1
-    
+
     return connections_sent > 0
 ```
 
 #### Send to Connection
+
 ```python
 async def send_to_connection(
     self,
@@ -370,21 +391,21 @@ async def send_to_connection(
     message: dict[str, Any]
 ) -> bool:
     """Send message to specific connection with error handling."""
-    
+
     connection = self.connections.get(connection_id)
     if not connection:
         return False
-    
+
     try:
         # Validate message size
         message_json = json.dumps(message)
         if len(message_json.encode()) > MAX_MESSAGE_SIZE:
             raise ValueError("Message too large")
-        
+
         await connection.websocket.send_text(message_json)
         connection.update_activity()
         return True
-        
+
     except Exception as e:
         logger.error(f"[WS] Error sending to {connection_id}: {e}")
         await self._force_disconnect(connection_id, f"Send error: {e}")
@@ -394,29 +415,31 @@ async def send_to_connection(
 ### 📡 **Broadcast Operations**
 
 #### Broadcast to All Connections
+
 ```python
 async def broadcast_to_all(
     self,
     message: dict[str, Any]
 ) -> int:
     """Broadcast message to all active connections."""
-    
+
     if not self.connections:
         return 0
-    
+
     connection_ids = list(self.connections.keys())
     tasks = [
         self.send_to_connection(conn_id, message)
         for conn_id in connection_ids
     ]
-    
+
     results = await asyncio.gather(*tasks, return_exceptions=True)
     successful_sends = sum(1 for result in results if result is True)
-    
+
     return successful_sends
 ```
 
 #### Broadcast to Subscribers
+
 ```python
 async def broadcast_to_subscribers(
     self,
@@ -424,20 +447,20 @@ async def broadcast_to_subscribers(
     message: dict[str, Any]
 ) -> int:
     """Broadcast message to connections subscribed to specific event."""
-    
+
     subscriber_connections = [
         conn for conn in self.connections.values()
         if event_type in conn.subscriptions
     ]
-    
+
     if not subscriber_connections:
         return 0
-    
+
     tasks = [
         self.send_to_connection(conn.connection_id, message)
         for conn in subscriber_connections
     ]
-    
+
     results = await asyncio.gather(*tasks, return_exceptions=True)
     return sum(1 for result in results if result is True)
 ```
@@ -447,6 +470,7 @@ async def broadcast_to_subscribers(
 ### 📢 **Broadcasting Utilities**
 
 #### System Notifications
+
 ```python
 async def broadcast_system_notification(
     message: str,
@@ -455,7 +479,7 @@ async def broadcast_system_notification(
     **kwargs: Any,
 ) -> None:
     """Broadcast system notification to users."""
-    
+
     notification = {
         "type": "system.notification",
         "data": {
@@ -467,7 +491,7 @@ async def broadcast_system_notification(
         "timestamp": datetime.now(UTC).isoformat(),
         "id": str(uuid4()),
     }
-    
+
     if target_users:
         for user_id in target_users:
             await connection_manager.send_to_user(user_id, notification)
@@ -476,6 +500,7 @@ async def broadcast_system_notification(
 ```
 
 #### Review Updates
+
 ```python
 async def broadcast_review_updated(
     review_id: str,
@@ -483,7 +508,7 @@ async def broadcast_review_updated(
     target_users: list[str] | None = None,
 ) -> None:
     """Broadcast review update to relevant users."""
-    
+
     message = {
         "type": "review.updated",
         "data": {
@@ -494,7 +519,7 @@ async def broadcast_review_updated(
         "timestamp": datetime.now(UTC).isoformat(),
         "id": str(uuid4()),
     }
-    
+
     if target_users:
         for user_id in target_users:
             await connection_manager.send_to_user(user_id, message)
@@ -503,6 +528,7 @@ async def broadcast_review_updated(
 ```
 
 #### File Processing Status
+
 ```python
 async def broadcast_file_processing_status(
     user_id: str,
@@ -512,16 +538,16 @@ async def broadcast_file_processing_status(
     **kwargs: Any,
 ) -> None:
     """Broadcast file processing status to a user."""
-    
+
     message_data = {
         "file_id": file_id,
         "status": status,
         "timestamp": datetime.now(UTC).isoformat(),
     }
-    
+
     if progress is not None:
         message_data["progress"] = progress
-    
+
     if status == "processing":
         message = {
             "type": "file.processing",
@@ -536,7 +562,7 @@ async def broadcast_file_processing_status(
             "timestamp": datetime.now(UTC).isoformat(),
             "id": str(uuid4()),
         }
-    
+
     await connection_manager.send_to_user(user_id, message)
 ```
 
@@ -545,30 +571,32 @@ async def broadcast_file_processing_status(
 ### 🔐 **Authentication & Authorization**
 
 #### JWT Token Validation
+
 ```python
 async def authenticate_websocket(token: str) -> User:
     """Authenticate WebSocket connection using JWT token."""
-    
+
     try:
         payload = decode_access_token(token)
         user_id = payload.get("sub")
-        
+
         if not user_id:
             raise HTTPException(401, "Invalid token: missing user ID")
-        
+
         # Fetch user from database
         user = await get_user_by_id(user_id)
         if not user or not user.is_active:
             raise HTTPException(401, "User not found or inactive")
-        
+
         return user
-        
+
     except Exception as e:
         logger.warning(f"[WS] Authentication failed: {e}")
         raise HTTPException(401, f"Authentication failed: {e}")
 ```
 
 #### Connection Security
+
 ```python
 # Connection limits per user
 if len(self.user_connections[str(user.id)]) >= MAX_CONNECTIONS_PER_USER:
@@ -582,6 +610,7 @@ if len(self.connections) >= MAX_TOTAL_CONNECTIONS:
 ### 🛡️ **Message Validation**
 
 #### Message Size Limits
+
 ```python
 MAX_MESSAGE_SIZE: Final[int] = 64 * 1024  # 64KB
 
@@ -592,10 +621,11 @@ if len(message_json.encode()) > MAX_MESSAGE_SIZE:
 ```
 
 #### Message Type Validation
+
 ```python
 VALID_CLIENT_MESSAGE_TYPES = {
     "ping",
-    "subscribe", 
+    "subscribe",
     "unsubscribe",
     "heartbeat",
     "upload.cancel",
@@ -617,6 +647,7 @@ if message_type not in VALID_CLIENT_MESSAGE_TYPES:
 ### ⚡ **Connection Optimization**
 
 #### Asynchronous Operations
+
 ```python
 # Concurrent message sending
 tasks = [
@@ -627,6 +658,7 @@ results = await asyncio.gather(*tasks, return_exceptions=True)
 ```
 
 #### Connection Pooling
+
 ```python
 # Efficient connection lookup
 self.connections: dict[str, ConnectionInfo] = {}
@@ -634,17 +666,18 @@ self.user_connections: dict[str, set[str]] = defaultdict(set)
 ```
 
 #### Background Cleanup
+
 ```python
 async def _cleanup_stale_connections(self) -> None:
     """Background task to clean up stale connections."""
     while True:
         await asyncio.sleep(30)  # Check every 30 seconds
-        
+
         stale_connections = [
             conn_id for conn_id, conn_info in self.connections.items()
             if conn_info.is_stale()
         ]
-        
+
         for conn_id in stale_connections:
             await self._force_disconnect(conn_id, "Connection timeout")
 ```
@@ -652,20 +685,22 @@ async def _cleanup_stale_connections(self) -> None:
 ### 📊 **Memory Management**
 
 #### Rate Limiting Cleanup
+
 ```python
 def is_allowed(self, user_id: str) -> bool:
     """Check if user is within rate limits with automatic cleanup."""
     now = time.time()
     window = self.user_windows[user_id]
-    
+
     # Remove old entries outside the window
     while window and window[0] <= now - self.window_seconds:
         window.popleft()
-    
+
     return len(window) < self.max_messages
 ```
 
 #### Connection Metadata
+
 ```python
 class ConnectionInfo:
     """Lightweight connection metadata tracking."""
@@ -685,75 +720,79 @@ class ConnectionInfo:
 ```javascript
 // JavaScript WebSocket client
 class ReViewPointWebSocket {
-    constructor(token) {
-        this.token = token;
-        this.ws = null;
-        this.subscriptions = new Set();
-        this.messageHandlers = new Map();
+  constructor(token) {
+    this.token = token;
+    this.ws = null;
+    this.subscriptions = new Set();
+    this.messageHandlers = new Map();
+  }
+
+  connect() {
+    this.ws = new WebSocket(
+      `wss://api.reviewpoint.org/api/v1/ws/${this.token}`,
+    );
+
+    this.ws.onopen = (event) => {
+      console.log("Connected to ReViewPoint WebSocket");
+      this.startHeartbeat();
+    };
+
+    this.ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      this.handleMessage(message);
+    };
+
+    this.ws.onclose = (event) => {
+      console.log("WebSocket connection closed:", event.code);
+      this.reconnect();
+    };
+
+    this.ws.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+  }
+
+  subscribe(events) {
+    events.forEach((event) => this.subscriptions.add(event));
+
+    this.send({
+      type: "subscribe",
+      data: { events: Array.from(this.subscriptions) },
+    });
+  }
+
+  send(message) {
+    if (this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(
+        JSON.stringify({
+          ...message,
+          timestamp: new Date().toISOString(),
+          id: this.generateMessageId(),
+        }),
+      );
     }
-    
-    connect() {
-        this.ws = new WebSocket(`wss://api.reviewpoint.org/api/v1/ws/${this.token}`);
-        
-        this.ws.onopen = (event) => {
-            console.log('Connected to ReViewPoint WebSocket');
-            this.startHeartbeat();
-        };
-        
-        this.ws.onmessage = (event) => {
-            const message = JSON.parse(event.data);
-            this.handleMessage(message);
-        };
-        
-        this.ws.onclose = (event) => {
-            console.log('WebSocket connection closed:', event.code);
-            this.reconnect();
-        };
-        
-        this.ws.onerror = (error) => {
-            console.error('WebSocket error:', error);
-        };
-    }
-    
-    subscribe(events) {
-        events.forEach(event => this.subscriptions.add(event));
-        
-        this.send({
-            type: 'subscribe',
-            data: { events: Array.from(this.subscriptions) }
-        });
-    }
-    
-    send(message) {
-        if (this.ws.readyState === WebSocket.OPEN) {
-            this.ws.send(JSON.stringify({
-                ...message,
-                timestamp: new Date().toISOString(),
-                id: this.generateMessageId()
-            }));
-        }
-    }
-    
-    startHeartbeat() {
-        setInterval(() => {
-            this.send({
-                type: 'ping',
-                data: { pingId: Date.now().toString() }
-            });
-        }, 30000); // 30 seconds
-    }
+  }
+
+  startHeartbeat() {
+    setInterval(() => {
+      this.send({
+        type: "ping",
+        data: { pingId: Date.now().toString() },
+      });
+    }, 30000); // 30 seconds
+  }
 }
 
 // Usage
-const ws = new ReViewPointWebSocket('your-jwt-token');
+const ws = new ReViewPointWebSocket("your-jwt-token");
 ws.connect();
 
 // Subscribe to upload progress
-ws.subscribe(['upload.progress', 'upload.completed']);
+ws.subscribe(["upload.progress", "upload.completed"]);
 
 // Handle upload progress
-ws.messageHandlers.set('upload.progress', (data) => {
-    updateProgressBar(data.upload_id, data.progress);
+ws.messageHandlers.set("upload.progress", (data) => {
+  updateProgressBar(data.upload_id, data.progress);
 });
 ```
 
@@ -803,18 +842,18 @@ from fastapi.websockets import WebSocketDisconnect
 async def test_websocket_connection():
     """Test basic WebSocket connection establishment."""
     client = TestClient(app)
-    
+
     with client.websocket_connect("/api/v1/ws/valid-jwt-token") as websocket:
         # Should receive connection established message
         data = websocket.receive_json()
         assert data["type"] == "connection.established"
         assert "connection_id" in data["data"]
 
-@pytest.mark.asyncio  
+@pytest.mark.asyncio
 async def test_websocket_authentication():
     """Test WebSocket authentication validation."""
     client = TestClient(app)
-    
+
     # Test invalid token
     with pytest.raises(WebSocketDisconnect):
         with client.websocket_connect("/api/v1/ws/invalid-token"):
@@ -824,11 +863,11 @@ async def test_websocket_authentication():
 async def test_ping_pong():
     """Test ping/pong heartbeat mechanism."""
     client = TestClient(app)
-    
+
     with client.websocket_connect("/api/v1/ws/valid-jwt-token") as websocket:
         # Skip connection established message
         websocket.receive_json()
-        
+
         # Send ping
         ping_message = {
             "type": "ping",
@@ -837,7 +876,7 @@ async def test_ping_pong():
             "id": "msg_ping"
         }
         websocket.send_json(ping_message)
-        
+
         # Should receive pong
         pong_response = websocket.receive_json()
         assert pong_response["type"] == "pong"
@@ -847,10 +886,10 @@ async def test_ping_pong():
 async def test_subscription_system():
     """Test event subscription functionality."""
     client = TestClient(app)
-    
+
     with client.websocket_connect("/api/v1/ws/valid-jwt-token") as websocket:
         websocket.receive_json()  # Skip connection message
-        
+
         # Subscribe to events
         subscribe_message = {
             "type": "subscribe",
@@ -859,7 +898,7 @@ async def test_subscription_system():
             "id": "msg_sub"
         }
         websocket.send_json(subscribe_message)
-        
+
         # Should receive subscription confirmation
         response = websocket.receive_json()
         assert response["type"] == "subscription.confirmed"
@@ -868,19 +907,19 @@ async def test_subscription_system():
 async def test_rate_limiting():
     """Test WebSocket rate limiting enforcement."""
     client = TestClient(app)
-    
+
     with client.websocket_connect("/api/v1/ws/valid-jwt-token") as websocket:
         websocket.receive_json()  # Skip connection message
-        
+
         # Send messages rapidly to trigger rate limit
         for i in range(105):  # Exceed 100 message limit
             ping_message = {
-                "type": "ping", 
+                "type": "ping",
                 "data": {"pingId": f"ping-{i}"},
                 "id": f"msg-{i}"
             }
             websocket.send_json(ping_message)
-        
+
         # Should receive rate limit error
         while True:
             response = websocket.receive_json()
@@ -896,30 +935,30 @@ async def test_rate_limiting():
 async def test_full_websocket_workflow():
     """Test complete WebSocket communication workflow."""
     client = TestClient(app)
-    
+
     # Connect WebSocket
     with client.websocket_connect("/api/v1/ws/valid-jwt-token") as websocket:
         # 1. Receive connection confirmation
         connection_msg = websocket.receive_json()
         assert connection_msg["type"] == "connection.established"
         connection_id = connection_msg["data"]["connection_id"]
-        
+
         # 2. Subscribe to events
         websocket.send_json({
             "type": "subscribe",
             "data": {"events": ["upload.progress"]},
             "id": "sub_1"
         })
-        
+
         # 3. Trigger server-side broadcast
         from src.api.v1.websocket import broadcast_file_processing_status
         await broadcast_file_processing_status(
             user_id="test-user-123",
-            file_id="file_456", 
+            file_id="file_456",
             status="processing",
             progress=50
         )
-        
+
         # 4. Receive broadcast message
         broadcast_msg = websocket.receive_json()
         assert broadcast_msg["type"] == "file.processing"
@@ -966,4 +1005,4 @@ async def test_full_websocket_workflow():
 
 ---
 
-*This WebSocket router provides production-ready, secure, and scalable real-time communication capabilities for the ReViewPoint application, implementing industry best practices for WebSocket management, security, and performance.*
+_This WebSocket router provides production-ready, secure, and scalable real-time communication capabilities for the ReViewPoint application, implementing industry best practices for WebSocket management, security, and performance._

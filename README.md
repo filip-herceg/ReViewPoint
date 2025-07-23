@@ -23,8 +23,9 @@ powershell -ExecutionPolicy Bypass -File scripts/install-prerequisites.ps1
 ### 🛡️ **What Gets Installed? (Complete Transparency)**
 
 **The installer clearly lists ALL tools before installation:**
+
 - **Chocolatey** (package manager)
-- **Git** (version control) 
+- **Git** (version control)
 - **Node.js 18+** (JavaScript runtime)
 - **pnpm** (fast package manager)
 - **Python 3.11+** (backend runtime)
@@ -33,8 +34,9 @@ powershell -ExecutionPolicy Bypass -File scripts/install-prerequisites.ps1
 - **Docker Desktop guidance** (manual install)
 
 **⚡ Safety Features:**
+
 - Shows complete tool list before installation
-- Requires confirmation before proceeding  
+- Requires confirmation before proceeding
 - All VS Code tasks check prerequisites first
 - Helpful error messages if tools are missing
 - Zero risk of silent failures

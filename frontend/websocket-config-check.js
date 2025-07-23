@@ -9,24 +9,24 @@ console.log("🔧 WebSocket Configuration Verification\n");
 
 // Expected WebSocket configuration
 const _EXPECTED_CONFIG = {
-	localDev: "ws://localhost:8000/api/v1/ws",
-	production: "wss://api.reviewpoint.com/api/v1/ws",
-	testEnv: "ws://localhost:8000/api/v1/ws",
+  localDev: "ws://localhost:8000/api/v1/ws",
+  production: "wss://api.reviewpoint.com/api/v1/ws",
+  testEnv: "ws://localhost:8000/api/v1/ws",
 };
 
 console.log("✅ WebSocket URL Configuration Fixed!");
 console.log("\n📋 Updated Configurations:");
 console.log(
-	"   Frontend Config (config.ts):     ws://localhost:8000/api/v1/ws",
+  "   Frontend Config (config.ts):     ws://localhost:8000/api/v1/ws",
 );
 console.log(
-	"   Environment Config:              ws://localhost:8000/api/v1/ws",
+  "   Environment Config:              ws://localhost:8000/api/v1/ws",
 );
 console.log(
-	"   Test Templates:                  ws://localhost:8000/api/v1/ws",
+  "   Test Templates:                  ws://localhost:8000/api/v1/ws",
 );
 console.log(
-	"   Production Config:               wss://api.reviewpoint.com/api/v1/ws",
+  "   Production Config:               wss://api.reviewpoint.com/api/v1/ws",
 );
 
 console.log("\n🔗 Backend WebSocket Endpoint:");
@@ -57,11 +57,11 @@ console.log("   pnpm run dev");
 console.log("\n3. Test WebSocket Connection:");
 console.log("   - Login to get JWT token");
 console.log(
-	"   - WebSocket auto-connects to: ws://localhost:8000/api/v1/ws/{token}",
+  "   - WebSocket auto-connects to: ws://localhost:8000/api/v1/ws/{token}",
 );
 console.log("   - Check Network tab in browser dev tools");
 
 console.log("\n🎉 WebSocket communication should now work correctly!");
 console.log(
-	"   The frontend and backend are properly configured to communicate.",
+  "   The frontend and backend are properly configured to communicate.",
 );

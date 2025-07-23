@@ -3,21 +3,21 @@ name: Security Scan
 on:
   # Use push triggers only for main/develop, not for PRs targeting these branches
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
     paths:
-      - 'backend/**'
-      - '.github/workflows/security-scan.yaml'
+      - "backend/**"
+      - ".github/workflows/security-scan.yaml"
   # Use pull_request triggers only for branches other than main/develop
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
     paths:
-      - 'backend/**'
+      - "backend/**"
     # This prevents duplicate runs when pushing to a PR branch
     types: [opened, synchronize, reopened]
   workflow_dispatch:
   schedule:
     # Run security scan weekly on Mondays at 3 AM UTC
-    - cron: '0 3 * * 1'
+    - cron: "0 3 * * 1"
 
 permissions:
   contents: read
@@ -38,34 +38,34 @@ jobs:
         id: trivy-fs-sarif
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
-          scan-ref: './backend'
-          format: 'sarif'
-          output: 'trivy-fs-results.sarif'
-          exit-code: '1'
+          scan-type: "fs"
+          scan-ref: "./backend"
+          format: "sarif"
+          output: "trivy-fs-results.sarif"
+          exit-code: "1"
           ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
-          
+          severity: "CRITICAL,HIGH"
+
       - name: Run Trivy filesystem vulnerability scanner (table output for logs)
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
-          scan-ref: './backend'
-          format: 'table'
-          exit-code: '0'  # Don't fail workflow twice for same issues
+          scan-type: "fs"
+          scan-ref: "./backend"
+          format: "table"
+          exit-code: "0" # Don't fail workflow twice for same issues
           ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
-          
+          severity: "CRITICAL,HIGH"
+
       - name: Upload Trivy filesystem scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         if: success() && steps.trivy-fs-sarif.outcome == 'success'
         with:
-          sarif_file: 'trivy-fs-results.sarif'
-          category: 'trivy-filesystem'
+          sarif_file: "trivy-fs-results.sarif"
+          category: "trivy-filesystem"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        
+
       - name: Cache Docker layers
         uses: actions/cache@v4
         with:
@@ -79,11 +79,11 @@ jobs:
         run: |
           echo "Creating build context directory structure..."
           mkdir -p ./build_context
-          
+
           # Copy essential files
           echo "Copying essential files..."
           cp ./backend/pyproject.toml ./build_context/ || echo "WARNING: pyproject.toml not found"
-          
+
           # Handle README.md - create one if not found
           if [ -f "./backend/README.md" ]; then
             cp ./backend/README.md ./build_context/
@@ -93,10 +93,10 @@ jobs:
             echo "# Backend Project" > ./build_context/README.md
             echo "This is a placeholder README file generated during the build process." >> ./build_context/README.md
           fi
-          
+
           # Copy alembic.ini if it exists
           cp ./backend/alembic.ini ./build_context/ || echo "WARNING: alembic.ini not found"
-          
+
           # Create source directory and copy source files
           echo "Copying source files..."
           if [ -d "./backend/src" ]; then
@@ -111,7 +111,7 @@ jobs:
             echo "app = FastAPI()" >> ./build_context/src/main.py
             echo "Placeholder source directory created"
           fi
-          
+
           # Create scripts directory and copy scripts
           echo "Copying scripts..."
           if [ -d "./backend/scripts" ]; then
@@ -125,7 +125,7 @@ jobs:
             echo 'echo "This is a placeholder script"' >> ./build_context/scripts/dummy.sh
             chmod +x ./build_context/scripts/dummy.sh
           fi
-          
+
           # Copy entrypoint.sh to the root level
           echo "Copying entrypoint script..."
           if [ -f "./backend/deployment/docker/entrypoint.sh" ]; then
@@ -140,11 +140,11 @@ jobs:
             echo 'exec "$@"' >> ./build_context/docker-entrypoint.sh
             chmod +x ./build_context/docker-entrypoint.sh
           fi
-          
+
           # Show the build context structure
           echo "Build context contents:"
           find ./build_context -type f | sort
-          
+
           # Copy our updated Dockerfile to the build context
           # Try production Dockerfile first, then fall back to development
           if [ -f "./backend/deployment/docker/dockerfile.prod" ]; then
@@ -157,16 +157,16 @@ jobs:
             echo "WARNING: No Dockerfile found"
             exit 1
           fi
-          
+
       # Debug: Show the Docker context and Dockerfile
       - name: Debug Docker build inputs
         run: |
           echo "Docker build context contents:"
           find ./build_context -type f | sort
-          
+
           # Fix pyproject.toml issues for Docker build
           echo "Preparing pyproject.toml for Docker build"
-          
+
           # Check if pyproject.toml exists in build context
           if [ -f "./build_context/pyproject.toml" ]; then
             echo "Found pyproject.toml, examining contents..."
@@ -195,12 +195,12 @@ jobs:
           else
             echo "ERROR: pyproject.toml not found in build context!"
           fi
-          
+
           # Display the modified pyproject.toml
           echo "----- Modified pyproject.toml -----"
           cat ./build_context/pyproject.toml
           echo "-----------------------------"
-          
+
           # Create a fallback pyproject.toml if the current one is problematic
           echo "Creating minimal fallback pyproject.toml"
           echo '[build-system]' > ./build_context/pyproject.toml.minimal
@@ -216,12 +216,12 @@ jobs:
           echo '[project.optional-dependencies]' >> ./build_context/pyproject.toml.minimal
           echo 'dev = []' >> ./build_context/pyproject.toml.minimal
           chmod 644 ./build_context/pyproject.toml.minimal
-          
+
       # Additional build preparation - handle pyproject.toml versioning edge cases
       - name: Prepare environment for Docker build
         run: |
           echo "Creating specialized environment variables for Docker build"
-          
+
           # Create a .env file with build-specific variables that can be passed to the Docker build
           cat > ./build_context/.env <<EOF
           # Build environment variables
@@ -231,7 +231,7 @@ jobs:
           # Skip dynamic version resolution for build process
           SETUPTOOLS_SCM_PRETEND_VERSION=0.1.0
           EOF
-          
+
           # Create a Docker build args file
           echo "Creating Docker build args file"
           cat > ./build_context/.docker-build-args <<EOF
@@ -240,7 +240,7 @@ jobs:
           PYTHONUNBUFFERED=1
           SETUPTOOLS_SCM_PRETEND_VERSION=0.1.0
           EOF
-          
+
           # Modify Dockerfile to use build args if it exists
           if [ -f "./build_context/Dockerfile" ]; then
             echo "Enhancing Dockerfile to use build args"
@@ -249,45 +249,45 @@ jobs:
             cat > ./build_context/Dockerfile.new <<EOF
           # Base Python image
           FROM python:3.10-slim as builder
-          
+
           # Set build arguments
           ARG PIP_NO_CACHE_DIR=1
           ARG PYTHONDONTWRITEBYTECODE=1
           ARG PYTHONUNBUFFERED=1
           ARG SETUPTOOLS_SCM_PRETEND_VERSION=0.1.0
-          
+
           # Set environment variables
           ENV PIP_NO_CACHE_DIR=\${PIP_NO_CACHE_DIR}
           ENV PYTHONDONTWRITEBYTECODE=\${PYTHONDONTWRITEBYTECODE}
           ENV PYTHONUNBUFFERED=\${PYTHONUNBUFFERED}
           ENV SETUPTOOLS_SCM_PRETEND_VERSION=\${SETUPTOOLS_SCM_PRETEND_VERSION}
-          
+
           WORKDIR /app
-          
+
           # Copy only the files needed for installation to leverage Docker layer caching
           COPY pyproject.toml .
           COPY ./src/ ./src/
-          
+
           # Use pip directly for installation
           RUN python -m venv .venv && \
               . .venv/bin/activate && \
               pip install --no-cache-dir --upgrade pip setuptools wheel && \
               pip install --no-cache-dir -e . || pip install --no-cache-dir .
-          
+
           # Runtime stage with original base image
           FROM python:3.10-slim
-          
+
           WORKDIR /app
-          
+
           # Copy virtual environment from builder stage
           COPY --from=builder /app/.venv /app/.venv
-          
+
           # Copy application code
           COPY --from=builder /app/src /app/src
-          
+
           # Set environment variables
           ENV PATH="/app/.venv/bin:$PATH"
-          
+
           # Set entrypoint
           COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
           RUN chmod +x /usr/local/bin/docker-entrypoint.sh
@@ -302,7 +302,7 @@ jobs:
           else
             echo "WARNING: Dockerfile not found in build context"
           fi
-          
+
       - name: Build Docker image
         id: docker_build
         uses: docker/build-push-action@v5
@@ -320,7 +320,7 @@ jobs:
             PYTHONDONTWRITEBYTECODE=1
             PYTHONUNBUFFERED=1
             SETUPTOOLS_SCM_PRETEND_VERSION=0.1.0
-          
+
       - name: Try fallback build if first build failed
         id: docker_build_fallback
         if: steps.docker_build.outcome != 'success'
@@ -353,7 +353,7 @@ jobs:
             echo "outcome=failure" >> $GITHUB_OUTPUT
             echo "Fallback pyproject.toml not found."
           fi
-          
+
       - name: Display image digest
         if: steps.docker_build.outcome == 'success' || steps.docker_build_fallback.outcome == 'success'
         run: |
@@ -362,7 +362,7 @@ jobs:
           else
             echo "Image digest is ${{ steps.docker_build_fallback.outputs.digest }}"
           fi
-        
+
       - name: List dependencies from the image
         run: |
           docker run --rm reviewpoint-backend:latest /bin/bash -c "source /app/.venv/bin/activate && pip freeze" > image-dependencies.txt || echo "Failed to list dependencies"
@@ -377,11 +377,11 @@ jobs:
         run: |
           echo "Listing all Docker images:"
           docker images
-          
+
           # Check if the container can start
           echo "Attempting to start container to verify configuration:"
           docker run --rm reviewpoint-backend:latest echo "Container started successfully" || echo "Container failed to start"
-          
+
           # Check if the image is distroless or has shell access
           echo "Determining image type (distroless or shell-based):"
           if docker run --entrypoint "" --rm reviewpoint-backend:latest which bash 2>/dev/null; then
@@ -389,40 +389,40 @@ jobs:
           else
             echo "Distroless image detected (no shell access)"
           fi
-          
+
       - name: Run Trivy vulnerability scanner (Docker image)
         id: trivy-image-sarif
         uses: aquasecurity/trivy-action@master
         if: steps.docker_build.outcome == 'success' || steps.docker_build_fallback.outcome == 'success'
         with:
-          scan-type: 'image'
-          image-ref: 'reviewpoint-backend:latest'
-          format: 'sarif'
-          output: 'trivy-image-results.sarif'
-          exit-code: '0' # Don't fail workflow on vulnerabilities
+          scan-type: "image"
+          image-ref: "reviewpoint-backend:latest"
+          format: "sarif"
+          output: "trivy-image-results.sarif"
+          exit-code: "0" # Don't fail workflow on vulnerabilities
           ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
-          timeout: '10m'
-          
+          severity: "CRITICAL,HIGH"
+          timeout: "10m"
+
       - name: Run Trivy Docker image scanner (table output for logs)
         uses: aquasecurity/trivy-action@master
         if: steps.docker_build.outcome == 'success' || steps.docker_build_fallback.outcome == 'success'
         with:
-          scan-type: 'image'
-          image-ref: 'reviewpoint-backend:latest'
-          format: 'table'
-          exit-code: '0'  # Don't fail workflow on vulnerabilities
+          scan-type: "image"
+          image-ref: "reviewpoint-backend:latest"
+          format: "table"
+          exit-code: "0" # Don't fail workflow on vulnerabilities
           ignore-unfixed: true
-          severity: 'CRITICAL,HIGH'
-          timeout: '10m'
-          
+          severity: "CRITICAL,HIGH"
+          timeout: "10m"
+
       - name: Upload Trivy image scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
         if: success() && steps.trivy-image-sarif.outcome == 'success' && (steps.docker_build.outcome == 'success' || steps.docker_build_fallback.outcome == 'success')
         with:
-          sarif_file: 'trivy-image-results.sarif'
-          category: 'trivy-docker-image'
-          
+          sarif_file: "trivy-image-results.sarif"
+          category: "trivy-docker-image"
+
       - name: Save filesystem scan artifact
         uses: actions/upload-artifact@v4
         if: always() && steps.trivy-fs-sarif.outcome == 'success'
@@ -436,7 +436,7 @@ jobs:
         with:
           name: trivy-image-scan-results
           path: trivy-image-results.sarif
-          
+
       - name: Report Build Status
         if: always()
         run: |
@@ -444,7 +444,7 @@ jobs:
           echo "Fallback Docker Build Status: ${{ steps.docker_build_fallback.outcome }}"
           echo "Filesystem Scan Status: ${{ steps.trivy-fs-sarif.outcome }}"
           echo "Image Scan Status: ${{ steps.trivy-image-sarif.outcome }}"
-          
+
           # Check build status
           if [ "${{ steps.docker_build.outcome }}" == "success" ]; then
             echo "Docker build completed successfully on first attempt."
@@ -453,12 +453,12 @@ jobs:
           else
             echo "Docker build failed. Please check the build logs for details."
           fi
-          
+
           # Check security scan status
           if [ "${{ steps.trivy-image-sarif.outcome }}" != "success" ] && [ "${{ steps.docker_build.outcome }}" == "success" -o "${{ steps.docker_build_fallback.outcome }}" == "success" ]; then
             echo "Security vulnerabilities found in the Docker image. Please review the Trivy scan results."
           fi
-          
+
           if [ "${{ steps.trivy-fs-sarif.outcome }}" != "success" ]; then
             echo "Security vulnerabilities found in the filesystem. Please review the Trivy scan results."
           fi
@@ -466,15 +466,15 @@ jobs:
         if: always()
         run: |
           echo "=== Docker Build Diagnostic Information ==="
-          
+
           # Create a directory for diagnostics
           mkdir -p ./diagnostics
-          
+
           # Save Docker build logs if available
           if [ -f "./docker-build.log" ]; then
             cp ./docker-build.log ./diagnostics/
           fi
-          
+
           # Check if Docker image exists
           if docker image inspect reviewpoint-backend:latest >/dev/null 2>&1; then
             echo "Docker image exists, collecting metadata"
@@ -487,22 +487,22 @@ jobs:
           else
             echo "Docker image does not exist, skipping container diagnostics"
           fi
-          
+
           # Save the modified pyproject.toml
           if [ -f "./build_context/pyproject.toml" ]; then
             cp ./build_context/pyproject.toml ./diagnostics/
           fi
-          
+
           # Save the Dockerfile
           if [ -f "./build_context/Dockerfile" ]; then
             cp ./build_context/Dockerfile ./diagnostics/
           fi
-          
+
           # Archive the diagnostics
           tar -czf diagnostics.tar.gz ./diagnostics
-          
+
           echo "Diagnostics collected and saved to diagnostics.tar.gz"
-          
+
       - name: Upload diagnostic information
         if: always()
         uses: actions/upload-artifact@v4

@@ -3,7 +3,7 @@
 **File:** `backend/src/core/database.py`  
 **Purpose:** Async database connection management and session handling for ReViewPoint backend  
 **Lines of Code:** 417  
-**Type:** Core Infrastructure Module  
+**Type:** Core Infrastructure Module
 
 ## Overview
 
@@ -23,6 +23,7 @@ The database module provides robust async database connection management with co
 ### Key Components
 
 #### Global State Management
+
 ```python
 # Global state tracking for debugging
 _engine_creation_count: int = 0
@@ -34,6 +35,7 @@ _creation_lock: Final[threading.Lock] = threading.Lock()
 Thread-safe global counters for tracking database operation statistics and debugging concurrent access patterns.
 
 #### Lazy Engine Initialization
+
 ```python
 # Delay engine/session creation to runtime to avoid top-level config loading
 engine: AsyncEngine | None = None
@@ -47,6 +49,7 @@ Engine and sessionmaker are initialized on first use to ensure configuration is 
 ### 🔧 **Engine and Session Management**
 
 #### `get_engine_and_sessionmaker()`
+
 ```python
 def get_engine_and_sessionmaker() -> tuple[AsyncEngine, async_sessionmaker[AsyncSession]]:
     """Create and return a new AsyncEngine and async_sessionmaker."""
@@ -55,6 +58,7 @@ def get_engine_and_sessionmaker() -> tuple[AsyncEngine, async_sessionmaker[Async
 **Purpose:** Creates and configures a new database engine with environment-specific settings
 
 **Configuration Logic:**
+
 - **PostgreSQL Production**: Pool size 10, max overflow 20
 - **PostgreSQL Development**: Pool size 5, max overflow 10
 - **PostgreSQL Testing**: Pool size 1, max overflow 1 (parallel test isolation)
@@ -62,14 +66,15 @@ def get_engine_and_sessionmaker() -> tuple[AsyncEngine, async_sessionmaker[Async
 
 **Connection Pool Settings:**
 
-| Environment | Database | Pool Size | Max Overflow | Special Settings |
-|-------------|----------|-----------|--------------|------------------|
-| Production | PostgreSQL | 10 | 20 | Standard production settings |
-| Development | PostgreSQL | 5 | 10 | Reduced resource usage |
-| Parallel Tests | PostgreSQL | 1 | 1 | `pool_reset_on_return=commit` |
-| Any | SQLite | N/A | N/A | `check_same_thread=False` |
+| Environment    | Database   | Pool Size | Max Overflow | Special Settings              |
+| -------------- | ---------- | --------- | ------------ | ----------------------------- |
+| Production     | PostgreSQL | 10        | 20           | Standard production settings  |
+| Development    | PostgreSQL | 5         | 10           | Reduced resource usage        |
+| Parallel Tests | PostgreSQL | 1         | 1            | `pool_reset_on_return=commit` |
+| Any            | SQLite     | N/A       | N/A          | `check_same_thread=False`     |
 
 #### `ensure_engine_initialized()`
+
 ```python
 def ensure_engine_initialized() -> None:
     """Ensure the global engine and sessionmaker are initialized."""
@@ -78,11 +83,13 @@ def ensure_engine_initialized() -> None:
 **Purpose:** Lazy initialization guard for global database components
 
 **Behavior:**
+
 - Creates engine and sessionmaker only when first needed
 - Thread-safe initialization with proper locking
 - Prevents multiple initialization attempts
 
 #### `get_async_session()`
+
 ```python
 @asynccontextmanager
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
@@ -92,6 +99,7 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
 **Purpose:** Primary session factory for dependency injection in FastAPI endpoints
 
 **Session Lifecycle:**
+
 1. **Creation**: Creates new session with connection testing
 2. **Connection Test**: Executes `SELECT 1` to verify connectivity
 3. **Yield**: Provides session to application code
@@ -99,6 +107,7 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
 5. **Monitoring**: Comprehensive timing and error logging
 
 **Error Handling:**
+
 - SQLAlchemy errors: Automatic rollback with detailed logging
 - Connection failures: Retry logic with failure counting
 - Session cleanup: Guaranteed resource cleanup in finally block
@@ -106,6 +115,7 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
 ### 🏥 **Health Monitoring**
 
 #### `db_healthcheck()`
+
 ```python
 async def db_healthcheck() -> bool:
     """Check if the database connection is healthy."""
@@ -114,6 +124,7 @@ async def db_healthcheck() -> bool:
 **Purpose:** Database connectivity verification for health endpoints and monitoring
 
 **Health Check Process:**
+
 1. **Engine Verification**: Ensures engine is initialized
 2. **Connection Test**: Establishes direct database connection
 3. **Query Execution**: Runs simple `SELECT 1` query
@@ -121,12 +132,14 @@ async def db_healthcheck() -> bool:
 5. **Pool State**: Reports connection pool status
 
 **Return Values:**
+
 - `True`: Database is healthy and responsive
 - `False`: Database is unreachable or unresponsive
 
 ### 🐛 **Debugging and Diagnostics**
 
 #### `_log_worker_info()`
+
 ```python
 def _log_worker_info() -> tuple[str, int, int]:
     """Log information about the current worker process for parallel test debugging."""
@@ -135,12 +148,14 @@ def _log_worker_info() -> tuple[str, int, int]:
 **Purpose:** Tracks process/thread context for debugging concurrent database access
 
 **Information Logged:**
+
 - Worker ID (for pytest-xdist parallel testing)
 - Process ID (PID)
 - Thread ID
 - Environment context (main worker vs. test worker)
 
 #### `_log_engine_pool_state()`
+
 ```python
 def _log_engine_pool_state(engine: AsyncEngine, context: str) -> None:
     """Log current connection pool state for debugging connection issues."""
@@ -149,6 +164,7 @@ def _log_engine_pool_state(engine: AsyncEngine, context: str) -> None:
 **Purpose:** Detailed connection pool monitoring and diagnostics
 
 **Pool Metrics Logged:**
+
 - Pool size (total connections)
 - Checked out connections (in use)
 - Checked in connections (available)
@@ -157,6 +173,7 @@ def _log_engine_pool_state(engine: AsyncEngine, context: str) -> None:
 - Sanitized database URL
 
 #### `get_connection_debug_info()`
+
 ```python
 def get_connection_debug_info() -> ConnectionDebugInfo:
     """Get current connection state for debugging."""
@@ -165,6 +182,7 @@ def get_connection_debug_info() -> ConnectionDebugInfo:
 **Purpose:** Programmatic access to database connection state for debugging and monitoring
 
 **Debug Information Returned:**
+
 ```python
 class ConnectionDebugInfo(TypedDict, total=False):
     worker_id: str
@@ -197,6 +215,7 @@ url_obj: URL = make_url(settings.async_db_url)
 ```
 
 **Supported Database URLs:**
+
 - **PostgreSQL**: `postgresql+asyncpg://user:pass@host:port/database`
 - **SQLite**: `sqlite+aiosqlite:///path/to/file.db`
 - **In-Memory SQLite**: `sqlite+aiosqlite:///:memory:` (testing)
@@ -204,6 +223,7 @@ url_obj: URL = make_url(settings.async_db_url)
 ### Environment-Specific Configuration
 
 #### Production Environment
+
 ```python
 if settings.environment == "prod":
     engine_kwargs["pool_size"] = 10
@@ -211,22 +231,26 @@ if settings.environment == "prod":
 ```
 
 **Production Settings:**
+
 - Large connection pool for high concurrency
 - Robust error handling and monitoring
 - Performance optimization for production workloads
 
 #### Development Environment
+
 ```python
 engine_kwargs["pool_size"] = 5
 engine_kwargs["max_overflow"] = 10
 ```
 
 **Development Settings:**
+
 - Smaller pool size for resource efficiency
 - Enhanced debugging and logging
 - SQLite support for simple setup
 
 #### Testing Environment (Parallel)
+
 ```python
 if os.environ.get("PYTEST_XDIST_WORKER"):
     engine_kwargs["pool_size"] = 1
@@ -240,6 +264,7 @@ if os.environ.get("PYTEST_XDIST_WORKER"):
 ```
 
 **Parallel Test Settings:**
+
 - Minimal pool size to prevent connection conflicts
 - Unique application names for test isolation
 - Connection reset after each test for clean state
@@ -264,6 +289,7 @@ async def get_users(
 ```
 
 **Benefits:**
+
 - Automatic session creation and cleanup
 - Exception handling with rollback
 - Connection pool management
@@ -345,6 +371,7 @@ except Exception as exc:
 ```
 
 **Error Recovery Features:**
+
 - Automatic session rollback on errors
 - Connection pool state monitoring
 - Failure counting and tracking
@@ -361,6 +388,7 @@ _log_engine_pool_state(engine, "After failed operation")
 ```
 
 **Recovery Mechanisms:**
+
 - `pool_pre_ping=True`: Tests connections before use
 - Automatic invalidation of failed connections
 - Pool overflow handling for traffic spikes
@@ -384,7 +412,7 @@ def test_connection_failure_handling():
     """Test database connection failure scenarios."""
     debug_info = get_connection_debug_info()
     assert debug_info["engine_initialized"] is True
-    
+
     # Simulate connection failure
     # Test error handling and recovery
 ```
@@ -425,6 +453,7 @@ logger.info(f"Invalid: {pool.invalidated()}")
 ```
 
 **Performance Insights:**
+
 - Engine creation latency
 - Session establishment time
 - Connection test performance
@@ -448,6 +477,7 @@ engine_kwargs["max_overflow"] = 1
 ```
 
 **Parallel Testing Features:**
+
 - Worker isolation with unique connection settings
 - Minimal connection pools to prevent conflicts
 - Worker-specific application names for debugging
@@ -496,6 +526,7 @@ logger.info(f"DB URL: ...@{sanitized_url}")
 ```
 
 **Security Features:**
+
 - Database credentials excluded from logs
 - Sanitized connection strings in debug output
 - Secure handling of database URLs in error messages
@@ -511,6 +542,7 @@ logger.info(f"DB URL: ...@{sanitized_url}")
 ```
 
 **Isolation Mechanisms:**
+
 - Unique application names prevent connection mixing
 - Connection pool isolation between environments
 - Automatic connection reset for security
@@ -538,18 +570,21 @@ logger.info(f"DB URL: ...@{sanitized_url}")
 ### Common Error Scenarios
 
 #### Connection Pool Exhaustion
+
 ```python
 # Symptom: TimeoutError or pool checkout timeout
 # Solution: Reduce concurrent operations or increase pool size
 ```
 
 #### Database Unavailable
+
 ```python
 # Symptom: Connection refused or timeout
 # Solution: Check database service status and connectivity
 ```
 
 #### Session Lifecycle Issues
+
 ```python
 # Symptom: Session already closed errors
 # Solution: Use proper context manager pattern
@@ -573,4 +608,4 @@ logger.info(f"DB URL: ...@{sanitized_url}")
 
 ---
 
-*This module provides the foundational database infrastructure for the entire ReViewPoint backend, offering robust connection management, comprehensive monitoring, and environment-specific optimization for development, testing, and production deployments.*
+_This module provides the foundational database infrastructure for the entire ReViewPoint backend, offering robust connection management, comprehensive monitoring, and environment-specific optimization for development, testing, and production deployments._

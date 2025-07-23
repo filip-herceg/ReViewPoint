@@ -1,15 +1,15 @@
 # Example docker-compose.yml for using the secure distroless image with database migrations
 # This shows how to handle database migrations when using the distroless runtime image
 
-version: '3.8'
+version: "3.8"
 
 services:
   # Database migration init container
   migrate:
-    build: 
-      context: ../../  # Build from backend directory
+    build:
+      context: ../../ # Build from backend directory
       dockerfile: deployment/docker/dockerfile.prod
-      target: builder  # Use builder stage which has shell access
+      target: builder # Use builder stage which has shell access
     environment:
       - REVIEWPOINT_DB_URL=${REVIEWPOINT_DB_URL}
     volumes:
@@ -22,8 +22,8 @@ services:
 
   # Main application using distroless image
   app:
-    build: 
-      context: ../../  # Build from backend directory
+    build:
+      context: ../../ # Build from backend directory
       dockerfile: deployment/docker/dockerfile.prod
     environment:
       - REVIEWPOINT_DB_URL=${REVIEWPOINT_DB_URL}

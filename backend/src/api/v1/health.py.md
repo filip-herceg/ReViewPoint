@@ -3,7 +3,7 @@
 **File:** `backend/src/api/v1/health.py`  
 **Purpose:** Health check and metrics endpoints for API monitoring and observability  
 **Lines of Code:** 418  
-**Type:** Health Monitoring API Router  
+**Type:** Health Monitoring API Router
 
 ## Overview
 
@@ -52,6 +52,7 @@ The Health Monitoring API Router provides comprehensive health check and metrics
 ### 🏥 **Health Check Endpoint**
 
 #### `GET /health`
+
 ```python
 @router.get("/health", status_code=200)
 async def health_check(
@@ -65,6 +66,7 @@ async def health_check(
 **Purpose:** Comprehensive health status check for API and dependencies
 
 **Health Check Process:**
+
 1. **Database Connectivity**: Test database connection with health check query
 2. **Response Time Tracking**: Measure and report endpoint response time
 3. **Pool Statistics**: Collect database connection pool metrics
@@ -73,6 +75,7 @@ async def health_check(
 6. **HTTP Status Mapping**: Return appropriate HTTP status codes
 
 **Response Structure:**
+
 ```json
 {
   "status": "ok",
@@ -98,6 +101,7 @@ async def health_check(
 ```
 
 **Health Status Logic:**
+
 ```python
 # Healthy response (200 OK)
 {
@@ -114,12 +118,14 @@ async def health_check(
 ```
 
 **Response Headers:**
+
 - `X-Health-Response-Time`: Endpoint execution duration
 - Standard HTTP status codes for health state
 
 ### 📊 **Prometheus Metrics Endpoint**
 
 #### `GET /metrics`
+
 ```python
 @router.get("/metrics", status_code=200)
 def metrics() -> Response:
@@ -128,6 +134,7 @@ def metrics() -> Response:
 **Purpose:** Prometheus-compatible metrics for monitoring integration
 
 **Metrics Format:**
+
 ```
 app_uptime_seconds 12345.67
 db_pool_size 5
@@ -139,24 +146,25 @@ db_pool_awaiting 0
 
 **Exported Metrics:**
 
-| Metric Name | Type | Description | Example Value |
-|-------------|------|-------------|---------------|
-| `app_uptime_seconds` | Gauge | API service uptime in seconds | `12345.67` |
-| `db_pool_size` | Gauge | Total database connection pool size | `5` |
-| `db_pool_checkedin` | Gauge | Idle connections in pool | `4` |
-| `db_pool_checkedout` | Gauge | Active connections from pool | `1` |
-| `db_pool_overflow` | Gauge | Overflow connections beyond pool | `0` |
-| `db_pool_awaiting` | Gauge | Connections waiting for availability | `0` |
+| Metric Name          | Type  | Description                          | Example Value |
+| -------------------- | ----- | ------------------------------------ | ------------- |
+| `app_uptime_seconds` | Gauge | API service uptime in seconds        | `12345.67`    |
+| `db_pool_size`       | Gauge | Total database connection pool size  | `5`           |
+| `db_pool_checkedin`  | Gauge | Idle connections in pool             | `4`           |
+| `db_pool_checkedout` | Gauge | Active connections from pool         | `1`           |
+| `db_pool_overflow`   | Gauge | Overflow connections beyond pool     | `0`           |
+| `db_pool_awaiting`   | Gauge | Connections waiting for availability | `0`           |
 
 **Prometheus Integration:**
+
 ```yaml
 # prometheus.yml
 scrape_configs:
-  - job_name: 'reviewpoint-api'
+  - job_name: "reviewpoint-api"
     static_configs:
-      - targets: ['api.reviewpoint.org:443']
-    metrics_path: '/api/v1/metrics'
-    scheme: 'https'
+      - targets: ["api.reviewpoint.org:443"]
+    metrics_path: "/api/v1/metrics"
+    scheme: "https"
 ```
 
 ## Utility Functions
@@ -164,6 +172,7 @@ scrape_configs:
 ### 📊 **Database Pool Statistics**
 
 #### `get_pool_stats()`
+
 ```python
 def get_pool_stats() -> PoolStatsDict:
     """Returns statistics about the database connection pool."""
@@ -172,24 +181,27 @@ def get_pool_stats() -> PoolStatsDict:
 **Purpose:** Collect comprehensive database connection pool metrics
 
 **Pool Metrics Collection:**
+
 ```python
 # SQLAlchemy pool attributes
 pool_attributes = [
     "size",        # Total pool size
     "checkedin",   # Available connections
-    "checkedout",  # Active connections  
+    "checkedout",  # Active connections
     "overflow",    # Overflow connections
     "awaiting"     # Connections waiting
 ]
 ```
 
 **Error Handling:**
+
 - **Engine Initialization**: Handles uninitialized database engine
 - **Attribute Access**: Graceful handling of missing pool attributes
 - **Method Calls**: Safe execution of pool statistic methods
 - **Exception Safety**: Returns empty stats on any failure
 
 **Implementation Details:**
+
 ```python
 for attr in ("size", "checkedin", "checkedout", "overflow", "awaiting"):
     val = getattr(pool, attr, None)
@@ -205,6 +217,7 @@ for attr in ("size", "checkedin", "checkedout", "overflow", "awaiting"):
 ### 🕐 **Application Uptime Tracking**
 
 #### Global Uptime Tracking
+
 ```python
 APP_START_TIME: Final[float] = time.time()
 
@@ -215,6 +228,7 @@ uptime: float = time.time() - APP_START_TIME
 **Purpose:** Track API service uptime from application start
 
 **Uptime Calculation:**
+
 - **Start Time Recording**: Captured at module import time
 - **Current Uptime**: Calculated as current time minus start time
 - **Precision**: Floating-point seconds for sub-second accuracy
@@ -225,6 +239,7 @@ uptime: float = time.time() - APP_START_TIME
 ### 🏗️ **TypedDict Structures**
 
 #### Health Response Structure
+
 ```python
 class HealthResponseDict(TypedDict, total=False):
     status: Literal["ok", "error"]
@@ -236,6 +251,7 @@ class HealthResponseDict(TypedDict, total=False):
 ```
 
 #### Database Status Structure
+
 ```python
 class DBStatusDict(TypedDict, total=False):
     ok: bool
@@ -244,6 +260,7 @@ class DBStatusDict(TypedDict, total=False):
 ```
 
 #### Connection Pool Statistics
+
 ```python
 class PoolStatsDict(TypedDict, total=False):
     size: int | None
@@ -254,6 +271,7 @@ class PoolStatsDict(TypedDict, total=False):
 ```
 
 #### Version Information
+
 ```python
 class VersionsDict(TypedDict):
     python: str
@@ -262,6 +280,7 @@ class VersionsDict(TypedDict):
 ```
 
 **Type Safety Benefits:**
+
 - **Compile-Time Validation**: MyPy type checking support
 - **IDE Support**: Enhanced autocomplete and error detection
 - **Documentation**: Self-documenting response structures
@@ -272,6 +291,7 @@ class VersionsDict(TypedDict):
 ### 🔐 **Protected Access**
 
 #### API Key Protection
+
 ```python
 dependencies=[
     Depends(get_request_id),
@@ -281,11 +301,13 @@ dependencies=[
 ```
 
 **Security Layers:**
+
 1. **API Key Validation**: Service-level authentication
 2. **Feature Flags**: Runtime endpoint control
 3. **Request Tracing**: Correlation ID for audit logging
 
 #### Information Disclosure Prevention
+
 ```python
 # Safe error handling - no sensitive information exposure
 except Exception as exc:
@@ -294,6 +316,7 @@ except Exception as exc:
 ```
 
 **Security Measures:**
+
 - **Error Sanitization**: No sensitive data in error messages
 - **Controlled Exposure**: Only necessary health information exposed
 - **Audit Logging**: All health check requests logged with request ID
@@ -301,11 +324,13 @@ except Exception as exc:
 ### 🛡️ **Rate Limiting Considerations**
 
 **Health Check Protection:**
+
 - Protected by API key requirement
 - Feature flag controlled access
 - No additional rate limiting (monitoring tools need frequent access)
 
 **Metrics Endpoint Protection:**
+
 - Same security model as health check
 - Designed for frequent scraping by monitoring systems
 - Lightweight response format for high-frequency access
@@ -324,6 +349,7 @@ except Exception as exc:
 ```
 
 **Error Response Pattern:**
+
 ```json
 {
   "status": "error",
@@ -337,6 +363,7 @@ except Exception as exc:
 ```
 
 **HTTP Status Codes:**
+
 - **200 OK**: All systems healthy
 - **503 Service Unavailable**: Database connectivity issues
 - **401 Unauthorized**: Missing/invalid API key
@@ -353,6 +380,7 @@ except Exception:
 ```
 
 **Degradation Strategy:**
+
 - **Partial Information**: Return available metrics even if some fail
 - **Empty Fallbacks**: Safe default values for missing data
 - **Error Isolation**: Individual metric failures don't break entire response
@@ -362,18 +390,21 @@ except Exception:
 ### ⚡ **Optimized Health Checks**
 
 #### Fast Database Health Check
+
 ```python
 # Lightweight database connectivity test
 await db_healthcheck()  # Simple SELECT 1 query
 ```
 
 **Performance Features:**
+
 - **Minimal Query**: Simple connectivity test, not full database scan
 - **Fast Response**: Sub-millisecond response times
 - **Async Operations**: Non-blocking health check execution
 - **Cached Engine**: Reuses existing database engine
 
 #### Response Time Measurement
+
 ```python
 start: float = time.monotonic()
 # ... health check operations ...
@@ -382,6 +413,7 @@ response.headers["X-Health-Response-Time"] = f"{duration:.4f}s"
 ```
 
 **Timing Benefits:**
+
 - **Monotonic Clock**: Immune to system clock adjustments
 - **High Precision**: Sub-millisecond accuracy
 - **Header Exposure**: Response time available to monitoring tools
@@ -399,6 +431,7 @@ return Response("\n".join(lines), media_type="text/plain")
 ```
 
 **Efficiency Features:**
+
 - **Text Format**: Minimal overhead compared to JSON
 - **Single Pass**: Collect all metrics in one operation
 - **Memory Efficient**: Direct string concatenation
@@ -446,7 +479,7 @@ async def check_service_health():
             headers={"X-API-Key": "monitoring-key"},
             timeout=5
         )
-        
+
         if response.status_code == 200:
             health_data = response.json()
             if health_data["status"] == "ok":
@@ -455,7 +488,7 @@ async def check_service_health():
                 print(f"❌ Service unhealthy: {health_data.get('detail')}")
         else:
             print(f"❌ Health check failed: {response.status_code}")
-            
+
     except requests.RequestException as e:
         print(f"❌ Health check error: {e}")
 ```
@@ -479,26 +512,26 @@ spec:
   template:
     spec:
       containers:
-      - name: reviewpoint-api
-        livenessProbe:
-          httpGet:
-            path: /api/v1/health
-            port: 8000
-            httpHeaders:
-            - name: X-API-Key
-              value: k8s-health-key
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        
-        readinessProbe:
-          httpGet:
-            path: /api/v1/health
-            port: 8000
-            httpHeaders:
-            - name: X-API-Key
-              value: k8s-health-key
-          initialDelaySeconds: 5
-          periodSeconds: 5
+        - name: reviewpoint-api
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 8000
+              httpHeaders:
+                - name: X-API-Key
+                  value: k8s-health-key
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 8000
+              httpHeaders:
+                - name: X-API-Key
+                  value: k8s-health-key
+            initialDelaySeconds: 5
+            periodSeconds: 5
 ```
 
 ## Testing Strategies
@@ -513,15 +546,15 @@ from unittest.mock import patch, AsyncMock
 def test_health_check_healthy():
     """Test health check when all systems are healthy."""
     client = TestClient(app)
-    
+
     with patch('src.api.v1.health.db_healthcheck', new_callable=AsyncMock) as mock_health:
         mock_health.return_value = None  # Successful health check
-        
+
         response = client.get(
             "/api/v1/health",
             headers={"X-API-Key": "test-key"}
         )
-        
+
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "ok"
@@ -533,15 +566,15 @@ def test_health_check_healthy():
 def test_health_check_db_failure():
     """Test health check when database is unavailable."""
     client = TestClient(app)
-    
+
     with patch('src.api.v1.health.db_healthcheck', new_callable=AsyncMock) as mock_health:
         mock_health.side_effect = Exception("Database connection failed")
-        
+
         response = client.get(
             "/api/v1/health",
             headers={"X-API-Key": "test-key"}
         )
-        
+
         assert response.status_code == 503
         data = response.json()
         assert data["status"] == "error"
@@ -556,15 +589,15 @@ def test_health_check_db_failure():
 def test_metrics_endpoint():
     """Test Prometheus metrics endpoint."""
     client = TestClient(app)
-    
+
     response = client.get(
         "/api/v1/metrics",
         headers={"X-API-Key": "test-key"}
     )
-    
+
     assert response.status_code == 200
     assert response.headers["content-type"] == "text/plain; charset=utf-8"
-    
+
     metrics_text = response.text
     assert "app_uptime_seconds" in metrics_text
     assert "db_pool_size" in metrics_text
@@ -579,11 +612,11 @@ def test_pool_stats_collection():
         mock_pool.checkedout = lambda: 1
         mock_pool.overflow = lambda: 0
         mock_pool.awaiting = lambda: 0
-        
+
         mock_engine.pool = mock_pool
-        
+
         stats = get_pool_stats()
-        
+
         assert stats["size"] == 5
         assert stats["checkedin"] == 4
         assert stats["checkedout"] == 1
@@ -597,24 +630,24 @@ def test_pool_stats_collection():
 def test_health_check_requires_api_key():
     """Test that health check requires API key."""
     client = TestClient(app)
-    
+
     response = client.get("/api/v1/health")
     assert response.status_code == 401
 
 def test_metrics_requires_api_key():
     """Test that metrics endpoint requires API key."""
     client = TestClient(app)
-    
+
     response = client.get("/api/v1/metrics")
     assert response.status_code == 401
 
 def test_feature_flag_enforcement():
     """Test feature flag enforcement on health endpoints."""
     client = TestClient(app)
-    
+
     with patch('src.api.v1.health.require_feature') as mock_feature:
         mock_feature.side_effect = HTTPException(403, "Feature disabled")
-        
+
         response = client.get(
             "/api/v1/health",
             headers={"X-API-Key": "test-key"}
@@ -648,31 +681,31 @@ up{job="reviewpoint-api"}
 ```yaml
 # Prometheus alerting rules
 groups:
-- name: reviewpoint-api
-  rules:
-  - alert: ServiceDown
-    expr: up{job="reviewpoint-api"} == 0
-    for: 1m
-    labels:
-      severity: critical
-    annotations:
-      summary: "ReViewPoint API is down"
-      
-  - alert: DatabaseConnectionPoolExhausted
-    expr: db_pool_checkedout / db_pool_size > 0.9
-    for: 2m
-    labels:
-      severity: warning
-    annotations:
-      summary: "Database connection pool nearly exhausted"
-      
-  - alert: ConnectionsWaiting
-    expr: db_pool_awaiting > 0
-    for: 30s
-    labels:
-      severity: warning
-    annotations:
-      summary: "Database connections waiting for availability"
+  - name: reviewpoint-api
+    rules:
+      - alert: ServiceDown
+        expr: up{job="reviewpoint-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "ReViewPoint API is down"
+
+      - alert: DatabaseConnectionPoolExhausted
+        expr: db_pool_checkedout / db_pool_size > 0.9
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Database connection pool nearly exhausted"
+
+      - alert: ConnectionsWaiting
+        expr: db_pool_awaiting > 0
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Database connections waiting for availability"
 ```
 
 ## Best Practices
@@ -710,4 +743,4 @@ groups:
 
 ---
 
-*This health monitoring router provides comprehensive observability and monitoring capabilities for the ReViewPoint API, enabling effective monitoring, alerting, and capacity planning in production environments.*
+_This health monitoring router provides comprehensive observability and monitoring capabilities for the ReViewPoint API, enabling effective monitoring, alerting, and capacity planning in production environments._
