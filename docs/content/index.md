@@ -9,7 +9,7 @@
 
 -   :material-rocket-launch: **Quick Start**
 
-    ---
+    ***
 
     Get ReViewPoint running on your machine in under 30 minutes
 
