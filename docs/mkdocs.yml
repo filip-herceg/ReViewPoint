@@ -14,7 +14,6 @@ copyright: Copyright &copy; 2025 filip-herceg
 # Configuration
 theme:
   name: material
-  custom_dir: overrides
   features:
     - announce.dismiss
     - content.action.edit
